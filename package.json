@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "name": "reef-explorer",
+  "description": "Reef block explorer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reef-defi/reef-explorer.git"
+  },
+  "keywords": [
+    "blockchain",
+    "polkadot",
+    "substrate"
+  ],
+  "author": "Mario Pino Uceda",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/reef-defi/reef-explorer/issues"
+  },
+  "homepage": "https://github.com/reef-defi/reef-explorer#readme",
+  "workspaces": ["frontend", "backend"],
+  "scripts": {}
+ }
+ 
