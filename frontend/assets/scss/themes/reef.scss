@@ -74,7 +74,7 @@ $nav-tabs-link-active-color: $body-color !default;
 $hr-border-color: rgba(255, 255, 255, 0.2) !default;
 $custom-control-indicator-checked-bg: $primary2 !default;
 $custom-control-indicator-focus-border-color: $gray-600 !default;
-$h1-font-size: 2.1rem !default;
+$h1-font-size: 1.6rem !default;
 $table-border-color: #c6d7e8 !default;
 $table-accent-bg: #c2d7ec2b !default;
 
@@ -131,6 +131,9 @@ pre {
 ul {
   list-style: none;
   padding-left: 0;
+}
+h1 {
+  text-transform: uppercase;
 }
 
 // footer
