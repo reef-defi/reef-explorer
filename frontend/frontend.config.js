@@ -1,7 +1,7 @@
 export const network = {
   id: 'reef',
   name: 'Reef',
-  tokenSymbol: 'PARA',
+  tokenSymbol: 'REEF',
   tokenDecimals: 10,
   ss58Format: 42,
   coinGeckoDenom: undefined,
