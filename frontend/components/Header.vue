@@ -3,7 +3,8 @@
     <b-container class="px-sm-3">
       <b-navbar-brand>
         <nuxt-link to="/" class="navbar-brand" title="Reef block explorer">
-          <img class="logo" src="/img/reef-explorer-logo.png" />
+          <img class="logo" src="/img/reef-logo.svg" />
+          <span class="explorer">EXPLORER</span>
         </nuxt-link>
       </b-navbar-brand>
       <b-navbar-toggle target="nav-collapse" />

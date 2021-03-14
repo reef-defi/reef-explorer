@@ -27,7 +27,7 @@ $cyan: #17a2b8 !default;
 $body-bg: #fff;
 $body-color: #596065;
 $primary: #fff;
-$primary2: #212529;
+$primary2: #5531A9;
 $secondary: $gray-600;
 $success: #068642;
 $info: $cyan !default;
@@ -93,15 +93,19 @@ html {
 }
 body {
   font-family: 'Poppins', sans-serif;
-  margin-bottom: 60px;
   font-size: 0.9rem;
-  background-image: url(/img/bg-website.jpg);
-  background-position: 50% 50%;
-  background-size: cover;
-  background-attachment: fixed;
 }
 .logo {
-  height: 22px;
+  height: 64px;
+}
+.explorer {
+  text-align: inherit;
+  vertical-align: bottom;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5531a938;
+  letter-spacing: 0.33rem;
+  text-shadow: aliceblue;
 }
 .navbar-dark {
   border-bottom: 1px solid#fdf5f5cc;
@@ -119,130 +123,62 @@ pre {
   font-size: initial;
   color: $light;
 }
-.nav-tabs .nav-item a {
-  color: $light;
-}
-.nav-item {
+.navbar .nav-item {
   font-weight: 600;
   text-transform: uppercase;
   font-size: 14px;
 }
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+// footer
+.footer {
+  padding-top: 180px;
+  padding-bottom: 50px;
+  background-color: #5531A9;
+  margin-bottom: 0;
+}
+.footer p {
+  color: #fff;
+}
+.footer li a {
+  color: #fff !important;
+  font-size: 15px;
+  line-height: 1.5;
+  font-family: 'Poppins', sans-serif;
+  text-transform: capitalize;
+}
+.social-box {
+  background-color: #FAFAFA;
+  border-right: 1px solid #E1E1E1;
+  padding: 42px 20px;
+}
+.bottom-row {
+  position: relative;
+  bottom: -47px;
+  border-top: 1px solid #bdbdbd;
+  padding-top: 15px;
+}
+.footer-logo {
+  text-align: right;
+}
+.footer .nav-item {
+  padding-bottom: 15px;
+}
+
+
+.nav-tabs .nav-item a {
+  color: $light;
+}
+
 .identicon {
   cursor: pointer;
 }
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
-  // color: #2885d0;
   font-weight: 600;
 }
-
-// footer
-.footer .logo {
-  height: 32px;
-  margin-bottom: 20px;
-}
-.footer-link-wrap {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  margin-bottom: 20px;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  -webkit-flex-wrap: wrap;
-  -ms-flex-wrap: wrap;
-  flex-wrap: wrap;
-}
-.footer-link-white {
-  display: block;
-  margin-right: 15px;
-  margin-left: 15px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  -webkit-transition: color 200ms ease;
-  transition: color 200ms ease;
-  color: rgba(89, 96, 101, 0.5);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  text-transform: uppercase;
-}
-.footer-wrapper {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-.footer-centre {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
-  align-items: center;
-  text-align: center;
-}
-.w-inline-block {
-  max-width: 100%;
-  display: inline-block;
-}
-.social-link {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  width: 42px;
-  height: 42px;
-  margin-right: 10px;
-  padding: 10px;
-  -webkit-box-pack: center;
-  -webkit-justify-content: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  -ms-flex-align: center;
-  align-items: center;
-  border-radius: 10px;
-  background-color: #b1bdc6;
-  -webkit-transition: all 200ms ease;
-  transition: all 200ms ease;
-}
-.social-link.github {
-  margin-right: 0;
-}
-.social-link.github img {
-  max-width: 100%;
-}
-.social-link.telegram:hover {
-  background-color: #00b1e8;
-}
-.social-link.medium:hover {
-  background-color: #efbf34;
-}
-.social-link.twitter:hover {
-  background-color: #3cf;
-}
-.social-link.github:hover {
-  background-color: #35424e;
-}
-
 .chain-info h4 {
   color: $body-color;
   font-weight: 100;
@@ -250,8 +186,8 @@ pre {
 
 // network
 .network {
-  font-size: 0.9rem;
-  background-color: #8fc4ef;
+  padding: 0.6rem;
+  font-size: 0.8rem;
   font-weight: 100;
   margin-left: 1rem;
   box-shadow: 0 8px 20px 0 rgb(40 133 208 / 15%);
