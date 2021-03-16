@@ -16,7 +16,7 @@ services:
       - '9944:9944'
     expose:
       - '9944'
-    command: -d /data --chain ./aura-testnet-raw.json --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0' --bootnodes /ip4/64.225.99.169/tcp/30334/p2p/12D3KooWNx6VZCvjKhAQfBqrMPZ3552gMS6TnyLEKCzyNpG8CT1y
+    command: -d /data --chain testnet --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0'
     restart: always
 
   #
