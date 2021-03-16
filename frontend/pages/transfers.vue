@@ -265,7 +265,7 @@ export default {
               block_number: transfer.block_number,
               hash: transfer.hash,
               from: transfer.signer,
-              to: JSON.parse(transfer.args)[0],
+              to: JSON.parse(transfer.args)[0].Id,
               amount: JSON.parse(transfer.args)[1],
               success: transfer.success,
             }
