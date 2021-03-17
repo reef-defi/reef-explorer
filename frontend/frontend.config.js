@@ -6,8 +6,8 @@ export const network = {
   ss58Format: 42,
   coinGeckoDenom: undefined,
   nodeWs: 'wss://rpc-testnet.reef.finance/ws',
-  backendWs: 'wss://explorer.reef.finance/api/v3',
-  backendHttp: 'https://explorer.reef.finance/api/v3',
+  backendWs: 'wss://reefscan.com/api/v3',
+  backendHttp: 'https://reefscan.com/api/v3',
   googleAnalytics: '',
   theme: '@/assets/scss/themes/reef.scss',
 }
