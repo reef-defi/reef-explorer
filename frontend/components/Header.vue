@@ -4,7 +4,7 @@
       <b-navbar-brand>
         <nuxt-link to="/" class="navbar-brand" title="Reef block explorer">
           <img class="logo" src="/img/reef-logo.svg" />
-          <span class="explorer">EXPLORER</span>
+          <span class="explorer">SCAN</span>
         </nuxt-link>
       </b-navbar-brand>
       <b-navbar-toggle target="nav-collapse" />
