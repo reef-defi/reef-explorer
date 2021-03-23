@@ -19,7 +19,7 @@
         <a
           v-b-tooltip.hover
           title="Reef Testnet"
-          href="https://reef.finance/"
+          href="https://docs.reef.finance/docs/developers/networks/"
           target="_blank"
           class="d-none d-lg-block d-xl-block"
         >
