@@ -126,7 +126,10 @@ export default {
               hash: transfer.hash,
               from: transfer.signer,
               to: JSON.parse(transfer.args)[0].Id,
-              amount: JSON.parse(transfer.args)[1],
+              amount:
+                transfer.section === 'currencies'
+                  ? JSON.parse(transfer.args)[2]
+                  : JSON.parse(transfer.args)[1],
             }
           })
         },
