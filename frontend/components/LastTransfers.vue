@@ -113,6 +113,7 @@ export default {
               limit: 10
             ) {
               block_number
+              section
               signer
               hash
               args
