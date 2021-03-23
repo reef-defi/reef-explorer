@@ -218,12 +218,22 @@ export default {
             extrinsic(
               order_by: { block_number: desc }
               where: {
-                section: { _eq: "balances" }
-                method: { _like: "transfer%" }
-                signer: { _eq: $signer }
+                _or: [
+                  {
+                    section: { _eq: "currencies" }
+                    method: { _like: "transfer" }
+                    signer: { _eq: $signer }
+                  }
+                  {
+                    section: { _eq: "balances" }
+                    method: { _like: "transfer%" }
+                    signer: { _eq: $signer }
+                  }
+                ]
               }
             ) {
               block_number
+              section
               hash
               args
               success
@@ -244,8 +254,11 @@ export default {
               block_number: transfer.block_number,
               hash: transfer.hash,
               from: this.accountId,
-              to: JSON.parse(transfer.args)[0],
-              amount: JSON.parse(transfer.args)[1],
+              to: JSON.parse(transfer.args)[0].Id,
+              amount:
+                transfer.section === 'currencies'
+                  ? JSON.parse(transfer.args)[2]
+                  : JSON.parse(transfer.args)[1],
               success: transfer.success,
             }
           })

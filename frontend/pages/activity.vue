@@ -3,15 +3,13 @@
     <section>
       <b-container class="main py-5">
         <b-row class="mb-2">
-          <b-col cols="8">
+          <b-col cols="12">
             <h1>
               {{ $t('pages.activity.title') }}
+              <small v-if="totalRows !== 1" class="ml-1" style="font-size: 1rem"
+                >[{{ formatNumber(totalRows) }}]</small
+              >
             </h1>
-          </b-col>
-          <b-col cols="4">
-            <p v-if="totalRows !== 1" class="mt-3 mb-0 text-right">
-              {{ formatNumber(totalRows) }}
-            </p>
           </b-col>
         </b-row>
         <div class="last-extrinsics">

@@ -3,15 +3,13 @@
     <section>
       <b-container class="main py-5">
         <b-row class="mb-2">
-          <b-col cols="8">
+          <b-col cols="12">
             <h1>
               {{ $t('pages.transfers.title') }}
+              <small v-if="totalRows !== 1" class="ml-1" style="font-size: 1rem"
+                >[{{ formatNumber(totalRows) }}]</small
+              >
             </h1>
-          </b-col>
-          <b-col cols="4">
-            <p v-if="totalRows !== 1" class="mt-3 mb-0 text-right">
-              {{ formatNumber(totalRows) }}
-            </p>
           </b-col>
         </b-row>
         <div class="last-transfers">
@@ -232,15 +230,27 @@ export default {
               limit: $perPage
               offset: $offset
               where: {
-                section: { _eq: "balances" }
-                method: { _like: "transfer%" }
-                block_number: { _eq: $blockNumber }
-                hash: { _eq: $extrinsicHash }
-                signer: { _eq: $fromAddress }
+                _or: [
+                  {
+                    section: { _eq: "currencies" }
+                    method: { _like: "transfer" }
+                    block_number: { _eq: $blockNumber }
+                    hash: { _eq: $extrinsicHash }
+                    signer: { _eq: $fromAddress }
+                  }
+                  {
+                    section: { _eq: "balances" }
+                    method: { _like: "transfer%" }
+                    block_number: { _eq: $blockNumber }
+                    hash: { _eq: $extrinsicHash }
+                    signer: { _eq: $fromAddress }
+                  }
+                ]
               }
               order_by: { block_number: desc, extrinsic_index: desc }
             ) {
               block_number
+              section
               signer
               hash
               args
@@ -266,7 +276,10 @@ export default {
               hash: transfer.hash,
               from: transfer.signer,
               to: JSON.parse(transfer.args)[0].Id,
-              amount: JSON.parse(transfer.args)[1],
+              amount:
+                transfer.section === 'currencies'
+                  ? JSON.parse(transfer.args)[2]
+                  : JSON.parse(transfer.args)[1],
               success: transfer.success,
             }
           })
@@ -283,11 +296,22 @@ export default {
           ) {
             extrinsic_aggregate(
               where: {
-                section: { _eq: "balances" }
-                method: { _like: "transfer%" }
-                block_number: { _eq: $blockNumber }
-                hash: { _eq: $extrinsicHash }
-                signer: { _eq: $fromAddress }
+                _or: [
+                  {
+                    section: { _eq: "currencies" }
+                    method: { _like: "transfer" }
+                    block_number: { _eq: $blockNumber }
+                    hash: { _eq: $extrinsicHash }
+                    signer: { _eq: $fromAddress }
+                  }
+                  {
+                    section: { _eq: "balances" }
+                    method: { _like: "transfer%" }
+                    block_number: { _eq: $blockNumber }
+                    hash: { _eq: $extrinsicHash }
+                    signer: { _eq: $fromAddress }
+                  }
+                ]
               }
             ) {
               aggregate {
