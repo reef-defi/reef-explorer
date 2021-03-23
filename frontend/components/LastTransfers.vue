@@ -99,8 +99,16 @@ export default {
             extrinsic(
               order_by: { block_number: desc }
               where: {
-                section: { _eq: "balances" }
-                method: { _like: "transfer%" }
+                _or: [
+                  {
+                    section: { _eq: "currencies" }
+                    method: { _like: "transfer" }
+                  }
+                  {
+                    section: { _eq: "balances" }
+                    method: { _like: "transfer%" }
+                  }
+                ]
               }
               limit: 10
             ) {

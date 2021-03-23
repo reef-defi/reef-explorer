@@ -4,8 +4,7 @@
       <div class="container">
         <div class="row pt-3">
           <div class="col-lg-2">
-            <p>
-            </p>
+            <p></p>
           </div>
           <div class="col-lg-10 text-lg-right">
             <ul class="list-inline">
