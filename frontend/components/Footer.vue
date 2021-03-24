@@ -9,14 +9,10 @@
                 <a href="https://reef.finance" target="_blank">Website</a>
               </li>
               <li class="list-inline-item">
-                <a href="https://github.com/reef-defi" target="_blank"
-                  >GitHub</a
-                >
+                <a href="https://docs.reef.finance" target="_blank">Docs</a>
               </li>
               <li class="list-inline-item">
-                <a href="https://reef.finance/privacy.html" target="_blank"
-                  >Privacy</a
-                >
+                <a href="https://github.com/reef-defi" target="_blank">GitHub</a>
               </li>
             </ul>
           </div>
