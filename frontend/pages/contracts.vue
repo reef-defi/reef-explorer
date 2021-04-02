@@ -43,7 +43,13 @@
                 </template>
                 <template #cell(contract_id)="data">
                   <p class="mb-0">
-                    {{ data.item.contract_id }}
+                    <nuxt-link
+                      v-b-tooltip.hover
+                      :to="`/contract/${data.item.contract_id}`"
+                      title="Check contract information"
+                    >
+                      {{ data.item.contract_id }}
+                    </nuxt-link>
                   </p>
                 </template>
               </b-table>

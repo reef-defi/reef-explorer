@@ -184,6 +184,10 @@
     "events": {
       "title": "Events",
       "search_placeholder": "Search by block number"
+    },
+    "contracts": {
+      "title": "Contracts",
+      "search_placeholder": "Search by block number"
     }
   },
   "details": {
@@ -238,6 +242,13 @@
     },
     "extrinsic": {
       "extrinsic_details": "Extrinsic details"
+    },
+    "contract": {
+      "signer": "Signer",
+      "value": "Value",
+      "gas_limit": "Gas limit",
+      "storage_limit": "Storage limit",
+      "init": "Init"
     }
   }
 }
