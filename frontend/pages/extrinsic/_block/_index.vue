@@ -68,7 +68,7 @@
                     </tr>
                     <tr>
                       <td>Args</td>
-                      <td class="text-right">
+                      <td class="text-right break-all">
                         {{ parsedExtrinsic.args }}
                       </td>
                     </tr>
@@ -82,7 +82,7 @@
                         />
                         <font-awesome-icon
                           v-else
-                          icon="check-circle"
+                          icon="times"
                           class="text-danger"
                         />
                       </td>

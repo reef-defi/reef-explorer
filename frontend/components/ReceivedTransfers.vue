@@ -48,7 +48,7 @@
               </nuxt-link>
             </p>
           </template>
-          <template #cell(hash)="data">
+          <!-- <template #cell(hash)="data">
             <p class="mb-0">
               <nuxt-link
                 v-b-tooltip.hover
@@ -58,7 +58,7 @@
                 {{ shortHash(data.item.hash) }}
               </nuxt-link>
             </p>
-          </template>
+          </template> -->
           <template #cell(from)="data">
             <p class="mb-0">
               <nuxt-link
@@ -94,7 +94,7 @@
               {{ formatAmount(data.item.amount) }}
             </p>
           </template>
-          <template #cell(success)="data">
+          <!-- <template #cell(success)="data">
             <p class="mb-0">
               <font-awesome-icon
                 v-if="data.item.success"
@@ -103,7 +103,7 @@
               />
               <font-awesome-icon v-else icon="times" class="text-danger" />
             </p>
-          </template>
+          </template> -->
         </b-table>
         <div class="mt-4 d-flex">
           <b-pagination
@@ -167,12 +167,12 @@ export default {
           class: 'd-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell',
           sortable: true,
         },
-        {
-          key: 'hash',
-          label: 'Hash',
-          class: 'd-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell',
-          sortable: true,
-        },
+        // {
+        //   key: 'hash',
+        //   label: 'Hash',
+        //   class: 'd-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell',
+        //   sortable: true,
+        // },
         {
           key: 'from',
           label: 'From',
@@ -188,11 +188,11 @@ export default {
           label: 'Amount',
           sortable: true,
         },
-        {
-          key: 'success',
-          label: 'Success',
-          sortable: true,
-        },
+        // {
+        //   key: 'success',
+        //   label: 'Success',
+        //   sortable: true,
+        // },
       ],
     }
   },
@@ -211,53 +211,35 @@ export default {
     $subscribe: {
       extrinsic: {
         query: gql`
-          subscription extrinsic($signer: String!) {
-            extrinsic(
+          subscription event($accountId: String!) {
+            event(
               order_by: { block_number: desc }
               where: {
-                _or: [
-                  {
-                    section: { _eq: "currencies" }
-                    method: { _like: "transfer" }
-                    args: { _like: $signer }
-                  }
-                  {
-                    section: { _eq: "balances" }
-                    method: { _like: "transfer%" }
-                    args: { _like: $signer }
-                  }
-                ]
+                section: { _eq: "balances" }
+                method: { _eq: "Transfer" }
+                data: { _like: $accountId }
               }
             ) {
               block_number
-              section
-              hash
-              signer
-              args
-              success
+              data
             }
           }
         `,
         variables() {
           return {
-            signer: `%${this.accountId}%`,
+            accountId: `%,"${this.accountId}",%`,
           }
         },
         skip() {
           return !this.accountId
         },
         result({ data }) {
-          this.transfers = data.extrinsic.map((transfer) => {
+          this.transfers = data.event.map((event) => {
             return {
-              block_number: transfer.block_number,
-              hash: transfer.hash,
-              from: transfer.signer,
+              block_number: event.block_number,
+              from: JSON.parse(event.data)[0],
               to: this.accountId,
-              amount:
-                transfer.section === 'currencies'
-                  ? JSON.parse(transfer.args)[2]
-                  : JSON.parse(transfer.args)[1],
-              success: transfer.success,
+              amount: JSON.parse(event.data)[2],
             }
           })
           this.totalRows = this.transfers.length
