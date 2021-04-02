@@ -62,12 +62,15 @@ CREATE TABLE IF NOT EXISTS account  (
   PRIMARY KEY ( account_id )  
 );
 
-CREATE TABLE IF NOT EXISTS contract  (  
-  contract_id TEXT NOT NULL, -- evm.Created 0x29c08687a237fdc32d115f6b6c885428d170a2d8
-  init TEXT NOT NULL, -- https://reefscan.com/block/?blockNumber=118307
+CREATE TABLE IF NOT EXISTS contract  (
+  contract_id TEXT NOT NULL,
+  init TEXT NOT NULL,
   value TEXT NOT NULL,
   gas_limit TEXT NOT NULL,
   storage_limit TEXT NOT NULL,
+  signer TEXT NOT NULL,
+  block_height BIGINT NOT NULL, 
+  timestamp BIGINT NOT NULL,
   PRIMARY KEY ( contract_id )  
 );
 

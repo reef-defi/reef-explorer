@@ -54,6 +54,46 @@ module.exports = {
       } catch (error) {
         logger.error(loggerOptions, `Error adding extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
       }
+      // store contract
+      if (section === 'evm' && method === 'create' && success) {
+        // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
+        const contractId = blockEvents.find(
+          ({ event }) => event.section === 'evm' && event.method === 'Created',
+        ).event.args[0];
+        // https://reefscan.com/block/?blockNumber=118307
+        const init = extrinsic.args[0];
+        const value = extrinsic.args[1];
+        const gasLimit = extrinsic.args[2];
+        const storageLimit = extrinsic.args[3];
+        const contractSql = `INSERT INTO contract (
+          contract_id,
+          init,
+          value,
+          gas_limit,
+          storage_limit,
+          signer,
+          block_height,
+          timestamp
+        ) VALUES (
+          '${contractId}',
+          '${init}',
+          '${value}',
+          '${gasLimit}',
+          '${storageLimit}',
+          '${signer}',
+          '${blockNumber}',
+          '${timestamp}'
+        )
+        ON CONFLICT ON CONSTRAINT contract_pkey 
+        DO NOTHING;
+        ;`;
+        try {
+          await pool.query(contractSql);
+          logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
+        } catch (error) {
+          logger.error(loggerOptions, `Error adding contract ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
+        }
+      }
     });
 
     // Log execution time
@@ -95,11 +135,12 @@ module.exports = {
         UPDATE total SET count = (SELECT count(*) FROM extrinsic) WHERE name = 'extrinsics';
         UPDATE total SET count = (SELECT count(*) FROM extrinsic WHERE section = 'balances' and method = 'transfer' ) WHERE name = 'transfers';
         UPDATE total SET count = (SELECT count(*) FROM event) WHERE name = 'events';
+        UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
       `;
     try {
       await pool.query(sql);
     } catch (error) {
       logger.error(loggerOptions, `Error updating total harvested blocks, extrinsics and events: ${error}`);
     }
-  }
+  },
 };
