@@ -57,9 +57,13 @@ module.exports = {
       // store contract
       if (section === 'evm' && method === 'create' && success) {
         // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
-        const contractId = blockEvents.find(
-          ({ event }) => event.section === 'evm' && event.method === 'Created',
-        ).event.args[0];
+        const contractId = JSON.parse(
+          JSON.stringify(
+            blockEvents.find(
+              ({ event }) => event.section === 'evm' && event.method === 'Created',
+            ),
+          ),
+        ).event.data[0];
         // https://reefscan.com/block/?blockNumber=118307
         const init = extrinsic.args[0];
         const value = extrinsic.args[1];
