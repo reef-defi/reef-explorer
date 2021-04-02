@@ -62,13 +62,22 @@ CREATE TABLE IF NOT EXISTS account  (
   PRIMARY KEY ( account_id )  
 );
 
+CREATE TABLE IF NOT EXISTS contract  (  
+  contract_id TEXT NOT NULL, -- evm.Created 0x29c08687a237fdc32d115f6b6c885428d170a2d8
+  init TEXT NOT NULL, -- https://reefscan.com/block/?blockNumber=118307
+  value TEXT NOT NULL,
+  gas_limit TEXT NOT NULL,
+  storage_limit TEXT NOT NULL,
+  PRIMARY KEY ( contract_id )  
+);
+
 CREATE TABLE IF NOT EXISTS total (  
   name TEXT,
   count BIGINT NOT NULL,
   PRIMARY KEY ( name )
 );
 
-INSERT INTO total (name, count) VALUES ('blocks', 0),('extrinsics', 0),('transfers', 0),('events', 0);
+INSERT INTO total (name, count) VALUES ('blocks', 0),('extrinsics', 0),('transfers', 0),('events', 0),('contracts', 0);
 
 CREATE INDEX IF NOT EXISTS extrinsic_section_idx ON extrinsic (section);
 CREATE INDEX IF NOT EXISTS extrinsic_method_idx ON extrinsic (method);
@@ -79,4 +88,5 @@ GRANT ALL PRIVILEGES ON TABLE harvester_error TO reef;
 GRANT ALL PRIVILEGES ON TABLE event TO reef;
 GRANT ALL PRIVILEGES ON TABLE extrinsic TO reef;
 GRANT ALL PRIVILEGES ON TABLE account TO reef;
+GRANT ALL PRIVILEGES ON TABLE contract TO reef;
 GRANT ALL PRIVILEGES ON TABLE total TO reef;
