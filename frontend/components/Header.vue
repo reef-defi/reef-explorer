@@ -15,6 +15,7 @@
           <b-nav-item right to="/extrinsics">Extrinsics</b-nav-item>
           <b-nav-item right to="/events">Events</b-nav-item>
           <b-nav-item right to="/accounts">Accounts</b-nav-item>
+          <b-nav-item right to="/contracts">Contracts</b-nav-item>
         </b-navbar-nav>
         <a
           v-b-tooltip.hover
