@@ -19,14 +19,14 @@
         </b-navbar-nav>
         <a
           v-b-tooltip.hover
-          title="Reef Testnet"
+          title="Reef Testnet 2.1"
           href="https://docs.reef.finance/docs/developers/networks/"
           target="_blank"
           class="d-none d-lg-block d-xl-block"
         >
           <span class="badge badge-pill badge-primary2 network">
             <font-awesome-icon icon="plug" />
-            Reef Testnet
+            Reef Testnet 2.1
           </span>
         </a>
       </b-collapse>
