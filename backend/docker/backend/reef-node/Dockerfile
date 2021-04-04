@@ -6,6 +6,8 @@ WORKDIR /usr/local/bin
 
 RUN wget https://github.com/reef-defi/reef-chain/releases/download/testnet-2.1/reef-node
 
+RUN wget https://github.com/reef-defi/reef-chain/releases/download/testnet-2.1/chain_spec.json
+
 RUN chmod +x reef-node
 
 EXPOSE 30333 9933 9944
