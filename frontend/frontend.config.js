@@ -2,7 +2,7 @@ export const network = {
   id: 'reef',
   name: 'Reef',
   tokenSymbol: 'REEF',
-  tokenDecimals: 10,
+  tokenDecimals: 18,
   ss58Format: 42,
   coinGeckoDenom: undefined,
   nodeWs: 'wss://rpc-testnet.reef.finance/ws',
