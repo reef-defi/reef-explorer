@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install wget -y
 
 WORKDIR /usr/local/bin
 
-COPY reef-node reef-node
+RUN wget https://github.com/reef-defi/reef-chain/releases/download/testnet-2.1/reef-node
 
 RUN chmod +x reef-node
 
