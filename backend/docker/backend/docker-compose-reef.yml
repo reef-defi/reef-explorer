@@ -16,7 +16,7 @@ services:
       - '9944:9944'
     expose:
       - '9944'
-    command: -d /data --chain chain_spec.json --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0'
+    command: -d /data --chain /data/chain_spec.json --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0'
     restart: always
 
   #
