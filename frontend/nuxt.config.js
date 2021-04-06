@@ -19,7 +19,7 @@ export default {
         hid: 'description',
         name: 'description',
         content:
-          'The gateway to DeFi through Liquidity and Protocol Aggregation, Proprietary Analytics, and Multi-Chain Accessibility',
+          'Reef Chain is an EVM compatible chain for DeFi',
       },
     ],
     link: [{ rel: 'icon', type: 'image/png', href: '/img/favicon.png' }],
