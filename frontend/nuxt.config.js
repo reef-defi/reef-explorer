@@ -18,8 +18,7 @@ export default {
       {
         hid: 'description',
         name: 'description',
-        content:
-          'Reef Chain is an EVM compatible chain for DeFi',
+        content: 'Reef Chain is an EVM compatible chain for DeFi',
       },
     ],
     link: [{ rel: 'icon', type: 'image/png', href: '/img/favicon.png' }],
