@@ -137,7 +137,7 @@ module.exports = {
     const sql = `
         UPDATE total SET count = (SELECT count(*) FROM block) WHERE name = 'blocks';
         UPDATE total SET count = (SELECT count(*) FROM extrinsic) WHERE name = 'extrinsics';
-        UPDATE total SET count = (SELECT count(*) FROM extrinsic WHERE (section = 'balances' and method LIKE 'transfer%') OR (section = 'currencies' and method = 'transfer')) WHERE name = 'transfers';
+        UPDATE total SET count = (SELECT count(*) FROM extrinsic WHERE (section = 'balances' and method LIKE 'transfer%') OR (section = 'currencies' and method = 'transfer') WHERE name = 'transfers)';
         UPDATE total SET count = (SELECT count(*) FROM event) WHERE name = 'events';
         UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
       `;
