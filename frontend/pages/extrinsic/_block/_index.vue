@@ -36,7 +36,7 @@
                       </td>
                     </tr>
                     <tr>
-                      <td>Hash</td>
+                      <td>Extrinsic hash</td>
                       <td class="text-right">
                         {{ parsedExtrinsic.hash }}
                       </td>
@@ -59,35 +59,37 @@
                     <tr>
                       <td>Signer</td>
                       <td class="text-right">
-                        <Identicon
-                          :key="parsedExtrinsic.signer"
-                          :address="parsedExtrinsic.signer"
-                          :size="20"
-                        />
-                        <nuxt-link
-                          v-b-tooltip.hover
-                          :to="`/account/${parsedExtrinsic.signer}`"
-                          :title="$t('details.block.account_details')"
-                        >
-                          {{ shortAddress(parsedExtrinsic.signer) }}
-                        </nuxt-link>
+                        <div v-if="parsedExtrinsic.signer">
+                          <Identicon
+                            :key="parsedExtrinsic.signer"
+                            :address="parsedExtrinsic.signer"
+                            :size="20"
+                          />
+                          <nuxt-link
+                            v-b-tooltip.hover
+                            :to="`/account/${parsedExtrinsic.signer}`"
+                            :title="$t('details.block.account_details')"
+                          >
+                            {{ shortAddress(parsedExtrinsic.signer) }}
+                          </nuxt-link>
+                        </div>
                       </td>
                     </tr>
                     <tr>
-                      <td>Extrinsic</td>
+                      <td>Section and method</td>
                       <td class="text-right">
                         {{ parsedExtrinsic.section }} ➡
                         {{ parsedExtrinsic.method }}
                       </td>
                     </tr>
                     <tr>
-                      <td>Doc</td>
+                      <td>Documentation</td>
                       <td class="text-right">
                         {{ parsedExtrinsic.doc }}
                       </td>
                     </tr>
                     <tr>
-                      <td>Args</td>
+                      <td>Arguments</td>
                       <td class="text-right break-all">
                         {{ parsedExtrinsic.args }}
                       </td>
