@@ -27,10 +27,12 @@ module.exports = {
         { block },
         extendedHeader,
         finalizedBlockHash,
+        totalIssuance,
       ] = await Promise.all([
         api.rpc.chain.getBlock(blockHash),
         api.derive.chain.getHeader(blockHash),
         api.rpc.chain.getFinalizedHead(),
+        api.query.balances.totalIssuance(),
       ]);
 
       const finalizedBlockHeader = await api.rpc.chain.getHeader(finalizedBlockHash);
@@ -85,6 +87,7 @@ module.exports = {
             state_root,
             total_events,
             total_extrinsics,
+            total_issuance,
             timestamp
           ) VALUES (
             '${blockNumber}',
@@ -97,6 +100,7 @@ module.exports = {
             '${stateRoot}',
             '${totalEvents}',
             '${totalExtrinsics}',
+            '${totalIssuance.toString()}',
             '${timestamp}'
           )
           ON CONFLICT ON CONSTRAINT block_pkey 

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS block (
   state_root TEXT NOT NULL,
   total_events INT NOT NULL,
   total_extrinsics INT NOT NULL,
+  total_issuance BIGINT NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( block_number )  
 );
