@@ -18,6 +18,18 @@
                 <table class="table table-striped">
                   <tbody>
                     <tr>
+                      <td>Created at block</td>
+                      <td class="text-right">
+                        <nuxt-link
+                          v-b-tooltip.hover
+                          :to="`/block?blockNumber=${contract.block_height}`"
+                          title="Check block information"
+                        >
+                          #{{ formatNumber(contract.block_height) }}
+                        </nuxt-link>
+                      </td>
+                    </tr>
+                    <tr>
                       <td>{{ $t('details.contract.signer') }}</td>
                       <td class="text-right">
                         <Identicon
