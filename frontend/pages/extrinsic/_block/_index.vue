@@ -44,13 +44,33 @@
                     <tr>
                       <td>Signed?</td>
                       <td class="text-right">
-                        {{ parsedExtrinsic.is_signed }}
+                        <font-awesome-icon
+                          v-if="parsedExtrinsic.is_signed"
+                          icon="check"
+                          class="text-success"
+                        />
+                        <font-awesome-icon
+                          v-else
+                          icon="times"
+                          class="text-danger"
+                        />
                       </td>
                     </tr>
                     <tr>
                       <td>Signer</td>
                       <td class="text-right">
-                        {{ parsedExtrinsic.signer }}
+                        <Identicon
+                          :key="parsedExtrinsic.signer"
+                          :address="parsedExtrinsic.signer"
+                          :size="20"
+                        />
+                        <nuxt-link
+                          v-b-tooltip.hover
+                          :to="`/account/${parsedExtrinsic.signer}`"
+                          :title="$t('details.block.account_details')"
+                        >
+                          {{ shortAddress(parsedExtrinsic.signer) }}
+                        </nuxt-link>
                       </td>
                     </tr>
                     <tr>
@@ -77,7 +97,7 @@
                       <td class="text-right">
                         <font-awesome-icon
                           v-if="parsedExtrinsic.success"
-                          icon="check-circle"
+                          icon="check"
                           class="text-success"
                         />
                         <font-awesome-icon

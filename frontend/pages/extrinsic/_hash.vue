@@ -52,7 +52,18 @@
                     <tr>
                       <td>Signer</td>
                       <td class="text-right">
-                        {{ parsedExtrinsic.signer }}
+                        <Identicon
+                          :key="parsedExtrinsic.signer"
+                          :address="parsedExtrinsic.signer"
+                          :size="20"
+                        />
+                        <nuxt-link
+                          v-b-tooltip.hover
+                          :to="`/account/${parsedExtrinsic.signer}`"
+                          :title="$t('details.block.account_details')"
+                        >
+                          {{ shortAddress(parsedExtrinsic.signer) }}
+                        </nuxt-link>
                       </td>
                     </tr>
                     <tr>

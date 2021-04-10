@@ -37,7 +37,13 @@
                           :address="contract.signer"
                           :size="20"
                         />
-                        <span>{{ contract.signer }}</span>
+                        <nuxt-link
+                          v-b-tooltip.hover
+                          :to="`/account/${contract.signer}`"
+                          :title="$t('details.block.account_details')"
+                        >
+                          {{ shortAddress(contract.signer) }}
+                        </nuxt-link>
                       </td>
                     </tr>
                     <tr v-if="contract.value">
