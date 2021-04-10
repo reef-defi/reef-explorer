@@ -13,7 +13,11 @@
       "current_session": "Current session",
       "epoch": "Epoch",
       "current_era": "Current era",
-      "era": "Era"
+      "era": "Era",
+      "accounts": "Accounts",
+      "contracts": "Smart Contracts",
+      "total_issuance": "Total issuance",
+      "transfers": "Transfers"
     },
     "chain": {
       "last_block": "Last block",

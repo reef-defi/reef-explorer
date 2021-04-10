@@ -7,12 +7,10 @@
             <h4 class="mb-3">{{ $t('components.network.last_block') }}</h4>
             <nuxt-link
               v-b-tooltip.hover
-              :to="`/block?blockNumber=${lastBlock.block_number}`"
+              :to="`/block?blockNumber=${lastBlock}`"
               title="Click to see block info!"
             >
-              <h6 class="d-inline-block">
-                #{{ formatNumber(lastBlock.block_number) }}
-              </h6>
+              <h6 class="d-inline-block">#{{ formatNumber(lastBlock) }}</h6>
             </nuxt-link>
           </div>
         </div>
@@ -66,6 +64,71 @@
         </div>
       </div>
     </div>
+    <!-- new row -->
+    <div class="row">
+      <div class="col-6 col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h4 class="mb-3">{{ $t('components.network.accounts') }}</h4>
+            <nuxt-link
+              v-b-tooltip.hover
+              to="/accounts"
+              title="Click to see accounts!"
+            >
+              <h6 class="d-inline-block">
+                {{ formatNumber(totalAccounts) }}
+              </h6>
+            </nuxt-link>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h4 class="mb-3">
+              {{ $t('components.network.transfers') }}
+            </h4>
+            <nuxt-link
+              v-b-tooltip.hover
+              to="/tranfers"
+              title="Click to see tranfers!"
+            >
+              <h6 class="d-inline-block">{{ formatNumber(totalTransfers) }}</h6>
+            </nuxt-link>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h4 class="mb-3">
+              {{ $t('components.network.contracts') }}
+            </h4>
+            <nuxt-link
+              v-b-tooltip.hover
+              to="/contracts"
+              title="Click to see contracts!"
+            >
+              <h6 class="d-inline-block">
+                {{ formatNumber(totalContracts) }}
+              </h6>
+            </nuxt-link>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-6 col-lg-3 mb-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <h4 class="mb-3">
+              {{ $t('components.network.total_issuance') }}
+            </h4>
+            <h6 class="d-inline-block">
+              {{ formatAmount(totalIssuance) }}
+            </h6>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -83,6 +146,10 @@ export default {
       lastFinalizedBlock: 0,
       totalExtrinsics: 0,
       totalEvents: 0,
+      totalAccounts: 0,
+      totalContracts: 0,
+      totalIssuance: 0,
+      totalTransfers: 0,
     }
   },
   apollo: {
@@ -92,12 +159,13 @@ export default {
           subscription blocks {
             block(order_by: { block_number: desc }, where: {}, limit: 1) {
               block_number
-              finalized
+              total_issuance
             }
           }
         `,
         result({ data }) {
-          this.lastBlock = data.block[0]
+          this.lastBlock = data.block[0].block_number
+          this.totalIssuance = data.block[0].total_issuance
         },
       },
       finalized: {
@@ -132,6 +200,22 @@ export default {
             data.total.find((row) => row.name === 'transfers').count || 0
           this.totalEvents =
             data.total.find((row) => row.name === 'events').count || 0
+          this.totalContracts =
+            data.total.find((row) => row.name === 'contracts').count || 0
+        },
+      },
+      accounts: {
+        query: gql`
+          subscription account_aggregate {
+            account_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalAccounts = parseInt(data.account_aggregate.aggregate.count)
         },
       },
     },
