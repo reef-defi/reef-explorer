@@ -90,7 +90,7 @@
             </h4>
             <nuxt-link
               v-b-tooltip.hover
-              to="/tranfers"
+              to="/transfers"
               title="Click to see tranfers!"
             >
               <h6 class="d-inline-block">{{ formatNumber(totalTransfers) }}</h6>
