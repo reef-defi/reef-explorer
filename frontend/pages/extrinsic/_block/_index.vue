@@ -14,104 +14,7 @@
               <h4 class="text-center mb-4">
                 Extrinsic {{ blockNumber }}-{{ extrinsicIndex }}
               </h4>
-              <div class="table-responsive pb-4">
-                <table class="table table-striped extrinsic-table">
-                  <tbody>
-                    <tr>
-                      <td>Block number</td>
-                      <td class="text-right">
-                        <nuxt-link
-                          v-b-tooltip.hover
-                          :to="`/block?blockNumber=${blockNumber}`"
-                          title="Check block information"
-                        >
-                          #{{ formatNumber(blockNumber) }}
-                        </nuxt-link>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Extrinsic index</td>
-                      <td class="text-right">
-                        {{ parsedExtrinsic.extrinsic_index }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Extrinsic hash</td>
-                      <td class="text-right">
-                        {{ parsedExtrinsic.hash }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Signed?</td>
-                      <td class="text-right">
-                        <font-awesome-icon
-                          v-if="parsedExtrinsic.is_signed"
-                          icon="check"
-                          class="text-success"
-                        />
-                        <font-awesome-icon
-                          v-else
-                          icon="times"
-                          class="text-danger"
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Signer</td>
-                      <td class="text-right">
-                        <div v-if="parsedExtrinsic.signer">
-                          <Identicon
-                            :key="parsedExtrinsic.signer"
-                            :address="parsedExtrinsic.signer"
-                            :size="20"
-                          />
-                          <nuxt-link
-                            v-b-tooltip.hover
-                            :to="`/account/${parsedExtrinsic.signer}`"
-                            :title="$t('details.block.account_details')"
-                          >
-                            {{ shortAddress(parsedExtrinsic.signer) }}
-                          </nuxt-link>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Section and method</td>
-                      <td class="text-right">
-                        {{ parsedExtrinsic.section }} ➡
-                        {{ parsedExtrinsic.method }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Documentation</td>
-                      <td class="text-right">
-                        {{ parsedExtrinsic.doc }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Arguments</td>
-                      <td class="text-right break-all">
-                        {{ parsedExtrinsic.args }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Success</td>
-                      <td class="text-right">
-                        <font-awesome-icon
-                          v-if="parsedExtrinsic.success"
-                          icon="check"
-                          class="text-success"
-                        />
-                        <font-awesome-icon
-                          v-else
-                          icon="times"
-                          class="text-danger"
-                        />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <Extrinsic :extrinsic="parsedExtrinsic" />
             </div>
           </div>
         </template>
@@ -155,16 +58,6 @@ export default {
       this.extrinsicIndex = this.$route.params.index
     },
   },
-  methods: {
-    getDateFromTimestamp(timestamp) {
-      if (timestamp === 0) {
-        return `--`
-      }
-      const newDate = new Date()
-      newDate.setTime(timestamp * 1000)
-      return newDate.toUTCString()
-    },
-  },
   apollo: {
     extrinsic: {
       query: gql`
@@ -184,7 +77,10 @@ export default {
             args
             hash
             doc
+            fee_info
+            fee_details
             success
+            timestamp
           }
         }
       `,
