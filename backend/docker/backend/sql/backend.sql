@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS extrinsic (
   args TEXT NOT NULL,
   hash TEXT NOT NULL,
   doc TEXT NOT NULL,
+  fee_info TEXT NOT NULL,
+  fee_details TEXT NOT NULL,
   success BOOLEAN NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( block_number, extrinsic_index ) 

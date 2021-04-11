@@ -115,8 +115,10 @@ module.exports = {
 
         // Store block extrinsics
         await storeExtrinsics(
+          api,
           pool,
           blockNumber,
+          blockHash,
           block.extrinsics,
           blockEvents,
           timestamp,

@@ -9,7 +9,16 @@ module.exports = {
   wait: async (ms) => new Promise((resolve) => {
     setTimeout(resolve, ms);
   }),
-  storeExtrinsics: async (pool, blockNumber, extrinsics, blockEvents, timestamp, loggerOptions) => {
+  storeExtrinsics: async (
+    api,
+    pool,
+    blockNumber,
+    blockHash,
+    extrinsics,
+    blockEvents,
+    timestamp,
+    loggerOptions,
+  ) => {
     const startTime = new Date().getTime();
     extrinsics.forEach(async (extrinsic, index) => {
       const { isSigned } = extrinsic;
@@ -19,6 +28,19 @@ module.exports = {
       const args = JSON.stringify(extrinsic.args);
       const hash = extrinsic.hash.toHex();
       const doc = extrinsic.meta.documentation.toString().replace(/'/g, "''");
+
+      // fees
+      const feeInfo = isSigned
+        ? JSON.stringify(
+          (await api.rpc.payment.queryInfo(extrinsic.toHex(), blockHash)).toJSON(),
+        )
+        : '';
+      const feeDetails = isSigned
+        ? JSON.stringify(
+          (await api.rpc.payment.queryFeeDetails(extrinsic.toHex(), blockHash)).toJSON(),
+        )
+        : '';
+
       const success = module.exports.getExtrinsicSuccess(index, blockEvents);
       const sql = `INSERT INTO extrinsic (
           block_number,
@@ -30,6 +52,8 @@ module.exports = {
           args,
           hash,
           doc,
+          fee_info,
+          fee_details,
           success,
           timestamp
         ) VALUES (
@@ -42,6 +66,8 @@ module.exports = {
           '${args}',
           '${hash}',
           '${doc}',
+          '${feeInfo}',
+          '${feeDetails}',
           '${success}',
           '${timestamp}'
         )
