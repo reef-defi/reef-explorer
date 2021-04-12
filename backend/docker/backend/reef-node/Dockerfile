@@ -1,4 +1,4 @@
-ARG RELEASE="testnet-3"
+ARG RELEASE=testnet-3
 
 FROM phusion/baseimage:master-amd64
 
