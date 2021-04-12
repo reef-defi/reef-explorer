@@ -2,7 +2,7 @@
 const pino = require('pino');
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 const { Pool } = require('pg');
-const types = require('./types.json');
+const types = require('./assets/types.json');
 const { wait } = require('./utils.js');
 
 const logger = pino();

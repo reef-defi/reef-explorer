@@ -2,7 +2,7 @@
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 const { zip } = require('lodash');
 const pino = require('pino');
-const types = require('../types.json');
+const types = require('../assets/types.json');
 const { wait } = require('../utils.js');
 
 const DEFAULT_POLLING_TIME_MS = 1 * 60 * 1000;

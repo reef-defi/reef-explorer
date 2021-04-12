@@ -1,5 +1,5 @@
 const config = require('./backend.config.js');
-const Backend = require('./lib/Backend.js');
+const Backend = require('./src/Backend.js');
 
 async function main() {
   const backend = new Backend(config);
@@ -7,6 +7,7 @@ async function main() {
 }
 
 main().catch((error) => {
+  // eslint-disable-next-line no-console
   console.error(error);
   process.exit(-1);
 });

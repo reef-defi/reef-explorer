@@ -1,7 +1,7 @@
 // @ts-check
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 const pino = require('pino');
-const types = require('../types.json');
+const types = require('../assets/types.json');
 const {
   shortHash, storeExtrinsics, getDisplayName, updateTotals,
 } = require('../utils.js');
