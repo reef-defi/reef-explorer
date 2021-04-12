@@ -14,12 +14,12 @@ module.exports = {
     {
       enabled: !process.env.CRAWLER_BLOCK_LISTENER_DISABLE,
       // eslint-disable-next-line global-require
-      module: require('./lib/crawlers/blockListener'),
+      module: require('./src/crawlers/blockListener'),
     },
     {
       enabled: !process.env.CRAWLER_BLOCK_HARVESTER_DISABLE,
       // eslint-disable-next-line global-require
-      module: require('./lib/crawlers/blockHarvester'),
+      module: require('./src/crawlers/blockHarvester'),
       config: {
         startDelay: 60 * 1000,
         pollingTime:
@@ -30,7 +30,7 @@ module.exports = {
     {
       enabled: !process.env.CRAWLER_ACTIVE_ACCOUNTS_DISABLE,
       // eslint-disable-next-line global-require
-      module: require('./lib/crawlers/activeAccounts'),
+      module: require('./src/crawlers/activeAccounts'),
       config: {
         startDelay: 30 * 1000,
         pollingTime:
