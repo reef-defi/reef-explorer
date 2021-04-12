@@ -12,11 +12,22 @@
           <div class="card mb-4">
             <div class="card-body">
               <h4 class="text-center mb-4">
-                {{ contractId }}
+                <span v-if="contract.name">
+                  {{ contract.name }}
+                </span>
+                <span v-else>
+                  {{ contractId }}
+                </span>
               </h4>
               <div class="table-responsive pb-4">
                 <table class="table table-striped">
                   <tbody>
+                    <tr>
+                      <td>Contract address</td>
+                      <td class="text-right">
+                        {{ contractId }}
+                      </td>
+                    </tr>
                     <tr>
                       <td>Created at block</td>
                       <td class="text-right">
@@ -32,18 +43,20 @@
                     <tr>
                       <td>{{ $t('details.contract.signer') }}</td>
                       <td class="text-right">
-                        <Identicon
-                          :key="contract.signer"
-                          :address="contract.signer"
-                          :size="20"
-                        />
-                        <nuxt-link
-                          v-b-tooltip.hover
-                          :to="`/account/${contract.signer}`"
-                          :title="$t('details.block.account_details')"
-                        >
-                          {{ shortAddress(contract.signer) }}
-                        </nuxt-link>
+                        <div v-if="contract.signer">
+                          <Identicon
+                            :key="contract.signer"
+                            :address="contract.signer"
+                            :size="20"
+                          />
+                          <nuxt-link
+                            v-b-tooltip.hover
+                            :to="`/account/${contract.signer}`"
+                            :title="$t('details.block.account_details')"
+                          >
+                            {{ shortAddress(contract.signer) }}
+                          </nuxt-link>
+                        </div>
                       </td>
                     </tr>
                     <tr v-if="contract.value">
@@ -114,6 +127,8 @@ export default {
         query contract($contract_id: String!) {
           contract(where: { contract_id: { _eq: $contract_id } }) {
             contract_id
+            name
+            bytecode
             init
             value
             gas_limit

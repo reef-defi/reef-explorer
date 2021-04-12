@@ -41,6 +41,17 @@
                     </nuxt-link>
                   </p>
                 </template>
+                <template #cell(name)="data">
+                  <p class="mb-0">
+                    <nuxt-link
+                      v-b-tooltip.hover
+                      :to="`/contract/${data.item.contract_id}`"
+                      title="Check contract information"
+                    >
+                      {{ data.item.name }}
+                    </nuxt-link>
+                  </p>
+                </template>
                 <template #cell(contract_id)="data">
                   <p class="mb-0">
                     <nuxt-link
@@ -135,6 +146,11 @@ export default {
           sortable: true,
         },
         {
+          key: 'name',
+          label: 'Name',
+          sortable: true,
+        },
+        {
           key: 'contract_id',
           label: 'Contract address',
           sortable: true,
@@ -164,6 +180,8 @@ export default {
               order_by: { block_height: desc }
             ) {
               contract_id
+              name
+              bytecode
               init
               value
               gas_limit
