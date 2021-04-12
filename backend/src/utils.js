@@ -1,5 +1,6 @@
 // @ts-check
 const pino = require('pino');
+const genesisContracts = require('./assets/bytecodes.json');
 
 const logger = pino();
 
@@ -91,12 +92,16 @@ module.exports = {
           ),
         ).event.data[0];
         // https://reefscan.com/block/?blockNumber=118307
+        const name = ''; // TODO: match bytecode with stored contracts to get name
+        const bytecode = extrinsic.args[0]; // TODO: figure out if this is correct
         const init = extrinsic.args[0];
         const value = extrinsic.args[1];
         const gasLimit = extrinsic.args[2];
         const storageLimit = extrinsic.args[3];
         const contractSql = `INSERT INTO contract (
           contract_id,
+          name,
+          bytecode,
           init,
           value,
           gas_limit,
@@ -106,6 +111,8 @@ module.exports = {
           timestamp
         ) VALUES (
           '${contractId}',
+          '${name}',
+          '${bytecode}',
           '${init}',
           '${value}',
           '${gasLimit}',
@@ -171,6 +178,58 @@ module.exports = {
       await pool.query(sql);
     } catch (error) {
       logger.error(loggerOptions, `Error updating total harvested blocks, extrinsics and events: ${error}`);
+    }
+  },
+  async storeGenesisContracts(api, pool, loggerOptions) {
+    // Get timestamp from block #1, genesis doesn't return timestamp
+    const blockHash = await api.rpc.chain.getBlockHash(1);
+    const timestampMs = await api.query.timestamp.now.at(blockHash);
+    const timestamp = Math.floor(timestampMs / 1000);
+    // eslint-disable-next-line no-restricted-syntax
+    for (const contract of genesisContracts) {
+      const blockNumber = 0;
+      const signer = '';
+      const name = contract[0];
+      const contractId = contract[1];
+      const bytecode = contract[2];
+      const init = bytecode; // TODO: figure out if this is correct
+      const value = '';
+      const gasLimit = '';
+      const storageLimit = '';
+      const contractSql = `INSERT INTO contract (
+        contract_id,
+        name,
+        bytecode,
+        init,
+        value,
+        gas_limit,
+        storage_limit,
+        signer,
+        block_height,
+        timestamp
+      ) VALUES (
+        '${contractId}',
+        '${name}',
+        '${bytecode}',
+        '${init}',
+        '${value}',
+        '${gasLimit}',
+        '${storageLimit}',
+        '${signer}',
+        '${blockNumber}',
+        '${timestamp}'
+      )
+      ON CONFLICT ON CONSTRAINT contract_pkey 
+      DO NOTHING;
+      ;`;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await pool.query(contractSql);
+        // @ts-ignore
+        logger.info(loggerOptions, `Added contract ${name} with address ${contractId} at block #${blockNumber}`);
+      } catch (error) {
+        logger.error(loggerOptions, `Error adding contract ${name} with address ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
+      }
     }
   },
 };

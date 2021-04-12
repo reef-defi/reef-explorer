@@ -3,7 +3,7 @@ const { ApiPromise, WsProvider } = require('@polkadot/api');
 const pino = require('pino');
 const types = require('../assets/types.json');
 const {
-  shortHash, storeExtrinsics, getDisplayName, wait,
+  shortHash, storeExtrinsics, getDisplayName, wait, storeGenesisContracts
 } = require('../utils.js');
 
 const logger = pino();
@@ -18,6 +18,9 @@ module.exports = {
     const startTime = new Date().getTime();
     const wsProvider = new WsProvider(wsProviderUrl);
     const api = await ApiPromise.create({ provider: wsProvider, types });
+
+    logger.info(loggerOptions, 'Storing contracts at genesis...');
+    await storeGenesisContracts(api, pool, loggerOptions);
 
     // Get gaps from block table
     const sqlSelect = `
