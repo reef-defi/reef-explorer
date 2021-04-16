@@ -12,7 +12,7 @@ RUN chmod +x reef-node
 
 WORKDIR /data
 
-RUN wget https://github.com/reef-defi/reef-chain/releases/download/$VERSION/chain_spec.json
+RUN wget https://github.com/reef-defi/reef-chain/releases/download/$VERSION/chain_spec_testnet.json
 
 EXPOSE 30333 9933 9944
 
