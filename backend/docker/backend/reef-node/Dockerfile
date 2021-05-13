@@ -1,6 +1,6 @@
 FROM phusion/baseimage:master-amd64
 
-ARG VERSION=testnet-4
+ARG VERSION=testnet-5
 
 RUN apt-get update && apt-get install wget -y
 
