@@ -268,44 +268,46 @@ export default {
     },
   },
   apollo: {
-    account: {
-      query: gql`
-        query account($account_id: String!) {
-          account(where: { account_id: { _eq: $account_id } }) {
-            account_id
-            balances
-            available_balance
-            free_balance
-            locked_balance
-            nonce
-            block_height
-            identity
-            timestamp
+    $subscribe: {
+      account: {
+        query: gql`
+          subscription account($account_id: String!) {
+            account(where: { account_id: { _eq: $account_id } }) {
+              account_id
+              balances
+              available_balance
+              free_balance
+              locked_balance
+              nonce
+              block_height
+              identity
+              timestamp
+            }
           }
-        }
-      `,
-      variables() {
-        return {
-          account_id: this.accountId,
-        }
-      },
-      result({ data }) {
-        if (data.account[0]) {
-          this.parsedAccount = {
-            accountId: data.account[0].account_id,
-            availableBalance: data.account[0].available_balance,
-            freeBalance: data.account[0].free_balance,
-            lockedBalance: data.account[0].locked_balance,
-            balances: JSON.parse(data.account[0].balances),
-            nonce: data.account[0].nonce,
-            identity:
-              data.account[0].identity !== ``
-                ? JSON.parse(data.account[0].identity)
-                : {},
-            timestamp: data.account[0].timestamp,
+        `,
+        variables() {
+          return {
+            account_id: this.accountId,
           }
-        }
-        this.loading = false
+        },
+        result({ data }) {
+          if (data.account[0]) {
+            this.parsedAccount = {
+              accountId: data.account[0].account_id,
+              availableBalance: data.account[0].available_balance,
+              freeBalance: data.account[0].free_balance,
+              lockedBalance: data.account[0].locked_balance,
+              balances: JSON.parse(data.account[0].balances),
+              nonce: data.account[0].nonce,
+              identity:
+                data.account[0].identity !== ``
+                  ? JSON.parse(data.account[0].identity)
+                  : {},
+              timestamp: data.account[0].timestamp,
+            }
+          }
+          this.loading = false
+        },
       },
     },
   },
