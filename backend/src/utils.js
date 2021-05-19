@@ -30,7 +30,7 @@ module.exports = {
     blockEvents
       .forEach(({ event }) => {
         event.data.forEach((arg) => {
-          if (this.isValidAddressPolkadotAddress(arg)) {
+          if (module.exports.isValidAddressPolkadotAddress(arg)) {
             involvedAddresses.push(arg);
           }
         });
