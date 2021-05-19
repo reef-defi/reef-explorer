@@ -24,7 +24,7 @@ module.exports = {
       return false;
     }
   },
-  updateBalances: async (api, pool, block, timestamp, loggerOptions, addresses) => {
+  updateBalances: async (api, pool, blockNumber, timestamp, loggerOptions, addresses) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const address of addresses) {
       // eslint-disable-next-line no-await-in-loop
@@ -41,7 +41,7 @@ module.exports = {
       const nonce = balances.accountNonce.toString();
       const sql = `
         INSERT INTO   account (account_id, identity, identity_display, identity_display_parent, balances, available_balance, free_balance, locked_balance, nonce, timestamp, block_height)
-        VALUES        ('${address}', '${JSONIdentity}', '${identityDisplay}', '${identityDisplayParent}', '${JSONbalances}', '${availableBalance}', '${freeBalance}', '${lockedBalance}', '${nonce}', '${timestamp}', '${block}')
+        VALUES        ('${address}', '${JSONIdentity}', '${identityDisplay}', '${identityDisplayParent}', '${JSONbalances}', '${availableBalance}', '${freeBalance}', '${lockedBalance}', '${nonce}', '${timestamp}', '${blockNumber}')
         ON CONFLICT   (account_id)
         DO UPDATE
         SET           identity = EXCLUDED.identity,

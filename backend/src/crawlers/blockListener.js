@@ -141,7 +141,7 @@ module.exports = {
             });
           });
         logger.info(loggerOptions, `Block #${blockNumber} involved addresses: ${involvedAddresses.join(', ')}`);
-        await updateBalances(api, pool, block, timestamp, loggerOptions, involvedAddresses);
+        await updateBalances(api, pool, blockNumber, timestamp, loggerOptions, involvedAddresses);
 
         // Loop through the Vec<EventRecord>
         await blockEvents.forEach(async (record, index) => {
