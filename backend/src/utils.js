@@ -58,20 +58,25 @@ module.exports = {
         ON CONFLICT   (account_id)
         DO UPDATE
         SET           identity = EXCLUDED.identity,
+                      identity_display = EXCLUDED.identity_display,
+                      identity_display_parent = EXCLUDED.identity_display_parent,
                       balances = EXCLUDED.balances,
                       available_balance = EXCLUDED.available_balance,
                       free_balance = EXCLUDED.free_balance,
+                      locked_balance = EXCLUDED.locked_balance,
+                      nonce = EXCLUDED.nonce,
                       timestamp = EXCLUDED.timestamp,
                       block_height = EXCLUDED.block_height;
       `;
       try {
         // eslint-disable-next-line no-await-in-loop
         await pool.query(sql);
+        logger.error(loggerOptions, `New balances for address ${address}: available: ${availableBalance}, free: ${freeBalance}, locked: ${lockedBalance}`);
       } catch (error) {
         logger.error(loggerOptions, `Error updating balances for involved address: ${JSON.stringify(error)}`);
       }
     }
-    logger.info(loggerOptions, `Updated balances of addresses: (${uniqueAddresses.join(', ')}`);
+    logger.info(loggerOptions, `Updated balances of addresses: ${uniqueAddresses.join(', ')}`);
   },
   storeExtrinsics: async (
     api,
