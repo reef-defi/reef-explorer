@@ -135,14 +135,14 @@ module.exports = {
         blockEvents
           .forEach(({ event }) => {
             event.data.forEach((arg) => {
-              if (isValidAddressPolkadotAddress(arg) {
-                involvedAddresses.push(arg)
+              if (isValidAddressPolkadotAddress(arg)) {
+                involvedAddresses.push(arg);
               }
             });
           });
         logger.info(loggerOptions, `Block #${blockNumber} involved addresses: ${involvedAddresses.join(', ')}`);
         await updateBalances(api, pool, block, timestamp, loggerOptions, involvedAddresses);
-        
+
         // Loop through the Vec<EventRecord>
         await blockEvents.forEach(async (record, index) => {
           // Extract the phase and event
