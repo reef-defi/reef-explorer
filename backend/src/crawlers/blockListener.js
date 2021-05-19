@@ -1,6 +1,7 @@
 // @ts-check
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 const pino = require('pino');
+const _ = require('lodash');
 const types = require('../assets/types.json');
 const {
   shortHash,
@@ -130,7 +131,7 @@ module.exports = {
           loggerOptions,
         );
 
-        // Get involved addresses from block events to update balances
+        // Get involved addresses from block events and update its balances
         const involvedAddresses = [];
         blockEvents
           .forEach(({ event }) => {
@@ -141,7 +142,14 @@ module.exports = {
             });
           });
         logger.info(loggerOptions, `Block #${blockNumber} involved addresses: ${involvedAddresses.join(', ')}`);
-        await updateBalances(api, pool, blockNumber, timestamp, loggerOptions, involvedAddresses);
+        await updateBalances(
+          api,
+          pool,
+          blockNumber,
+          timestamp,
+          loggerOptions,
+          _.uniq(involvedAddresses),
+        );
 
         // Loop through the Vec<EventRecord>
         await blockEvents.forEach(async (record, index) => {
