@@ -8,7 +8,6 @@ const {
   storeExtrinsics,
   getDisplayName,
   updateTotals,
-  isValidAddressPolkadotAddress,
   updateBalances,
 } = require('../utils.js');
 
