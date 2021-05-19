@@ -41,8 +41,8 @@ module.exports = {
     for (const address of uniqueAddresses) {
       // eslint-disable-next-line no-await-in-loop
       const [balances, { identity }] = await Promise.all([
-        api.derive.accounts.info(address),
         api.derive.balances.all(address),
+        api.derive.accounts.info(address),
       ]);
       const availableBalance = balances.availableBalance.toString();
       const freeBalance = balances.freeBalance.toString();
