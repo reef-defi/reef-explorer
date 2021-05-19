@@ -132,23 +132,13 @@ module.exports = {
         );
 
         // Get involved addresses from block events and update its balances
-        const involvedAddresses = [];
-        blockEvents
-          .forEach(({ event }) => {
-            event.data.forEach((arg) => {
-              if (isValidAddressPolkadotAddress(arg)) {
-                involvedAddresses.push(arg);
-              }
-            });
-          });
-        logger.info(loggerOptions, `Block #${blockNumber} involved addresses: ${involvedAddresses.join(', ')}`);
         await updateBalances(
           api,
           pool,
           blockNumber,
           timestamp,
           loggerOptions,
-          _.uniq(involvedAddresses),
+          blockEvents,
         );
 
         // Loop through the Vec<EventRecord>

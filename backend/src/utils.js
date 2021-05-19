@@ -2,6 +2,7 @@
 const pino = require('pino');
 const { decodeAddress, encodeAddress } = require('@polkadot/keyring');
 const { hexToU8a, isHex } = require('@polkadot/util');
+const _ = require('lodash');
 const genesisContracts = require('./assets/bytecodes.json');
 
 const logger = pino();
@@ -24,13 +25,25 @@ module.exports = {
       return false;
     }
   },
-  updateBalances: async (api, pool, blockNumber, timestamp, loggerOptions, addresses) => {
+  updateBalances: async (api, pool, blockNumber, timestamp, loggerOptions, blockEvents) => {
+    const involvedAddresses = [];
+    blockEvents
+      .forEach(({ event }) => {
+        event.data.forEach((arg) => {
+          if (this.isValidAddressPolkadotAddress(arg)) {
+            involvedAddresses.push(arg);
+          }
+        });
+      });
+    const uniqueAddresses = _.uniq(involvedAddresses);
+    logger.info(loggerOptions, `Block #${blockNumber} involved addresses: ${uniqueAddresses.join(', ')}`);
     // eslint-disable-next-line no-restricted-syntax
-    for (const address of addresses) {
+    for (const address of uniqueAddresses) {
       // eslint-disable-next-line no-await-in-loop
-      const balances = await api.derive.balances.all(address);
-      // eslint-disable-next-line no-await-in-loop
-      const { identity } = await api.derive.accounts.info(address);
+      const [balances, { identity }] = await Promise.all([
+        api.derive.accounts.info(address),
+        api.derive.balances.all(address),
+      ]);
       const availableBalance = balances.availableBalance.toString();
       const freeBalance = balances.freeBalance.toString();
       const lockedBalance = balances.lockedBalance.toString();
@@ -54,11 +67,11 @@ module.exports = {
       try {
         // eslint-disable-next-line no-await-in-loop
         await pool.query(sql);
-        logger.info(loggerOptions, `Updated balances of addresses: (${addresses.join(', ')}`);
       } catch (error) {
-        logger.error(loggerOptions, `Error updating balances for involved addresses: ${JSON.stringify(error)}`);
+        logger.error(loggerOptions, `Error updating balances for involved address: ${JSON.stringify(error)}`);
       }
     }
+    logger.info(loggerOptions, `Updated balances of addresses: (${addresses.join(', ')}`);
   },
   storeExtrinsics: async (
     api,
