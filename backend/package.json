@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@polkadot/api": "^4.9.2",
+    "@polkadot/keyring": "^6.4.1",
+    "@polkadot/util": "^6.4.1",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "dotenv": "^8.2.0",
