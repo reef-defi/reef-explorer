@@ -3,7 +3,11 @@ const { ApiPromise, WsProvider } = require('@polkadot/api');
 const pino = require('pino');
 const types = require('../assets/types.json');
 const {
-  shortHash, storeExtrinsics, getDisplayName, updateTotals,
+  shortHash,
+  storeExtrinsics,
+  getDisplayName,
+  updateTotals,
+  isValidAddressPolkadotAddress,
 } = require('../utils.js');
 
 const logger = pino();
@@ -125,6 +129,18 @@ module.exports = {
           loggerOptions,
         );
 
+        // Get involved addresses from block events to update balances
+        const involvedAddresses = [];
+        blockEvents
+          .forEach(({ event }) => {
+            event.data.forEach((arg) => {
+              if (isValidAddressPolkadotAddress(arg) {
+                involvedAddresses.push(arg)
+              }
+            });
+          });
+        logger.info(loggerOptions, `Block #${blockNumber} involved addresses: ${involvedAddresses.join(', ')}`);
+        
         // Loop through the Vec<EventRecord>
         await blockEvents.forEach(async (record, index) => {
           // Extract the phase and event
@@ -133,7 +149,6 @@ module.exports = {
           let sql = `SELECT FROM event WHERE block_number = '${blockNumber}' AND event_index = '${index}';`;
           // eslint-disable-next-line
           let res = await pool.query(sql);
-
           if (res.rows.length === 0) {
             sql = `INSERT INTO event (
                 block_number,

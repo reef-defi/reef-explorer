@@ -1,5 +1,7 @@
 // @ts-check
 const pino = require('pino');
+const { decodeAddress, encodeAddress } = require('@polkadot/keyring');
+const { hexToU8a, isHex } = require('@polkadot/util');
 const genesisContracts = require('./assets/bytecodes.json');
 
 const logger = pino();
@@ -10,6 +12,18 @@ module.exports = {
   wait: async (ms) => new Promise((resolve) => {
     setTimeout(resolve, ms);
   }),
+  isValidAddressPolkadotAddress: (address) => {
+    try {
+      encodeAddress(
+        isHex(address)
+          ? hexToU8a(address.toString())
+          : decodeAddress(address),
+      );
+      return true;
+    } catch (error) {
+      return false;
+    }
+  },
   storeExtrinsics: async (
     api,
     pool,
