@@ -1,7 +1,6 @@
 // @ts-check
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 const pino = require('pino');
-const _ = require('lodash');
 const types = require('../assets/types.json');
 const {
   shortHash,
