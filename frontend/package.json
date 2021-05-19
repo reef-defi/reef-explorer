@@ -30,6 +30,8 @@
     "@nuxtjs/apollo": "^4.0.1-rc.5",
     "@nuxtjs/axios": "^5.12.5",
     "@nuxtjs/fontawesome": "^1.1.2",
+    "@polkadot/keyring": "^6.4.1",
+    "@polkadot/util": "^6.4.1",
     "@polkadot/vue-identicon": "^0.68.1",
     "bootstrap": "^4.5.3",
     "bootstrap-vue": "^2.21.2",
