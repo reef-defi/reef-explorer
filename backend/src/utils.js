@@ -24,6 +24,42 @@ module.exports = {
       return false;
     }
   },
+  updateBalances: async (api, pool, block, timestamp, loggerOptions, addresses) => {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const address of addresses) {
+      // eslint-disable-next-line no-await-in-loop
+      const balances = await api.derive.balances.all(address);
+      // eslint-disable-next-line no-await-in-loop
+      const { identity } = await api.derive.accounts.info(address);
+      const availableBalance = balances.availableBalance.toString();
+      const freeBalance = balances.freeBalance.toString();
+      const lockedBalance = balances.lockedBalance.toString();
+      const identityDisplay = identity.display ? identity.display.toString() : '';
+      const identityDisplayParent = identity.displayParent ? identity.displayParent.toString() : '';
+      const JSONIdentity = identity.display ? JSON.stringify(identity) : '';
+      const JSONbalances = JSON.stringify(balances);
+      const nonce = balances.accountNonce.toString();
+      const sql = `
+        INSERT INTO   account (account_id, identity, identity_display, identity_display_parent, balances, available_balance, free_balance, locked_balance, nonce, timestamp, block_height)
+        VALUES        ('${address}', '${JSONIdentity}', '${identityDisplay}', '${identityDisplayParent}', '${JSONbalances}', '${availableBalance}', '${freeBalance}', '${lockedBalance}', '${nonce}', '${timestamp}', '${block}')
+        ON CONFLICT   (account_id)
+        DO UPDATE
+        SET           identity = EXCLUDED.identity,
+                      balances = EXCLUDED.balances,
+                      available_balance = EXCLUDED.available_balance,
+                      free_balance = EXCLUDED.free_balance,
+                      timestamp = EXCLUDED.timestamp,
+                      block_height = EXCLUDED.block_height;
+      `;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await pool.query(sql);
+        logger.info(loggerOptions, `Updated balances of addresses: (${addresses.join(', ')}`);
+      } catch (error) {
+        logger.error(loggerOptions, `Error updating balances for involved addresses: ${JSON.stringify(error)}`);
+      }
+    }
+  },
   storeExtrinsics: async (
     api,
     pool,
