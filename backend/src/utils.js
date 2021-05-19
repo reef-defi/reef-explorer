@@ -71,7 +71,7 @@ module.exports = {
         logger.error(loggerOptions, `Error updating balances for involved address: ${JSON.stringify(error)}`);
       }
     }
-    logger.info(loggerOptions, `Updated balances of addresses: (${addresses.join(', ')}`);
+    logger.info(loggerOptions, `Updated balances of addresses: (${uniqueAddresses.join(', ')}`);
   },
   storeExtrinsics: async (
     api,
