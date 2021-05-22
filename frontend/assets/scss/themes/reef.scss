@@ -138,6 +138,11 @@ h1 {
 .break-all {
   word-break: break-all;
 }
+.fiat {
+  color: $primary2;
+  font-weight: 100;
+  text-decoration: none !important;
+}
 
 // footer
 .footer {

@@ -7,6 +7,16 @@
           <span class="explorer">SCAN</span>
         </nuxt-link>
       </b-navbar-brand>
+      <a
+        v-if="network.coinGeckoDenom"
+        :href="`https://www.coingecko.com/en/coins/${network.coinGeckoDenom}`"
+        target="_blank"
+        class="fiat mh-2"
+      >
+        <strong>{{ network.tokenSymbol }}</strong> ${{ USDConversion }} ({{
+          USD24hChange
+        }}%)
+      </a>
       <b-navbar-toggle target="nav-collapse" />
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="ml-auto">
@@ -40,6 +50,25 @@ export default {
   data() {
     return {
       network,
+    }
+  },
+  computed: {
+    USDConversion() {
+      return parseFloat(this.$store.state.fiat.usd).toFixed(2)
+    },
+    USD24hChange() {
+      return this.$store.state.fiat.usd_24h_change
+        ? parseFloat(this.$store.state.fiat.usd_24h_change).toFixed(2)
+        : 0
+    },
+  },
+  created() {
+    // Refresh fiat conversion values every minute
+    if (this.network.coinGeckoDenom) {
+      this.$store.dispatch('fiat/update')
+      setInterval(() => {
+        this.$store.dispatch('fiat/update')
+      }, 60000)
     }
   },
 }
