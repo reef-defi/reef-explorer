@@ -1,10 +1,10 @@
 export const network = {
   id: 'reef',
-  name: 'Reef Mainnet 1',
+  name: 'Reef Testnet 5',
   tokenSymbol: 'REEF',
   tokenDecimals: 18,
   ss58Format: 42,
-  coinGeckoDenom: 'reef',
+  coinGeckoDenom: undefined,
   nodeWs: 'wss://rpc-mainnet.reefscan.com/ws',
   backendWs: 'wss://reefscan.com/api/v3',
   backendHttp: 'https://reefscan.com/api/v3',
