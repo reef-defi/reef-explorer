@@ -5,9 +5,9 @@ services:
   # reef node
   #
   substrate-node:
-    image: reef-node/latest
+    image: reef-node-mainnet/latest
     hostname: substrate-node
-    build: ./reef-node
+    build: ./reef-node-mainnet
     volumes:
       - 'substrate-data:/data'
     ports:
