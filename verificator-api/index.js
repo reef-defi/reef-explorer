@@ -7,7 +7,8 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 
-const secret = '6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU';
+// recaptcha
+const secret = '';
 
 const app = express();
 
