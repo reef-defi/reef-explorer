@@ -74,9 +74,31 @@ CREATE TABLE IF NOT EXISTS contract  (
   gas_limit TEXT NOT NULL,
   storage_limit TEXT NOT NULL,
   signer TEXT NOT NULL,
-  block_height BIGINT NOT NULL, 
+  block_height BIGINT NOT NULL,
+  verified BOOLEAN DEFAULT FALSE,
+  source TEXT DEFAULT NULL,
+  compilerVersion TEXT DEFAULT NULL,
+  optimization BOOLEAN DEFAULT NULL,
+  runs INT DEFAULT NULL,
+  target TEXT DEFAULT NULL,
+  abi TEXT DEFAULT NULL,
+  license TEXT DEFAULT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( contract_id )  
+);
+
+CREATE TABLE IF NOT EXISTS contract_verification_request  (
+  id TEXT NOT NULL,
+  contract_id TEXT NOT NULL,
+  source TEXT NOT NULL,
+  compilerVersion TEXT NOT NULL,
+  optimization BOOLEAN NOT NULL,
+  runs INT NOT NULL,
+  target TEXT NOT NULL,
+  license TEXT NOT NULL,
+  status TEXT NOT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( id )  
 );
 
 CREATE TABLE IF NOT EXISTS total (  
