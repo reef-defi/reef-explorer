@@ -30,7 +30,6 @@
                 drop-placeholder="Drop contract source file here..."
                 :state="validateState('source')"
                 aria-describedby="source-help"
-                @change="handleFileUpload"
               ></b-form-file>
               <b-form-text id="source-help">
                 Contract source file should be combined in one file using
@@ -44,6 +43,14 @@
                   >solidity-flattener</a
                 >
               </b-form-text>
+              <b-progress
+                v-show="uploadPercentage > 0 && uploadPercentage !== 100"
+                striped
+                animated
+                :max="100"
+                class="mt-3"
+                :value="uploadPercentage"
+              ></b-progress>
             </b-form-group>
             <b-form-group
               id="input-group-address"
@@ -157,6 +164,7 @@ export default {
   data() {
     return {
       source: null,
+      uploadPercentage: 0,
       address: '',
       compilerVersion: null,
       nightly: true,
@@ -3946,10 +3954,8 @@ export default {
       }
       try {
         const token = await this.$recaptcha.getResponse()
-        // eslint-disable-next-line no-console
-        console.log('ReCaptcha token:', token)
 
-        // send token to server alongside your form data
+        // debug
         const data = {
           token,
           source: this.source,
@@ -3963,16 +3969,39 @@ export default {
         // eslint-disable-next-line no-console
         console.log(JSON.stringify(data, null, 2))
 
+        // call verificator-api
+        const vm = this
+        const formData = new FormData()
+        formData.append('source', vm.source)
+        formData.append('address', vm.address)
+        formData.append('compilerVersion', vm.compilerVersion)
+        formData.append('optimization', vm.optimization)
+        formData.append('runs', vm.runs)
+        formData.append('target', vm.target)
+        formData.append('license', vm.license)
+        formData.append('token', token)
+        this.$axios
+          .post('http://localhost:8000/request', formData, {
+            onUploadProgress(progressEvent) {
+              vm.$emit('uploading')
+              vm.uploadPercentage = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              )
+            },
+          })
+          .then((resp) => vm.$emit('presigned', resp.data))
+          .catch(function (errors) {
+            // eslint-disable-next-line no-console
+            console.log(errors)
+          })
+          .finally((resp) => vm.$emit('done'))
+
         // at the end you need to reset recaptcha
         await this.$recaptcha.reset()
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log('ReCaptcha error:', error)
       }
-    },
-    handleFileUpload() {
-      // https://github.com/toadkicker/uploader-example/blob/master/frontend/components/uploader.vue
-      return true
     },
   },
 }
