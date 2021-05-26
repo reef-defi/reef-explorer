@@ -144,6 +144,7 @@
               ></b-form-select>
             </b-form-group>
             <recaptcha />
+            <verification-status :id="requestId" />
             <b-button type="submit" variant="outline-primary2" class="btn-block"
               >VERIFY CONTRACT</b-button
             >
@@ -159,10 +160,12 @@ import commonMixin from '@/mixins/commonMixin.js'
 import { validationMixin } from 'vuelidate'
 // eslint-disable-next-line no-unused-vars
 import { required, integer, minValue } from 'vuelidate/lib/validators'
+import { network } from '@/frontend.config.js'
 export default {
   mixins: [commonMixin, validationMixin],
   data() {
     return {
+      requestId: null,
       source: null,
       uploadPercentage: 0,
       address: '',
@@ -3953,21 +3956,8 @@ export default {
         return false
       }
       try {
+        // generate recaptcha token
         const token = await this.$recaptcha.getResponse()
-
-        // debug
-        const data = {
-          token,
-          source: this.source,
-          address: this.address,
-          compilerVersion: this.compilerVersion,
-          optimization: this.optimization,
-          runs: this.runs,
-          target: this.target,
-          license: this.license,
-        }
-        // eslint-disable-next-line no-console
-        console.log(JSON.stringify(data, null, 2))
 
         // call verificator-api
         const vm = this
@@ -3981,26 +3971,29 @@ export default {
         formData.append('license', vm.license)
         formData.append('token', token)
         this.$axios
-          .post('http://localhost:8000/request', formData, {
+          .post(network.verificatorApi, formData, {
             onUploadProgress(progressEvent) {
-              vm.$emit('uploading')
               vm.uploadPercentage = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
               )
             },
           })
-          .then((resp) => vm.$emit('presigned', resp.data))
+          .then((resp) => {
+            // eslint-disable-next-line no-console
+            console.log('verification request data uploaded', resp.data)
+            this.requestId = resp.data.id
+          })
           .catch(function (errors) {
             // eslint-disable-next-line no-console
             console.log(errors)
+            this.requestId = null
           })
-          .finally((resp) => vm.$emit('done'))
 
         // at the end you need to reset recaptcha
         await this.$recaptcha.reset()
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.log('ReCaptcha error:', error)
+        console.log('recaptcha error:', error)
       }
     },
   },

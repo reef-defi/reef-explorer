@@ -47,7 +47,7 @@ app.post('/request', async (req, res) => {
           status: true,
           message: 'Received verification request',
           data: {
-            request: hash,
+            id: hash,
             address: req.body.address,
             source: source.name,
             sourceMimetype: source.mimetype,
