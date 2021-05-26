@@ -57,6 +57,8 @@ export default {
     'nuxt-clipboard2',
     // https://www.npmjs.com/package/cookie-universal-nuxt
     ['cookie-universal-nuxt', { alias: 'cookies' }],
+    // https://github.com/nuxt-community/recaptcha-module
+    '@nuxtjs/recaptcha',
   ],
 
   // Module configurations
@@ -91,6 +93,13 @@ export default {
       solid: true,
       regular: true,
     },
+  },
+  recaptcha: {
+    hideBadge: true, // Hide badge element (v3 & v2 via size=invisible)
+    language: 'en', // Recaptcha language (v2)
+    siteKey: '6LfNcPIaAAAAAJgyccwkRP0gmSzmsw0opCuQg76l', // Site key for requests
+    version: 2, // Version
+    size: 'compact', // Size: 'compact', 'normal', 'invisible' (v2)
   },
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)

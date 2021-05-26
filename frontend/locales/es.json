@@ -189,9 +189,12 @@
       "title": "Eventos",
       "search_placeholder": "Buscar por número de bloque"
     },
-    "Contracts": {
+    "contracts": {
       "title": "Contratos",
       "search_placeholder": "Buscar por número de bloque"
+    },
+    "verifyContract": {
+      "title": "Verifica y publica el código fuente de tu contrato"
     }
   },
   "details": {

@@ -192,6 +192,9 @@
     "contracts": {
       "title": "Contracts",
       "search_placeholder": "Search by block number"
+    },
+    "verifyContract": {
+      "title": "Verify & publish contract source code"
     }
   },
   "details": {

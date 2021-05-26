@@ -30,6 +30,7 @@
     "@nuxtjs/apollo": "^4.0.1-rc.5",
     "@nuxtjs/axios": "^5.12.5",
     "@nuxtjs/fontawesome": "^1.1.2",
+    "@nuxtjs/recaptcha": "^1.0.4",
     "@polkadot/keyring": "^6.4.1",
     "@polkadot/util": "^6.4.1",
     "@polkadot/vue-identicon": "^0.68.1",
@@ -42,7 +43,8 @@
     "nuxt-i18n": "^6.18.0",
     "sass": "^1.32.5",
     "sass-loader": "^10.1.1",
-    "vue-json-csv": "^1.2.12"
+    "vue-json-csv": "^1.2.12",
+    "vuelidate": "^0.7.6"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
