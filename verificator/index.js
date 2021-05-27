@@ -36,7 +36,8 @@ const getPendingRequests = async () => {
         compiler_version,
         optimization,
         runs,
-        target
+        target,
+        license
       }
     }`;
   const response = await fetch(nodeRpc, {method: 'POST', body: JSON.stringify({query})});
