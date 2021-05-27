@@ -7,7 +7,14 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { Pool } = require('pg');
-const config = require('../backend/backend.config.js');
+
+const postgresConnParams = {
+  user: process.env.POSTGRES_USER || 'reef',
+  host: process.env.POSTGRES_HOST || 'postgres',
+  database: process.env.POSTGRES_DATABASE || 'reef',
+  password: process.env.POSTGRES_PASSWORD || 'reef',
+  port: process.env.POSTGRES_PORT || 5432,
+},
 
 // Recaptcha
 const secret = process.env.RECAPTCHA_SECRET || '';
@@ -17,7 +24,7 @@ const port = process.env.PORT || 8000;
 
 // Connnect to db
 const getPool = async () => {
-  const pool = new Pool(config.postgresConnParams);
+  const pool = new Pool(postgresConnParams);
   await pool.connect();
   return pool;
 }
