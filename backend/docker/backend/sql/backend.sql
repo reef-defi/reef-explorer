@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS contract  (
   block_height BIGINT NOT NULL,
   verified BOOLEAN DEFAULT FALSE,
   source TEXT DEFAULT NULL,
-  compilerVersion TEXT DEFAULT NULL,
+  compiler_version TEXT DEFAULT NULL,
   optimization BOOLEAN DEFAULT NULL,
   runs INT DEFAULT NULL,
   target TEXT DEFAULT NULL,

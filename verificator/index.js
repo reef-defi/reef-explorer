@@ -2,12 +2,28 @@ const fetch = require('node-fetch');
 let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
+const { Pool } = require('pg');
+const { license } = require('solc');
+const postgresConnParams = {
+  user: process.env.POSTGRES_USER || 'reef',
+  host: process.env.POSTGRES_HOST || 'postgres',
+  database: process.env.POSTGRES_DATABASE || 'reef',
+  password: process.env.POSTGRES_PASSWORD || 'reef',
+  port: process.env.POSTGRES_PORT || 5432,
+};
+
 const loggerOptions = {};
 
 // Configuration
 const nodeRpc = 'https://testnet.reefscan.com/api/v3';
 const contractName = 'Storage';
 const pollingTime = 60 * 1000; // 1min
+
+const getPool = async () => {
+  const pool = new Pool(postgresConnParams);
+  await pool.connect();
+  return pool;
+}
 
 const getPendingRequests = async () => {
   const query = `
@@ -99,7 +115,7 @@ const findBytecode = async (compiler, filename, existingBytecodes, inputs) => {
   return await checkIfContractExists(bytecode, existingBytecodes)
 }
 
-const verify = async (request) => {
+const verify = async (request, pool) => {
   try {
     const {
       id,
@@ -136,12 +152,59 @@ const verify = async (request) => {
     logger.info({ request: id }, `Contract ${contract_id} is ${isVerified ? "verified" : "not verified"}`);
 
     if (isVerified) {
-      // TODO: update request status
-
-      // TODO: insert source code, name, abi, etc in contract and set contract verified = true
+      // Update request status
+      logger.info({ request: id }, `Updating request status`);
+      let sql = `UPDATE contract_verification_request SET status = 'VERIFIED' WHERE id = '${id}';`;
+      try {
+        await pool.query(sql);
+      } catch (error) {
+        logger.info({ request: id }, `Error: ${error}`);
+      }
+      
+      // TODO: extract abi after compilation process
+      const abi = '';
+      
+      // Insert source code, name, abi, etc in contract and set contract verified = true
+      logger.info({ request: id }, `Updating verified contract ${contract_id}`);
+      sql = `UPDATE contract SET
+        name = $1,
+        verified = $2,
+        source = $3,
+        compiler_version = $4,
+        optimization = $5,
+        runs = $6,
+        target = $7,
+        abi = $8,
+        license = $9,
+        WHERE contract_id = $10;
+      `;
+      const data = [
+        contractName, // TODO: get contract name from compilation process
+        isVerified,
+        source,
+        compiler_version,
+        optimization,
+        runs,
+        target,
+        abi,
+        license,
+        contract_id
+      ];
+      try {
+        await pool.query(sql, data);
+      } catch (error) {
+        logger.info({ request: id }, `Db error: ${error}`);
+      }
 
     } else {
-      // TODO: update request status
+      // Update request status
+      logger.info({ request: id }, `Updating request status`);
+      const sql = `UPDATE contract_verification_request SET status = 'ERROR' WHERE id = '${id}';`;
+      try {
+        await pool.query(sql);
+      } catch (error) {
+        logger.info({ request: id }, `Db error: ${error}`);
+      }
     }
 
     // TODO: delete request older than 1 week
@@ -153,10 +216,19 @@ const verify = async (request) => {
 
 const main = async () => {
   logger.info(loggerOptions, `Starting contract verificator`);
+
+  logger.info(loggerOptions, `Connecting to db`);
+  const pool = await getPool();
+
+  logger.info(loggerOptions, `Getting pending requests`);
   const pendingRequests = await getPendingRequests();
   for (request of pendingRequests) {
-    await verify(request);
+    await verify(request, pool);
   }
+
+  logger.info(loggerOptions, `Disconnecting from db`);
+  pool.end();
+
   logger.info(loggerOptions, `Contract verificator finished, sleeping 1min`);
 
   setTimeout(
