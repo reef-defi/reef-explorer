@@ -77,19 +77,31 @@ app.post('/api/verificator/request', async (req, res) => {
           status,
           timestamp
         ) VALUES (
-          '${id}',
-          '${req.body.address}',
-          '${sourceFileContent}',
-          '${req.body.compilerVersion}',
-          '${req.body.optimization}',
-          '${req.body.runs}',
-          '${req.body.target}',
-          '${req.body.license}',
-          'PENDING',
-          '${timestamp}'
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          $9,
+          $10
         );`;
+        const data = [
+          id,
+          req.body.address,
+          sourceFileContent,
+          req.body.compilerVersion,
+          req.body.optimization,
+          req.body.runs,
+          req.body.target,
+          req.body.license,
+          'PENDING',
+          timestamp
+        ];
         try {
-          await pool.query(sql);
+          await pool.query(sql, data);
           res.send({
             status: true,
             message: 'Received verification request',
