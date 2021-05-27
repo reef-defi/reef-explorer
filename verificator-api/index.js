@@ -81,7 +81,7 @@ app.post('/api/verificator/request', async (req, res) => {
           '${req.body.runs}',
           '${req.body.target}',
           '${req.body.license}',
-          '${req.body.status}',
+          'PENDING',
           '${timestamp}'
         );`;
         try {
