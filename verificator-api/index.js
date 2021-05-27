@@ -108,6 +108,7 @@ app.post('/api/verificator/request', async (req, res) => {
             }
           });
         } catch (error) {
+          console.log(error);
           res.send({
             status: false,
             message: 'Database error'
