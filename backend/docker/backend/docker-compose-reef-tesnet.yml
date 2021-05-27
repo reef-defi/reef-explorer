@@ -77,6 +77,8 @@ services:
   #
   crawler:
     image: verificator-api:latest
+    ports:
+      - '8000:8000'
     build:
       context: ../../../verificator-api
       dockerfile: ./docker/backend/verificator-api/Dockerfile
