@@ -3971,7 +3971,7 @@ export default {
         formData.append('license', vm.license)
         formData.append('token', token)
         this.$axios
-          .post(network.verificatorApi, formData, {
+          .post(network.verificatorApi + '/request', formData, {
             onUploadProgress(progressEvent) {
               vm.uploadPercentage = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
