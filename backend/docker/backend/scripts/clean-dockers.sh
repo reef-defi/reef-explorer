@@ -2,6 +2,7 @@
 docker stop backend_crawler_1
 docker stop backend_postgres_1
 docker stop backend_graphql-engine_1
+docker stop backend_verificator-api_1
 
 docker rm backend_crawler_1
 docker rm backend_postgres_1
