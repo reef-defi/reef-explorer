@@ -69,7 +69,7 @@ app.post('/api/verificator/request', async (req, res) => {
           id,
           contract_id,
           source,
-          compilerVersion,
+          compiler_version,
           optimization,
           runs,
           target,
