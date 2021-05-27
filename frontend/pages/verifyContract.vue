@@ -171,10 +171,10 @@ export default {
       address: '',
       compilerVersion: null,
       nightly: true,
-      optimization: false,
+      optimization: true,
       runs: 200,
-      target: null,
-      license: null,
+      target: 'istanbul',
+      license: 'none',
       targetOptions: [
         { text: 'Please select', value: null },
         { text: 'homestead (oldest version)', value: 'homestead' },
