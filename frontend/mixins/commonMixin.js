@@ -1,6 +1,7 @@
-import { isHex } from '@polkadot/util'
+import { hexToU8a, isHex } from '@polkadot/util'
 import { BigNumber } from 'bignumber.js'
 import gql from 'graphql-tag'
+import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { network } from '@/frontend.config.js'
 
 export default {
@@ -88,6 +89,16 @@ export default {
       const newDate = new Date()
       newDate.setTime(timestamp * 1000)
       return newDate.toUTCString()
+    },
+    isValidAddressPolkadotAddress: (address) => {
+      try {
+        encodeAddress(
+          isHex(address) ? hexToU8a(address.toString()) : decodeAddress(address)
+        )
+        return true
+      } catch (error) {
+        return false
+      }
     },
   },
 }

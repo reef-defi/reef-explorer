@@ -63,20 +63,27 @@
                   </p>
                 </template>
                 <template #cell(to)="data">
-                  <p class="mb-0">
-                    <Identicon
-                      :key="data.item.to"
-                      :address="data.item.to"
-                      :size="20"
-                    />
-                    <nuxt-link
-                      v-b-tooltip.hover
-                      :to="`/account/${data.item.to}`"
-                      :title="$t('pages.accounts.account_details')"
-                    >
-                      {{ shortAddress(data.item.to) }}
-                    </nuxt-link>
-                  </p>
+                  <div v-if="isValidAddressPolkadotAddress(data.item.to)">
+                    <p class="mb-0">
+                      <Identicon
+                        :key="data.item.to"
+                        :address="data.item.to"
+                        :size="20"
+                      />
+                      <nuxt-link
+                        v-b-tooltip.hover
+                        :to="`/account/${data.item.to}`"
+                        :title="$t('pages.accounts.account_details')"
+                      >
+                        {{ shortAddress(data.item.to) }}
+                      </nuxt-link>
+                    </p>
+                  </div>
+                  <div v-else>
+                    <p class="mb-0">
+                      {{ shortAddress(data.item.to || '') }}
+                    </p>
+                  </div>
                 </template>
                 <template #cell(amount)="data">
                   <p class="mb-0">
@@ -275,7 +282,9 @@ export default {
               block_number: transfer.block_number,
               hash: transfer.hash,
               from: transfer.signer,
-              to: JSON.parse(transfer.args)[0].id,
+              to: JSON.parse(transfer.args)[0].address20
+                ? JSON.parse(transfer.args)[0].address20
+                : JSON.parse(transfer.args)[0].id,
               amount:
                 transfer.section === 'currencies'
                   ? JSON.parse(transfer.args)[2]

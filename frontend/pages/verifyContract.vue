@@ -18,76 +18,86 @@
             verify that it actually does what it is supposed to do.
           </b-alert>
           <b-form enctype="multipart/form-data" @submit="onSubmit">
-            <b-form-group
-              id="input-group-source"
-              label="Combined source file:"
-              label-for="address"
-            >
-              <b-form-file
-                ref="source"
-                v-model="$v.source.$model"
-                placeholder="Please select contract source file..."
-                drop-placeholder="Drop contract source file here..."
-                :state="validateState('source')"
-                aria-describedby="source-help"
-              ></b-form-file>
-              <b-form-text id="source-help">
-                Contract source file should be combined in one file using
-                <a href="https://github.com/RyuuGan/sol-merger" target="_blank"
-                  >sol-merger</a
-                >
-                or
-                <a
-                  href="https://github.com/BlockCatIO/solidity-flattener"
-                  target="_blank"
-                  >solidity-flattener</a
-                >
-              </b-form-text>
-              <b-progress
-                v-show="uploadPercentage > 0 && uploadPercentage !== 100"
-                striped
-                animated
-                :max="100"
-                class="mt-3"
-                :value="uploadPercentage"
-              ></b-progress>
-            </b-form-group>
-            <b-form-group
-              id="input-group-address"
-              label="Address:"
-              label-for="address"
-              description="Please enter the Contract Address you would like to verify"
-            >
-              <b-form-input
-                id="address"
-                v-model="$v.address.$model"
-                type="text"
-                placeholder="Enter address"
-                :state="validateState('address')"
-              ></b-form-input>
-            </b-form-group>
-            <b-form-group
-              id="compiler-version"
-              label="Compiler version:"
-              label-for="compiler-version"
-            >
-              <b-form-select
-                id="compiler-version"
-                v-model="$v.compilerVersion.$model"
-                :options="nightly ? compilerVersions : compilerAllVersions"
-                :state="validateState('compilerVersion')"
-              ></b-form-select>
-              <b-form-checkbox
-                id="nightly"
-                v-model="nightly"
-                name="nightly"
-                class="py-2"
-              >
-                Un-Check to show nightly commits also
-              </b-form-checkbox>
-            </b-form-group>
             <div class="row">
-              <div class="col-md-4">
+              <div class="col-md-6">
+                <b-form-group
+                  id="input-group-source"
+                  label="Combined source file:"
+                  label-for="address"
+                >
+                  <b-form-file
+                    ref="source"
+                    v-model="$v.source.$model"
+                    placeholder="Please select contract source file..."
+                    drop-placeholder="Drop contract source file here..."
+                    :state="validateState('source')"
+                    aria-describedby="source-help"
+                  ></b-form-file>
+                  <b-form-text id="source-help">
+                    Contract source file should be combined in one file using
+                    <a
+                      href="https://github.com/RyuuGan/sol-merger"
+                      target="_blank"
+                      >sol-merger</a
+                    >
+                    or
+                    <a
+                      href="https://github.com/BlockCatIO/solidity-flattener"
+                      target="_blank"
+                      >solidity-flattener</a
+                    >
+                  </b-form-text>
+                  <b-progress
+                    v-show="uploadPercentage > 0 && uploadPercentage !== 100"
+                    striped
+                    animated
+                    :max="100"
+                    class="mt-3"
+                    :value="uploadPercentage"
+                  ></b-progress>
+                </b-form-group>
+              </div>
+              <div class="col-md-6">
+                <b-form-group
+                  id="input-group-address"
+                  label="Address:"
+                  label-for="address"
+                  description="Please enter the Contract Address you would like to verify"
+                >
+                  <b-form-input
+                    id="address"
+                    v-model="$v.address.$model"
+                    type="text"
+                    placeholder="Enter address"
+                    :state="validateState('address')"
+                  ></b-form-input>
+                </b-form-group>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <b-form-group
+                  id="compiler-version"
+                  label="Compiler version:"
+                  label-for="compiler-version"
+                >
+                  <b-form-select
+                    id="compiler-version"
+                    v-model="$v.compilerVersion.$model"
+                    :options="nightly ? compilerVersions : compilerAllVersions"
+                    :state="validateState('compilerVersion')"
+                  ></b-form-select>
+                  <b-form-checkbox
+                    id="nightly"
+                    v-model="nightly"
+                    name="nightly"
+                    class="py-2"
+                  >
+                    Un-Check to show nightly commits also
+                  </b-form-checkbox>
+                </b-form-group>
+              </div>
+              <div class="col-md-6">
                 <b-form-group
                   id="input-group-optimization"
                   label="Optimization:"
@@ -101,7 +111,9 @@
                   ></b-form-select>
                 </b-form-group>
               </div>
-              <div class="col-md-4">
+            </div>
+            <div class="row">
+              <div class="col-md-6">
                 <b-form-group
                   id="input-group-optimization-runs"
                   label="Runs (Optimization):"
@@ -115,7 +127,7 @@
                   ></b-form-input>
                 </b-form-group>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-6">
                 <b-form-group
                   id="input-group-optimization-target"
                   label="Target (Optimization):"
@@ -156,11 +168,13 @@
 </template>
 
 <script>
+import gql from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import { validationMixin } from 'vuelidate'
 // eslint-disable-next-line no-unused-vars
 import { required, integer, minValue } from 'vuelidate/lib/validators'
 import { network } from '@/frontend.config.js'
+
 export default {
   mixins: [commonMixin, validationMixin],
   data() {
@@ -3925,6 +3939,7 @@ export default {
     },
     address: {
       required,
+      isUnverifiedContract: (value, vm) => vm.isUnverifiedContract(value, vm),
     },
     compilerVersion: {
       required,
@@ -3997,6 +4012,20 @@ export default {
         // eslint-disable-next-line no-console
         console.log('recaptcha error:', error)
       }
+    },
+    isUnverifiedContract: async (contractId, vm) => {
+      const client = vm.$apollo
+      const query = gql`
+        query contract {
+          contract(where: { contract_id: { _eq: "${contractId || ''}" } }) {
+            verified
+          }
+        }
+      `
+      const response = await client.query({ query })
+      return (
+        response.data.contract.length > 0 && !response.data.contract[0].verified
+      )
     },
   },
 }

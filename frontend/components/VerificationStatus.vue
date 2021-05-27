@@ -1,5 +1,5 @@
 <template>
-  <div v-if="request">
+  <div v-if="request" class="py-2">
     <b-alert show>
       <p class="text-center">
         Verification status for contract {{ request.contract_id }} is
