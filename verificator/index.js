@@ -125,7 +125,8 @@ const verify = async (request, pool) => {
       compiler_version,
       optimization,
       runs,
-      target
+      target,
+      license
     } = request
     logger.info({ request: id }, `Processing contract verification request for contract ${contract_id}`);
     const onChainContractBytecode = await getOnChainContractBytecode(contract_id);
