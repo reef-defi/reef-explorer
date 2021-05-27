@@ -6,90 +6,114 @@
           <Loading />
         </div>
         <template v-else-if="!contract">
-          <h1 class="text-center">Account not found!</h1>
+          <h1 class="text-center">Contract not found!</h1>
         </template>
         <template v-else>
-          <div class="card mb-4">
-            <div class="card-body">
-              <h4 class="text-center mb-4">
-                <span v-if="contract.name">
-                  {{ contract.name }}
-                </span>
-                <span v-else>
-                  {{ contractId }}
-                </span>
-              </h4>
-              <div class="table-responsive pb-4">
-                <table class="table table-striped">
-                  <tbody>
-                    <tr>
-                      <td>Contract address</td>
-                      <td class="text-right">
-                        {{ contractId }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Created at block</td>
-                      <td class="text-right">
-                        <nuxt-link
-                          v-b-tooltip.hover
-                          :to="`/block?blockNumber=${contract.block_height}`"
-                          title="Check block information"
-                        >
-                          #{{ formatNumber(contract.block_height) }}
-                        </nuxt-link>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>{{ $t('details.contract.signer') }}</td>
-                      <td class="text-right">
-                        <div v-if="contract.signer">
-                          <Identicon
-                            :key="contract.signer"
-                            :address="contract.signer"
-                            :size="20"
-                          />
-                          <nuxt-link
-                            v-b-tooltip.hover
-                            :to="`/account/${contract.signer}`"
-                            :title="$t('details.block.account_details')"
-                          >
-                            {{ shortAddress(contract.signer) }}
-                          </nuxt-link>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="contract.value">
-                      <td>{{ $t('details.contract.value') }}</td>
-                      <td class="text-right">
-                        {{ contract.value }}
-                      </td>
-                    </tr>
-                    <tr v-if="contract.gas_limit">
-                      <td>{{ $t('details.contract.gas_limit') }}</td>
-                      <td class="text-right">
-                        {{ contract.gas_limit }}
-                      </td>
-                    </tr>
-                    <tr v-if="contract.storage_limit">
-                      <td>{{ $t('details.contract.storage_limit') }}</td>
-                      <td class="text-right">
-                        {{ contract.storage_limit }}
-                      </td>
-                    </tr>
-                    <tr v-if="contract.init">
-                      <td>{{ $t('details.contract.init') }}</td>
-                      <td class="text-right">
-                        <span class="init" style="color: #aaa">{{
-                          contract.init
-                        }}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+          <b-tabs content-class="mt-3">
+            <b-tab title="Contract info" active>
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h4 class="text-center mb-4">
+                    <span v-if="contract.name">
+                      {{ contract.name }}
+                    </span>
+                    <span v-else>
+                      {{ contractId }}
+                    </span>
+                  </h4>
+                  <div class="table-responsive pb-4">
+                    <table class="table table-striped">
+                      <tbody>
+                        <tr>
+                          <td>Contract address</td>
+                          <td class="text-right">
+                            {{ contractId }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Created at block</td>
+                          <td class="text-right">
+                            <nuxt-link
+                              v-b-tooltip.hover
+                              :to="`/block?blockNumber=${contract.block_height}`"
+                              title="Check block information"
+                            >
+                              #{{ formatNumber(contract.block_height) }}
+                            </nuxt-link>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>{{ $t('details.contract.signer') }}</td>
+                          <td class="text-right">
+                            <div v-if="contract.signer">
+                              <Identicon
+                                :key="contract.signer"
+                                :address="contract.signer"
+                                :size="20"
+                              />
+                              <nuxt-link
+                                v-b-tooltip.hover
+                                :to="`/account/${contract.signer}`"
+                                :title="$t('details.block.account_details')"
+                              >
+                                {{ shortAddress(contract.signer) }}
+                              </nuxt-link>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="contract.value">
+                          <td>{{ $t('details.contract.value') }}</td>
+                          <td class="text-right">
+                            {{ contract.value }}
+                          </td>
+                        </tr>
+                        <tr v-if="contract.gas_limit">
+                          <td>{{ $t('details.contract.gas_limit') }}</td>
+                          <td class="text-right">
+                            {{ contract.gas_limit }}
+                          </td>
+                        </tr>
+                        <tr v-if="contract.storage_limit">
+                          <td>{{ $t('details.contract.storage_limit') }}</td>
+                          <td class="text-right">
+                            {{ contract.storage_limit }}
+                          </td>
+                        </tr>
+                        <tr v-if="contract.bytecode">
+                          <td>{{ $t('details.contract.bytecode') }}</td>
+                          <td class="text-right">
+                            <span class="init" style="color: #aaa">{{
+                              contract.bytecode
+                            }}</span>
+                          </td>
+                        </tr>
+                        <tr v-if="contract.verified">
+                          <td>{{ $t('details.contract.verified') }}</td>
+                          <td class="text-right">
+                            <p v-if="contract.verified" class="mb-0">
+                              <font-awesome-icon
+                                icon="check"
+                                class="text-success"
+                              />
+                            </p>
+                            <p v-else class="mb-0">
+                              <font-awesome-icon
+                                icon="times"
+                                class="text-danger"
+                              />
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </b-tab>
+            <b-tab v-if="contract.verified" title="Source">
+              <pre>{{ contract.source }}</pre>
+            </b-tab>
+          </b-tabs>
         </template>
       </b-container>
     </section>
@@ -135,6 +159,14 @@ export default {
             storage_limit
             signer
             block_height
+            verified
+            source
+            compiler_version
+            optimization
+            runs
+            target
+            abi
+            license
             timestamp
           }
         }

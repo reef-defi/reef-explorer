@@ -255,7 +255,8 @@
       "value": "Value",
       "gas_limit": "Gas limit",
       "storage_limit": "Storage limit",
-      "init": "Init"
+      "bytecode": "Bytecode",
+      "verified": "Verified"
     }
   }
 }
