@@ -57,6 +57,7 @@ app.post('/api/verificator/request', async (req, res) => {
         // Insert contract_verification_request
         const source = req.files.source;
         const sourceFileContent = source.data.toString('utf8');
+        console.log(sourceFileContent);
         const id = crypto.randomBytes(20).toString('hex');
         const timestamp = Date.now();
         const pool = await getPool();
