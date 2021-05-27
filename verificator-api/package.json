@@ -15,6 +15,9 @@
     "express-fileupload": "^1.2.1",
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "pg": "^8.6.0",
+    "pg-format": "^1.0.4",
+    "pg-native": "^3.0.0"
   }
 }

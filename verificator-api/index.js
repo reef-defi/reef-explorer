@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const _ = require('lodash');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const { Pool } = require('pg');
 const config = require('../backend/backend.config.js');
 
 // Recaptcha
