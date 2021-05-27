@@ -14,6 +14,13 @@ const secret = process.env.RECAPTCHA_SECRET || '';
 // Http port
 const port = process.env.PORT || 8000;
 
+// Connnect to db
+const getPool = async () => {
+  const pool = new Pool(config.postgresConnParams);
+  await pool.connect();
+  return pool;
+}
+
 const app = express();
 
 // Enable file upload
@@ -50,7 +57,7 @@ app.post('/api/verificator/request', async (req, res) => {
         const sourceFileContent = source.data.toString('utf8');
         const id = crypto.randomBytes(20).toString('hex');
         const timestamp = Date.now();
-        const pool = await this.getPool();
+        const pool = await getPool();
         // Read source file content
         const sql = `INSERT INTO contract_verification_request (
           id,
@@ -74,10 +81,7 @@ app.post('/api/verificator/request', async (req, res) => {
           '${req.body.license}',
           '${req.body.status}',
           '${timestamp}'
-        )
-        ON CONFLICT ON CONSTRAINT event_pkey 
-        DO NOTHING
-        ;`;
+        );`;
         try {
           await pool.query(sql);
           res.send({
@@ -121,9 +125,3 @@ app.use(express.static('uploads'));
 app.listen(port, () => 
   console.log(`App is listening on port ${port}.`)
 );
-
-const getPool = async () => {
-  const pool = new Pool(config.postgresConnParams);
-  await pool.connect();
-  return pool;
-}
