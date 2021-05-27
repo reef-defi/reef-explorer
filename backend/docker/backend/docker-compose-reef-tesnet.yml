@@ -81,7 +81,7 @@ services:
       - '8000:8000'
     build:
       context: ../../../verificator-api
-      dockerfile: ./docker/backend/verificator-api/Dockerfile
+      dockerfile: Dockerfile
     depends_on:
       - 'postgres'
     restart: always
