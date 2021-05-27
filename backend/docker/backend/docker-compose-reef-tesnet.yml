@@ -63,15 +63,33 @@ services:
     depends_on:
       - 'postgres'
       - 'substrate-node'
-    restart: on-failure
+    restart: always
     environment:
       - NODE_ENV=production
       - WS_PROVIDER_URL=ws://substrate-node:9944
       - SUBSTRATE_NETWORK=reef
       # - CRAWLER_BLOCK_LISTENER_DISABLE=true
       # - CRAWLER_BLOCK_HARVESTER_DISABLE=true
+
+
+  #
+  # Contract verificator API
+  #
+  crawler:
+    image: verificator-api:latest
+    build:
+      context: ../../../verificator-api
+      dockerfile: ./docker/backend/verificator-api/Dockerfile
+    depends_on:
+      - 'postgres'
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - NODE_PORT=8000
+      - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
+
 #
-# Persisten volumes
+# Persistent volumes
 #
 volumes:
   db-data: {}

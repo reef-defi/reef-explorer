@@ -47,12 +47,11 @@ app.post('/api/verificator/request', async (req, res) => {
       });
     } else {
       console.log(req);
-      // const token = req.body.token;
-      // const response = await fetch(
-      //   `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`
-      // );
-      // const success = JSON.parse(await response.text()).success;
-      const success = true;
+      const token = req.body.token;
+      const response = await fetch(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`
+      );
+      const success = JSON.parse(await response.text()).success;
       if (success) {
         // Insert contract_verification_request
         const source = req.files.source;
