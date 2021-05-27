@@ -8,7 +8,7 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 
 // recaptcha
-const secret = '';
+const secret = process.env.RECAPTCHA_SECRET || '';
 
 const app = express();
 
