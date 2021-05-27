@@ -1,9 +1,9 @@
 <template>
   <div v-if="request">
     <b-alert show>
-      <p>
-        Verification status for contract {{ request.addrress }} is
-        {{ request.status }}
+      <p class="text-center">
+        Verification status for contract {{ request.contract_id }} is
+        {{ request.status }}, please wait until contract is verified
       </p>
     </b-alert>
   </div>

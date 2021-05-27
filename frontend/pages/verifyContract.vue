@@ -3980,13 +3980,15 @@ export default {
           })
           .then((resp) => {
             // eslint-disable-next-line no-console
-            console.log('verification request data uploaded', resp.data)
-            this.requestId = resp.data.id
+            console.log('verification request data uploaded:', resp.data)
+            vm.requestId = resp.data.data.id
+            // eslint-disable-next-line no-console
+            console.log('verification request id:', vm.requestId)
           })
           .catch(function (errors) {
             // eslint-disable-next-line no-console
             console.log(errors)
-            this.requestId = null
+            vm.requestId = null
           })
 
         // at the end you need to reset recaptcha
