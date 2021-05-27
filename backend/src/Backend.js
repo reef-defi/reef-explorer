@@ -37,7 +37,8 @@ class Backend {
           pool,
           crawler.config,
           this.config.substrateNetwork,
-        ));
+        ),
+      );
   }
 
   async getPolkadotAPI() {

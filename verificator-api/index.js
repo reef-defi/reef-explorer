@@ -6,9 +6,13 @@ const morgan = require('morgan');
 const _ = require('lodash');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const config = require('../backend/backend.config.js');
 
-// recaptcha
+// Recaptcha
 const secret = process.env.RECAPTCHA_SECRET || '';
+
+// Http port
+const port = process.env.PORT || 8000;
 
 const app = express();
 
@@ -41,24 +45,63 @@ app.post('/api/verificator/request', async (req, res) => {
       );
       const success = JSON.parse(await response.text()).success;
       if (success) {
+        // Insert contract_verification_request
         const source = req.files.source;
-        const hash = crypto.randomBytes(20).toString('hex');
-        res.send({
-          status: true,
-          message: 'Received verification request',
-          data: {
-            id: hash,
-            address: req.body.address,
-            source: source.name,
-            sourceMimetype: source.mimetype,
-            sourceSize: source.size,
-            compilerVersion: req.body.compilerVersion,
-            optimization: req.body.optimization,
-            runs: req.body.runs,
-            target: req.body.target,
-            license: req.body.license,
-          }
-        });
+        const sourceFileContent = source.data.toString('utf8');
+        const id = crypto.randomBytes(20).toString('hex');
+        const timestamp = Date.now();
+        const pool = await this.getPool();
+        // Read source file content
+        const sql = `INSERT INTO contract_verification_request (
+          id,
+          contract_id,
+          source,
+          compilerVersion,
+          optimization,
+          runs,
+          target,
+          license,
+          status,
+          timestamp,
+        ) VALUES (
+          '${id}',
+          '${req.body.address}',
+          '${sourceFileContent}',
+          '${req.body.compilerVersion}',
+          '${req.body.optimization}',
+          '${req.body.runs}',
+          '${req.body.target}',
+          '${req.body.license}',
+          '${req.body.status}',
+          '${timestamp}'
+        )
+        ON CONFLICT ON CONSTRAINT event_pkey 
+        DO NOTHING
+        ;`;
+        try {
+          await pool.query(sql);
+          res.send({
+            status: true,
+            message: 'Received verification request',
+            data: {
+              id: hash,
+              address: req.body.address,
+              source: source.name,
+              sourceMimetype: source.mimetype,
+              sourceSize: source.size,
+              compilerVersion: req.body.compilerVersion,
+              optimization: req.body.optimization,
+              runs: req.body.runs,
+              target: req.body.target,
+              license: req.body.license,
+            }
+          });
+        } catch (error) {
+          res.send({
+            status: false,
+            message: 'Database error'
+          });
+        }
       } else {
         res.send({
           status: false,
@@ -71,12 +114,16 @@ app.post('/api/verificator/request', async (req, res) => {
   }
 });
 
-//make uploads directory static
+// Make uploads directory static
 app.use(express.static('uploads'));
 
-//start app 
-const port = process.env.PORT || 8000;
-
+// Start app
 app.listen(port, () => 
   console.log(`App is listening on port ${port}.`)
 );
+
+const getPool = async () => {
+  const pool = new Pool(config.postgresConnParams);
+  await pool.connect();
+  return pool;
+}
