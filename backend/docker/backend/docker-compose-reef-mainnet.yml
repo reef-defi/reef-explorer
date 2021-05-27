@@ -74,7 +74,7 @@ services:
   #
   # Contract verificator API
   #
-  crawler:
+  verificator-api:
     image: verificator-api:latest
     ports:
       - '8000:8000'
