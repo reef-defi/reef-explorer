@@ -69,6 +69,7 @@ app.post('/api/verificator/request', async (req, res) => {
           id,
           contract_id,
           source,
+          filename,
           compiler_version,
           optimization,
           runs,
@@ -86,12 +87,14 @@ app.post('/api/verificator/request', async (req, res) => {
           $7,
           $8,
           $9,
-          $10
+          $10,
+          $11
         );`;
         const data = [
           id,
           req.body.address,
           sourceFileContent,
+          source.name,
           req.body.compilerVersion,
           req.body.optimization,
           req.body.runs,
