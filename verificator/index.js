@@ -16,7 +16,7 @@ const loggerOptions = {};
 
 // Configuration
 const nodeRpc = 'https://testnet.reefscan.com/api/v3';
-const contractName = 'Storage';
+const contractName = 'Storage'; // TODO: get from compilation process
 const pollingTime = 60 * 1000; // 1min
 
 const getPool = async () => {
@@ -175,7 +175,7 @@ const verify = async (request, pool) => {
         runs = $6,
         target = $7,
         abi = $8,
-        license = $9,
+        license = $9
         WHERE contract_id = $10;
       `;
       const data = [
