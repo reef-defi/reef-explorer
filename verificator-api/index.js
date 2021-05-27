@@ -77,7 +77,7 @@ app.post('/api/verificator/request', async (req, res) => {
           target,
           license,
           status,
-          timestamp,
+          timestamp
         ) VALUES (
           '${id}',
           '${req.body.address}',
