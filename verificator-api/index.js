@@ -14,7 +14,7 @@ const postgresConnParams = {
   database: process.env.POSTGRES_DATABASE || 'reef',
   password: process.env.POSTGRES_PASSWORD || 'reef',
   port: process.env.POSTGRES_PORT || 5432,
-},
+};
 
 // Recaptcha
 const secret = process.env.RECAPTCHA_SECRET || '';
