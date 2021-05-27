@@ -3,6 +3,7 @@ const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const _ = require('lodash');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { Pool } = require('pg');
@@ -123,6 +124,9 @@ app.post('/api/verificator/request', async (req, res) => {
     res.status(500).send(err);
   }
 });
+
+// Make uploads directory static
+app.use(express.static('uploads'));
 
 // Start app
 app.listen(port, () => 
