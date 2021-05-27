@@ -7,6 +7,7 @@ const loggerOptions = {};
 // Configuration
 const nodeRpc = 'https://testnet.reefscan.com/api/v3';
 const contractName = 'Storage';
+const pollingTime = 60 * 1000; // 1min
 
 const getPendingRequests = async () => {
   const query = `
@@ -151,10 +152,17 @@ const verify = async (request) => {
 }
 
 const main = async () => {
+  logger.info(loggerOptions, `Starting contract verificator`);
   const pendingRequests = await getPendingRequests();
   for (request of pendingRequests) {
     await verify(request);
   }
+  logger.info(loggerOptions, `Contract verificator finished, sleeping 1min`);
+
+  setTimeout(
+    () => main(),
+    pollingTime,
+  );
 }
 
 main();

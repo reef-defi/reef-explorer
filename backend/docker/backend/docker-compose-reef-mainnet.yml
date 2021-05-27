@@ -89,6 +89,18 @@ services:
       - NODE_PORT=8000
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
 
+  #
+  # Contract verificator
+  #
+  verificator:
+    image: verificator:latest
+    build:
+      context: ../../../verificator
+      dockerfile: Dockerfile
+    depends_on:
+      - 'postgres'
+    restart: always
+
 #
 # Persistent volumes
 #
