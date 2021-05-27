@@ -53,7 +53,7 @@ app.post('/api/verificator/request', async (req, res) => {
         message: 'Input error'
       });
     } else {
-      console.log(req);
+      // console.log(req);
       const token = req.body.token;
       const response = await fetch(
         `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`
@@ -63,7 +63,6 @@ app.post('/api/verificator/request', async (req, res) => {
         // Insert contract_verification_request
         const source = req.files.source;
         const sourceFileContent = source.data.toString('utf8');
-        console.log(sourceFileContent);
         const id = crypto.randomBytes(20).toString('hex');
         const timestamp = Date.now();
         const pool = await getPool();
@@ -126,10 +125,7 @@ app.post('/api/verificator/request', async (req, res) => {
   }
 });
 
-// Make uploads directory static
-app.use(express.static('uploads'));
-
 // Start app
 app.listen(port, () => 
-  console.log(`App is listening on port ${port}.`)
+  console.log(`Contract verificator API is listening on port ${port}.`)
 );

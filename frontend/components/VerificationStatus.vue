@@ -28,7 +28,7 @@ export default {
         query: gql`
           subscription contract_verification_request($id: String!) {
             contract_verification_request(where: { id: { _eq: $id } }) {
-              address
+              contract_id
               status
             }
           }
