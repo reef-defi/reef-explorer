@@ -95,7 +95,7 @@ app.post('/api/verificator/request', async (req, res) => {
             status: true,
             message: 'Received verification request',
             data: {
-              id: hash,
+              id,
               address: req.body.address,
               source: source.name,
               sourceMimetype: source.mimetype,
@@ -108,7 +108,7 @@ app.post('/api/verificator/request', async (req, res) => {
             }
           });
         } catch (error) {
-          console.log(error);
+          console.log('Database error:', error);
           res.send({
             status: false,
             message: 'Database error'
