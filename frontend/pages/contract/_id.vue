@@ -9,18 +9,18 @@
           <h1 class="text-center">Contract not found!</h1>
         </template>
         <template v-else>
-          <b-tabs content-class="mt-3">
-            <b-tab title="Contract info" active>
-              <div class="card mb-4">
-                <div class="card-body">
-                  <h4 class="text-center mb-4">
-                    <span v-if="contract.name">
-                      {{ contract.name }}
-                    </span>
-                    <span v-else>
-                      {{ contractId }}
-                    </span>
-                  </h4>
+          <div class="card mb-4">
+            <div class="card-body">
+              <h4 class="text-center mb-4">
+                <span v-if="contract.name">
+                  {{ contract.name }}
+                </span>
+                <span v-else>
+                  {{ contractId }}
+                </span>
+              </h4>
+              <b-tabs content-class="mt-3">
+                <b-tab title="General" active>
                   <div class="table-responsive pb-4">
                     <table class="table table-striped">
                       <tbody>
@@ -107,64 +107,67 @@
                       </tbody>
                     </table>
                   </div>
-                </div>
-              </div>
-            </b-tab>
-            <b-tab v-if="contract.verified" title="Developer info">
-              <div class="table-responsive pb-4">
-                <table class="table table-striped">
-                  <tbody>
-                    <tr>
-                      <td>{{ $t('details.contract.compiler_version') }}</td>
-                      <td class="text-right">
-                        {{ contract.compiler_version }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>{{ $t('details.contract.optimization') }}</td>
-                      <td class="text-right">
-                        <p v-if="contract.optimization" class="mb-0">
-                          <font-awesome-icon
-                            icon="check"
-                            class="text-success"
-                          />
-                        </p>
-                        <p v-else class="mb-0">
-                          <font-awesome-icon icon="times" class="text-danger" />
-                        </p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>{{ $t('details.contract.runs') }}</td>
-                      <td class="text-right">
-                        {{ contract.runs }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>{{ $t('details.contract.target') }}</td>
-                      <td class="text-right">
-                        {{ contract.target }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>{{ $t('details.contract.license') }}</td>
-                      <td class="text-right">
-                        {{ contract.license }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </b-tab>
-            <b-tab v-if="contract.verified" title="Verified source">
-              <pre>{{ contract.source }}</pre>
-            </b-tab>
-            <b-tab v-if="contract.verified" title="ABI">
-              <pre class="text-left">{{
-                JSON.stringify(JSON.parse(contract.abi), null, 2)
-              }}</pre>
-            </b-tab>
-          </b-tabs>
+                </b-tab>
+                <b-tab v-if="contract.verified" title="Developer">
+                  <div class="table-responsive pb-4">
+                    <table class="table table-striped">
+                      <tbody>
+                        <tr>
+                          <td>{{ $t('details.contract.compiler_version') }}</td>
+                          <td class="text-right">
+                            {{ contract.compiler_version }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>{{ $t('details.contract.optimization') }}</td>
+                          <td class="text-right">
+                            <p v-if="contract.optimization" class="mb-0">
+                              <font-awesome-icon
+                                icon="check"
+                                class="text-success"
+                              />
+                            </p>
+                            <p v-else class="mb-0">
+                              <font-awesome-icon
+                                icon="times"
+                                class="text-danger"
+                              />
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>{{ $t('details.contract.runs') }}</td>
+                          <td class="text-right">
+                            {{ contract.runs }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>{{ $t('details.contract.target') }}</td>
+                          <td class="text-right">
+                            {{ contract.target }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>{{ $t('details.contract.license') }}</td>
+                          <td class="text-right">
+                            {{ contract.license }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </b-tab>
+                <b-tab v-if="contract.verified" title="Verified source">
+                  <pre>{{ contract.source }}</pre>
+                </b-tab>
+                <b-tab v-if="contract.verified" title="ABI">
+                  <pre class="text-left">{{
+                    JSON.stringify(JSON.parse(contract.abi), null, 2)
+                  }}</pre>
+                </b-tab>
+              </b-tabs>
+            </div>
+          </div>
         </template>
       </b-container>
     </section>
