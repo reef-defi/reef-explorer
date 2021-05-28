@@ -3,7 +3,11 @@ let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
 const { Pool } = require('pg');
-const { license } = require('solc');
+const solc = require("solc");
+
+// Configuration
+const nodeRpc = 'https://testnet.reefscan.com/api/v3';
+const pollingTime = 10 * 1000; // 10 seconds
 const postgresConnParams = {
   user: process.env.POSTGRES_USER || 'reef',
   host: process.env.POSTGRES_HOST || 'postgres',
@@ -11,13 +15,7 @@ const postgresConnParams = {
   password: process.env.POSTGRES_PASSWORD || 'reef',
   port: process.env.POSTGRES_PORT || 5432,
 };
-
 const loggerOptions = {};
-
-// Configuration
-const nodeRpc = 'https://testnet.reefscan.com/api/v3';
-const contractName = 'Storage'; // TODO: get from compilation process
-const pollingTime = 60 * 1000; // 1min
 
 const getPool = async () => {
   const pool = new Pool(postgresConnParams);
@@ -110,10 +108,23 @@ const preprocessExistingBytecodes = async (bytecodes) =>
   await Promise.all(
     bytecodes.map(async ([name, code]) => [name, await preprocessBytecode(code)]));
 
-const findBytecode = async (compiler, filename, existingBytecodes, inputs) => {
+const getContractArtifacts = async (compiler, filename, existingBytecodes, inputs) => {
   const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
+
+  // Get contract name
+  const contractName = Object.keys(contracts.contracts[contractFile])[0];
+
+  // Get contract abi
+  const contractAbi = contracts.contracts[contractFile][contractName].abi;
+
   const bytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
-  return await checkIfContractExists(bytecode, existingBytecodes)
+  const contractExist = await checkIfContractExists(bytecode, existingBytecodes);
+
+  return {
+    contractExist,
+    contractName,
+    contractAbi
+  }
 }
 
 const verify = async (request, pool) => {
@@ -137,18 +148,22 @@ const verify = async (request, pool) => {
     const contracts = [];
     contracts[filename] = { content: source } 
     
-    const normalResult = await findBytecode(
+    const normalArtifacts = await getContractArtifacts(
       compiler,
       filename,
       existing,
       prepareSolcContracts(contracts)
     );
-    const optimizedResult = await findBytecode(
+    const normalResult = normalArtifacts.contractExists;
+    const { contractName, contractAbi } = normalArtifacts;
+
+    let optimizedArtifacts = await getContractArtifacts(
       compiler,
       filename,
       existing,
       prepareOptimizedSolcContracts(contracts, runs, target)
     );
+    const optimizedResult = optimizedArtifacts.contractExists;
 
     const isVerified = normalResult || optimizedResult;
     logger.info({ request: id }, `Contract ${contract_id} is ${isVerified ? "verified" : "not verified"}`);
@@ -162,9 +177,6 @@ const verify = async (request, pool) => {
       } catch (error) {
         logger.info({ request: id }, `Error: ${error}`);
       }
-      
-      // TODO: extract abi after compilation process
-      const abi = '';
       
       // Insert source code, name, abi, etc in contract and set contract verified = true
       logger.info({ request: id }, `Updating verified contract ${contract_id}`);
@@ -181,14 +193,14 @@ const verify = async (request, pool) => {
         WHERE contract_id = $10;
       `;
       const data = [
-        contractName, // TODO: get contract name from compilation process
+        contractName,
         isVerified,
         source,
         compiler_version,
         optimization,
         runs,
         target,
-        abi,
+        JSON.stringify(contractAbi),
         license,
         contract_id
       ];
