@@ -1,3 +1,4 @@
+// @ts-check
 const fetch = require('node-fetch');
 let solc = require("solc");
 const pino = require('pino');
@@ -111,10 +112,10 @@ const getContractArtifacts = async (compiler, filename, existingBytecodes, input
   const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
 
   // Get contract name
-  const contractName = Object.keys(contracts.contracts[contractFile])[0];
+  const contractName = Object.keys(contracts.contracts[filename])[0];
 
   // Get contract abi
-  const contractAbi = contracts.contracts[contractFile][contractName].abi;
+  const contractAbi = contracts.contracts[filename][contractName].abi;
 
   const bytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
   const contractExist = await checkIfContractExists(bytecode, existingBytecodes);
@@ -222,8 +223,8 @@ const verify = async (request, pool) => {
 
     // TODO: delete request older than 1 week
 
-  } catch (e) {
-    logger.error({ request: id }, `Error: ${error}`);
+  } catch (error) {
+    logger.error(loggerOptions, `Error: ${error}`);
   }
 }
 
@@ -235,7 +236,7 @@ const main = async () => {
 
   logger.info(loggerOptions, `Getting pending requests`);
   const pendingRequests = await getPendingRequests();
-  for (request of pendingRequests) {
+  for (const request of pendingRequests) {
     await verify(request, pool);
   }
 
