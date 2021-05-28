@@ -256,7 +256,13 @@
       "gas_limit": "Gas limit",
       "storage_limit": "Storage limit",
       "bytecode": "Bytecode",
-      "verified": "Verified"
+      "verified": "Verified",
+      "abi": "ABI",
+      "compiler_version": "Compiler version",
+      "optimization": "Optimization enabled",
+      "runs": "Runs (optimization)",
+      "target": "EVM target (optimization)",
+      "license": "Open source license"
     }
   }
 }
