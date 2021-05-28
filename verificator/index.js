@@ -3,7 +3,6 @@ let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
 const { Pool } = require('pg');
-const solc = require("solc");
 
 // Configuration
 const nodeRpc = 'https://testnet.reefscan.com/api/v3';
