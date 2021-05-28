@@ -154,7 +154,7 @@ const verify = async (request, pool) => {
       existing,
       prepareSolcContracts(contracts)
     );
-    const normalResult = normalArtifacts.contractExists;
+    const normalResult = normalArtifacts.contractExist;
     const { contractName, contractAbi } = normalArtifacts;
 
     let optimizedArtifacts = await getContractArtifacts(
@@ -163,7 +163,7 @@ const verify = async (request, pool) => {
       existing,
       prepareOptimizedSolcContracts(contracts, runs, target)
     );
-    const optimizedResult = optimizedArtifacts.contractExists;
+    const optimizedResult = optimizedArtifacts.contractExist;
 
     const isVerified = normalResult || optimizedResult;
     logger.info({ request: id }, `Contract ${contract_id} is ${isVerified ? "verified" : "not verified"}`);
