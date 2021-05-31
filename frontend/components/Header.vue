@@ -54,7 +54,7 @@ export default {
   },
   computed: {
     USDConversion() {
-      return parseFloat(this.$store.state.fiat.usd).toFixed(2)
+      return parseFloat(this.$store.state.fiat.usd).toFixed(3)
     },
     USD24hChange() {
       return this.$store.state.fiat.usd_24h_change
