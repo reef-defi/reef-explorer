@@ -112,7 +112,10 @@ const getContractArtifacts = async (compiler, filename, existingBytecodes, input
   const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
 
   // Get contract name
-  const contractName = Object.keys(contracts.contracts[filename])[0];
+  // const contractName = Object.keys(contracts.contracts[filename])[0];
+
+  // filename excluding the extension should be equal to contract name in source code
+  const contractName = filename.split('.')[0];
 
   // Get contract abi
   const contractAbi = contracts.contracts[filename][contractName].abi;

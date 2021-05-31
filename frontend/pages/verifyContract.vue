@@ -45,7 +45,8 @@
                       href="https://github.com/BlockCatIO/solidity-flattener"
                       target="_blank"
                       >solidity-flattener</a
-                    >
+                    >. Filename excluding the extension should be equal to
+                    contract name in source code
                   </b-form-text>
                   <b-progress
                     v-show="uploadPercentage > 0 && uploadPercentage !== 100"
