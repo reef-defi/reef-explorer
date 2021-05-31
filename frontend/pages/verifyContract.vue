@@ -3978,7 +3978,7 @@ export default {
         const vm = this
         const formData = new FormData()
         formData.append('source', vm.source)
-        formData.append('address', vm.address)
+        formData.append('address', vm.address.toLowerCase())
         formData.append('compilerVersion', vm.compilerVersion)
         formData.append('optimization', vm.optimization)
         formData.append('runs', vm.runs)

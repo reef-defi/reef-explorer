@@ -2,8 +2,9 @@
   <div v-if="request" class="py-2">
     <b-alert show>
       <p class="text-center">
-        Verification status for contract {{ request.contract_id }} is
-        {{ request.status }}, please wait until contract is verified
+        Verification status for contract
+        {{ request.contract_id.toLowerCase() }} is {{ request.status }}, please
+        wait until contract is verified
       </p>
     </b-alert>
   </div>
