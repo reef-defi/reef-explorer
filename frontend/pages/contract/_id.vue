@@ -200,40 +200,42 @@ export default {
     },
   },
   apollo: {
-    contract: {
-      query: gql`
-        query contract($contract_id: String!) {
-          contract(where: { contract_id: { _eq: $contract_id } }) {
-            contract_id
-            name
-            bytecode
-            value
-            gas_limit
-            storage_limit
-            signer
-            block_height
-            verified
-            source
-            compiler_version
-            optimization
-            runs
-            target
-            abi
-            license
-            timestamp
+    $subscribe: {
+      contract: {
+        query: gql`
+          subscription contract($contract_id: String!) {
+            contract(where: { contract_id: { _eq: $contract_id } }) {
+              contract_id
+              name
+              bytecode
+              value
+              gas_limit
+              storage_limit
+              signer
+              block_height
+              verified
+              source
+              compiler_version
+              optimization
+              runs
+              target
+              abi
+              license
+              timestamp
+            }
           }
-        }
-      `,
-      variables() {
-        return {
-          contract_id: this.contractId,
-        }
-      },
-      result({ data }) {
-        if (data.contract[0]) {
-          this.contract = data.contract[0]
-        }
-        this.loading = false
+        `,
+        variables() {
+          return {
+            contract_id: this.contractId,
+          }
+        },
+        result({ data }) {
+          if (data.contract[0]) {
+            this.contract = data.contract[0]
+          }
+          this.loading = false
+        },
       },
     },
   },
