@@ -62,7 +62,7 @@
           <template #cell(signer)="data">
             <p class="mb-0">
               <nuxt-link
-                :to="`/account/${data.item.from}`"
+                :to="`/account/${data.item.signer}`"
                 :title="$t('pages.accounts.account_details')"
               >
                 <Identicon
