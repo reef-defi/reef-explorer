@@ -1,10 +1,22 @@
 <template>
   <div v-if="request" class="py-2">
-    <b-alert show>
-      <p class="text-center">
+    <b-alert v-if="request.status === 'PENDING'" variant="info" show>
+      <p class="text-center pt-3">
         Verification status for contract
-        {{ request.contract_id.toLowerCase() }} is {{ request.status }}, please
-        wait until contract is verified
+        {{ request.contract_id }} is {{ request.status }}, please wait until
+        contract is verified
+      </p>
+    </b-alert>
+    <b-alert v-if="request.status === 'VERIFIED'" variant="success" show>
+      <p class="text-center pt-3">
+        Your contract
+        {{ request.contract_id }} is {{ request.status }}
+      </p>
+    </b-alert>
+    <b-alert v-if="request.status === 'ERROR'" variant="danger" show>
+      <p class="text-center pt-3">
+        Your contract
+        {{ request.contract_id }} verification was not successful
       </p>
     </b-alert>
   </div>
