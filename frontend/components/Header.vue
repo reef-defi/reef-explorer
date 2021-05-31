@@ -8,7 +8,7 @@
         </nuxt-link>
       </b-navbar-brand>
       <a
-        v-if="network.coinGeckoDenom"
+        v-if="network.coinGeckoDenom && USDConversion && USD24hChange"
         :href="`https://www.coingecko.com/en/coins/${network.coinGeckoDenom}`"
         target="_blank"
         class="fiat mh-2"
@@ -57,9 +57,7 @@ export default {
       return parseFloat(this.$store.state.fiat.usd).toFixed(3)
     },
     USD24hChange() {
-      return this.$store.state.fiat.usd_24h_change
-        ? parseFloat(this.$store.state.fiat.usd_24h_change).toFixed(2)
-        : 0
+      return parseFloat(this.$store.state.fiat.usd_24h_change).toFixed(2)
     },
   },
   created() {

@@ -2,8 +2,8 @@ import axios from 'axios'
 import { network } from '@/frontend.config.js'
 
 export const state = () => ({
-  usd: undefined,
-  usd_24h_change: undefined,
+  usd: 0,
+  usd_24h_change: 0,
 })
 
 export const mutations = {
