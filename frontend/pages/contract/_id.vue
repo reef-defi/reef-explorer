@@ -82,7 +82,7 @@
                         <tr v-if="contract.bytecode">
                           <td>{{ $t('details.contract.bytecode') }}</td>
                           <td class="text-right">
-                            <span class="init" style="color: #aaa">{{
+                            <span class="bytecode" style="color: #aaa">{{
                               contract.bytecode
                             }}</span>
                           </td>
@@ -207,7 +207,6 @@ export default {
             contract_id
             name
             bytecode
-            init
             value
             gas_limit
             storage_limit
@@ -242,7 +241,7 @@ export default {
 </script>
 
 <style>
-.contract-page .init {
+.contract-page .bytecode {
   word-break: break-all;
 }
 </style>

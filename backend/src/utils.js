@@ -3,6 +3,7 @@ const pino = require('pino');
 const { decodeAddress, encodeAddress } = require('@polkadot/keyring');
 const { hexToU8a, isHex } = require('@polkadot/util');
 const _ = require('lodash');
+const { toChecksumAddress } = require('web3-utils');
 const genesisContracts = require('./assets/bytecodes.json');
 
 const logger = pino();
@@ -152,17 +153,18 @@ module.exports = {
       // store contract
       if (section === 'evm' && method === 'create' && success) {
         // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
-        const contractId = JSON.parse(
-          JSON.stringify(
-            blockEvents.find(
-              ({ event }) => event.section === 'evm' && event.method === 'Created',
+        const contractId = toChecksumAddress(
+          JSON.parse(
+            JSON.stringify(
+              blockEvents.find(
+                ({ event }) => event.section === 'evm' && event.method === 'Created',
+              ),
             ),
-          ),
-        ).event.data[0];
+          ).event.data[0],
+        );
         // https://reefscan.com/block/?blockNumber=118307
-        const name = ''; // TODO: match bytecode with stored contracts to get name
-        const bytecode = extrinsic.args[0]; // TODO: figure out if this is correct
-        const init = extrinsic.args[0];
+        const name = '';
+        const bytecode = extrinsic.args[0];
         const value = extrinsic.args[1];
         const gasLimit = extrinsic.args[2];
         const storageLimit = extrinsic.args[3];
@@ -170,7 +172,6 @@ module.exports = {
           contract_id,
           name,
           bytecode,
-          init,
           value,
           gas_limit,
           storage_limit,
@@ -181,7 +182,6 @@ module.exports = {
           '${contractId}',
           '${name}',
           '${bytecode}',
-          '${init}',
           '${value}',
           '${gasLimit}',
           '${storageLimit}',
@@ -260,7 +260,6 @@ module.exports = {
       const name = contract[0];
       const contractId = contract[1];
       const bytecode = contract[2];
-      const init = bytecode; // TODO: figure out if this is correct
       const value = '';
       const gasLimit = '';
       const storageLimit = '';
@@ -268,7 +267,6 @@ module.exports = {
         contract_id,
         name,
         bytecode,
-        init,
         value,
         gas_limit,
         storage_limit,
@@ -279,7 +277,6 @@ module.exports = {
         '${contractId}',
         '${name}',
         '${bytecode}',
-        '${init}',
         '${value}',
         '${gasLimit}',
         '${storageLimit}',

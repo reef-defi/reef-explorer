@@ -69,7 +69,6 @@ CREATE TABLE IF NOT EXISTS contract  (
   contract_id TEXT NOT NULL,
   name TEXT NOT NULL,
   bytecode TEXT NOT NULL,
-  init TEXT NOT NULL,
   value TEXT NOT NULL,
   gas_limit TEXT NOT NULL,
   storage_limit TEXT NOT NULL,

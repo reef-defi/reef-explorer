@@ -172,6 +172,7 @@
 import gql from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import { validationMixin } from 'vuelidate'
+import { checkAddressChecksum, toChecksumAddress } from 'web3-utils'
 // eslint-disable-next-line no-unused-vars
 import { required, integer, minValue } from 'vuelidate/lib/validators'
 import { network } from '@/frontend.config.js'
@@ -3940,7 +3941,7 @@ export default {
     },
     address: {
       required,
-      isUnverifiedContract: (value, vm) => vm.isUnverifiedContract(value, vm),
+      isValidContractId: (value, vm) => vm.isValidContractId(value, vm),
     },
     compilerVersion: {
       required,
@@ -3979,7 +3980,7 @@ export default {
         const vm = this
         const formData = new FormData()
         formData.append('source', vm.source)
-        formData.append('address', vm.address.toLowerCase())
+        formData.append('address', toChecksumAddress(vm.address)) // save address checksum
         formData.append('compilerVersion', vm.compilerVersion)
         formData.append('optimization', vm.optimization)
         formData.append('runs', vm.runs)
@@ -4014,12 +4015,15 @@ export default {
         console.log('recaptcha error:', error)
       }
     },
-    isUnverifiedContract: async (contractId, vm) => {
+    isValidContractId: async (contractId, vm) => {
+      if (!checkAddressChecksum(contractId)) {
+        return false
+      }
       const client = vm.$apollo
       const query = gql`
         query contract {
           contract(where: { contract_id: { _eq: "${
-            contractId.toLowerCase() || ''
+            toChecksumAddress(contractId) || ''
           }" } }) {
             verified
           }

@@ -182,7 +182,6 @@ export default {
               contract_id
               name
               bytecode
-              init
               value
               gas_limit
               storage_limit
