@@ -4017,7 +4017,9 @@ export default {
       const client = vm.$apollo
       const query = gql`
         query contract {
-          contract(where: { contract_id: { _eq: "${contractId || ''}" } }) {
+          contract(where: { contract_id: { _eq: "${
+            contractId.toLowerCase() || ''
+          }" } }) {
             verified
           }
         }

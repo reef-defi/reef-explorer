@@ -128,6 +128,7 @@ app.post('/api/verificator/request', async (req, res) => {
             message: 'Database error'
           });
         }
+        await pool.end();
       } else {
         res.send({
           status: false,
