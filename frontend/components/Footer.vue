@@ -16,6 +16,9 @@
                   >GitHub</a
                 >
               </li>
+              <li class="list-inline-item">
+                <nuxt-link to="/verifyContract">Verify Contract</nuxt-link>
+              </li>
             </ul>
           </div>
         </div>
