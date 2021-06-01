@@ -4,6 +4,7 @@ let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
 const { Pool } = require('pg');
+require('dotenv').config();
 
 // Configuration
 const nodeRpc = 'https://testnet.reefscan.com/api/v3';
@@ -109,24 +110,20 @@ const preprocessExistingBytecodes = async (bytecodes) =>
     bytecodes.map(async ([name, code]) => [name, await preprocessBytecode(code)]));
 
 const getContractArtifacts = async (compiler, filename, existingBytecodes, inputs) => {
-  const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
-
-  // Get contract name
-  // const contractName = Object.keys(contracts.contracts[filename])[0];
-
-  // filename excluding the extension should be equal to contract name in source code
-  const contractName = filename.split('.')[0];
-
-  // Get contract abi
-  const contractAbi = contracts.contracts[filename][contractName].abi;
-
-  const bytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
-  const contractExist = await checkIfContractExists(bytecode, existingBytecodes);
-
-  return {
-    contractExist,
-    contractName,
-    contractAbi
+  try {
+    const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
+    // filename excluding the extension should be equal to contract name in source code
+    const contractName = filename.split('.')[0];
+    const contractAbi = contracts.contracts[filename][contractName].abi;
+    const bytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
+    const contractExist = await checkIfContractExists(bytecode, existingBytecodes);
+    return {
+      contractExist,
+      contractName,
+      contractAbi
+    };
+  } catch {
+    return false;
   }
 }
 
@@ -157,15 +154,27 @@ const verify = async (request, pool) => {
       existing,
       prepareSolcContracts(contracts)
     );
-    const normalResult = normalArtifacts.contractExist;
-    const { contractName, contractAbi } = normalArtifacts;
-
-    let optimizedArtifacts = await getContractArtifacts(
+    const optimizedArtifacts = await getContractArtifacts(
       compiler,
       filename,
       existing,
       prepareOptimizedSolcContracts(contracts, runs, target)
     );
+
+    if (!normalArtifacts || !optimizedArtifacts) {
+      // Update request status
+      logger.info({ request: id }, `Updating request status to ERROR`);
+      const sql = `UPDATE contract_verification_request SET status = 'ERROR' WHERE id = '${id}';`;
+      try {
+        await pool.query(sql);
+      } catch (error) {
+        logger.info({ request: id }, `Db error: ${error}`);
+      }
+      return false;
+    }
+
+    const normalResult = normalArtifacts.contractExist;
+    const { contractName, contractAbi } = normalArtifacts;
     const optimizedResult = optimizedArtifacts.contractExist;
 
     const isVerified = normalResult || optimizedResult;
@@ -173,7 +182,7 @@ const verify = async (request, pool) => {
 
     if (isVerified) {
       // Update request status
-      logger.info({ request: id }, `Updating request status`);
+      logger.info({ request: id }, `Updating request status to VERIFIED`);
       let sql = `UPDATE contract_verification_request SET status = 'VERIFIED' WHERE id = '${id}';`;
       try {
         await pool.query(sql);
@@ -182,7 +191,7 @@ const verify = async (request, pool) => {
       }
       
       // Insert source code, name, abi, etc in contract and set contract verified = true
-      logger.info({ request: id }, `Updating verified contract ${contract_id}`);
+      logger.info({ request: id }, `Updating contract ${contract_id} data in db`);
       sql = `UPDATE contract SET
         name = $1,
         verified = $2,
@@ -215,7 +224,7 @@ const verify = async (request, pool) => {
 
     } else {
       // Update request status
-      logger.info({ request: id }, `Updating request status`);
+      logger.info({ request: id }, `Updating request status to ERROR`);
       const sql = `UPDATE contract_verification_request SET status = 'ERROR' WHERE id = '${id}';`;
       try {
         await pool.query(sql);
