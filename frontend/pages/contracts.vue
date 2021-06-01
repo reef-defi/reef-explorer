@@ -17,6 +17,16 @@
             <Loading />
           </div>
           <template v-else>
+            <b-alert variant="info" class="text-center" show dismissible>
+              <p class="mb-0">
+                <font-awesome-icon icon="file-code" />
+                Are you a developer? Verify and publish your contract source
+                code
+                <nuxt-link to="/verifyContract" class="alert-link"
+                  >here</nuxt-link
+                >
+              </p>
+            </b-alert>
             <!-- Filter -->
             <b-row style="margin-bottom: 1rem">
               <b-col cols="12">
@@ -62,6 +72,14 @@
                       {{ data.item.contract_id }}
                     </nuxt-link>
                   </p>
+                </template>
+                <template #cell(verified)="data">
+                  <font-awesome-icon
+                    v-if="data.item.verified"
+                    icon="check"
+                    class="text-success"
+                  />
+                  <font-awesome-icon v-else icon="times" class="text-danger" />
                 </template>
               </b-table>
             </div>
@@ -155,6 +173,11 @@ export default {
           label: 'Contract address',
           sortable: true,
         },
+        {
+          key: 'verified',
+          label: 'Verified',
+          sortable: true,
+        },
       ],
     }
   },
@@ -188,6 +211,7 @@ export default {
               signer
               block_height
               timestamp
+              verified
             }
           }
         `,
