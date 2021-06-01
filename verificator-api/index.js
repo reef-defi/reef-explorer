@@ -93,7 +93,7 @@ app.post('/api/verificator/request', async (req, res) => {
         const data = [
           id,
           req.body.address,
-          sourceFileContent,
+          sourceFileContent.replace(/\x00/g,''),
           source.name,
           req.body.compilerVersion,
           req.body.optimization,
