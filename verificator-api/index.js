@@ -58,9 +58,20 @@ app.post('/api/verificator/request', async (req, res) => {
         `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`
       );
       const success = JSON.parse(await response.text()).success;
-      if (success) {
-        // Insert contract_verification_request
+      if (success) {     
         const source = req.files.source;
+
+        // check file extension, only .sol is allowed
+        const fileName = source.name;
+        const fileExtension = fileName.split('.').pop();
+        if (fileExtension !== 'sol') {
+          res.send({
+            status: false,
+            message: 'File error: only sol extension is allowed'
+          });
+        }
+
+        // Insert contract_verification_request
         const sourceFileContent = source.data.toString('utf8');
         const id = crypto.randomBytes(20).toString('hex');
         const timestamp = Date.now();
@@ -94,7 +105,7 @@ app.post('/api/verificator/request', async (req, res) => {
           id,
           req.body.address,
           sourceFileContent.replace(/\x00/g,''),
-          source.name,
+          fileName,
           req.body.compilerVersion,
           req.body.optimization,
           req.body.runs,
@@ -111,7 +122,7 @@ app.post('/api/verificator/request', async (req, res) => {
             data: {
               id,
               address: req.body.address,
-              source: source.name,
+              source: fileName,
               sourceMimetype: source.mimetype,
               sourceSize: source.size,
               compilerVersion: req.body.compilerVersion,

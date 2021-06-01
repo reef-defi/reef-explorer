@@ -22,31 +22,40 @@
               <div class="col-md-6">
                 <b-form-group
                   id="input-group-source"
-                  label="Combined source file:"
+                  label="Source file:"
                   label-for="address"
                 >
                   <b-form-file
                     ref="source"
                     v-model="$v.source.$model"
+                    accept=".sol"
                     placeholder="Please select contract source file..."
                     drop-placeholder="Drop contract source file here..."
                     :state="validateState('source')"
                     aria-describedby="source-help"
                   ></b-form-file>
                   <b-form-text id="source-help">
-                    Contract source file should be combined in one file using
-                    <a
-                      href="https://github.com/RyuuGan/sol-merger"
-                      target="_blank"
-                      >sol-merger</a
-                    >
-                    or
-                    <a
-                      href="https://github.com/BlockCatIO/solidity-flattener"
-                      target="_blank"
-                      >solidity-flattener</a
-                    >. Filename excluding the extension should be equal to
-                    contract name in source code
+                    <ul>
+                      <li>
+                        <font-awesome-icon icon="arrow-right" /> Multiple source
+                        files should be combined in one single file using
+                        <a
+                          href="https://github.com/reef-defi/reef-merger"
+                          target="_blank"
+                          >reef-merger</a
+                        >.
+                      </li>
+                      <li>
+                        <font-awesome-icon icon="arrow-right" />
+                        <strong>Filename</strong> excluding the extension should
+                        be <strong>equal</strong> to
+                        <strong>contract name</strong> in source code.
+                      </li>
+                      <li>
+                        <font-awesome-icon icon="arrow-right" /> File extension
+                        should be <strong>".sol"</strong>.
+                      </li>
+                    </ul>
                   </b-form-text>
                   <b-progress
                     v-show="uploadPercentage > 0 && uploadPercentage !== 100"
@@ -3959,6 +3968,20 @@ export default {
     },
     license: {
       required,
+    },
+  },
+  watch: {
+    source(newFile) {
+      if (newFile) {
+        const fileExtension = newFile.name.split('.').pop()
+        if (fileExtension !== 'sol') {
+          // eslint-disable-next-line no-console
+          console.log(`${fileExtension} file extension is not allowed`)
+          this.$nextTick(() => {
+            this.source = null
+          })
+        }
+      }
     },
   },
   methods: {
