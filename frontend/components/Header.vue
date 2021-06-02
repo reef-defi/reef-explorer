@@ -27,7 +27,7 @@
           <b-nav-item right to="/accounts">Accounts</b-nav-item>
           <b-nav-item right to="/contracts">Contracts</b-nav-item>
         </b-navbar-nav>
-        <a
+        <!-- <a
           v-b-tooltip.hover
           :title="network.name"
           href="https://docs.reef.finance/docs/developers/networks/"
@@ -38,7 +38,19 @@
             <font-awesome-icon icon="plug" />
             {{ network.name }}
           </span>
-        </a>
+        </a> -->
+        <b-dropdown class="my-md-2 ml-md-2 network" variant="primary2">
+          <template #button-content>
+            <font-awesome-icon icon="plug" />
+            {{ network.name }}
+          </template>
+          <b-dropdown-item href="https://testnet.reefscan.com"
+            >Reef Testnet</b-dropdown-item
+          >
+          <b-dropdown-item href="https://reefscan.com"
+            >Reef Mainnet</b-dropdown-item
+          >
+        </b-dropdown>
       </b-collapse>
     </b-container>
   </b-navbar>

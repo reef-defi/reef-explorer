@@ -173,10 +173,14 @@ h1 {
 // network
 .network {
   padding: 0.6rem;
-  font-size: 0.8rem;
   font-weight: 100;
   margin-left: 1rem;
-  box-shadow: 0 8px 20px 0 rgb(40 133 208 / 15%);
+}
+
+.network button {
+  background-color: $primary2;
+  color: $white;
+  font-size: 0.8rem;
 }
 
 // home page
