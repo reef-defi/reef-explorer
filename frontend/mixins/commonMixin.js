@@ -2,6 +2,7 @@ import { hexToU8a, isHex } from '@polkadot/util'
 import { BigNumber } from 'bignumber.js'
 import gql from 'graphql-tag'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
+import { checkAddressChecksum } from 'web3-utils'
 import { network } from '@/frontend.config.js'
 
 export default {
@@ -99,6 +100,14 @@ export default {
       } catch (error) {
         return false
       }
+    },
+    isContractId: (contractId) => {
+      if (!contractId) return false
+      if (contractId.length !== 42) return false
+      if (!checkAddressChecksum(contractId)) {
+        return false
+      }
+      return true
     },
   },
 }

@@ -191,7 +191,7 @@
     },
     "contracts": {
       "title": "Contracts",
-      "search_placeholder": "Search by block number"
+      "search_placeholder": "Search by contract address or block number"
     },
     "verifyContract": {
       "title": "Verify & publish contract source code"

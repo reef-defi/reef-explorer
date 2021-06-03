@@ -147,8 +147,6 @@ export default {
                   : network.tokenSymbol,
             }
           })
-          // eslint-disable-next-line no-console
-          console.log(data.extrinsic, this.transfers)
         },
       },
     },

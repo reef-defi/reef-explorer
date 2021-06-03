@@ -191,7 +191,7 @@
     },
     "contracts": {
       "title": "Contratos",
-      "search_placeholder": "Buscar por número de bloque"
+      "search_placeholder": "Buscar por dirección de contrato o número de bloque"
     },
     "verifyContract": {
       "title": "Verifica y publica el código fuente de tu contrato"

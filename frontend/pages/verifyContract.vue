@@ -3975,8 +3975,6 @@ export default {
       if (newFile) {
         const fileExtension = newFile.name.split('.').pop()
         if (fileExtension !== 'sol') {
-          // eslint-disable-next-line no-console
-          console.log(`${fileExtension} file extension is not allowed`)
           this.$nextTick(() => {
             this.source = null
           })
@@ -4020,14 +4018,12 @@ export default {
           })
           .then((resp) => {
             // eslint-disable-next-line no-console
-            console.log('verification request data uploaded:', resp.data)
+            // console.log('verification request data uploaded:', resp.data)
             vm.requestId = resp.data.data.id
             // eslint-disable-next-line no-console
-            console.log('verification request id:', vm.requestId)
+            // console.log('verification request id:', vm.requestId)
           })
           .catch(function (errors) {
-            // eslint-disable-next-line no-console
-            console.log(errors)
             vm.requestId = null
           })
 

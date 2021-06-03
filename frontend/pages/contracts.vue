@@ -44,7 +44,7 @@
                   <p class="mb-0">
                     <nuxt-link
                       v-b-tooltip.hover
-                      :to="`/block?blockNumber=${data.item.block_height}`"
+                      :to="`/block?blockHeight=${data.item.block_height}`"
                       title="Check block information"
                     >
                       #{{ formatNumber(data.item.block_height) }}
@@ -189,17 +189,21 @@ export default {
   },
   apollo: {
     $subscribe: {
-      block: {
+      contracts: {
         query: gql`
           subscription contract(
-            $blockNumber: bigint
+            $blockHeight: bigint
+            $contractId: String
             $perPage: Int!
             $offset: Int!
           ) {
             contract(
               limit: $perPage
               offset: $offset
-              where: { block_height: { _eq: $blockNumber } }
+              where: {
+                block_height: { _eq: $blockHeight }
+                contract_id: { _eq: $contractId }
+              }
               order_by: { block_height: desc }
             ) {
               contract_id
@@ -217,7 +221,12 @@ export default {
         `,
         variables() {
           return {
-            blockNumber: this.filter ? parseInt(this.filter) : undefined,
+            blockHeight: this.isBlockNumber(this.filter)
+              ? parseInt(this.filter)
+              : undefined,
+            contractId: this.isContractId(this.filter)
+              ? this.filter
+              : undefined,
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
