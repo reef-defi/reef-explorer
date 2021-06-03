@@ -57,7 +57,7 @@ const getPendingRequests = async (pool) => {
         runs,
         target,
         license
-      FROM contract
+      FROM contract_verification_request
       WHERE status = 'PENDING'
       ;`;
     const res = await pool.query(query);
