@@ -64,15 +64,12 @@
                 </template>
                 <template #cell(contract_id)="data">
                   <p class="mb-0">
+                    <eth-identicon :address="data.item.contract_id" size="16" />
                     <nuxt-link
                       v-b-tooltip.hover
                       :to="`/contract/${data.item.contract_id}`"
                       title="Check contract information"
                     >
-                      <eth-identicon
-                        :address="data.item.contract_id"
-                        size="16"
-                      />
                       {{ data.item.contract_id }}
                     </nuxt-link>
                   </p>
