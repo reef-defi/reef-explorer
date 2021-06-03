@@ -44,7 +44,7 @@
                   <p class="mb-0">
                     <nuxt-link
                       v-b-tooltip.hover
-                      :to="`/block?blockHeight=${data.item.block_height}`"
+                      :to="`/block?blockNumber=${data.item.block_height}`"
                       title="Check block information"
                     >
                       #{{ formatNumber(data.item.block_height) }}
@@ -64,7 +64,10 @@
                 </template>
                 <template #cell(contract_id)="data">
                   <p class="mb-0">
-                    <eth-identicon :address="data.item.contract_id" size="16" />
+                    <eth-identicon
+                      :address="data.item.contract_id"
+                      :size="16"
+                    />
                     <nuxt-link
                       v-b-tooltip.hover
                       :to="`/contract/${data.item.contract_id}`"

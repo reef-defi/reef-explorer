@@ -4,7 +4,7 @@
       <tbody>
         <tr>
           <td>Block number</td>
-          <td class="text-right">
+          <td>
             <nuxt-link
               v-b-tooltip.hover
               :to="`/block?blockNumber=${extrinsic.block_number}`"
@@ -16,7 +16,7 @@
         </tr>
         <tr>
           <td>Timestamp</td>
-          <td class="text-right">
+          <td>
             <p class="mb-0">
               {{ getDateFromTimestamp(extrinsic.timestamp) }}
             </p>
@@ -24,19 +24,19 @@
         </tr>
         <tr>
           <td>Extrinsic index</td>
-          <td class="text-right">
+          <td>
             {{ extrinsic.extrinsic_index }}
           </td>
         </tr>
         <tr>
           <td>Extrinsic hash</td>
-          <td class="text-right">
+          <td>
             {{ extrinsic.hash }}
           </td>
         </tr>
         <tr>
           <td>Signed?</td>
-          <td class="text-right">
+          <td>
             <font-awesome-icon
               v-if="extrinsic.is_signed"
               icon="check"
@@ -47,7 +47,7 @@
         </tr>
         <tr>
           <td>Signer</td>
-          <td class="text-right">
+          <td>
             <div v-if="extrinsic.signer">
               <Identicon
                 :key="extrinsic.signer"
@@ -66,26 +66,28 @@
         </tr>
         <tr>
           <td>Section and method</td>
-          <td class="text-right">
+          <td>
             {{ extrinsic.section }} ➡
             {{ extrinsic.method }}
           </td>
         </tr>
         <tr>
           <td>Documentation</td>
-          <td class="text-right">
+          <td>
             {{ extrinsic.doc }}
           </td>
         </tr>
         <tr>
           <td>Arguments</td>
-          <td class="text-right">
-            {{ extrinsic.args }}
+          <td>
+            <pre class="mb-0">{{
+              JSON.stringify(JSON.parse(extrinsic.args), null, 2)
+            }}</pre>
           </td>
         </tr>
         <tr>
           <td>Weight</td>
-          <td class="text-right">
+          <td>
             <div v-if="extrinsic.fee_info">
               {{ formatNumber(JSON.parse(extrinsic.fee_info).weight) }}
             </div>
@@ -93,7 +95,7 @@
         </tr>
         <tr>
           <td>Fee class</td>
-          <td class="text-right">
+          <td>
             <div v-if="extrinsic.fee_info">
               {{ JSON.parse(extrinsic.fee_info).class }}
             </div>
@@ -101,7 +103,7 @@
         </tr>
         <tr>
           <td>Fee</td>
-          <td class="text-right amount">
+          <td class="amount">
             <div v-if="extrinsic.fee_info">
               {{ formatAmount(JSON.parse(extrinsic.fee_info).partialFee) }}
             </div>
@@ -109,7 +111,7 @@
         </tr>
         <tr>
           <td>Success</td>
-          <td class="text-right">
+          <td>
             <font-awesome-icon
               v-if="extrinsic.success"
               icon="check"

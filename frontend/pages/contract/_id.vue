@@ -12,7 +12,7 @@
           <div class="card mb-4">
             <div class="card-body">
               <h4 class="text-center mb-4">
-                <eth-identicon :address="contractId" size="32" />
+                <eth-identicon :address="contractId" :size="32" />
                 <span v-if="contract.name">
                   {{ contract.name }}
                 </span>
@@ -28,7 +28,7 @@
                         <tr>
                           <td>Contract address</td>
                           <td class="text-right">
-                            <eth-identicon :address="contractId" size="16" />
+                            <eth-identicon :address="contractId" :size="16" />
                             {{ contractId }}
                           </td>
                         </tr>
