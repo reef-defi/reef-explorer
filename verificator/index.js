@@ -1,5 +1,4 @@
 // @ts-check
-// const fetch = require('node-fetch');
 let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
@@ -7,7 +6,6 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 // Configuration
-// const nodeRpc = 'https://testnet.reefscan.com/api/v3';
 const pollingTime = 10 * 1000; // 10 seconds
 const postgresConnParams = {
   user: process.env.POSTGRES_USER || 'reef',
@@ -23,26 +21,6 @@ const getPool = async () => {
   await pool.connect();
   return pool;
 }
-
-// const getPendingRequests = async () => {
-//   const query = `
-//     query contract_verification_request {
-//       contract_verification_request(where: { status: { _eq: "PENDING" } }) {
-//         id,
-//         contract_id,
-//         source,
-//         filename,
-//         compiler_version,
-//         optimization,
-//         runs,
-//         target,
-//         license
-//       }
-//     }`;
-//   const response = await fetch(nodeRpc, {method: 'POST', body: JSON.stringify({query})});
-//   const { data } = await response.json();
-//   return data.contract_verification_request;
-// }
 
 const getPendingRequests = async (pool) => {
   try {
@@ -63,22 +41,10 @@ const getPendingRequests = async (pool) => {
     const res = await pool.query(query);
     return res.rows || [];
   } catch (error) {
-    console.log(error);
+    logger.error(loggerOptions, `Db error: ${error}`);
     return [];
   }
 }
-
-// const getOnChainContractBytecode = async (contract_id) => {
-//   const query = `
-//     query contract {
-//       contract(where: { contract_id: { _eq: "${contract_id}" } }) {
-//         bytecode
-//       }
-//     }`;
-//   const response = await fetch(nodeRpc, {method: 'POST', body: JSON.stringify({query})});
-//   const { data } = await response.json();
-//   return data.contract[0].bytecode || '';
-// }
 
 const getOnChainContractBytecode = async (pool, contract_id) => {
   try {
@@ -90,7 +56,7 @@ const getOnChainContractBytecode = async (pool, contract_id) => {
       return '';
     }
   } catch (error) {
-    console.log(error);
+    logger.error(loggerOptions, `Db error: ${error}`);
     return '';
   }
 }
@@ -226,7 +192,7 @@ const verify = async (request, pool) => {
       try {
         await pool.query(sql);
       } catch (error) {
-        logger.info({ request: id }, `Error: ${error}`);
+        logger.error({ request: id }, `Db error: ${error}`);
       }
       
       // Insert source code, name, abi, etc in contract and set contract verified = true
@@ -258,7 +224,7 @@ const verify = async (request, pool) => {
       try {
         await pool.query(sql, data);
       } catch (error) {
-        logger.info({ request: id }, `Db error: ${error}`);
+        logger.error({ request: id }, `Db error: ${error}`);
       }
 
     } else {
@@ -268,7 +234,7 @@ const verify = async (request, pool) => {
       try {
         await pool.query(sql);
       } catch (error) {
-        logger.info({ request: id }, `Db error: ${error}`);
+        logger.error({ request: id }, `Db error: ${error}`);
       }
     }
 
