@@ -1,5 +1,5 @@
 // @ts-check
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
 let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
@@ -7,7 +7,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 // Configuration
-const nodeRpc = 'https://testnet.reefscan.com/api/v3';
+// const nodeRpc = 'https://testnet.reefscan.com/api/v3';
 const pollingTime = 10 * 1000; // 10 seconds
 const postgresConnParams = {
   user: process.env.POSTGRES_USER || 'reef',
@@ -24,10 +24,30 @@ const getPool = async () => {
   return pool;
 }
 
-const getPendingRequests = async () => {
-  const query = `
-    query contract_verification_request {
-      contract_verification_request(where: { status: { _eq: "PENDING" } }) {
+// const getPendingRequests = async () => {
+//   const query = `
+//     query contract_verification_request {
+//       contract_verification_request(where: { status: { _eq: "PENDING" } }) {
+//         id,
+//         contract_id,
+//         source,
+//         filename,
+//         compiler_version,
+//         optimization,
+//         runs,
+//         target,
+//         license
+//       }
+//     }`;
+//   const response = await fetch(nodeRpc, {method: 'POST', body: JSON.stringify({query})});
+//   const { data } = await response.json();
+//   return data.contract_verification_request;
+// }
+
+const getPendingRequests = async (pool) => {
+  try {
+    const query = `
+      SELECT
         id,
         contract_id,
         source,
@@ -37,23 +57,42 @@ const getPendingRequests = async () => {
         runs,
         target,
         license
-      }
-    }`;
-  const response = await fetch(nodeRpc, {method: 'POST', body: JSON.stringify({query})});
-  const { data } = await response.json();
-  return data.contract_verification_request;
+      FROM contract
+      WHERE status = 'PENDING'
+      ;`;
+    const res = await pool.query(query);
+    return res.rows || [];
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
 }
 
-const getOnChainContractBytecode = async (contract_id) => {
-  const query = `
-    query contract {
-      contract(where: { contract_id: { _eq: "${contract_id}" } }) {
-        bytecode
-      }
-    }`;
-  const response = await fetch(nodeRpc, {method: 'POST', body: JSON.stringify({query})});
-  const { data } = await response.json();
-  return data.contract[0].bytecode || '';
+// const getOnChainContractBytecode = async (contract_id) => {
+//   const query = `
+//     query contract {
+//       contract(where: { contract_id: { _eq: "${contract_id}" } }) {
+//         bytecode
+//       }
+//     }`;
+//   const response = await fetch(nodeRpc, {method: 'POST', body: JSON.stringify({query})});
+//   const { data } = await response.json();
+//   return data.contract[0].bytecode || '';
+// }
+
+const getOnChainContractBytecode = async (pool, contract_id) => {
+  try {
+    const query = `SELECT bytecode FROM contract WHERE contract_id = '${contract_id}';`;
+    const res = await pool.query(query);
+    if (res.rows.length > 0) {
+      return res.rows[0].bytecode;
+    } else {
+      return '';
+    }
+  } catch (error) {
+    console.log(error);
+    return '';
+  }
 }
 
 const loadCompiler = async (version) => (
@@ -141,7 +180,7 @@ const verify = async (request, pool) => {
       license
     } = request
     logger.info({ request: id }, `Processing contract verification request for contract ${contract_id}`);
-    const onChainContractBytecode = await getOnChainContractBytecode(contract_id);
+    const onChainContractBytecode = await getOnChainContractBytecode(pool, contract_id);
     const existingBytecodes = [['', onChainContractBytecode]];
     const existing = await preprocessExistingBytecodes(existingBytecodes);
     const compiler = await loadCompiler(compiler_version);
@@ -247,7 +286,7 @@ const main = async () => {
   const pool = await getPool();
 
   logger.info(loggerOptions, `Getting pending requests`);
-  const pendingRequests = await getPendingRequests();
+  const pendingRequests = await getPendingRequests(pool);
   for (const request of pendingRequests) {
     await verify(request, pool);
   }
