@@ -138,7 +138,7 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
       contractAbi,
       contractBytecode,
     };
-    logger.info(loggerOptions, `getContractArtifactsr: ${JSON.stringify(result)}`);
+    // logger.info(loggerOptions, `getContractArtifactsr: ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
     logger.info(loggerOptions, `Compilation error: ${JSON.stringify(error)}`);
@@ -175,6 +175,8 @@ const processVerificationRequest = async (request, pool) => {
       existing,
       optimization ? prepareOptimizedSolcContracts(contracts, runs, target) : prepareSolcContracts(contracts)
     );
+
+    logger.info(loggerOptions, `artifacts: ${JSON.stringify(artifacts)}`);
 
     if (artifacts?.error) {
       await updateRequestStatus(pool, id, 'ERROR');
