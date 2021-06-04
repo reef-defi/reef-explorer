@@ -163,10 +163,15 @@ const processVerificationRequest = async (request, pool) => {
     logger.info({ request: id }, `Processing contract verification request for contract ${contract_id}`);
     const onChainContractBytecode = await getOnChainContractBytecode(pool, contract_id);
 
-    logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
+    // logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
 
 
     const existing = preprocessBytecode(onChainContractBytecode);
+
+
+    logger.info({ request: id }, `preprocessBytecode: ${existing}`);
+
+
     const compiler = await loadCompiler(compiler_version);
     const contracts = [];
     contracts[filename] = { content: source };
