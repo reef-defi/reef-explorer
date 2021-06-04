@@ -176,7 +176,7 @@ const processVerificationRequest = async (request, pool) => {
       optimization ? prepareOptimizedSolcContracts(contracts, runs, target) : prepareSolcContracts(contracts)
     );
 
-    logger.info(loggerOptions, `artifacts: ${JSON.stringify(artifacts)}`);
+    // logger.info(loggerOptions, `artifacts: ${JSON.stringify(artifacts)}`);
 
     if (artifacts?.error) {
       await updateRequestStatus(pool, id, 'ERROR');
@@ -217,8 +217,8 @@ const processVerificationRequest = async (request, pool) => {
     } else {
       await updateRequestStatus(pool, id, 'ERROR');
       // log debug info
-      logger.info({ request: id }, `Request contract bytecode:`, contractBytecode);
-      logger.info({ request: id }, `Existing contract bytecode:`, existing);
+      logger.info({ request: id }, `Request contract bytecode: ${contractBytecode}`);
+      logger.info({ request: id }, `Existing contract bytecode: ${existing}`);
     }
     
     // TODO: delete request older than 1 week
