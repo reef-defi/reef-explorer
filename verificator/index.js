@@ -4,6 +4,7 @@ const pino = require('pino');
 const logger = pino();
 const { Pool } = require('pg');
 require('dotenv').config();
+const loggerOptions = {};
 
 // Configuration
 const pollingTime = 10 * 1000; // 10 seconds
@@ -12,15 +13,23 @@ const postgresConnParams = {
   host: process.env.POSTGRES_HOST || 'postgres',
   database: process.env.POSTGRES_DATABASE || 'reef',
   password: process.env.POSTGRES_PASSWORD || 'reef',
-  port: process.env.POSTGRES_PORT || 5432,
+  port: parseInt(process.env.POSTGRES_PORT) || 5432,
 };
-const loggerOptions = {};
 
 const getPool = async () => {
   const pool = new Pool(postgresConnParams);
   await pool.connect();
   return pool;
-}
+};
+
+const parametrizedDbQuery = async (pool, query, data) => {
+  try {
+    return await pool.query(query, data);
+  } catch (error) {
+    logger.error(loggerOptions, `Db error: ${error}`);
+    return false;
+  }
+};
 
 const getPendingRequests = async (pool) => {
   try {
@@ -44,22 +53,28 @@ const getPendingRequests = async (pool) => {
     logger.error(loggerOptions, `Db error: ${error}`);
     return [];
   }
-}
+};
+
+const updateRequestStatus = async (pool, id, status) => {
+  logger.info({ request: id }, `Updating request status to ${status}`);
+  await parametrizedDbQuery(
+    pool,
+    `UPDATE contract_verification_request SET status = $1 WHERE id = $2;`,
+    [status, id]
+  );
+};
 
 const getOnChainContractBytecode = async (pool, contract_id) => {
-  try {
-    const query = `SELECT bytecode FROM contract WHERE contract_id = '${contract_id}';`;
-    const res = await pool.query(query);
+  const query = `SELECT bytecode FROM contract WHERE contract_id = $1;`;
+  const data = [contract_id];
+  const res = await parametrizedDbQuery(pool, query, data);
+  if (res) {
     if (res.rows.length > 0) {
       return res.rows[0].bytecode;
-    } else {
-      return '';
     }
-  } catch (error) {
-    logger.error(loggerOptions, `Db error: ${error}`);
-    return '';
   }
-}
+  return '';
+};
 
 const loadCompiler = async (version) => (
   new Promise((resolve, reject) => {
@@ -67,19 +82,18 @@ const loadCompiler = async (version) => (
       err ? reject(err) : resolve(solcSnapshot);
     });
   })
-)
+);
 
-const preprocessBytecode = async (bytecode) => {
+const preprocessBytecode = (bytecode) => {
   const start = bytecode.lastIndexOf('6080604052');
   const end = bytecode.lastIndexOf('a2646970667358221220');
   return bytecode.slice(start, end)
-}
+};
 
-const checkIfContractExists = async (bytecode, existing) => {
-  const core = await preprocessBytecode(bytecode);
-  const result = existing.find(([name, contract]) => contract === core);
-  return result !== undefined;
-}
+const checkIfContractMatch = (bytecode, existing) => {
+  const core = preprocessBytecode(bytecode);
+  return core === existing;
+};
 
 const prepareSolcContracts = (contracts) => ({
   language: 'Solidity',
@@ -110,29 +124,30 @@ const prepareOptimizedSolcContracts = (contracts, runs, evmVersion) => ({
   }
 });
 
-const preprocessExistingBytecodes = async (bytecodes) => 
-  await Promise.all(
-    bytecodes.map(async ([name, code]) => [name, await preprocessBytecode(code)]));
-
-const getContractArtifacts = async (compiler, filename, existingBytecodes, inputs) => {
+const getContractArtifacts = async (compiler, filename, existingBytecode, inputs) => {
   try {
     const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
     // filename excluding the extension should be equal to contract name in source code
     const contractName = filename.split('.')[0];
     const contractAbi = contracts.contracts[filename][contractName].abi;
-    const bytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
-    const contractExist = await checkIfContractExists(bytecode, existingBytecodes);
+    const contractBytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
+    const isVerified = checkIfContractMatch(contractBytecode, existingBytecode);
     return {
-      contractExist,
+      isVerified,
       contractName,
-      contractAbi
+      contractAbi,
+      contractBytecode,
     };
-  } catch {
-    return false;
+  } catch (error) {
+    logger.info(loggerOptions, `Compilation error: ${JSON.stringify(error)}`);
+    return {
+      error: true,
+      message: JSON.stringify(error)
+    };
   }
-}
+};
 
-const verify = async (request, pool) => {
+const processVerificationRequest = async (request, pool) => {
   try {
     const {
       id,
@@ -147,57 +162,30 @@ const verify = async (request, pool) => {
     } = request
     logger.info({ request: id }, `Processing contract verification request for contract ${contract_id}`);
     const onChainContractBytecode = await getOnChainContractBytecode(pool, contract_id);
-    const existingBytecodes = [['', onChainContractBytecode]];
-    const existing = await preprocessExistingBytecodes(existingBytecodes);
+    const existing = preprocessBytecode(onChainContractBytecode);
     const compiler = await loadCompiler(compiler_version);
     const contracts = [];
-    contracts[filename] = { content: source } 
-    
-    const normalArtifacts = await getContractArtifacts(
+    contracts[filename] = { content: source };
+
+    const artifacts = await getContractArtifacts(
       compiler,
       filename,
       existing,
-      prepareSolcContracts(contracts)
-    );
-    const optimizedArtifacts = await getContractArtifacts(
-      compiler,
-      filename,
-      existing,
-      prepareOptimizedSolcContracts(contracts, runs, target)
+      optimization ? prepareOptimizedSolcContracts(contracts, runs, target) : prepareSolcContracts(contracts)
     );
 
-    if (!normalArtifacts || !optimizedArtifacts) {
-      // Update request status
-      logger.info({ request: id }, `Updating request status to ERROR`);
-      const sql = `UPDATE contract_verification_request SET status = 'ERROR' WHERE id = '${id}';`;
-      try {
-        await pool.query(sql);
-      } catch (error) {
-        logger.info({ request: id }, `Db error: ${error}`);
-      }
-      return false;
+    if (artifacts?.error) {
+      await updateRequestStatus(pool, id, 'ERROR');
+      return;
     }
 
-    const normalResult = normalArtifacts.contractExist;
-    const { contractName, contractAbi } = normalArtifacts;
-    const optimizedResult = optimizedArtifacts.contractExist;
-
-    const isVerified = normalResult || optimizedResult;
+    const { isVerified, contractName, contractAbi, contractBytecode } = artifacts;
     logger.info({ request: id }, `Contract ${contract_id} is ${isVerified ? "verified" : "not verified"}`);
 
     if (isVerified) {
-      // Update request status
-      logger.info({ request: id }, `Updating request status to VERIFIED`);
-      let sql = `UPDATE contract_verification_request SET status = 'VERIFIED' WHERE id = '${id}';`;
-      try {
-        await pool.query(sql);
-      } catch (error) {
-        logger.error({ request: id }, `Db error: ${error}`);
-      }
-      
-      // Insert source code, name, abi, etc in contract and set contract verified = true
+      await updateRequestStatus(pool, id, 'VERIFIED');
       logger.info({ request: id }, `Updating contract ${contract_id} data in db`);
-      sql = `UPDATE contract SET
+      const query = `UPDATE contract SET
         name = $1,
         verified = $2,
         source = $3,
@@ -221,51 +209,42 @@ const verify = async (request, pool) => {
         license,
         contract_id
       ];
-      try {
-        await pool.query(sql, data);
-      } catch (error) {
-        logger.error({ request: id }, `Db error: ${error}`);
-      }
-
+      await parametrizedDbQuery(pool, query, data);
     } else {
-      // Update request status
-      logger.info({ request: id }, `Updating request status to ERROR`);
-      const sql = `UPDATE contract_verification_request SET status = 'ERROR' WHERE id = '${id}';`;
-      try {
-        await pool.query(sql);
-      } catch (error) {
-        logger.error({ request: id }, `Db error: ${error}`);
-      }
+      await updateRequestStatus(pool, id, 'ERROR');
+      // log debug info
+      logger.info({ request: id }, `Request contract bytecode:`, contractBytecode);
+      logger.info({ request: id }, `Existing contract bytecode:`, contractBytecode);
     }
-
+    
     // TODO: delete request older than 1 week
 
   } catch (error) {
     logger.error(loggerOptions, `Error: ${error}`);
   }
-}
+};
 
 const main = async () => {
   logger.info(loggerOptions, `Starting contract verificator`);
-
   logger.info(loggerOptions, `Connecting to db`);
   const pool = await getPool();
-
   logger.info(loggerOptions, `Getting pending requests`);
   const pendingRequests = await getPendingRequests(pool);
   for (const request of pendingRequests) {
-    await verify(request, pool);
+    await processVerificationRequest(request, pool);
   }
-
   logger.info(loggerOptions, `Disconnecting from db`);
   pool.end();
-
   logger.info(loggerOptions, `Contract verificator finished, sleeping 1min`);
-
   setTimeout(
     () => main(),
     pollingTime,
   );
-}
+};
 
-main();
+main().catch((error) => {
+  logger.error(loggerOptions, `Main error: ${error}`);
+}).finally(() => {
+  logger.error(loggerOptions, `Contract verificator stopped!`);
+  process.exit();
+});
