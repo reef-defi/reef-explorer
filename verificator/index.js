@@ -132,12 +132,14 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     const contractAbi = contracts.contracts[filename][contractName].abi;
     const contractBytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
     const isVerified = checkIfContractMatch(contractBytecode, existingBytecode);
-    return {
+    const result = {
       isVerified,
       contractName,
       contractAbi,
       contractBytecode,
     };
+    logger.info(loggerOptions, `getContractArtifactsr: ${JSON.stringify(result)}`);
+    return result;
   } catch (error) {
     logger.info(loggerOptions, `Compilation error: ${JSON.stringify(error)}`);
     return {
@@ -162,16 +164,7 @@ const processVerificationRequest = async (request, pool) => {
     } = request
     logger.info({ request: id }, `Processing contract verification request for contract ${contract_id}`);
     const onChainContractBytecode = await getOnChainContractBytecode(pool, contract_id);
-
-    // logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
-
-
     const existing = preprocessBytecode(onChainContractBytecode);
-
-
-    logger.info({ request: id }, `preprocessBytecode: ${existing}`);
-
-
     const compiler = await loadCompiler(compiler_version);
     const contracts = [];
     contracts[filename] = { content: source };
@@ -223,7 +216,7 @@ const processVerificationRequest = async (request, pool) => {
       await updateRequestStatus(pool, id, 'ERROR');
       // log debug info
       logger.info({ request: id }, `Request contract bytecode:`, contractBytecode);
-      logger.info({ request: id }, `Existing contract bytecode:`, contractBytecode);
+      logger.info({ request: id }, `Existing contract bytecode:`, existing);
     }
     
     // TODO: delete request older than 1 week
