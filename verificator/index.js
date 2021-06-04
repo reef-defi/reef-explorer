@@ -244,7 +244,5 @@ const main = async () => {
 
 main().catch((error) => {
   logger.error(loggerOptions, `Main error: ${error}`);
-}).finally(() => {
   logger.error(loggerOptions, `Contract verificator stopped!`);
-  process.exit();
 });
