@@ -2,7 +2,6 @@
 let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
-// const { Pool } = require('pg');
 const { Client } = require('pg');
 require('dotenv').config();
 const loggerOptions = {};
@@ -16,12 +15,6 @@ const postgresConnParams = {
   password: process.env.POSTGRES_PASSWORD || 'reef',
   port: parseInt(process.env.POSTGRES_PORT) || 5432,
 };
-
-// const getPool = async () => {
-//   const client = new Pool(postgresConnParams);
-//   await client.connect();
-//   return client;
-// };
 
 const getClient = async () => {
   const client = new Client(postgresConnParams);
@@ -63,7 +56,7 @@ const getPendingRequests = async (client) => {
 };
 
 const updateRequestStatus = async (client, id, status) => {
-  logger.info({ request: id }, `Updating request status to ${status}`);
+  logger.info({ request: id }, `Updating request status to '${status}'`);
   await parametrizedDbQuery(
     client,
     `UPDATE contract_verification_request SET status = $1 WHERE id = $2;`,
@@ -156,7 +149,6 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     };
     return result;
   } catch (error) {
-    logger.info(loggerOptions, `Contract is not verified, compilation error: ${JSON.stringify(error)}`);
     return {
       error: true,
       message: JSON.stringify(error)
@@ -192,6 +184,7 @@ const processVerificationRequest = async (request, client) => {
     );
 
     if (artifacts?.error) {
+      logger.info({ request: id }, `Contract is not verified, compilation error!`);
       await updateRequestStatus(client, id, 'ERROR');
       await updateRequestError(client, id, 'COMPILATION_ERROR', artifacts.error);
       return;
