@@ -7,7 +7,7 @@ require('dotenv').config();
 const loggerOptions = {};
 
 // Configuration
-const pollingTime = 10 * 1000; // 10 seconds
+const pollingTime = 30 * 1000; // 30 seconds
 const postgresConnParams = {
   user: process.env.POSTGRES_USER || 'reef',
   host: process.env.POSTGRES_HOST || 'postgres',
@@ -61,6 +61,15 @@ const updateRequestStatus = async (pool, id, status) => {
     pool,
     `UPDATE contract_verification_request SET status = $1 WHERE id = $2;`,
     [status, id]
+  );
+};
+
+const updateRequestError = async (pool, id, errorType, errorMessage) => {
+  logger.info({ request: id }, `Updating error type to '${errorType}' and error message to ${errorMessage}`);
+  await parametrizedDbQuery(
+    pool,
+    `UPDATE contract_verification_request SET error_type = $1, error_message = $2 WHERE id = $3;`,
+    [errorType, errorMessage, id]
   );
 };
 
@@ -138,10 +147,9 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
       contractAbi,
       contractBytecode,
     };
-    // logger.info(loggerOptions, `getContractArtifactsr: ${JSON.stringify(result)}`);
     return result;
   } catch (error) {
-    logger.info(loggerOptions, `Compilation error: ${JSON.stringify(error)}`);
+    logger.info(loggerOptions, `Contract is not verified, compilation error: ${JSON.stringify(error)}`);
     return {
       error: true,
       message: JSON.stringify(error)
@@ -176,17 +184,15 @@ const processVerificationRequest = async (request, pool) => {
       optimization ? prepareOptimizedSolcContracts(contracts, runs, target) : prepareSolcContracts(contracts)
     );
 
-    // logger.info(loggerOptions, `artifacts: ${JSON.stringify(artifacts)}`);
-
     if (artifacts?.error) {
       await updateRequestStatus(pool, id, 'ERROR');
+      await updateRequestError(pool, id, 'COMPILATION_ERROR', artifacts.error);
       return;
     }
-
     const { isVerified, contractName, contractAbi, contractBytecode } = artifacts;
-    logger.info({ request: id }, `Contract ${contract_id} is ${isVerified ? "verified" : "not verified"}`);
 
     if (isVerified) {
+      logger.info({ request: id }, `Contract ${contract_id} is verified!`);
       await updateRequestStatus(pool, id, 'VERIFIED');
       logger.info({ request: id }, `Updating contract ${contract_id} data in db`);
       const query = `UPDATE contract SET
@@ -215,10 +221,13 @@ const processVerificationRequest = async (request, pool) => {
       ];
       await parametrizedDbQuery(pool, query, data);
     } else {
+      const bytecodes = JSON.stringify({
+        request: contractBytecode,
+        onchain: existing,
+      });
       await updateRequestStatus(pool, id, 'ERROR');
-      // log debug info
-      logger.info({ request: id }, `Request contract bytecode: ${contractBytecode}`);
-      logger.info({ request: id }, `Existing contract bytecode: ${existing}`);
+      await updateRequestError(pool, id, 'BYTECODE_MISMATCH', bytecodes);
+      logger.info({ request: id }, `Contract is not verified, bytecode mismatch: ${bytecodes}`);
     }
     
     // TODO: delete request older than 1 week
@@ -239,7 +248,7 @@ const main = async () => {
   }
   logger.info(loggerOptions, `Disconnecting from db`);
   pool.end();
-  logger.info(loggerOptions, `Contract verificator finished, sleeping 1min`);
+  logger.info(loggerOptions, `Contract verificator finished, sleeping ${pollingTime / 1000}s`);
   setTimeout(
     () => main(),
     pollingTime,
