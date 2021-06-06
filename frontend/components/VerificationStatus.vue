@@ -16,7 +16,21 @@
     <b-alert v-if="request.status === 'ERROR'" variant="danger" show>
       <p class="text-center pt-3">
         Your contract
-        {{ request.contract_id }} verification was not successful
+        {{ request.contract_id }} verification was not successful!
+      </p>
+      <p
+        v-if="request.error_type === 'BYTECODE_MISMATCH'"
+        class="text-center pt-3"
+      >
+        <strong>{{ request.error_type }}</strong
+        >: The request contract bytecode didn't match on-chain one
+      </p>
+      <p
+        v-if="request.error_type === 'COMPILATION_ERROR'"
+        class="text-center pt-3"
+      >
+        <strong>{{ request.error_type }}</strong
+        >: We are not able to compile the provided source code
       </p>
     </b-alert>
   </div>
@@ -43,6 +57,7 @@ export default {
             contract_verification_request(where: { id: { _eq: $id } }) {
               contract_id
               status
+              error_type
             }
           }
         `,
