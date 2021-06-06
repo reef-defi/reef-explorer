@@ -65,7 +65,7 @@ const updateRequestStatus = async (pool, id, status) => {
 };
 
 const updateRequestError = async (pool, id, errorType, errorMessage) => {
-  logger.info({ request: id }, `Updating error type to '${errorType}' and error message to ${errorMessage}`);
+  logger.info({ request: id }, `Updating error type to '${errorType}'`);
   await parametrizedDbQuery(
     pool,
     `UPDATE contract_verification_request SET error_type = $1, error_message = $2 WHERE id = $3;`,
@@ -241,13 +241,13 @@ const main = async () => {
   logger.info(loggerOptions, `Starting contract verificator`);
   logger.info(loggerOptions, `Connecting to db`);
   const pool = await getPool();
-  logger.info(loggerOptions, `Getting pending requests`);
+  logger.info(loggerOptions, `Processing pending requests`);
   const pendingRequests = await getPendingRequests(pool);
   for (const request of pendingRequests) {
     await processVerificationRequest(request, pool);
   }
   logger.info(loggerOptions, `Disconnecting from db`);
-  pool.end();
+  await pool.end();
   logger.info(loggerOptions, `Contract verificator finished, sleeping ${pollingTime / 1000}s`);
   setTimeout(
     () => main(),
