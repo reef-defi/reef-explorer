@@ -2,7 +2,8 @@
 let solc = require("solc");
 const pino = require('pino');
 const logger = pino();
-const { Pool } = require('pg');
+// const { Pool } = require('pg');
+const { Client } = require('pg');
 require('dotenv').config();
 const loggerOptions = {};
 
@@ -16,22 +17,28 @@ const postgresConnParams = {
   port: parseInt(process.env.POSTGRES_PORT) || 5432,
 };
 
-const getPool = async () => {
-  const pool = new Pool(postgresConnParams);
-  await pool.connect();
-  return pool;
+// const getPool = async () => {
+//   const client = new Pool(postgresConnParams);
+//   await client.connect();
+//   return client;
+// };
+
+const getClient = async () => {
+  const client = new Client(postgresConnParams);
+  await client.connect();
+  return client;
 };
 
-const parametrizedDbQuery = async (pool, query, data) => {
+const parametrizedDbQuery = async (client, query, data) => {
   try {
-    return await pool.query(query, data);
+    return await client.query(query, data);
   } catch (error) {
     logger.error(loggerOptions, `Db error: ${error}`);
     return false;
   }
 };
 
-const getPendingRequests = async (pool) => {
+const getPendingRequests = async (client) => {
   try {
     const query = `
       SELECT
@@ -47,7 +54,7 @@ const getPendingRequests = async (pool) => {
       FROM contract_verification_request
       WHERE status = 'PENDING'
       ;`;
-    const res = await pool.query(query);
+    const res = await client.query(query);
     return res.rows || [];
   } catch (error) {
     logger.error(loggerOptions, `Db error: ${error}`);
@@ -55,28 +62,28 @@ const getPendingRequests = async (pool) => {
   }
 };
 
-const updateRequestStatus = async (pool, id, status) => {
+const updateRequestStatus = async (client, id, status) => {
   logger.info({ request: id }, `Updating request status to ${status}`);
   await parametrizedDbQuery(
-    pool,
+    client,
     `UPDATE contract_verification_request SET status = $1 WHERE id = $2;`,
     [status, id]
   );
 };
 
-const updateRequestError = async (pool, id, errorType, errorMessage) => {
+const updateRequestError = async (client, id, errorType, errorMessage) => {
   logger.info({ request: id }, `Updating error type to '${errorType}'`);
   await parametrizedDbQuery(
-    pool,
+    client,
     `UPDATE contract_verification_request SET error_type = $1, error_message = $2 WHERE id = $3;`,
     [errorType, errorMessage, id]
   );
 };
 
-const getOnChainContractBytecode = async (pool, contract_id) => {
+const getOnChainContractBytecode = async (client, contract_id) => {
   const query = `SELECT bytecode FROM contract WHERE contract_id = $1;`;
   const data = [contract_id];
-  const res = await parametrizedDbQuery(pool, query, data);
+  const res = await parametrizedDbQuery(client, query, data);
   if (res) {
     if (res.rows.length > 0) {
       return res.rows[0].bytecode;
@@ -157,7 +164,7 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
   }
 };
 
-const processVerificationRequest = async (request, pool) => {
+const processVerificationRequest = async (request, client) => {
   try {
     const {
       id,
@@ -171,7 +178,7 @@ const processVerificationRequest = async (request, pool) => {
       license
     } = request
     logger.info({ request: id }, `Processing contract verification request for contract ${contract_id}`);
-    const onChainContractBytecode = await getOnChainContractBytecode(pool, contract_id);
+    const onChainContractBytecode = await getOnChainContractBytecode(client, contract_id);
     const existing = preprocessBytecode(onChainContractBytecode);
     const compiler = await loadCompiler(compiler_version);
     const contracts = [];
@@ -185,15 +192,15 @@ const processVerificationRequest = async (request, pool) => {
     );
 
     if (artifacts?.error) {
-      await updateRequestStatus(pool, id, 'ERROR');
-      await updateRequestError(pool, id, 'COMPILATION_ERROR', artifacts.error);
+      await updateRequestStatus(client, id, 'ERROR');
+      await updateRequestError(client, id, 'COMPILATION_ERROR', artifacts.error);
       return;
     }
     const { isVerified, contractName, contractAbi, contractBytecode } = artifacts;
 
     if (isVerified) {
       logger.info({ request: id }, `Contract ${contract_id} is verified!`);
-      await updateRequestStatus(pool, id, 'VERIFIED');
+      await updateRequestStatus(client, id, 'VERIFIED');
       logger.info({ request: id }, `Updating contract ${contract_id} data in db`);
       const query = `UPDATE contract SET
         name = $1,
@@ -219,14 +226,14 @@ const processVerificationRequest = async (request, pool) => {
         license,
         contract_id
       ];
-      await parametrizedDbQuery(pool, query, data);
+      await parametrizedDbQuery(client, query, data);
     } else {
       const bytecodes = JSON.stringify({
         request: contractBytecode,
         onchain: existing,
       });
-      await updateRequestStatus(pool, id, 'ERROR');
-      await updateRequestError(pool, id, 'BYTECODE_MISMATCH', bytecodes);
+      await updateRequestStatus(client, id, 'ERROR');
+      await updateRequestError(client, id, 'BYTECODE_MISMATCH', bytecodes);
       logger.info({ request: id }, `Contract is not verified, bytecode mismatch: ${bytecodes}`);
     }
     
@@ -240,14 +247,14 @@ const processVerificationRequest = async (request, pool) => {
 const main = async () => {
   logger.info(loggerOptions, `Starting contract verificator`);
   logger.info(loggerOptions, `Connecting to db`);
-  const pool = await getPool();
+  const client = await getClient();
   logger.info(loggerOptions, `Processing pending requests`);
-  const pendingRequests = await getPendingRequests(pool);
+  const pendingRequests = await getPendingRequests(client);
   for (const request of pendingRequests) {
-    await processVerificationRequest(request, pool);
+    await processVerificationRequest(request, client);
   }
   logger.info(loggerOptions, `Disconnecting from db`);
-  await pool.end();
+  await client.end();
   logger.info(loggerOptions, `Contract verificator finished, sleeping ${pollingTime / 1000}s`);
   setTimeout(
     () => main(),
