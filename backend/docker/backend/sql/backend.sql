@@ -97,8 +97,8 @@ CREATE TABLE IF NOT EXISTS contract_verification_request  (
   target TEXT NOT NULL,
   license TEXT NOT NULL,
   status TEXT NOT NULL,
-  error_type TEXT NOT NULL,
-  error_message TEXT NOT NULL,
+  error_type TEXT DEFAULT NULL,
+  error_message TEXT DEFAULT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( id )  
 );
