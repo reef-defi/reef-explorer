@@ -302,6 +302,29 @@ app.post('/api/verificator/request-status', async (req, res) => {
   }
 });
 
+app.get('/api/price/reef', async (req, res) => {
+  axios
+    .get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=REEF&vs_currencies=usd&include_24hr_change=true`
+    )
+    .then((response) => {
+      res.send({
+        status: true,
+        message: 'Success',
+        data: {
+          usd: response.data[network.coinGeckoDenom].usd,
+          usd_24h_change: response.data[network.coinGeckoDenom].usd_24h_change,
+        }
+      });
+    })
+    .catch((error) => {
+      res.send({
+        status: false,
+        message: 'Error'
+      });
+    })
+});
+
 // Make uploads directory static
 app.use(express.static('uploads'));
 
