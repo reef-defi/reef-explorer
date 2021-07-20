@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { Pool } = require('pg');
+const axios = require('axios');
 
 const postgresConnParams = {
   user: process.env.POSTGRES_USER || 'reef',
@@ -303,7 +304,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
 });
 
 app.get('/api/price/reef', async (req, res) => {
-  axios
+  await axios
     .get(
       `https://api.coingecko.com/api/v3/simple/price?ids=REEF&vs_currencies=usd&include_24hr_change=true`
     )
