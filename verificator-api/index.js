@@ -306,7 +306,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
 app.get('/api/price/reef', async (req, res) => {
   await axios
     .get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=REEF&vs_currencies=usd&include_24hr_change=true`
+      `https://api.coingecko.com/api/v3/simple/price?ids=reef-finance&vs_currencies=usd&include_24hr_change=true`
     )
     .then((response) => {
       res.send({
