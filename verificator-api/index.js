@@ -304,17 +304,18 @@ app.post('/api/verificator/request-status', async (req, res) => {
 });
 
 app.get('/api/price/reef', async (req, res) => {
+  const denom = 'reef-finance';
   await axios
     .get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=reef-finance&vs_currencies=usd&include_24hr_change=true`
+      `https://api.coingecko.com/api/v3/simple/price?ids=${denom}&vs_currencies=usd&include_24hr_change=true`
     )
     .then((response) => {
       res.send({
         status: true,
         message: 'Success',
         data: {
-          usd: response.data[network.coinGeckoDenom].usd,
-          usd_24h_change: response.data[network.coinGeckoDenom].usd_24h_change,
+          usd: response.data[denom].usd,
+          usd_24h_change: response.data[denom].usd_24h_change,
         }
       });
     })
