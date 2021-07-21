@@ -32,11 +32,7 @@
               <b-table striped hover :fields="fields" :items="blocks">
                 <template #cell(block_number)="data">
                   <p class="mb-0">
-                    <nuxt-link
-                      v-b-tooltip.hover
-                      :to="`/block/${data.item.block_hash}`"
-                      title="Check block information"
-                    >
+                    <nuxt-link :to="`/block/${data.item.block_hash}`">
                       #{{ formatNumber(data.item.block_number) }}
                     </nuxt-link>
                   </p>

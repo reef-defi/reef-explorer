@@ -33,9 +33,7 @@
                 <template #cell(block_number)="data">
                   <p class="mb-0">
                     <nuxt-link
-                      v-b-tooltip.hover
                       :to="`/extrinsic/${data.item.block_number}/${data.item.extrinsic_index}`"
-                      title="Check extrinsic information"
                     >
                       {{ data.item.block_number }}-{{
                         data.item.extrinsic_index
@@ -50,11 +48,7 @@
                       :address="data.item.signer"
                       :size="20"
                     />
-                    <nuxt-link
-                      v-b-tooltip.hover
-                      :to="`/account/${data.item.signer}`"
-                      :title="$t('pages.accounts.account_details')"
-                    >
+                    <nuxt-link :to="`/account/${data.item.signer}`">
                       {{ shortAddress(data.item.signer) }}
                     </nuxt-link>
                   </p>

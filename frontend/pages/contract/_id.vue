@@ -36,9 +36,7 @@
                           <td>Created at block</td>
                           <td class="text-right">
                             <nuxt-link
-                              v-b-tooltip.hover
                               :to="`/block?blockNumber=${contract.block_height}`"
-                              title="Check block information"
                             >
                               #{{ formatNumber(contract.block_height) }}
                             </nuxt-link>
@@ -53,11 +51,7 @@
                                 :address="contract.signer"
                                 :size="20"
                               />
-                              <nuxt-link
-                                v-b-tooltip.hover
-                                :to="`/account/${contract.signer}`"
-                                :title="$t('details.block.account_details')"
-                              >
+                              <nuxt-link :to="`/account/${contract.signer}`">
                                 {{ shortAddress(contract.signer) }}
                               </nuxt-link>
                             </div>

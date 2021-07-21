@@ -151,11 +151,7 @@
                     :address="data.item.account_id"
                     :size="20"
                   />
-                  <nuxt-link
-                    v-b-tooltip.hover
-                    :to="`/account/${data.item.account_id}`"
-                    :title="$t('pages.accounts.account_details')"
-                  >
+                  <nuxt-link :to="`/account/${data.item.account_id}`">
                     {{ shortAddress(data.item.account_id) }}
                   </nuxt-link>
                 </div>

@@ -5,11 +5,7 @@
         <tr>
           <td>Block number</td>
           <td>
-            <nuxt-link
-              v-b-tooltip.hover
-              :to="`/block?blockNumber=${extrinsic.block_number}`"
-              title="Check block information"
-            >
+            <nuxt-link :to="`/block?blockNumber=${extrinsic.block_number}`">
               #{{ formatNumber(extrinsic.block_number) }}
             </nuxt-link>
           </td>
@@ -54,11 +50,7 @@
                 :address="extrinsic.signer"
                 :size="20"
               />
-              <nuxt-link
-                v-b-tooltip.hover
-                :to="`/account/${extrinsic.signer}`"
-                :title="$t('details.block.account_details')"
-              >
+              <nuxt-link :to="`/account/${extrinsic.signer}`">
                 {{ shortAddress(extrinsic.signer) }}
               </nuxt-link>
             </div>

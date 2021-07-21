@@ -33,9 +33,7 @@
                 <template #cell(block_number)="data">
                   <p class="mb-0">
                     <nuxt-link
-                      v-b-tooltip.hover
                       :to="`/block?blockNumber=${data.item.block_number}`"
-                      title="Check block information"
                     >
                       #{{ formatNumber(data.item.block_number) }}
                     </nuxt-link>
@@ -53,11 +51,7 @@
                       :address="data.item.from"
                       :size="20"
                     />
-                    <nuxt-link
-                      v-b-tooltip.hover
-                      :to="`/account/${data.item.from}`"
-                      :title="$t('pages.accounts.account_details')"
-                    >
+                    <nuxt-link :to="`/account/${data.item.from}`">
                       {{ shortAddress(data.item.from) }}
                     </nuxt-link>
                   </p>
@@ -70,11 +64,7 @@
                         :address="data.item.to"
                         :size="20"
                       />
-                      <nuxt-link
-                        v-b-tooltip.hover
-                        :to="`/account/${data.item.to}`"
-                        :title="$t('pages.accounts.account_details')"
-                      >
+                      <nuxt-link :to="`/account/${data.item.to}`">
                         {{ shortAddress(data.item.to) }}
                       </nuxt-link>
                     </p>

@@ -39,22 +39,14 @@
         >
           <template #cell(block_number)="data">
             <p class="mb-0">
-              <nuxt-link
-                v-b-tooltip.hover
-                :to="`/block?blockNumber=${data.item.block_number}`"
-                title="Check block information"
-              >
+              <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
                 #{{ formatNumber(data.item.block_number) }}
               </nuxt-link>
             </p>
           </template>
           <template #cell(hash)="data">
             <p class="mb-0">
-              <nuxt-link
-                v-b-tooltip.hover
-                :to="`/block?blockNumber=${data.item.block_number}`"
-                title="Check block information"
-              >
+              <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
                 {{ shortHash(data.item.hash) }}
               </nuxt-link>
             </p>
