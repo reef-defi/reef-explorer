@@ -184,7 +184,7 @@ const processVerificationRequest = async (request, client) => {
     );
 
     if (artifacts?.error) {
-      logger.info({ request: id }, `Contract is not verified, compilation error!`);
+      logger.info({ request: id }, `Contract is not verified, compilation error: ${artifacts?.message}`);
       await updateRequestStatus(client, id, 'ERROR');
       await updateRequestError(client, id, 'COMPILATION_ERROR', artifacts.error);
       return;
