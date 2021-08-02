@@ -157,9 +157,10 @@
                   <pre>{{ contract.source }}</pre>
                 </b-tab>
                 <b-tab v-if="contract.verified" title="ABI">
-                  <pre class="text-left">{{
+                  <!-- <pre class="text-left">{{
                     JSON.stringify(JSON.parse(contract.abi), null, 2)
-                  }}</pre>
+                  }}</pre> -->
+                  <vue-json-pretty :data="JSON.parse(contract.abi)" />
                 </b-tab>
               </b-tabs>
             </div>
@@ -175,11 +176,13 @@ import Identicon from '@/components/Identicon.vue'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
+import VueJsonPretty from 'vue-json-pretty'
 
 export default {
   components: {
     Identicon,
     Loading,
+    VueJsonPretty,
   },
   mixins: [commonMixin],
   data() {

@@ -16081,6 +16081,11 @@ vue-json-csv@^1.2.12:
     papaparse "^5.3.0"
     vue "^2.6.12"
 
+vue-json-pretty@^1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/vue-json-pretty/-/vue-json-pretty-1.8.1.tgz#538bb57fc718544152105aef659b4c88475365ee"
+  integrity sha512-GHi8q6QLx8fw8XDhAgztlC6emupptpmV5a+yd4UxteEoPqGHXwpgscTbTTxwH2GEdmYXHAt+GLg5tAsenLZKDA==
+
 vue-loader@^15.9.6:
   version "15.9.6"
   resolved "https://registry.yarnpkg.com/vue-loader/-/vue-loader-15.9.6.tgz#f4bb9ae20c3a8370af3ecf09b8126d38ffdb6b8b"
