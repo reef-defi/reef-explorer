@@ -216,6 +216,8 @@ export default {
       ],
       compilerVersions: [
         { text: 'Please select', value: null },
+        { text: 'v0.8.6+commit.11564f7e', value: 'v0.8.6+commit.11564f7e' },
+        { text: 'v0.8.5+commit.a4f2e591', value: 'v0.8.5+commit.a4f2e591' },
         { text: 'v0.8.4+commit.c7e474f2', value: 'v0.8.4+commit.c7e474f2' },
         { text: 'v0.8.3+commit.8d00100c', value: 'v0.8.3+commit.8d00100c' },
         { text: 'v0.8.2+commit.661d1103', value: 'v0.8.2+commit.661d1103' },
@@ -281,6 +283,166 @@ export default {
       ],
       compilerAllVersions: [
         { text: 'Please select', value: null },
+        {
+          text: 'v0.8.7-nightly.2021.7.29+commit.5ff0811b',
+          value: 'v0.8.7-nightly.2021.7.29+commit.5ff0811b',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.28+commit.1794e1c8',
+          value: 'v0.8.7-nightly.2021.7.28+commit.1794e1c8',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.27+commit.c018cdf4',
+          value: 'v0.8.7-nightly.2021.7.27+commit.c018cdf4',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.26+commit.f97fe813',
+          value: 'v0.8.7-nightly.2021.7.26+commit.f97fe813',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.25+commit.a2ce4616',
+          value: 'v0.8.7-nightly.2021.7.25+commit.a2ce4616',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.21+commit.6d6c9e6e',
+          value: 'v0.8.7-nightly.2021.7.21+commit.6d6c9e6e',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.20+commit.d655a3c9',
+          value: 'v0.8.7-nightly.2021.7.20+commit.d655a3c9',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.15+commit.3d26d47d',
+          value: 'v0.8.7-nightly.2021.7.15+commit.3d26d47d',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.14+commit.90f77f8c',
+          value: 'v0.8.7-nightly.2021.7.14+commit.90f77f8c',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.13+commit.57d32ca2',
+          value: 'v0.8.7-nightly.2021.7.13+commit.57d32ca2',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.12+commit.ef6ad57c',
+          value: 'v0.8.7-nightly.2021.7.12+commit.ef6ad57c',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.8+commit.c3fa520c',
+          value: 'v0.8.7-nightly.2021.7.8+commit.c3fa520c',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.7+commit.46514ffa',
+          value: 'v0.8.7-nightly.2021.7.7+commit.46514ffa',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.6+commit.69233c37',
+          value: 'v0.8.7-nightly.2021.7.6+commit.69233c37',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.5+commit.19b217dc',
+          value: 'v0.8.7-nightly.2021.7.5+commit.19b217dc',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.2+commit.f6cb933f',
+          value: 'v0.8.7-nightly.2021.7.2+commit.f6cb933f',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.7.1+commit.98e1dee4',
+          value: 'v0.8.7-nightly.2021.7.1+commit.98e1dee4',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.6.30+commit.8a6a330d',
+          value: 'v0.8.7-nightly.2021.6.30+commit.8a6a330d',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.6.29+commit.eaac16c7',
+          value: 'v0.8.7-nightly.2021.6.29+commit.eaac16c7',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.6.28+commit.d91dc995',
+          value: 'v0.8.7-nightly.2021.6.28+commit.d91dc995',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.6.23+commit.cbf1c3ae',
+          value: 'v0.8.7-nightly.2021.6.23+commit.cbf1c3ae',
+        },
+        {
+          text: 'v0.8.7-nightly.2021.6.22+commit.9cf6021d',
+          value: 'v0.8.7-nightly.2021.6.22+commit.9cf6021d',
+        },
+        {
+          text: 'v0.8.6+commit.11564f7e',
+          value: 'v0.8.6+commit.11564f7e',
+        },
+        {
+          text: 'v0.8.6-nightly.2021.6.21+commit.a96114b3',
+          value: 'v0.8.6-nightly.2021.6.21+commit.a96114b3',
+        },
+        {
+          text: 'v0.8.6-nightly.2021.6.17+commit.11281586',
+          value: 'v0.8.6-nightly.2021.6.17+commit.11281586',
+        },
+        {
+          text: 'v0.8.6-nightly.2021.6.16+commit.61468301',
+          value: 'v0.8.6-nightly.2021.6.16+commit.61468301',
+        },
+        {
+          text: 'v0.8.6-nightly.2021.6.15+commit.e7bf1cc7',
+          value: 'v0.8.6-nightly.2021.6.15+commit.e7bf1cc7',
+        },
+        {
+          text: 'v0.8.6-nightly.2021.6.14+commit.b2ffa910',
+          value: 'v0.8.6-nightly.2021.6.14+commit.b2ffa910',
+        },
+        {
+          text: 'v0.8.5+commit.a4f2e591',
+          value: 'v0.8.5+commit.a4f2e591',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.6.10+commit.a4f2e591',
+          value: 'v0.8.5-nightly.2021.6.10+commit.a4f2e591',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.6.9+commit.98e7b61a',
+          value: 'v0.8.5-nightly.2021.6.9+commit.98e7b61a',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.6.8+commit.e77e9e44',
+          value: 'v0.8.5-nightly.2021.6.8+commit.e77e9e44',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.6.7+commit.7d8a4e63',
+          value: 'v0.8.5-nightly.2021.6.7+commit.7d8a4e63',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.6.4+commit.1f8f1a3d',
+          value: 'v0.8.5-nightly.2021.6.4+commit.1f8f1a3d',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.6.3+commit.1638b210',
+          value: 'v0.8.5-nightly.2021.6.3+commit.1638b210',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.6.1+commit.4cbf9ff7',
+          value: 'v0.8.5-nightly.2021.6.1+commit.4cbf9ff7',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.5.31+commit.7d1df951',
+          value: 'v0.8.5-nightly.2021.5.31+commit.7d1df951',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.5.27+commit.2f0df8f0',
+          value: 'v0.8.5-nightly.2021.5.27+commit.2f0df8f0',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.5.26+commit.a3634934',
+          value: 'v0.8.5-nightly.2021.5.26+commit.a3634934',
+        },
+        {
+          text: 'v0.8.5-nightly.2021.5.25+commit.6640fb8c',
+          value: 'v0.8.5-nightly.2021.5.25+commit.6640fb8c',
+        },
         {
           text: 'v0.8.5-nightly.2021.5.24+commit.c5031799',
           value: 'v0.8.5-nightly.2021.5.24+commit.c5031799',
