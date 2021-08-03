@@ -109,6 +109,22 @@
               </div>
               <div class="col-md-6">
                 <b-form-group
+                  id="input-group-optimization-target"
+                  label="EVM version:"
+                  label-for="optimization-target"
+                >
+                  <b-form-select
+                    id="optimization-target"
+                    v-model="$v.target.$model"
+                    :options="targetOptions"
+                    :state="validateState('target')"
+                  ></b-form-select>
+                </b-form-group>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <b-form-group
                   id="input-group-optimization"
                   label="Optimization:"
                   label-for="optimization"
@@ -121,8 +137,6 @@
                   ></b-form-select>
                 </b-form-group>
               </div>
-            </div>
-            <div class="row">
               <div class="col-md-6">
                 <b-form-group
                   id="input-group-optimization-runs"
@@ -135,20 +149,6 @@
                     type="number"
                     :state="validateState('runs')"
                   ></b-form-input>
-                </b-form-group>
-              </div>
-              <div class="col-md-6">
-                <b-form-group
-                  id="input-group-optimization-target"
-                  label="Target (Optimization):"
-                  label-for="optimization-target"
-                >
-                  <b-form-select
-                    id="optimization-target"
-                    v-model="$v.target.$model"
-                    :options="targetOptions"
-                    :state="validateState('target')"
-                  ></b-form-select>
                 </b-form-group>
               </div>
             </div>
@@ -198,10 +198,10 @@ export default {
       nightly: true,
       optimization: true,
       runs: 200,
-      target: 'istanbul',
+      target: 'default',
       license: 'none',
       targetOptions: [
-        { text: 'Please select', value: null },
+        { text: 'Default (compiler defaults)', value: 'default' },
         { text: 'homestead (oldest version)', value: 'homestead' },
         { text: 'tangerineWhistle', value: 'tangerineWhistle' },
         { text: 'spuriousDragon', value: 'spuriousDragon' },
@@ -4159,15 +4159,51 @@ export default {
         // generate recaptcha token
         const token = await this.$recaptcha.getResponse()
 
-        // call verificator-api
+        // figure out default target
         const vm = this
+        let target = vm.target
+        if (target === 'default') {
+          // v0.4.12
+          const compilerVersionNumber = vm.compilerVersion
+            .split('-')[0]
+            .substring(1)
+          const compilerVersionNumber1 = parseInt(
+            compilerVersionNumber.split('.')[0]
+          )
+          const compilerVersionNumber2 = parseInt(
+            compilerVersionNumber.split('.')[1]
+          )
+          const compilerVersionNumber3 = parseInt(
+            compilerVersionNumber.split('.')[2]
+          )
+
+          if (
+            compilerVersionNumber1 === 0 &&
+            compilerVersionNumber2 <= 5 &&
+            compilerVersionNumber3 <= 4
+          ) {
+            target = 'byzantium'
+          } else if (
+            compilerVersionNumber1 === 0 &&
+            compilerVersionNumber2 >= 5 &&
+            compilerVersionNumber3 >= 5 &&
+            compilerVersionNumber3 < 14
+          ) {
+            target = 'petersburg'
+          } else {
+            target = 'istambul'
+          }
+        }
+
+        // call verificator-api
+
         const formData = new FormData()
         formData.append('source', vm.source)
         formData.append('address', toChecksumAddress(vm.address)) // save address checksum
         formData.append('compilerVersion', vm.compilerVersion)
         formData.append('optimization', vm.optimization)
         formData.append('runs', vm.runs)
-        formData.append('target', vm.target)
+        formData.append('target', target)
         formData.append('license', vm.license)
         formData.append('token', token)
         this.$axios
