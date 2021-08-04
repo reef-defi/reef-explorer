@@ -331,12 +331,12 @@ app.get('/api/staking/rewards', async (req, res) => {
   try {
     const query = `
       SELECT
-        block_number
-        data
-        event_index
-        method
-        phase
-        section
+        block_number,
+        data,
+        event_index,
+        method,
+        phase,
+        section,
         timestamp
       FROM event
       WHERE section = 'staking' AND method = 'Reward'
