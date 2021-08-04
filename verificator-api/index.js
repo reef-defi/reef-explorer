@@ -359,7 +359,7 @@ app.get('/api/staking/rewards', async (req, res) => {
   } catch (error) {
     res.send({
       status: false,
-      message: 'Error'
+      message: `Error: ${error}`
     });
   }
 });
