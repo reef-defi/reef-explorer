@@ -329,6 +329,7 @@ app.get('/api/price/reef', async (req, res) => {
 
 app.get('/api/staking/rewards', async (req, res) => {
   try {
+    const pool = await getPool();
     const query = `
       SELECT
         block_number,
@@ -359,7 +360,7 @@ app.get('/api/staking/rewards', async (req, res) => {
   } catch (error) {
     res.send({
       status: false,
-      message: `Error: ${error}`
+      message: 'Error'
     });
   }
 });
