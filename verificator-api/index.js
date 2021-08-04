@@ -268,11 +268,11 @@ app.post('/api/verificator/request-status', async (req, res) => {
         FROM contract_verification_request
         WHERE id = $1
       ;`;
-      const res = await pool.query(query, data);
-      if (res.rows.length > 0) {
+      const dbres = await pool.query(query, data);
+      if (dbres.rows.length > 0) {
         if (res.rows[0].status) {
-          const requestStatus = res.rows[0].status;
-          const contractId = res.rows[0].contract_id;
+          const requestStatus = dbres.rows[0].status;
+          const contractId = dbres.rows[0].contract_id;
           res.send({
             status: true,
             message: 'Request found',
@@ -325,6 +325,43 @@ app.get('/api/price/reef', async (req, res) => {
         message: 'Error'
       });
     })
+});
+
+app.get('/api/staking/rewards', async (req, res) => {
+  try {
+    const query = `
+      SELECT
+        block_number
+        data
+        event_index
+        method
+        phase
+        section
+        timestamp
+      FROM event
+      WHERE section = 'staking' AND method = 'Reward'
+    ;`;
+    const dbres = await pool.query(query);
+    if (dbres.rows.length > 0) {
+      res.send({
+        status: true,
+        message: 'Request found',
+        data: {
+          rows: dbres.rows,
+        }
+      });
+    } else {
+      res.send({
+        status: false,
+        message: 'Request not found'
+      });
+    }
+  } catch (error) {
+    res.send({
+      status: false,
+      message: 'Error'
+    });
+  }
 });
 
 // Make uploads directory static
