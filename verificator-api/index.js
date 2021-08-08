@@ -249,6 +249,111 @@ app.post('/api/verificator/untrusted-request', async (req, res) => {
   }
 });
 
+//
+// Endpoint: /api/verificator/deployed-bytecode-request
+//
+// Method: POST
+//
+// Params:
+//
+// address: contract address
+// name: contract name (of the main contract)
+// source: source code
+// bytecode: deployed bytecode
+// abi: contract abi
+// compilerVersion: i.e: v0.8.6+commit.11564f7e
+// optimization: true | false
+// runs: optimization runs
+// target: homestead | tangerineWhistle | spuriousDragon | byzantium | constantinople | petersburg | istanbul
+// license: "unlicense" | "MIT" | "GNU GPLv2" | "GNU GPLv3" | "GNU LGPLv2.1" | "GNU LGPLv3" | "BSD-2-Clause" | "BSD-3-Clause" | "MPL-2.0" | "OSL-3.0" | "Apache-2.0" | "GNU AGPLv3"
+//
+
+app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
+  try {
+    if(
+      !req.body.address
+      || !req.body.name
+      || !req.body.source
+      || !req.body.bytecode
+      || !req.body.abi
+      || !req.body.compilerVersion
+      || !req.body.optimization
+      || !req.body.runs
+      || !req.body.target
+      || !req.body.license
+    ) {
+      res.send({
+        status: false,
+        message: 'Input error'
+      });
+    } else {
+      const {
+        address,
+        name,
+        source,
+        bytecode,
+        abi,
+        compilerVersion,
+        optimization,
+        runs,
+        target,
+        license,
+      } = req.body;
+      const pool = await getPool();
+      const query = 'SELECT contract_id FROM contract WHERE contract_id = $1 AND bytecode = $2;';
+      const data = [address, bytecode];
+      const dbres = await parametrizedDbQuery(client, query, data);
+      if (dbres) {
+        if (dbres.rows.length === 1) {
+          const isVerified = true;
+          const query = `UPDATE contract SET
+            name = $1,
+            verified = $2,
+            source = $3,
+            compiler_version = $4,
+            optimization = $5,
+            runs = $6,
+            target = $7,
+            abi = $8,
+            license = $9
+            WHERE contract_id = $10;
+          `;
+          const data = [
+            name,
+            isVerified,
+            source,
+            compilerVersion,
+            optimization,
+            runs,
+            target,
+            abi,
+            license,
+            address,
+          ];
+          await parametrizedDbQuery(client, query, data);
+          res.send({
+            status: true,
+            message: 'Contract is verified!'
+          });
+        } else {
+          res.send({
+            status: false,
+            message: 'Contract is not verified'
+          });
+        }
+      } else {
+        res.send({
+          status: false,
+          message: 'There was an error processing the request'
+        });
+      }
+      await pool.end();
+    }
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
 app.post('/api/verificator/request-status', async (req, res) => {
   if(!req.params.id) {
     res.send({
