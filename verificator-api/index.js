@@ -260,7 +260,8 @@ app.post('/api/verificator/untrusted-request', async (req, res) => {
 // name: contract name (of the main contract)
 // source: source code
 // bytecode: deployed bytecode
-// abi: contract abi
+// arguments: contract arguments (stringified json)
+// abi: contract abi (stringified json)
 // compilerVersion: i.e: v0.8.6+commit.11564f7e
 // optimization: true | false
 // runs: optimization runs
@@ -275,6 +276,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
       || !req.body.name
       || !req.body.source
       || !req.body.bytecode
+      || !req.body.arguments
       || !req.body.abi
       || !req.body.compilerVersion
       || !req.body.optimization
@@ -292,6 +294,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
         name,
         source,
         bytecode,
+        arguments,
         abi,
         compilerVersion,
         optimization,
@@ -306,17 +309,19 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
       if (dbres) {
         if (dbres.rows.length === 1) {
           const isVerified = true;
-          const query = `UPDATE contract SET
-            name = $1,
-            verified = $2,
-            source = $3,
-            compiler_version = $4,
-            optimization = $5,
-            runs = $6,
-            target = $7,
-            abi = $8,
-            license = $9
-            WHERE contract_id = $10;
+          const query = `UPDATE contract
+            SET
+              name = $1,
+              verified = $2,
+              source = $3,
+              compiler_version = $4,
+              optimization = $5,
+              runs = $6,
+              target = $7,
+              abi = $8,
+              license = $9,
+              arguments = $10
+            WHERE contract_id = $11;
           `;
           const data = [
             name,
@@ -328,17 +333,18 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
             target,
             abi,
             license,
+            arguments,
             address,
           ];
           await parametrizedDbQuery(client, query, data);
           res.send({
             status: true,
-            message: 'Contract is verified!'
+            message: 'Success, contract is verified'
           });
         } else {
           res.send({
             status: false,
-            message: 'Contract is not verified'
+            message: 'Error, contract is not verified'
           });
         }
       } else {
