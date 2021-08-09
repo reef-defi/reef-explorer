@@ -162,6 +162,13 @@
                 <b-tab title="Contract executions">
                   <contract-executions :contract-id="contractId" />
                 </b-tab>
+                <b-tab title="Contract call">
+                  <contract-call
+                    :contract-id="contractId"
+                    :contract-name="contract.name"
+                    :contract-abi="JSON.parse(contract.abi)"
+                  />
+                </b-tab>
               </b-tabs>
             </div>
           </div>
