@@ -1,22 +1,21 @@
 <template>
   <div class="contract-call">
-    <h4 class="mt-4 mb-4">Available methods</h4>
-    <!-- <pre>{{ contractAbi }}</pre> -->
+    <h4 class="mt-4 mb-4">Available methods:</h4>
     <div
       v-for="(message, index) in contractAbi.filter(
-        (item) =>
-          item.type === 'function' && item.stateMutability === 'nonpayable'
+        (item) => item.type === 'function'
       )"
       :key="`message-${index}`"
     >
       <p>
-        <strong>{{ message.name }}</strong> (<span
-          v-for="(input, inputIndex) in message.inputs"
-          :key="`input-${index}-${inputIndex}`"
-        >
-          <span>{{ input.name }}: {{ input.type }}, </span>
+        <strong>{{ message.name }}</strong> ({{ getInputs(message) }})
+        <font-awesome-icon
+          v-if="message.stateMutability !== 'view'"
+          icon="database"
+        />
+        <span v-if="message.outputs.length > 0">
+          : {{ getOutputs(message) }}
         </span>
-        )
       </p>
     </div>
   </div>
@@ -24,12 +23,8 @@
 
 <script>
 import commonMixin from '@/mixins/commonMixin.js'
-// import VueJsonPretty from 'vue-json-pretty'
 
 export default {
-  // components: {
-  //   VueJsonPretty,
-  // },
   mixins: [commonMixin],
   props: {
     contractId: {
@@ -43,6 +38,22 @@ export default {
     contractAbi: {
       type: Array,
       default: () => [],
+    },
+  },
+  methods: {
+    getInputs(message) {
+      const inputs = []
+      for (const input of message.inputs) {
+        inputs.push(`${input.name}: ${input.type}`)
+      }
+      return inputs.join(', ')
+    },
+    getOutputs(message) {
+      const outputs = []
+      for (const output of message.outputs) {
+        outputs.push(output.type)
+      }
+      return outputs.join(', ')
     },
   },
 }
