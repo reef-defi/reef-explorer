@@ -39,6 +39,7 @@
     "cookie-universal-nuxt": "^2.1.4",
     "core-js": "^3.8.2",
     "ethereum-blockies-base64": "^1.0.2",
+    "moment": "^2.29.1",
     "nuxt": "^2.14.12",
     "nuxt-clipboard2": "^0.2.1",
     "nuxt-i18n": "^6.18.0",
