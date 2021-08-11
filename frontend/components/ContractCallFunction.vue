@@ -16,17 +16,30 @@
         </b-form-group>
       </div>
       <b-button type="submit" variant="primary2">SEND</b-button>
+      <b-alert>{{ result }}</b-alert>
     </b-form>
   </div>
 </template>
 
 <script>
-// import { ethers } from 'ethers'
+import { ethers } from 'ethers'
+import { options } from '@reef-defi/api'
+import { Provider } from '@reef-defi/evm-provider'
+import { WsProvider } from '@polkadot/api'
+// import { Promised } from 'vue-promised'
+import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
+  components: {
+    // Promised,
+  },
   mixins: [commonMixin],
   props: {
+    contractId: {
+      type: String,
+      default: () => '',
+    },
     contractInterface: {
       type: Object,
       default: () => {},
@@ -43,6 +56,7 @@ export default {
   data() {
     return {
       arguments: [],
+      result: null,
     }
   },
   computed: {
@@ -51,6 +65,13 @@ export default {
         (method) => method.name === this.functionName
       ).inputs
     },
+  },
+  created() {
+    this.provider = new Provider(
+      options({
+        provider: new WsProvider(network.nodeWs),
+      })
+    )
   },
   methods: {
     getInputs(functionName) {
@@ -61,12 +82,27 @@ export default {
       return this.contractAbi.find((method) => method.name === functionName)
         .inputs
     },
-    onSubmit(event) {
+    async onSubmit(event) {
       event.preventDefault()
+      //
+      // TODO: write functions:
+      //
       // 1. check function arguments
       // 2. encode function call with arguments
       // 3. submit extrinsic
-      alert(JSON.stringify(this.arguments))
+      //
+
+      //
+      // read only functions
+      //
+      const contract = new ethers.Contract(
+        this.contractId,
+        this.contractAbi,
+        this.provider
+      )
+      this.result = await contract[this.functionName]()
+      // eslint-disable-next-line no-console
+      console.log(this.result)
     },
     onReset() {
       // reset form

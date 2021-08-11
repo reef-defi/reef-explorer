@@ -19,6 +19,7 @@
           </span>
         </b-card-title>
         <contract-call-function
+          :contract-id="contractId"
           :contract-interface="contractInterface"
           :contract-abi="contractAbi"
           :function-name="message.name"
@@ -49,6 +50,11 @@ export default {
       type: Array,
       default: () => [],
     },
+  },
+  data() {
+    return {
+      provider: null,
+    }
   },
   computed: {
     contractInterface() {
