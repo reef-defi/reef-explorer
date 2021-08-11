@@ -16,7 +16,9 @@
         </b-form-group>
       </div>
       <b-button type="submit" variant="primary2">SEND</b-button>
-      <b-alert>{{ result }}</b-alert>
+      <b-alert v-if="result" variant="info" class="mt-4" show>
+        {{ result }}
+      </b-alert>
     </b-form>
   </div>
 </template>
@@ -26,14 +28,10 @@ import { ethers } from 'ethers'
 import { options } from '@reef-defi/api'
 import { Provider } from '@reef-defi/evm-provider'
 import { WsProvider } from '@polkadot/api'
-// import { Promised } from 'vue-promised'
 import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
-  components: {
-    // Promised,
-  },
   mixins: [commonMixin],
   props: {
     contractId: {
