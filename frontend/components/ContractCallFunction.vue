@@ -10,7 +10,7 @@
           <b-form-input :id="input.name" type="text" required></b-form-input>
         </b-form-group>
       </div>
-      <b-button type="submit" variant="primary2">SEND</b-button>
+      <!-- <b-button type="submit" variant="primary2">SEND</b-button> -->
     </b-form>
   </div>
 </template>
@@ -64,7 +64,7 @@ export default {
       alert(JSON.stringify(this.arguments))
     },
     onReset() {
-      // reset
+      // reset form
     },
   },
 }
