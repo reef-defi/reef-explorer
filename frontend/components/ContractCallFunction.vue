@@ -1,16 +1,21 @@
 <template>
   <div class="contract-call-function">
     <b-form :id="`form-${functionName}`" @submit="onSubmit" @reset="onReset">
-      <div v-for="input in functionInputs" :key="input.name">
+      <div v-for="(input, index) in functionInputs" :key="input.name">
         <b-form-group
           :id="`input-group-${input.name}`"
           :label="`${input.name} (${input.type}):`"
           :label-for="input.name"
         >
-          <b-form-input :id="input.name" type="text" required></b-form-input>
+          <b-form-input
+            :id="`${input.name}-${index}`"
+            type="text"
+            required
+            @input="setValue(index, $event)"
+          ></b-form-input>
         </b-form-group>
       </div>
-      <!-- <b-button type="submit" variant="primary2">SEND</b-button> -->
+      <b-button type="submit" variant="primary2">SEND</b-button>
     </b-form>
   </div>
 </template>
@@ -65,6 +70,11 @@ export default {
     },
     onReset() {
       // reset form
+    },
+    setValue(index, event) {
+      // eslint-disable-next-line no-console
+      // console.log(index, event)
+      this.arguments[index] = event
     },
   },
 }
