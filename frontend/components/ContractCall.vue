@@ -2,6 +2,10 @@
   <div class="contract-call">
     <!-- <h4 class="mt-4 mb-4">Available methods:</h4> -->
     <!-- <pre>{{ JSON.stringify(contractInterface, null, 2) }}</pre> -->
+    <b-alert variant="warning">
+      Contract function execution not supported yet, right now you can check
+      functions arguments, types and values returned
+    </b-alert>
     <div
       v-for="(message, index) in contractAbi.filter(
         (item) => item.type === 'function'
