@@ -71,6 +71,9 @@ export default {
       })
     )
   },
+  beforeDestroy() {
+    this.provider.disconnect()
+  },
   methods: {
     getInputs(functionName) {
       // eslint-disable-next-line no-console
