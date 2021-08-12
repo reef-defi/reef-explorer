@@ -302,59 +302,53 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
         target,
         license,
       } = req.body;
-      console.log('params', JSON.stringify({
-        address,
-        name,
-        source,
-        bytecode,
-        arguments,
-        abi,
-        compilerVersion,
-        optimization,
-        runs,
-        target,
-        license,
-      }, null, 2));
       const pool = await getPool();
-      const query = 'SELECT contract_id FROM contract WHERE contract_id = $1 AND bytecode = $2;';
+      const query = 'SELECT contract_id, verified FROM contract WHERE contract_id = $1 AND bytecode = $2;';
       const data = [address, bytecode];
       const dbres = await pool.query(query, data);
       console.log(JSON.stringify(dbres))
       if (dbres) {
         if (dbres.rows.length === 1) {
-          const isVerified = true;
-          const query = `UPDATE contract
-            SET
-              name = $1,
-              verified = $2,
-              source = $3,
-              compiler_version = $4,
-              optimization = $5,
-              runs = $6,
-              target = $7,
-              abi = $8,
-              license = $9,
-              arguments = $10
-            WHERE contract_id = $11;
-          `;
-          const data = [
-            name,
-            isVerified,
-            source,
-            compilerVersion,
-            optimization,
-            runs,
-            target,
-            abi,
-            license,
-            arguments,
-            address,
-          ];
-          await pool.query(query, data);
-          res.send({
-            status: true,
-            message: 'Success, contract is verified'
-          });
+          if (dbres.rows[0].verified === true) {
+            res.send({
+              status: false,
+              message: 'Error, contract already verified'
+            });
+          } else {
+            const isVerified = true;
+            const query = `UPDATE contract
+              SET
+                name = $1,
+                verified = $2,
+                source = $3,
+                compiler_version = $4,
+                optimization = $5,
+                runs = $6,
+                target = $7,
+                abi = $8,
+                license = $9,
+                arguments = $10
+              WHERE contract_id = $11;
+            `;
+            const data = [
+              name,
+              isVerified,
+              source,
+              compilerVersion,
+              optimization,
+              runs,
+              target,
+              abi,
+              license,
+              arguments,
+              address,
+            ];
+            await pool.query(query, data);
+            res.send({
+              status: true,
+              message: 'Success, contract is verified'
+            });
+          }
         } else {
           res.send({
             status: false,
