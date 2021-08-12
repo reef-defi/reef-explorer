@@ -265,7 +265,7 @@ app.post('/api/verificator/untrusted-request', async (req, res) => {
 // compilerVersion: i.e: v0.8.6+commit.11564f7e
 // optimization: true | false
 // runs: optimization runs
-// target: homestead | tangerineWhistle | spuriousDragon | byzantium | constantinople | petersburg | istanbul
+// target: default | homestead | tangerineWhistle | spuriousDragon | byzantium | constantinople | petersburg | istanbul
 // license: "unlicense" | "MIT" | "GNU GPLv2" | "GNU GPLv3" | "GNU LGPLv2.1" | "GNU LGPLv3" | "BSD-2-Clause" | "BSD-3-Clause" | "MPL-2.0" | "OSL-3.0" | "Apache-2.0" | "GNU AGPLv3"
 //
 
@@ -289,7 +289,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
         message: 'Input error'
       });
     } else {
-      const {
+      let {
         address,
         name,
         source,
@@ -315,6 +315,38 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
             });
           } else {
             const isVerified = true;
+            // find out default target
+            if (target === 'default') {
+              // v0.4.12
+              const compilerVersionNumber = vm.compilerVersion
+                .split('-')[0]
+                .substring(1)
+              const compilerVersionNumber1 = parseInt(
+                compilerVersionNumber.split('.')[0]
+              )
+              const compilerVersionNumber2 = parseInt(
+                compilerVersionNumber.split('.')[1]
+              )
+              const compilerVersionNumber3 = parseInt(
+                compilerVersionNumber.split('.')[2]
+              )
+              if (
+                compilerVersionNumber1 === 0 &&
+                compilerVersionNumber2 <= 5 &&
+                compilerVersionNumber3 <= 4
+              ) {
+                target = 'byzantium'
+              } else if (
+                compilerVersionNumber1 === 0 &&
+                compilerVersionNumber2 >= 5 &&
+                compilerVersionNumber3 >= 5 &&
+                compilerVersionNumber3 < 14
+              ) {
+                target = 'petersburg'
+              } else {
+                target = 'istambul'
+              }
+            }
             const query = `UPDATE contract
               SET
                 name = $1,

@@ -18,7 +18,7 @@ const ApiEndPoint = 'https://reefscan.com/api/verificator/deployed-bytecode-requ
 // compilerVersion: i.e: v0.8.6+commit.11564f7e
 // optimization: true | false
 // runs: optimization runs
-// target: homestead | tangerineWhistle | spuriousDragon | byzantium | constantinople | petersburg | istanbul
+// target: default | homestead | tangerineWhistle | spuriousDragon | byzantium | constantinople | petersburg | istanbul
 // license: "unlicense" | "MIT" | "GNU GPLv2" | "GNU GPLv3" | "GNU LGPLv2.1" | "GNU LGPLv3" | "BSD-2-Clause" | "BSD-3-Clause" | "MPL-2.0" | "OSL-3.0" | "Apache-2.0" | "GNU AGPLv3"
 //
 
