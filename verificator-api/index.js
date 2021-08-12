@@ -302,6 +302,19 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
         target,
         license,
       } = req.body;
+      console.log('params', JSON.stringify({
+        address,
+        name,
+        source,
+        bytecode,
+        arguments,
+        abi,
+        compilerVersion,
+        optimization,
+        runs,
+        target,
+        license,
+      }, null, 2));
       const pool = await getPool();
       const query = 'SELECT contract_id FROM contract WHERE contract_id = $1 AND bytecode = $2;';
       const data = [address, bytecode];
