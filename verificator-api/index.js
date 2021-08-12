@@ -318,7 +318,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
       const pool = await getPool();
       const query = 'SELECT contract_id FROM contract WHERE contract_id = $1 AND bytecode = $2;';
       const data = [address, bytecode];
-      const dbres = await parametrizedDbQuery(client, query, data);
+      const dbres = await parametrizedDbQuery(pool, query, data);
       if (dbres) {
         if (dbres.rows.length === 1) {
           const isVerified = true;
@@ -349,7 +349,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
             arguments,
             address,
           ];
-          await parametrizedDbQuery(client, query, data);
+          await parametrizedDbQuery(pool, query, data);
           res.send({
             status: true,
             message: 'Success, contract is verified'
