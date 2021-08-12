@@ -306,7 +306,6 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
       const query = 'SELECT contract_id, verified FROM contract WHERE contract_id = $1 AND bytecode = $2;';
       const data = [address, bytecode];
       const dbres = await pool.query(query, data);
-      console.log(JSON.stringify(dbres))
       if (dbres) {
         if (dbres.rows.length === 1) {
           if (dbres.rows[0].verified === true) {
