@@ -126,7 +126,7 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
 
     // debug
-    // logger.info(loggerOptions, `compiler output: ${JSON.stringify(contracts)}`);
+    logger.info(loggerOptions, `compiler output (first 255 chars): ${JSON.stringify(contracts).substr(0,255)}...`);
 
     // filename excluding the extension should be equal to contract name in source code
     const contractName = filename.split('.')[0];
