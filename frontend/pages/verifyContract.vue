@@ -4191,7 +4191,7 @@ export default {
           ) {
             target = 'petersburg'
           } else {
-            target = 'istambul'
+            target = 'istanbul'
           }
         }
 

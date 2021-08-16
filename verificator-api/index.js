@@ -344,7 +344,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               ) {
                 target = 'petersburg'
               } else {
-                target = 'istambul'
+                target = 'istanbul'
               }
             }
             const query = `UPDATE contract
