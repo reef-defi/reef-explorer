@@ -96,7 +96,10 @@ const loadCompiler = async (version) => (
 const preprocessBytecode = (bytecode) => {
   const start = bytecode.indexOf('6080604052');
   const end = bytecode.lastIndexOf('a2646970667358221220');
-  return bytecode.slice(start, end)
+  const bytecodeWithArguments = bytecode.slice(start, end);
+  // remove arguments at the end
+  const argumentsStart = bytecode.lastIndexOf('0033') + 3;
+  return bytecodeWithArguments.slice(0, argumentsStart)
 };
 
 const checkIfContractMatch = (bytecode, existing) => {
