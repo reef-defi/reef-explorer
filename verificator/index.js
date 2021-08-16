@@ -94,7 +94,7 @@ const loadCompiler = async (version) => (
 );
 
 const preprocessBytecode = (bytecode) => {
-  const start = bytecode.lastIndexOf('6080604052');
+  const start = bytecode.indexOf('6080604052');
   const end = bytecode.lastIndexOf('a2646970667358221220');
   return bytecode.slice(start, end)
 };
