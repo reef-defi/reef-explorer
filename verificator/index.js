@@ -113,17 +113,17 @@ const prepareSolcContracts = (contracts, optimization, runs, evmVersion) => ({
       runs
     },
     evmVersion,
-    // outputSelection: {
-    //   '*': {
-    //     '*': ['*']
-    //   }
-    // }
     outputSelection: {
       '*': {
-        '*': ['metadata', 'evm.bytecode', 'evm.bytecode.sourceMap'],
-        '': ['ast'],
-      },
-    },
+        '*': ['*']
+      }
+    }
+    // outputSelection: {
+    //   '*': {
+    //     '*': ['metadata', 'evm.bytecode', 'evm.bytecode.sourceMap'],
+    //     '': ['ast'],
+    //   },
+    // },
   }
 });
 
@@ -154,6 +154,19 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     };
   }
 };
+
+const stringMatch = (a, b) => {
+  let equivalency = 0;
+  let minLength = (a.length > b.length) ? b.length : a.length;    
+  let maxLength = (a.length < b.length) ? b.length : a.length;    
+  for (let i = 0; i < minLength; i++) {
+    if (a[i] == b[i]) {
+      equivalency++;
+    }
+  }
+  let weight = equivalency / maxLength;
+  return (weight * 100);
+}
 
 const processVerificationRequest = async (request, client) => {
   try {
@@ -232,9 +245,11 @@ const processVerificationRequest = async (request, client) => {
         request: contractBytecode,
         onchain: existing,
       });
+
+      const matchPercentaje = stringMatch(contractBytecode, existing)
       await updateRequestStatus(client, id, 'ERROR');
       await updateRequestError(client, id, 'BYTECODE_MISMATCH', bytecodes);
-      logger.info({ request: id }, `Contract is not verified, bytecode mismatch: ${bytecodes}`);
+      logger.info({ request: id }, `Contract is not verified, bytecode mismatch (${matchPercentaje}%)`);
     }
     
     // TODO: delete request older than 1 week
