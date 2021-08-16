@@ -104,24 +104,12 @@ const checkIfContractMatch = (bytecode, existing) => {
   return core === existing;
 };
 
-const prepareSolcContracts = (contracts) => ({
-  language: 'Solidity',
-  sources: {...contracts},
-  settings: {
-    outputSelection: {
-      '*': {
-        '*': ['*']
-      }
-    }
-  }
-});
-
-const prepareOptimizedSolcContracts = (contracts, runs, evmVersion) => ({
+const prepareSolcContracts = (contracts, optimization, runs, evmVersion) => ({
   language: 'Solidity',
   sources: {...contracts},
   settings: {
     optimizer: {
-      enabled: true,
+      enabled: optimization,
       runs
     },
     evmVersion,
@@ -138,7 +126,6 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
 
     // debug
-    logger.info(loggerOptions, `compiler inputs: ${JSON.stringify(inputs)}`);
     logger.info(loggerOptions, `compiler output: ${JSON.stringify(contracts)}`);
 
     // filename excluding the extension should be equal to contract name in source code
@@ -181,11 +168,19 @@ const processVerificationRequest = async (request, client) => {
     const contracts = [];
     contracts[filename] = { content: source };
 
+    // debug
+    logger.info({ request: id }, `filename: ${filename}`);
+    logger.info({ request: id }, `compiler_version: ${compiler_version}`);
+    logger.info({ request: id }, `optimization: ${optimization}`);
+    logger.info({ request: id }, `runs: ${runs}`);
+    logger.info({ request: id }, `target: ${target}`);
+    logger.info({ request: id }, `license: ${license}`);
+
     const artifacts = await getContractArtifacts(
       compiler,
       filename,
       existing,
-      optimization ? prepareOptimizedSolcContracts(contracts, runs, target) : prepareSolcContracts(contracts)
+      prepareSolcContracts(contracts, optimization, runs, target)
     );
 
     if (artifacts?.error) {
