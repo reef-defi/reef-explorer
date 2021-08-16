@@ -136,6 +136,10 @@ const prepareOptimizedSolcContracts = (contracts, runs, evmVersion) => ({
 const getContractArtifacts = async (compiler, filename, existingBytecode, inputs) => {
   try {
     const contracts = JSON.parse(compiler.compile(JSON.stringify(inputs)));
+
+    // debug
+    logger.info(loggerOptions, `contracts: ${JSON.stringify(contracts)}`);
+
     // filename excluding the extension should be equal to contract name in source code
     const contractName = filename.split('.')[0];
     const contractAbi = contracts.contracts[filename][contractName].abi;
