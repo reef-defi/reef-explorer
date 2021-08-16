@@ -113,11 +113,17 @@ const prepareSolcContracts = (contracts, optimization, runs, evmVersion) => ({
       runs
     },
     evmVersion,
+    // outputSelection: {
+    //   '*': {
+    //     '*': ['*']
+    //   }
+    // }
     outputSelection: {
       '*': {
-        '*': ['*']
-      }
-    }
+        '*': ['metadata', 'evm.bytecode', 'evm.bytecode.sourceMap'],
+        '': ['ast'],
+      },
+    },
   }
 });
 
