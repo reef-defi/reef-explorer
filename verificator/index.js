@@ -112,25 +112,10 @@ const prepareSolcContracts = (contracts, optimization, runs, evmVersion) => ({
       enabled: optimization,
       runs
     },
-    // evmVersion,
-    // outputSelection: {
-    //   '*': {
-    //     '*': ['*']
-    //   }
-    // }
+    evmVersion,
     outputSelection: {
       '*': {
-        '*': [
-          'metadata',
-          'evm.bytecode',
-          'evm.bytecode.sourceMap',
-          'abi',
-          'evm.deployedBytecode',
-          'evm.methodIdentifiers'
-        ],
-        '': [
-          'ast'
-        ]
+        '*': ['*']
       }
     }
   }
@@ -192,7 +177,15 @@ const processVerificationRequest = async (request, client) => {
     } = request
     logger.info({ request: id }, `Processing contract verification request for contract ${contract_id}`);
     const onChainContractBytecode = await getOnChainContractBytecode(client, contract_id);
+
+    // debug
+    logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
+
     const existing = preprocessBytecode(onChainContractBytecode);
+
+    // debug
+    logger.info({ request: id }, `existing: ${existing}`);
+
     const compiler = await loadCompiler(compiler_version);
     const contracts = [];
     contracts[filename] = { content: source };
