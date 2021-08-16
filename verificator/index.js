@@ -141,6 +141,7 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     };
     return result;
   } catch (error) {
+    logger.info(loggerOptions, `compiler error: ${JSON.stringify(error)}`);
     return {
       error: true,
       message: JSON.stringify(error)
