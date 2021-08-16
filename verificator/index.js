@@ -98,7 +98,7 @@ const preprocessBytecode = (bytecode) => {
   const end = bytecode.lastIndexOf('a2646970667358221220');
   const bytecodeWithArguments = bytecode.slice(start, end);
   // remove arguments at the end
-  const argumentsStart = bytecode.lastIndexOf('0033') + 3;
+  const argumentsStart = bytecodeWithArguments.lastIndexOf('0033') + 4;
   return bytecodeWithArguments.slice(0, argumentsStart)
 };
 
