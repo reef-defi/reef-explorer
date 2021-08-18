@@ -117,8 +117,7 @@ const preprocessBytecode = (bytecode) => {
 };
 
 const checkIfContractMatch = (requestBytecode, existingBytecode) => {
-  const core = preprocessBytecode(existingBytecode);
-  return core === requestBytecode;
+  return existingBytecode === requestBytecode;
 };
 
 const prepareSolcContracts = (contracts, optimization, runs, evmVersion) => ({
