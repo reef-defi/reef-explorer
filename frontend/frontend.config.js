@@ -4,7 +4,7 @@ export const network = {
   tokenSymbol: 'REEF',
   tokenDecimals: 18,
   ss58Format: 42,
-  coinGeckoDenom: 'reef-finance',
+  coinGeckoDenom: 'reef',
   nodeWs: 'wss://rpc-testnet.reefscan.com/ws',
   backendWs: 'wss://testnet.reefscan.com/api/v3',
   backendHttp: 'https://testnet.reefscan.com/api/v3',
