@@ -320,6 +320,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               // v0.4.12
               const compilerVersionNumber = vm.compilerVersion
                 .split('-')[0]
+                .split('+')[0]
                 .substring(1)
               const compilerVersionNumber1 = parseInt(
                 compilerVersionNumber.split('.')[0]

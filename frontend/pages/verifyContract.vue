@@ -4162,10 +4162,12 @@ export default {
         // figure out default target
         const vm = this
         let target = vm.target
+        // compilerVersion: could be 'v0.4.24-nightly.2018.5.16+commit.7f965c86' or 'v0.4.11+commit.68ef5810' "v0.8.6+commit.11564f7e"
         if (target === 'default') {
           // v0.4.12
           const compilerVersionNumber = vm.compilerVersion
             .split('-')[0]
+            .split('+')[0]
             .substring(1)
           const compilerVersionNumber1 = parseInt(
             compilerVersionNumber.split('.')[0]
