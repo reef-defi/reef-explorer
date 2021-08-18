@@ -29,7 +29,7 @@ cp frontend/frontend.config.mainnet.sample.js frontend/frontend.config.js
 #### Testnet
 
 ```bash
-cp frontend/frontend.config.tesnet.sample.js frontend/frontend.config.js
+cp frontend/frontend.config.testnet.sample.js frontend/frontend.config.js
 ```
 
 #### Start development frontend with hot reload
