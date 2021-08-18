@@ -93,13 +93,19 @@ const loadCompiler = async (version) => (
   })
 );
 
-const preprocessBytecode = (bytecode) => {
+const preprocessBytecode = (bytecode, compilerVersion) => {
+  //
+  // TODO: verify that start is the same from solc >= 0.6.0
+  //
+  let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
-  const end = bytecode.lastIndexOf('a2646970667358221220');
-  const bytecodeWithArguments = bytecode.slice(start, end);
-  // remove arguments at the end
-  const argumentsStart = bytecodeWithArguments.lastIndexOf('0032') + 4;
-  return bytecodeWithArguments.slice(0, argumentsStart)
+  //
+  // metadata separators are tested from solc v0.6.0
+  //
+  const ipfsMetadataEnd = bytecode.lastIndexOf('a26469706673582200');
+  filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
+  const solcMetadataEnd = filteredBytecode.lastIndexOf('a264736f6c634300');
+  return filteredBytecode.slice(0, solcMetadataEnd);
 };
 
 const checkIfContractMatch = (bytecode, existing) => {
@@ -184,7 +190,7 @@ const processVerificationRequest = async (request, client) => {
     // debug
     logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
 
-    const existing = preprocessBytecode(onChainContractBytecode);
+    const existing = preprocessBytecode(onChainContractBytecode, compiler_version);
 
     // debug
     logger.info({ request: id }, `existing: ${existing}`);
