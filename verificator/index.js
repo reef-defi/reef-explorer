@@ -117,7 +117,7 @@ const preprocessBytecode = (bytecode) => {
 };
 
 const checkIfContractMatch = (requestBytecode, existingBytecode) => {
-  return existingBytecode === requestBytecode;
+  return requestBytecode === existingBytecode;
 };
 
 const prepareSolcContracts = (contracts, optimization, runs, evmVersion) => ({
@@ -147,7 +147,7 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     // filename excluding the extension should be equal to contract name in source code
     const contractName = filename.split('.')[0];
     const contractAbi = contracts.contracts[filename][contractName].abi;
-    const requestBytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
+    const requestBytecode = preprocessBytecode(contracts.contracts[filename][contractName].evm.bytecode.object);
     const isVerified = checkIfContractMatch(requestBytecode, existingBytecode);
     const result = {
       isVerified,
