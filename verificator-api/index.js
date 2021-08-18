@@ -318,7 +318,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
             // find out default target
             if (target === 'default') {
               // v0.4.12
-              const compilerVersionNumber = vm.compilerVersion
+              const compilerVersionNumber = compilerVersion
                 .split('-')[0]
                 .split('+')[0]
                 .substring(1)
