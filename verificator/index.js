@@ -116,9 +116,9 @@ const preprocessBytecode = (bytecode) => {
   return filteredBytecode;
 };
 
-const checkIfContractMatch = (bytecode, existing) => {
-  const core = preprocessBytecode(bytecode);
-  return core === existing;
+const checkIfContractMatch = (requestBytecode, existingBytecode) => {
+  const core = preprocessBytecode(existingBytecode);
+  return core === requestBytecode;
 };
 
 const prepareSolcContracts = (contracts, optimization, runs, evmVersion) => ({
@@ -148,13 +148,13 @@ const getContractArtifacts = async (compiler, filename, existingBytecode, inputs
     // filename excluding the extension should be equal to contract name in source code
     const contractName = filename.split('.')[0];
     const contractAbi = contracts.contracts[filename][contractName].abi;
-    const contractBytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
-    const isVerified = checkIfContractMatch(contractBytecode, existingBytecode);
+    const requestBytecode = contracts.contracts[filename][contractName].evm.bytecode.object;
+    const isVerified = checkIfContractMatch(requestBytecode, existingBytecode);
     const result = {
       isVerified,
       contractName,
       contractAbi,
-      contractBytecode,
+      requestBytecode,
     };
     return result;
   } catch (error) {
@@ -228,7 +228,7 @@ const processVerificationRequest = async (request, client) => {
       await updateRequestError(client, id, 'COMPILATION_ERROR', artifacts.error);
       return;
     }
-    const { isVerified, contractName, contractAbi, contractBytecode } = artifacts;
+    const { isVerified, contractName, contractAbi, requestBytecode } = artifacts;
 
     if (isVerified) {
       logger.info({ request: id }, `Contract ${contract_id} is verified!`);
@@ -261,11 +261,11 @@ const processVerificationRequest = async (request, client) => {
       await parametrizedDbQuery(client, query, data);
     } else {
       const bytecodes = JSON.stringify({
-        request: contractBytecode,
+        request: requestBytecode,
         onchain: existing,
       });
 
-      const matchPercentaje = stringMatch(contractBytecode, existing)
+      const matchPercentaje = stringMatch(requestBytecode, existing)
       await updateRequestStatus(client, id, 'ERROR');
       await updateRequestError(client, id, 'BYTECODE_MISMATCH', bytecodes);
       logger.info({ request: id }, `Contract is not verified, bytecode mismatch (${matchPercentaje}%)`);
