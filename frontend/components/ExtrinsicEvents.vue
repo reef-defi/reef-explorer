@@ -1,13 +1,12 @@
 <template>
-  <div class="last-events">
+  <div class="extrinsic-events">
+    <h4 class="my-4">Triggered events</h4>
     <div class="table-responsive">
       <b-table striped hover :fields="fields" :items="events">
         <template #cell(block_number)="data">
           <p class="mb-0">
             <nuxt-link
-              v-b-tooltip.hover
               :to="`/event/${data.item.block_number}/${data.item.event_index}`"
-              title="Check event information"
             >
               #{{ formatNumber(data.item.block_number) }}-{{
                 data.item.event_index
@@ -32,6 +31,16 @@ import gql from 'graphql-tag'
 
 export default {
   mixins: [commonMixin],
+  props: {
+    blockNumber: {
+      type: Number,
+      default: () => 0,
+    },
+    extrinsicIndex: {
+      type: Number,
+      default: () => 0,
+    },
+  },
   data: () => {
     return {
       events: [],
@@ -46,15 +55,26 @@ export default {
           label: 'Event',
           sortable: true,
         },
+        {
+          key: 'data',
+          label: 'Data',
+          sortable: true,
+        },
       ],
     }
   },
   apollo: {
     $subscribe: {
-      event: {
+      events: {
         query: gql`
-          subscription events {
-            event(order_by: { block_number: desc }, where: {}, limit: 10) {
+          subscription events($block_number: bigint!, $phase: String!) {
+            event(
+              order_by: { block_number: desc }
+              where: {
+                block_number: { _eq: $block_number }
+                phase: { _eq: $phase }
+              }
+            ) {
               block_number
               event_index
               data
@@ -64,6 +84,12 @@ export default {
             }
           }
         `,
+        variables() {
+          return {
+            block_number: parseInt(this.blockNumber),
+            phase: `{"applyExtrinsic":${this.extrinsicIndex}}`,
+          }
+        },
         result({ data }) {
           this.events = data.event
         },
@@ -74,14 +100,14 @@ export default {
 </script>
 
 <style>
-.last-events .table th,
-.last-events .table td {
+.extrinsic-events .table th,
+.extrinsic-events .table td {
   padding: 0.45rem;
 }
-.last-events .table thead th {
+.extrinsic-events .table thead th {
   border-bottom: 0;
 }
-.last-events .identicon {
+.extrinsic-events .identicon {
   display: inline-block;
   margin: 0 0.2rem 0 0;
   cursor: copy;

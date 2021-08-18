@@ -4,7 +4,11 @@
       <b-table striped hover :fields="fields" :items="extrinsics">
         <template #cell(block_number)="data">
           <p class="mb-0">
-            <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
+            <nuxt-link
+              v-b-tooltip.hover
+              :to="`/extrinsic/${data.item.block_number}/${data.item.extrinsic_index}`"
+              title="Check extrinsic information"
+            >
               #{{ formatNumber(data.item.block_number) }}-{{
                 data.item.extrinsic_index
               }}
