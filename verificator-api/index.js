@@ -455,7 +455,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
 });
 
 app.get('/api/price/reef', async (req, res) => {
-  const denom = 'reef';
+  const denom = 'reef-finance';
   await axios
     .get(
       `https://api.coingecko.com/api/v3/simple/price?ids=${denom}&vs_currencies=usd&include_24hr_change=true`
