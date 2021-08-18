@@ -100,12 +100,20 @@ const preprocessBytecode = (bytecode, compilerVersion) => {
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
-  // metadata separators are tested from solc v0.6.0
+  // ipfs and solc metadata separators (solc >= v0.6.0)
   //
-  const ipfsMetadataEnd = bytecode.lastIndexOf('a26469706673582200');
+  const ipfsMetadataEnd = bytecode.lastIndexOf('a264697066735822');
   filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
-  const solcMetadataEnd = filteredBytecode.lastIndexOf('a264736f6c634300');
-  return filteredBytecode.slice(0, solcMetadataEnd);
+
+  const solcMetadataEnd = filteredBytecode.lastIndexOf('a264736f6c6343');
+  filteredBytecode = filteredBytecode.slice(start, solcMetadataEnd);
+  //
+  // metadata separator for 0.5.16
+  //
+  const bzzr1MetadataEnd = filteredBytecode.lastIndexOf('a265627a7a72315820');
+  filteredBytecode = filteredBytecode.slice(start, bzzr1MetadataEnd);
+
+  return filteredBytecode;
 };
 
 const checkIfContractMatch = (bytecode, existing) => {
