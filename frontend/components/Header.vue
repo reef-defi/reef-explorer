@@ -9,7 +9,7 @@
       </b-navbar-brand>
       <a
         v-if="network.coinGeckoDenom && USDConversion && USD24hChange"
-        href="https://www.coingecko.com/en/coins/reef"
+        href="https://coinmarketcap.com/currencies/reef/"
         target="_blank"
         class="fiat mh-2"
       >
