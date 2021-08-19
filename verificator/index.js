@@ -40,6 +40,7 @@ const getPendingRequests = async (client) => {
         source,
         filename,
         compiler_version,
+        arguments,
         optimization,
         runs,
         target,
@@ -181,6 +182,7 @@ const processVerificationRequest = async (request, client) => {
       source,
       filename,
       compiler_version,
+      arguments,
       optimization,
       runs,
       target,
@@ -190,12 +192,12 @@ const processVerificationRequest = async (request, client) => {
     const onChainContractBytecode = await getOnChainContractBytecode(client, contract_id);
 
     // debug
-    logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
+    // logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
 
     const existing = preprocessBytecode(onChainContractBytecode);
 
     // debug
-    logger.info({ request: id }, `existing: ${existing}`);
+    // logger.info({ request: id }, `existing: ${existing}`);
 
     const compiler = await loadCompiler(compiler_version);
     const contracts = [];
@@ -204,6 +206,7 @@ const processVerificationRequest = async (request, client) => {
     // debug
     logger.info({ request: id }, `filename: ${filename}`);
     logger.info({ request: id }, `compiler_version: ${compiler_version}`);
+    logger.info({ request: id }, `arguments: ${arguments}`);
     logger.info({ request: id }, `optimization: ${optimization}`);
     logger.info({ request: id }, `runs: ${runs}`);
     logger.info({ request: id }, `target: ${target}`);
@@ -233,18 +236,20 @@ const processVerificationRequest = async (request, client) => {
         verified = $2,
         source = $3,
         compiler_version = $4,
-        optimization = $5,
-        runs = $6,
-        target = $7,
-        abi = $8,
-        license = $9
-        WHERE contract_id = $10;
+        arguments = $5,
+        optimization = $6,
+        runs = $7,
+        target = $8,
+        abi = $9,
+        license = $10
+        WHERE contract_id = $11;
       `;
       const data = [
         contractName,
         isVerified,
         source,
         compiler_version,
+        arguments,
         optimization,
         runs,
         target,

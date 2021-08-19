@@ -436,6 +436,8 @@ app.post('/api/verificator/request-status', async (req, res) => {
         SELECT
           contract_id
           status
+          error_type
+          error_message
         FROM contract_verification_request
         WHERE id = $1
       ;`;
@@ -444,6 +446,8 @@ app.post('/api/verificator/request-status', async (req, res) => {
         if (res.rows[0].status) {
           const requestStatus = dbres.rows[0].status;
           const contractId = dbres.rows[0].contract_id;
+          const errorType = dbres.rows[0].error_type;
+          const errorMessage = dbres.rows[0].error_message;
           res.send({
             status: true,
             message: 'Request found',
@@ -451,6 +455,8 @@ app.post('/api/verificator/request-status', async (req, res) => {
               id: requestId,
               address: contractId,
               status: requestStatus,
+              error_type: errorType,
+              error_message: errorMessage,
             }
           });
         } else {

@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS contract_verification_request  (
   source TEXT NOT NULL,
   filename TEXT NOT NULL,
   compiler_version TEXT NOT NULL,
+  arguments TEXT DEFAULT NULL,
   optimization BOOLEAN NOT NULL,
   runs INT NOT NULL,
   target TEXT NOT NULL,

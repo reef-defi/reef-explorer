@@ -9,169 +9,200 @@
             </h1>
           </b-col>
         </b-row>
-        <div class="verify-contract">
-          <b-alert show>
-            Source code verification provides <strong>transparency</strong> for
-            users interacting with REEF smart contracts. By uploading the source
-            code, ReefScan will match the compiled code with that on the
-            blockchain, allowing the users to audit the code to independently
-            verify that it actually does what it is supposed to do.
-          </b-alert>
-          <b-form enctype="multipart/form-data" @submit="onSubmit">
-            <div class="row">
-              <div class="col-md-6">
+        <b-tabs content-class="mt-3">
+          <b-tab title="Verify contract" active>
+            <div class="verify-contract">
+              <b-alert show>
+                Source code verification provides
+                <strong>transparency</strong> for users interacting with REEF
+                smart contracts. By uploading the source code, ReefScan will
+                match the compiled code with that on the blockchain, allowing
+                the users to audit the code to independently verify that it
+                actually does what it is supposed to do.
+              </b-alert>
+              <b-form enctype="multipart/form-data" @submit="onSubmit">
+                <div class="row">
+                  <div class="col-md-6">
+                    <b-form-group
+                      id="input-group-source"
+                      label="Source file:"
+                      label-for="address"
+                    >
+                      <b-form-file
+                        ref="source"
+                        v-model="$v.source.$model"
+                        accept=".sol"
+                        placeholder="Please select contract source file..."
+                        drop-placeholder="Drop contract source file here..."
+                        :state="validateState('source')"
+                        aria-describedby="source-help"
+                      ></b-form-file>
+                      <b-form-text id="source-help">
+                        <ul>
+                          <li>
+                            <font-awesome-icon icon="arrow-right" /> Multiple
+                            source files should be combined in one single file
+                            using
+                            <a
+                              href="https://github.com/reef-defi/reef-merger"
+                              target="_blank"
+                              >reef-merger</a
+                            >.
+                          </li>
+                          <li>
+                            <font-awesome-icon icon="arrow-right" />
+                            <strong>Filename</strong> excluding the extension
+                            should be <strong>equal</strong> to
+                            <strong>contract name</strong> in source code.
+                          </li>
+                          <li>
+                            <font-awesome-icon icon="arrow-right" /> File
+                            extension should be <strong>".sol"</strong>.
+                          </li>
+                        </ul>
+                      </b-form-text>
+                      <b-progress
+                        v-show="
+                          uploadPercentage > 0 && uploadPercentage !== 100
+                        "
+                        striped
+                        animated
+                        :max="100"
+                        class="mt-3"
+                        :value="uploadPercentage"
+                      ></b-progress>
+                    </b-form-group>
+                  </div>
+                  <div class="col-md-6">
+                    <b-form-group
+                      id="input-group-address"
+                      label="Address:"
+                      label-for="address"
+                      description="Please enter the Contract Address you would like to verify"
+                    >
+                      <b-form-input
+                        id="address"
+                        v-model="$v.address.$model"
+                        type="text"
+                        placeholder="Enter address"
+                        :state="validateState('address')"
+                      ></b-form-input>
+                    </b-form-group>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <b-form-group
+                      id="compiler-version"
+                      label="Compiler version:"
+                      label-for="compiler-version"
+                    >
+                      <b-form-select
+                        id="compiler-version"
+                        v-model="$v.compilerVersion.$model"
+                        :options="
+                          nightly ? compilerVersions : compilerAllVersions
+                        "
+                        :state="validateState('compilerVersion')"
+                      ></b-form-select>
+                      <b-form-checkbox
+                        id="nightly"
+                        v-model="nightly"
+                        name="nightly"
+                        class="py-2"
+                      >
+                        Un-Check to show nightly commits also
+                      </b-form-checkbox>
+                    </b-form-group>
+                  </div>
+                  <div class="col-md-6">
+                    <b-form-group
+                      id="input-group-optimization-target"
+                      label="EVM version:"
+                      label-for="optimization-target"
+                    >
+                      <b-form-select
+                        id="optimization-target"
+                        v-model="$v.target.$model"
+                        :options="targetOptions"
+                        :state="validateState('target')"
+                      ></b-form-select>
+                    </b-form-group>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <b-form-group
+                      id="input-group-optimization"
+                      label="Optimization:"
+                      label-for="optimization"
+                    >
+                      <b-form-select
+                        id="optimization"
+                        v-model="$v.optimization.$model"
+                        :options="optimizationOptions"
+                        :state="validateState('optimization')"
+                      ></b-form-select>
+                    </b-form-group>
+                  </div>
+                  <div class="col-md-6">
+                    <b-form-group
+                      id="input-group-optimization-runs"
+                      label="Runs (Optimization):"
+                      label-for="optimization-runs"
+                    >
+                      <b-form-input
+                        id="optimization-runs"
+                        v-model="$v.runs.$model"
+                        type="number"
+                        :state="validateState('runs')"
+                      ></b-form-input>
+                    </b-form-group>
+                  </div>
+                </div>
+
                 <b-form-group
-                  id="input-group-source"
-                  label="Source file:"
-                  label-for="address"
+                  id="input-group-arguments"
+                  label="Constructor arguments:"
+                  label-for="arguments"
+                  description="Encoded constructor arguments"
                 >
-                  <b-form-file
-                    ref="source"
-                    v-model="$v.source.$model"
-                    accept=".sol"
-                    placeholder="Please select contract source file..."
-                    drop-placeholder="Drop contract source file here..."
-                    :state="validateState('source')"
-                    aria-describedby="source-help"
-                  ></b-form-file>
-                  <b-form-text id="source-help">
-                    <ul>
-                      <li>
-                        <font-awesome-icon icon="arrow-right" /> Multiple source
-                        files should be combined in one single file using
-                        <a
-                          href="https://github.com/reef-defi/reef-merger"
-                          target="_blank"
-                          >reef-merger</a
-                        >.
-                      </li>
-                      <li>
-                        <font-awesome-icon icon="arrow-right" />
-                        <strong>Filename</strong> excluding the extension should
-                        be <strong>equal</strong> to
-                        <strong>contract name</strong> in source code.
-                      </li>
-                      <li>
-                        <font-awesome-icon icon="arrow-right" /> File extension
-                        should be <strong>".sol"</strong>.
-                      </li>
-                    </ul>
-                  </b-form-text>
-                  <b-progress
-                    v-show="uploadPercentage > 0 && uploadPercentage !== 100"
-                    striped
-                    animated
-                    :max="100"
-                    class="mt-3"
-                    :value="uploadPercentage"
-                  ></b-progress>
+                  <b-form-textarea
+                    id="arguments"
+                    v-model="$v.arguments.$model"
+                    placeholder="Enter encoded constructor arguments..."
+                    rows="6"
+                  ></b-form-textarea>
                 </b-form-group>
-              </div>
-              <div class="col-md-6">
+
                 <b-form-group
-                  id="input-group-address"
-                  label="Address:"
-                  label-for="address"
-                  description="Please enter the Contract Address you would like to verify"
-                >
-                  <b-form-input
-                    id="address"
-                    v-model="$v.address.$model"
-                    type="text"
-                    placeholder="Enter address"
-                    :state="validateState('address')"
-                  ></b-form-input>
-                </b-form-group>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-6">
-                <b-form-group
-                  id="compiler-version"
-                  label="Compiler version:"
-                  label-for="compiler-version"
+                  id="input-group-license"
+                  label="Open source license:"
+                  label-for="license"
+                  description="Please select Open Source License Type"
                 >
                   <b-form-select
-                    id="compiler-version"
-                    v-model="$v.compilerVersion.$model"
-                    :options="nightly ? compilerVersions : compilerAllVersions"
-                    :state="validateState('compilerVersion')"
+                    id="license"
+                    v-model="$v.license.$model"
+                    :options="licenses"
+                    :state="validateState('license')"
                   ></b-form-select>
-                  <b-form-checkbox
-                    id="nightly"
-                    v-model="nightly"
-                    name="nightly"
-                    class="py-2"
-                  >
-                    Un-Check to show nightly commits also
-                  </b-form-checkbox>
                 </b-form-group>
-              </div>
-              <div class="col-md-6">
-                <b-form-group
-                  id="input-group-optimization-target"
-                  label="EVM version:"
-                  label-for="optimization-target"
+                <recaptcha />
+                <verification-status :id="requestId" />
+                <b-button
+                  type="submit"
+                  variant="outline-primary2"
+                  class="btn-block"
+                  >VERIFY CONTRACT</b-button
                 >
-                  <b-form-select
-                    id="optimization-target"
-                    v-model="$v.target.$model"
-                    :options="targetOptions"
-                    :state="validateState('target')"
-                  ></b-form-select>
-                </b-form-group>
-              </div>
+              </b-form>
             </div>
-            <div class="row">
-              <div class="col-md-6">
-                <b-form-group
-                  id="input-group-optimization"
-                  label="Optimization:"
-                  label-for="optimization"
-                >
-                  <b-form-select
-                    id="optimization"
-                    v-model="$v.optimization.$model"
-                    :options="optimizationOptions"
-                    :state="validateState('optimization')"
-                  ></b-form-select>
-                </b-form-group>
-              </div>
-              <div class="col-md-6">
-                <b-form-group
-                  id="input-group-optimization-runs"
-                  label="Runs (Optimization):"
-                  label-for="optimization-runs"
-                >
-                  <b-form-input
-                    id="optimization-runs"
-                    v-model="$v.runs.$model"
-                    type="number"
-                    :state="validateState('runs')"
-                  ></b-form-input>
-                </b-form-group>
-              </div>
-            </div>
-            <b-form-group
-              id="license"
-              label="Open source license:"
-              label-for="license"
-              description="Please select Open Source License Type"
-            >
-              <b-form-select
-                id="license"
-                v-model="$v.license.$model"
-                :options="licenses"
-                :state="validateState('license')"
-              ></b-form-select>
-            </b-form-group>
-            <recaptcha />
-            <verification-status :id="requestId" />
-            <b-button type="submit" variant="outline-primary2" class="btn-block"
-              >VERIFY CONTRACT</b-button
-            >
-          </b-form>
-        </div>
+          </b-tab>
+          <b-tab title="Verification requests">
+            <verification-requests :requests="requests" class="my-4" />
+          </b-tab>
+        </b-tabs>
       </b-container>
     </section>
   </div>
@@ -191,10 +222,13 @@ export default {
   data() {
     return {
       requestId: null,
+      requestIds: [],
+      requests: [],
       source: null,
       uploadPercentage: 0,
       address: '',
       compilerVersion: null,
+      arguments: '',
       nightly: true,
       optimization: true,
       runs: 200,
@@ -243,43 +277,43 @@ export default {
         { text: 'v0.6.2+commit.bacdbe57', value: 'v0.6.2+commit.bacdbe57' },
         { text: 'v0.6.1+commit.e6f7d5a4', value: 'v0.6.1+commit.e6f7d5a4' },
         { text: 'v0.6.0+commit.26b70077', value: 'v0.6.0+commit.26b70077' },
-        { text: 'v0.5.17+commit.d19bba13', value: 'v0.5.17+commit.d19bba13' },
-        { text: 'v0.5.16+commit.9c3226ce', value: 'v0.5.16+commit.9c3226ce' },
-        { text: 'v0.5.15+commit.6a57276f', value: 'v0.5.15+commit.6a57276f' },
-        { text: 'v0.5.14+commit.01f1aaa4', value: 'v0.5.14+commit.01f1aaa4' },
-        { text: 'v0.5.13+commit.5b0b510c', value: 'v0.5.13+commit.5b0b510c' },
-        { text: 'v0.5.12+commit.7709ece9', value: 'v0.5.12+commit.7709ece9' },
-        { text: 'v0.5.11+commit.22be8592', value: 'v0.5.11+commit.22be8592' },
-        { text: 'v0.5.11+commit.c082d0b4', value: 'v0.5.11+commit.c082d0b4' },
-        { text: 'v0.5.10+commit.5a6ea5b1', value: 'v0.5.10+commit.5a6ea5b1' },
-        { text: 'v0.5.9+commit.c68bc34e', value: 'v0.5.9+commit.c68bc34e' },
-        { text: 'v0.5.9+commit.e560f70d', value: 'v0.5.9+commit.e560f70d' },
-        { text: 'v0.5.8+commit.23d335f2', value: 'v0.5.8+commit.23d335f2' },
-        { text: 'v0.5.7+commit.6da8b019', value: 'v0.5.7+commit.6da8b019' },
-        { text: 'v0.5.6+commit.b259423e', value: 'v0.5.6+commit.b259423e' },
-        { text: 'v0.5.5+commit.47a71e8f', value: 'v0.5.5+commit.47a71e8f' },
-        { text: 'v0.5.4+commit.9549d8ff', value: 'v0.5.4+commit.9549d8ff' },
-        { text: 'v0.5.3+commit.10d17f24', value: 'v0.5.3+commit.10d17f24' },
-        { text: 'v0.5.2+commit.1df8f40c', value: 'v0.5.2+commit.1df8f40c' },
-        { text: 'v0.5.1+commit.c8a2cb62', value: 'v0.5.1+commit.c8a2cb62' },
-        { text: 'v0.5.0+commit.1d4f565a', value: 'v0.5.0+commit.1d4f565a' },
-        { text: 'v0.4.26+commit.4563c3fc', value: 'v0.4.26+commit.4563c3fc' },
-        { text: 'v0.4.25+commit.59dbf8f1', value: 'v0.4.25+commit.59dbf8f1' },
-        { text: 'v0.4.24+commit.e67f0147', value: 'v0.4.24+commit.e67f0147' },
-        { text: 'v0.4.23+commit.124ca40d', value: 'v0.4.23+commit.124ca40d' },
-        { text: 'v0.4.22+commit.4cb486ee', value: 'v0.4.22+commit.4cb486ee' },
-        { text: 'v0.4.21+commit.dfe3193c', value: 'v0.4.21+commit.dfe3193c' },
-        { text: 'v0.4.20+commit.3155dd80', value: 'v0.4.20+commit.3155dd80' },
-        { text: 'v0.4.19+commit.c4cbbb05', value: 'v0.4.19+commit.c4cbbb05' },
-        { text: 'v0.4.18+commit.9cf6e910', value: 'v0.4.18+commit.9cf6e910' },
-        { text: 'v0.4.17+commit.bdeb9e52', value: 'v0.4.17+commit.bdeb9e52' },
-        { text: 'v0.4.16+commit.d7661dd9', value: 'v0.4.16+commit.d7661dd9' },
-        { text: 'v0.4.15+commit.8b45bddb', value: 'v0.4.15+commit.8b45bddb' },
-        { text: 'v0.4.15+commit.bbb8e64f', value: 'v0.4.15+commit.bbb8e64f' },
-        { text: 'v0.4.14+commit.c2215d46', value: 'v0.4.14+commit.c2215d46' },
-        { text: 'v0.4.13+commit.0fb4cb1a', value: 'v0.4.13+commit.0fb4cb1a' },
-        { text: 'v0.4.12+commit.194ff033', value: 'v0.4.12+commit.194ff033' },
-        { text: 'v0.4.11+commit.68ef5810', value: 'v0.4.11+commit.68ef5810' },
+        // { text: 'v0.5.17+commit.d19bba13', value: 'v0.5.17+commit.d19bba13' },
+        // { text: 'v0.5.16+commit.9c3226ce', value: 'v0.5.16+commit.9c3226ce' },
+        // { text: 'v0.5.15+commit.6a57276f', value: 'v0.5.15+commit.6a57276f' },
+        // { text: 'v0.5.14+commit.01f1aaa4', value: 'v0.5.14+commit.01f1aaa4' },
+        // { text: 'v0.5.13+commit.5b0b510c', value: 'v0.5.13+commit.5b0b510c' },
+        // { text: 'v0.5.12+commit.7709ece9', value: 'v0.5.12+commit.7709ece9' },
+        // { text: 'v0.5.11+commit.22be8592', value: 'v0.5.11+commit.22be8592' },
+        // { text: 'v0.5.11+commit.c082d0b4', value: 'v0.5.11+commit.c082d0b4' },
+        // { text: 'v0.5.10+commit.5a6ea5b1', value: 'v0.5.10+commit.5a6ea5b1' },
+        // { text: 'v0.5.9+commit.c68bc34e', value: 'v0.5.9+commit.c68bc34e' },
+        // { text: 'v0.5.9+commit.e560f70d', value: 'v0.5.9+commit.e560f70d' },
+        // { text: 'v0.5.8+commit.23d335f2', value: 'v0.5.8+commit.23d335f2' },
+        // { text: 'v0.5.7+commit.6da8b019', value: 'v0.5.7+commit.6da8b019' },
+        // { text: 'v0.5.6+commit.b259423e', value: 'v0.5.6+commit.b259423e' },
+        // { text: 'v0.5.5+commit.47a71e8f', value: 'v0.5.5+commit.47a71e8f' },
+        // { text: 'v0.5.4+commit.9549d8ff', value: 'v0.5.4+commit.9549d8ff' },
+        // { text: 'v0.5.3+commit.10d17f24', value: 'v0.5.3+commit.10d17f24' },
+        // { text: 'v0.5.2+commit.1df8f40c', value: 'v0.5.2+commit.1df8f40c' },
+        // { text: 'v0.5.1+commit.c8a2cb62', value: 'v0.5.1+commit.c8a2cb62' },
+        // { text: 'v0.5.0+commit.1d4f565a', value: 'v0.5.0+commit.1d4f565a' },
+        // { text: 'v0.4.26+commit.4563c3fc', value: 'v0.4.26+commit.4563c3fc' },
+        // { text: 'v0.4.25+commit.59dbf8f1', value: 'v0.4.25+commit.59dbf8f1' },
+        // { text: 'v0.4.24+commit.e67f0147', value: 'v0.4.24+commit.e67f0147' },
+        // { text: 'v0.4.23+commit.124ca40d', value: 'v0.4.23+commit.124ca40d' },
+        // { text: 'v0.4.22+commit.4cb486ee', value: 'v0.4.22+commit.4cb486ee' },
+        // { text: 'v0.4.21+commit.dfe3193c', value: 'v0.4.21+commit.dfe3193c' },
+        // { text: 'v0.4.20+commit.3155dd80', value: 'v0.4.20+commit.3155dd80' },
+        // { text: 'v0.4.19+commit.c4cbbb05', value: 'v0.4.19+commit.c4cbbb05' },
+        // { text: 'v0.4.18+commit.9cf6e910', value: 'v0.4.18+commit.9cf6e910' },
+        // { text: 'v0.4.17+commit.bdeb9e52', value: 'v0.4.17+commit.bdeb9e52' },
+        // { text: 'v0.4.16+commit.d7661dd9', value: 'v0.4.16+commit.d7661dd9' },
+        // { text: 'v0.4.15+commit.8b45bddb', value: 'v0.4.15+commit.8b45bddb' },
+        // { text: 'v0.4.15+commit.bbb8e64f', value: 'v0.4.15+commit.bbb8e64f' },
+        // { text: 'v0.4.14+commit.c2215d46', value: 'v0.4.14+commit.c2215d46' },
+        // { text: 'v0.4.13+commit.0fb4cb1a', value: 'v0.4.13+commit.0fb4cb1a' },
+        // { text: 'v0.4.12+commit.194ff033', value: 'v0.4.12+commit.194ff033' },
+        // { text: 'v0.4.11+commit.68ef5810', value: 'v0.4.11+commit.68ef5810' },
       ],
       compilerAllVersions: [
         { text: 'Please select', value: null },
@@ -4114,6 +4148,7 @@ export default {
       required,
       isValidContractId: (value, vm) => vm.isValidContractId(value, vm),
     },
+    arguments: {},
     compilerVersion: {
       required,
     },
@@ -4162,9 +4197,8 @@ export default {
         // figure out default target
         const vm = this
         let target = vm.target
-        // compilerVersion: could be 'v0.4.24-nightly.2018.5.16+commit.7f965c86' or 'v0.4.11+commit.68ef5810' "v0.8.6+commit.11564f7e"
+        // compilerVersion: could be formatted like 'v0.4.24-nightly.2018.5.16+commit.7f965c86' or 'v0.8.6+commit.11564f7e'
         if (target === 'default') {
-          // v0.4.12
           const compilerVersionNumber = vm.compilerVersion
             .split('-')[0]
             .split('+')[0]
@@ -4178,7 +4212,6 @@ export default {
           const compilerVersionNumber3 = parseInt(
             compilerVersionNumber.split('.')[2]
           )
-
           if (
             compilerVersionNumber1 === 0 &&
             compilerVersionNumber2 <= 5 &&
@@ -4198,11 +4231,11 @@ export default {
         }
 
         // call verificator-api
-
         const formData = new FormData()
         formData.append('source', vm.source)
         formData.append('address', toChecksumAddress(vm.address)) // save address checksum
         formData.append('compilerVersion', vm.compilerVersion)
+        formData.append('arguments', vm.arguments)
         formData.append('optimization', vm.optimization)
         formData.append('runs', vm.runs)
         formData.append('target', target)
@@ -4220,6 +4253,7 @@ export default {
             // eslint-disable-next-line no-console
             // console.log('verification request data uploaded:', resp.data)
             vm.requestId = resp.data.data.id
+            vm.requestIds.push(resp.data.data.id)
             // eslint-disable-next-line no-console
             // console.log('verification request id:', vm.requestId)
           })
@@ -4252,6 +4286,43 @@ export default {
       return (
         response.data.contract.length > 0 && !response.data.contract[0].verified
       )
+    },
+  },
+  apollo: {
+    $subscribe: {
+      requests: {
+        query: gql`
+          subscription contract_verification_request($requestIds: [String!]) {
+            contract_verification_request(
+              where: { id: { _in: $requestIds } }
+              order_by: { timestamp: desc }
+            ) {
+              compiler_version
+              contract_id
+              error_message
+              error_type
+              filename
+              id
+              license
+              optimization
+              runs
+              status
+              target
+              timestamp
+            }
+          }
+        `,
+        variables() {
+          return {
+            requestIds: this.requestIds,
+          }
+        },
+        result({ data }) {
+          this.requests = data.contract_verification_request
+          // eslint-disable-next-line no-console
+          console.log(this.requests)
+        },
+      },
     },
   },
 }
