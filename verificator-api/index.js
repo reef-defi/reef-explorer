@@ -45,6 +45,24 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(morgan('dev'));
 
+const preprocessBytecode = (bytecode) => {
+  let filteredBytecode = "";
+  const start = bytecode.indexOf('6080604052');
+  //
+  // metadata separator (solc >= v0.6.0)
+  //
+  const ipfsMetadataEnd = bytecode.indexOf('a26469706673582200');
+  filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
+
+  //
+  // metadata separator for 0.5.16
+  //
+  const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
+  filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
+
+  return filteredBytecode;
+};
+
 app.post('/api/verificator/request', async (req, res) => {
   try {
     if(!req.files || !req.body.token || !req.body.address || !req.body.compilerVersion || !req.body.optimization || !req.body.optimization || !req.body.runs || !req.body.target || !req.body.license) {
@@ -303,12 +321,14 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
         license,
       } = req.body;
       const pool = await getPool();
-      const query = 'SELECT contract_id, verified FROM contract WHERE contract_id = $1 AND bytecode = $2;';
-      const data = [address, bytecode];
+      const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode LIKE '0x$2%';";
+      const requestBytecode = preprocessBytecode(bytecode);
+      const data = [address, requestBytecode];
       const dbres = await pool.query(query, data);
       if (dbres) {
         if (dbres.rows.length === 1) {
-          if (dbres.rows[0].verified === true) {
+          const chainBytecode = dbres.rows[0].bytecode
+          if (dbres.rows[0].verified === true && chainBytecode === requestBytecode) {
             res.send({
               status: false,
               message: 'Error, contract already verified'

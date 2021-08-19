@@ -94,13 +94,10 @@ const loadCompiler = async (version) => (
 );
 
 const preprocessBytecode = (bytecode) => {
-  //
-  // TODO: verify that start is the same from solc >= 0.6.0
-  //
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
-  // ipfs and solc metadata separator (solc >= v0.6.0)
+  // metadata separator (solc >= v0.6.0)
   //
   const ipfsMetadataEnd = bytecode.indexOf('a26469706673582200');
   filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
