@@ -100,17 +100,15 @@ const preprocessBytecode = (bytecode) => {
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
-  // ipfs and solc metadata separators (solc >= v0.6.0)
+  // ipfs and solc metadata separator (solc >= v0.6.0)
   //
-  const ipfsMetadataEnd = bytecode.lastIndexOf('a26469706673582200');
+  const ipfsMetadataEnd = bytecode.indexOf('a26469706673582200');
   filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
 
-  const solcMetadataEnd = filteredBytecode.lastIndexOf('a264736f6c634300');
-  filteredBytecode = filteredBytecode.slice(0, solcMetadataEnd);
   //
   // metadata separator for 0.5.16
   //
-  const bzzr1MetadataEnd = filteredBytecode.lastIndexOf('a265627a7a72315820');
+  const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
   filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
 
   return filteredBytecode;
