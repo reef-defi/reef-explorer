@@ -4,8 +4,8 @@
       <b-table striped hover :fields="fields" :items="transfers">
         <template #cell(block_number)="data">
           <p class="mb-0">
-            <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
-              #{{ formatNumber(data.item.block_number) }}
+            <nuxt-link :to="`/transfer/${data.item.hash}`">
+              {{ shortHash(data.item.hash) }}
             </nuxt-link>
           </p>
         </template>

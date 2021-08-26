@@ -41,7 +41,9 @@
                 </template>
                 <template #cell(hash)="data">
                   <p class="mb-0">
-                    {{ shortHash(data.item.hash) }}
+                    <nuxt-link :to="`/transfer/${data.item.hash}`">
+                      {{ shortHash(data.item.hash) }}
+                    </nuxt-link>
                   </p>
                 </template>
                 <template #cell(from)="data">
@@ -174,13 +176,13 @@ export default {
       totalRows: 1,
       fields: [
         {
-          key: 'block_number',
-          label: 'Block',
+          key: 'hash',
+          label: 'Hash',
           sortable: true,
         },
         {
-          key: 'hash',
-          label: 'Hash',
+          key: 'block_number',
+          label: 'Block',
           sortable: true,
         },
         {
