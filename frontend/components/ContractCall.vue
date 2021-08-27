@@ -1,5 +1,12 @@
 <template>
   <div class="contract-call">
+    <b-alert variant="warning" show dismissible>
+      <p class="text-center mt-4">
+        Write contract calls (marked with
+        <font-awesome-icon icon="database" /> icon) support is experimental,
+        please keep in mind and use at your own risk!
+      </p>
+    </b-alert>
     <!-- <pre>{{ JSON.stringify(contractInterface, null, 2) }}</pre> -->
     <div
       v-for="(message, index) in contractAbi.filter(
@@ -18,12 +25,25 @@
             : {{ getOutputs(message) }}
           </span>
         </b-card-title>
-        <contract-call-function
-          :contract-id="contractId"
-          :contract-interface="contractInterface"
-          :contract-abi="contractAbi"
-          :function-name="message.name"
-        />
+        <template v-if="message.stateMutability === 'view'">
+          <contract-call-function
+            :contract-id="contractId"
+            :contract-interface="contractInterface"
+            :contract-abi="contractAbi"
+            :function-name="message.name"
+            :function-name-with-args="getFunctionNameWithArgs(message)"
+          />
+        </template>
+        <template v-else>
+          <contract-call-function-write
+            :contract-id="contractId"
+            :contract-interface="contractInterface"
+            :contract-abi="contractAbi"
+            :function-name="message.name"
+            :function-name-with-args="getFunctionNameWithArgs(message)"
+          />
+        </template>
+        <!-- <pre>{{ JSON.stringify(message, null, 2) }}</pre> -->
       </b-card>
     </div>
   </div>
@@ -33,9 +53,10 @@
 import { ethers } from 'ethers'
 import commonMixin from '@/mixins/commonMixin.js'
 import ContractCallFunction from './ContractCallFunction.vue'
+import ContractCallFunctionWrite from './ContractCallFunctionWrite.vue'
 
 export default {
-  components: { ContractCallFunction },
+  components: { ContractCallFunction, ContractCallFunctionWrite },
   mixins: [commonMixin],
   props: {
     contractId: {
@@ -63,16 +84,23 @@ export default {
     },
   },
   methods: {
-    getInterface(contractAbi) {
-      const iface = new ethers.utils.Interface(contractAbi)
-      return iface.functions
-    },
+    // getInterface(contractAbi) {
+    //   const iface = new ethers.utils.Interface(contractAbi)
+    //   return iface.functions
+    // },
     getInputs(message) {
       const inputs = []
       for (const input of message.inputs) {
         inputs.push(`${input.name}: ${input.type}`)
       }
       return inputs.join(', ')
+    },
+    getFunctionNameWithArgs(message) {
+      const inputs = []
+      for (const input of message.inputs) {
+        inputs.push(input.type)
+      }
+      return `${message.name}(${inputs.join(',')})`
     },
     getOutputs(message) {
       const outputs = []

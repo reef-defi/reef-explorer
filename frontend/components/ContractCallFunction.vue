@@ -46,6 +46,10 @@ export default {
       type: String,
       default: () => '',
     },
+    functionNameWithArgs: {
+      type: String,
+      default: () => '',
+    },
     contractAbi: {
       type: Array,
       default: () => [],
@@ -65,16 +69,16 @@ export default {
       ).inputs
     },
   },
-  created() {
-    this.provider = new Provider(
-      options({
-        provider: new WsProvider(network.nodeWs),
-      })
-    )
-  },
-  beforeDestroy() {
-    this.provider.api.disconnect()
-  },
+  // created() {
+  //   this.provider = new Provider(
+  //     options({
+  //       provider: new WsProvider(network.nodeWs),
+  //     })
+  //   )
+  // },
+  // beforeDestroy() {
+  //   this.provider.api.disconnect()
+  // },
   methods: {
     getInputs(functionName) {
       // eslint-disable-next-line no-console
@@ -87,24 +91,59 @@ export default {
     async onSubmit(event) {
       event.preventDefault()
       //
-      // TODO: write functions:
+      // TODO:
       //
-      // 1. check function arguments
+      // 1. validate function arguments
       // 2. encode function call with arguments
       // 3. submit extrinsic
       //
 
       //
-      // read only functions
+      // connect to provider
+      //
+      const provider = new Provider(
+        options({
+          provider: new WsProvider(network.nodeWs),
+        })
+      )
+      await provider.api.isReady
+
+      //
+      // Get contract interface
+      //
+      // const iface = new ethers.utils.Interface(this.contractAbi)
+      // // eslint-disable-next-line no-console
+      // console.log('interface:', iface)
+
+      //
+      // Encode arguments
+      //
+      // const encodedArguments = iface.encodeFunctionData(
+      //   this.functionName,
+      //   this.arguments
+      // )
+      // // eslint-disable-next-line no-console
+      // console.log('arguments:', this.arguments)
+      // // eslint-disable-next-line no-console
+      // console.log('encoded arguments:', encodedArguments)
+
+      //
+      // Call contract read only function
       //
       const contract = new ethers.Contract(
         this.contractId,
         this.contractAbi,
-        this.provider
+        provider
       )
-      this.result = await contract[this.functionName]()
+      this.result = await contract[this.functionName](...this.arguments)
+
       // eslint-disable-next-line no-console
-      console.log(this.result)
+      console.log('result:', this.result)
+
+      //
+      // disconnect provider
+      //
+      provider.api.disconnect()
     },
     onReset() {
       // reset form

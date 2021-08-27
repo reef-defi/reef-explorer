@@ -31,6 +31,7 @@
     "@nuxtjs/axios": "^5.12.5",
     "@nuxtjs/fontawesome": "^1.1.2",
     "@nuxtjs/recaptcha": "^1.0.4",
+    "@polkadot/extension-dapp": "^0.39.3",
     "@polkadot/keyring": "^6.4.1",
     "@polkadot/util": "^6.4.1",
     "@polkadot/vue-identicon": "^0.68.1",
