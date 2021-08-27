@@ -37,11 +37,12 @@
         class="text-center my-4"
         fade
         show
+        dismissible
       >
         <p>
           <strong>{{ extrinsicStatus }} transaction!</strong>
         </p>
-        <p>Extrinsic with hash {{ extrinsicHash }} was included in block</p>
+        <p>Contract call execution was included in a block</p>
       </b-alert>
       <b-alert
         v-else-if="
@@ -54,9 +55,9 @@
         dismissible
       >
         <p>
-          <strong>Transaction hash {{ extrinsicHash }}</strong>
+          <strong>{{ extrinsicStatus }} transaction!</strong>
         </p>
-        <p>Transaction status: {{ extrinsicStatus }}</p>
+        <p>Contract call execution was included in a finalized block</p>
       </b-alert>
     </b-form>
   </div>
@@ -189,7 +190,7 @@ export default {
               ({ events = [], status }) => {
                 vm.extrinsicStatus = status.type
                 if (status.isInBlock) {
-                  vm.extrinsicHash = status.asInBlock.toHex()
+                  vm.blockHash = status.asInBlock.toHex()
                 } else if (status.isFinalized) {
                   vm.blockHash = status.asFinalized.toHex()
                 }
