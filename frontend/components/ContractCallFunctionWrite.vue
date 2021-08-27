@@ -30,34 +30,53 @@
         </b-form-group>
       </div>
       <b-button type="submit" variant="primary2">SEND</b-button>
-
       <b-alert
-        v-if="extrinsicHash && extrinsicStatus === 'Finalized'"
+        v-if="extrinsicStatus === 'Finalized'"
         variant="success"
         class="text-center my-4"
         fade
         show
-        dismissible
       >
         <p>
-          <strong>{{ extrinsicStatus }} transaction!</strong>
+          <strong>Transaction {{ extrinsicStatus }}!</strong>
         </p>
-        <p>Contract call execution was included in a block</p>
+        <p>Contract call execution was included in a finalized block</p>
       </b-alert>
       <b-alert
-        v-else-if="
-          extrinsicHash && extrinsicStatus && extrinsicStatus !== 'Finalized'
-        "
+        v-if="extrinsicStatus === 'Ready'"
         variant="info"
         class="text-center my-4"
         fade
         show
-        dismissible
       >
         <p>
-          <strong>{{ extrinsicStatus }} transaction!</strong>
+          <strong>Transaction {{ extrinsicStatus }}!</strong>
         </p>
-        <p>Contract call execution was included in a finalized block</p>
+        <p>Contract call execution is ready to be broadcasted</p>
+      </b-alert>
+      <b-alert
+        v-else-if="extrinsicStatus === 'Broadcast'"
+        variant="info"
+        class="text-center my-4"
+        fade
+        show
+      >
+        <p>
+          <strong>Transaction {{ extrinsicStatus }}!</strong>
+        </p>
+        <p>Contract call execution was broadcasted</p>
+      </b-alert>
+      <b-alert
+        v-else-if="extrinsicStatus === 'InBlock'"
+        variant="success"
+        class="text-center my-4"
+        fade
+        show
+      >
+        <p>
+          <strong>Transaction {{ extrinsicStatus }}!</strong>
+        </p>
+        <p>Contract call execution was included in a block</p>
       </b-alert>
     </b-form>
   </div>
