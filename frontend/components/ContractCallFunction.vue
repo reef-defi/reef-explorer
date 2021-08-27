@@ -55,6 +55,7 @@ export default {
     return {
       arguments: [],
       result: null,
+      provider: null,
     }
   },
   computed: {
@@ -72,7 +73,7 @@ export default {
     )
   },
   beforeDestroy() {
-    this.provider.disconnect()
+    this.provider.api.disconnect()
   },
   methods: {
     getInputs(functionName) {
