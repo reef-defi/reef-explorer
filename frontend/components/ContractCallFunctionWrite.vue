@@ -38,7 +38,7 @@
         show
       >
         <p>
-          <strong>Transaction {{ extrinsicStatus }}!</strong>
+          <strong>Finalized transaction!</strong>
         </p>
         <p>Contract call execution was included in a finalized block</p>
       </b-alert>
@@ -50,7 +50,7 @@
         show
       >
         <p>
-          <strong>Transaction {{ extrinsicStatus }}!</strong>
+          <strong>Transaction ready!</strong>
         </p>
         <p>Contract call execution is ready to be broadcasted</p>
       </b-alert>
@@ -62,7 +62,7 @@
         show
       >
         <p>
-          <strong>Transaction {{ extrinsicStatus }}!</strong>
+          <strong>Broadcasted transaction!</strong>
         </p>
         <p>Contract call execution was broadcasted</p>
       </b-alert>
@@ -74,7 +74,7 @@
         show
       >
         <p>
-          <strong>Transaction {{ extrinsicStatus }}!</strong>
+          <strong>Transaction success!</strong>
         </p>
         <p>Contract call execution was included in a block</p>
       </b-alert>

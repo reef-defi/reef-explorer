@@ -2,9 +2,9 @@
   <div class="contract-call">
     <b-alert variant="warning" show dismissible>
       <p class="text-center mt-4">
-        Write contract calls (marked with
-        <font-awesome-icon icon="database" /> icon) support is experimental,
-        please keep in mind and use at your own risk!
+        Support for write contract calls (marked with
+        <font-awesome-icon icon="database" /> icon) is experimental, please keep
+        in mind and use at your own risk!
       </p>
     </b-alert>
     <!-- <pre>{{ JSON.stringify(contractInterface, null, 2) }}</pre> -->
