@@ -133,7 +133,7 @@ export default {
       // IMPORTANT: check https://polkadot.js.org/docs/api-contract/start/contract.tx
       value: 0,
       gasLimit: 98721,
-      storageLimit: 0,
+      storageLimit: 70,
       error: null,
       extrinsicHash: null,
       extrinsicStatus: null,
