@@ -4,6 +4,7 @@ import gql from 'graphql-tag'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { checkAddressChecksum } from 'web3-utils'
 import { network } from '@/frontend.config.js'
+import { reefChainErrors } from '@/reef-chain-errors.js'
 
 export default {
   methods: {
@@ -108,6 +109,46 @@ export default {
         return false
       }
       return true
+    },
+    //
+    // Some error samples:
+    //
+    // [{"module":{"index":6,"error":5}},{"weight":194407000,"class":"Normal","paysFee":"Yes"}]
+    // [{"badOrigin":null},{"weight":204203000,"class":"Normal","paysFee":"Yes"}]
+    // [{"other":null},{"weight":98721,"class":"Normal","paysFee":"Yes"}]
+    //
+    getExtrinsicFailedFriendlyError: async (
+      blockNumber,
+      extrinsicIndex,
+      apolloClient
+    ) => {
+      const query = gql`
+        query event {
+          event(
+            limit: 1
+            where: {
+              block_number: { _eq: "${blockNumber}" }
+              event_index: { _eq: "${extrinsicIndex}" }
+              method: { _eq: "ExtrinsicFailed" }
+            }
+          ) {
+            data
+          }
+        }
+      `
+      const response = await apolloClient.query({ query })
+      const jsonData = JSON.parse(response.data.event[0].data)
+      if (jsonData[0]?.badOrigin === null) {
+        return 'Bad origin'
+      } else if (jsonData[0]?.other === null) {
+        return 'Other error'
+      } else if (jsonData[0]?.module) {
+        return reefChainErrors
+          .find((module) => module.index === jsonData[0].module.index)
+          .errors.find((error) => error.index === jsonData[0].module.error)
+          .description
+      }
+      return ''
     },
   },
 }

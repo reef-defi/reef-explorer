@@ -20,6 +20,11 @@
             {{ data.item.method }}
           </p>
         </template>
+        <template #cell(data)="data">
+          <p class="mb-0">
+            {{ data.item.data }}
+          </p>
+        </template>
       </b-table>
     </div>
   </div>
