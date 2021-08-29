@@ -73,7 +73,13 @@
         <tr>
           <td>Amount</td>
           <td>
-            {{ formatAmount(JSON.parse(transfer.args)[1]) }}
+            {{
+              formatAmount(
+                transfer.section === 'currencies'
+                  ? JSON.parse(transfer.args)[2]
+                  : JSON.parse(transfer.args)[1]
+              )
+            }}
           </td>
         </tr>
         <tr>
@@ -107,7 +113,7 @@ export default {
   props: {
     transfer: {
       type: Object,
-      default: undefined,
+      default: () => undefined,
     },
   },
 }
