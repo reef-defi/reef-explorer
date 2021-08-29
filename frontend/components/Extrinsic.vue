@@ -133,8 +133,8 @@
 </template>
 
 <script>
-import commonMixin from '@/mixins/commonMixin.js'
 import { Promised } from 'vue-promised'
+import commonMixin from '@/mixins/commonMixin.js'
 export default {
   components: { Promised },
   mixins: [commonMixin],

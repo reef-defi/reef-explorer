@@ -99,6 +99,21 @@
               class="text-success"
             />
             <font-awesome-icon v-else icon="times" class="text-danger" />
+            <template v-if="!transfer.success">
+              <Promised
+                :promise="
+                  getExtrinsicFailedFriendlyError(
+                    transfer.block_number,
+                    transfer.extrinsic_index,
+                    $apollo.provider.defaultClient
+                  )
+                "
+              >
+                <template #default="data"
+                  ><span class="text-danger ml-2">{{ data }}</span></template
+                >
+              </Promised>
+            </template>
           </td>
         </tr>
       </tbody>
@@ -107,8 +122,10 @@
 </template>
 
 <script>
+import { Promised } from 'vue-promised'
 import commonMixin from '@/mixins/commonMixin.js'
 export default {
+  components: { Promised },
   mixins: [commonMixin],
   props: {
     transfer: {
