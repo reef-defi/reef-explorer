@@ -18,6 +18,14 @@
   },
   "homepage": "https://github.com/reef-defi/reef-explorer#readme",
   "workspaces": ["frontend", "backend", "verificator-api", "verificator"],
-  "scripts": {}
+  "scripts": {},
+  "resolutions": {
+    "@ethersproject/abstract-signer": "5.0.9",
+    "@ethersproject/abstract-provider": "5.0.9",
+    "@ethersproject/bignumber": "5.0.9",
+    "@ethersproject/bytes": "5.0.9",
+    "@ethersproject/logger": "5.0.9",
+    "@ethersproject/properties": "5.0.9"
+  }
  }
  

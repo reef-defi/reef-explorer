@@ -30,7 +30,10 @@
         </b-form-group>
       </div>
       <b-button type="submit" variant="primary2">SEND</b-button>
-      <b-alert
+      <b-alert v-if="result !== null" variant="info" class="mt-4" show>
+        {{ result }}
+      </b-alert>
+      <!-- <b-alert
         v-if="extrinsicStatus === 'Finalized'"
         variant="success"
         class="text-center my-4"
@@ -77,19 +80,18 @@
           <strong>Transaction success!</strong>
         </p>
         <p>Contract call execution was included in a block</p>
-      </b-alert>
+      </b-alert> -->
     </b-form>
   </div>
 </template>
 
 <script>
 import { ethers } from 'ethers'
-import { ApiPromise } from '@polkadot/api'
-import { WsProvider } from '@polkadot/rpc-provider'
-import { options } from '@reef-defi/api'
+import { Provider, Signer } from '@reef-defi/evm-provider'
+import { WsProvider } from '@polkadot/api'
+
 import {
   web3Accounts,
-  // isWeb3Injected,
   web3Enable,
   web3FromAddress,
 } from '@polkadot/extension-dapp'
@@ -129,11 +131,8 @@ export default {
       noAccountsFound: true,
       extensionAddresses: [],
       selectedAddress: null,
+      selectedEvmAddress: null,
       api: null,
-      // IMPORTANT: check https://polkadot.js.org/docs/api-contract/start/contract.tx
-      value: 0,
-      gasLimit: 98721,
-      storageLimit: 70,
       error: null,
       extrinsicHash: null,
       extrinsicStatus: null,
@@ -168,53 +167,60 @@ export default {
         this.noAccountsFound = true
       }
     }
-    const provider = new WsProvider(network.nodeWs)
-    this.api = new ApiPromise(options({ provider }))
-    await this.api.isReady
   },
   methods: {
     async onSubmit(event) {
       event.preventDefault()
       //
-      // Encode arguments
-      //
-      const iface = new ethers.utils.Interface(this.contractAbi)
-      const encodedArguments = iface.encodeFunctionData(
-        this.functionName,
-        this.arguments
-      )
-
-      //
       // Call contract write function
       //
-      const encodedAddress = encodeAddress(this.selectedAddress, 42)
-      const vm = this
       await web3FromAddress(this.selectedAddress)
         .then(async (injector) => {
-          this.api.setSigner(injector.signer)
-          const { nonce } = await this.api.query.system.account(
-            this.selectedAddress
+          // connect to provider
+          const provider = new Provider({
+            provider: new WsProvider(network.nodeWs),
+          })
+          await provider.api.isReady
+
+          // eslint-disable-next-line no-console
+          console.log('injector:', injector)
+
+          // create signer
+          const wallet = new Signer(
+            provider,
+            this.selectedAddress,
+            injector.signer
           )
-          await this.api.tx.evm
-            .call(
-              this.contractId,
-              encodedArguments,
-              this.value,
-              this.gasLimit,
-              this.storageLimit
+
+          // eslint-disable-next-line no-console
+          console.log('wallet:', wallet)
+
+          // claim default account
+          if (!(await wallet.isClaimed())) {
+            // eslint-disable-next-line no-console
+            console.log(
+              'No claimed EVM account found -> claimed default EVM account: ',
+              await wallet.getAddress()
             )
-            .signAndSend(
-              encodedAddress,
-              { nonce },
-              ({ events = [], status }) => {
-                vm.extrinsicStatus = status.type
-                if (status.isInBlock) {
-                  vm.blockHash = status.asInBlock.toHex()
-                } else if (status.isFinalized) {
-                  vm.blockHash = status.asFinalized.toHex()
-                }
-              }
-            )
+            await wallet.claimDefaultAccount()
+          }
+
+          // eslint-disable-next-line no-console
+          console.log('evm address', await wallet.getAddress())
+
+          // eslint-disable-next-line no-console
+          console.log('contract abi:', this.contractAbi)
+
+          const contract = new ethers.Contract(
+            this.contractId,
+            this.contractAbi,
+            wallet
+          )
+
+          this.result = await contract[this.functionName](...this.arguments)
+
+          // eslint-disable-next-line no-console
+          console.log('result:', this.result)
         })
         .catch((error) => {
           // eslint-disable-next-line

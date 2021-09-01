@@ -16,7 +16,7 @@
         </b-form-group>
       </div>
       <b-button type="submit" variant="primary2">SEND</b-button>
-      <b-alert v-if="result" variant="info" class="mt-4" show>
+      <b-alert v-if="result !== null" variant="info" class="mt-4" show>
         {{ result }}
       </b-alert>
     </b-form>
