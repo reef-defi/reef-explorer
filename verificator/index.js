@@ -113,7 +113,7 @@ const preprocessBytecode = (bytecode) => {
   //
   // metadata separator (solc >= v0.6.0)
   //
-  const ipfsMetadataEnd = bytecode.indexOf('a26469706673582200');
+  const ipfsMetadataEnd = bytecode.indexOf('a264697066735822');
   filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
 
   //
@@ -238,8 +238,8 @@ const processVerificationRequest = async (request, client) => {
     const { isVerified, contractName, contractAbi, requestBytecode } = artifacts;
 
     // debug
-    logger.info({ request: id }, `existing: ${existing}`);
-    logger.info({ request: id }, `request: ${requestBytecode}`);
+    // logger.info({ request: id }, `existing: ${existing}`);
+    // logger.info({ request: id }, `request: ${requestBytecode}`);
 
     if (isVerified) {
       logger.info({ request: id }, `Contract ${contract_id} is verified!`);
