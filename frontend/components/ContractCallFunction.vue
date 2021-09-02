@@ -69,16 +69,6 @@ export default {
       ).inputs
     },
   },
-  // created() {
-  //   this.provider = new Provider(
-  //     options({
-  //       provider: new WsProvider(network.nodeWs),
-  //     })
-  //   )
-  // },
-  // beforeDestroy() {
-  //   this.provider.api.disconnect()
-  // },
   methods: {
     getInputs(functionName) {
       // eslint-disable-next-line no-console
@@ -91,14 +81,6 @@ export default {
     async onSubmit(event) {
       event.preventDefault()
       //
-      // TODO:
-      //
-      // 1. validate function arguments
-      // 2. encode function call with arguments
-      // 3. submit extrinsic
-      //
-
-      //
       // connect to provider
       //
       const provider = new Provider(
@@ -107,26 +89,6 @@ export default {
         })
       )
       await provider.api.isReady
-
-      //
-      // Get contract interface
-      //
-      // const iface = new ethers.utils.Interface(this.contractAbi)
-      // // eslint-disable-next-line no-console
-      // console.log('interface:', iface)
-
-      //
-      // Encode arguments
-      //
-      // const encodedArguments = iface.encodeFunctionData(
-      //   this.functionName,
-      //   this.arguments
-      // )
-      // // eslint-disable-next-line no-console
-      // console.log('arguments:', this.arguments)
-      // // eslint-disable-next-line no-console
-      // console.log('encoded arguments:', encodedArguments)
-
       //
       // Call contract read only function
       //
@@ -138,7 +100,7 @@ export default {
       this.result = await contract[this.functionName](...this.arguments)
 
       // eslint-disable-next-line no-console
-      console.log('result:', this.result)
+      // console.log('result:', this.result)
 
       //
       // disconnect provider

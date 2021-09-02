@@ -4320,7 +4320,7 @@ export default {
         result({ data }) {
           this.requests = data.contract_verification_request
           // eslint-disable-next-line no-console
-          console.log(this.requests)
+          // console.log(this.requests)
         },
       },
     },

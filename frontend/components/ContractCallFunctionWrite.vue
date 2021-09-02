@@ -29,58 +29,25 @@
           ></b-form-input>
         </b-form-group>
       </div>
+      <b-alert v-if="error" variant="danger" class="mt-4 text-center" show>
+        <h6>Error!</h6>
+        <p>{{ error }}</p>
+      </b-alert>
       <b-button type="submit" variant="primary2">SEND</b-button>
-      <b-alert v-if="result !== null" variant="info" class="mt-4" show>
-        {{ result }}
-      </b-alert>
-      <!-- <b-alert
-        v-if="extrinsicStatus === 'Finalized'"
+      <b-alert
+        v-if="result !== null"
         variant="success"
-        class="text-center my-4"
-        fade
+        class="mt-4 text-center"
         show
       >
+        <h6>Success!</h6>
         <p>
-          <strong>Finalized transaction!</strong>
+          Extrinsic hash is
+          <nuxt-link target="_blank" :to="`/extrinsic/${result.hash}`">{{
+            shortHash(result.hash)
+          }}</nuxt-link>
         </p>
-        <p>Contract call execution was included in a finalized block</p>
       </b-alert>
-      <b-alert
-        v-if="extrinsicStatus === 'Ready'"
-        variant="info"
-        class="text-center my-4"
-        fade
-        show
-      >
-        <p>
-          <strong>Transaction ready!</strong>
-        </p>
-        <p>Contract call execution is ready to be broadcasted</p>
-      </b-alert>
-      <b-alert
-        v-else-if="extrinsicStatus === 'Broadcast'"
-        variant="info"
-        class="text-center my-4"
-        fade
-        show
-      >
-        <p>
-          <strong>Broadcasted transaction!</strong>
-        </p>
-        <p>Contract call execution was broadcasted</p>
-      </b-alert>
-      <b-alert
-        v-else-if="extrinsicStatus === 'InBlock'"
-        variant="success"
-        class="text-center my-4"
-        fade
-        show
-      >
-        <p>
-          <strong>Transaction success!</strong>
-        </p>
-        <p>Contract call execution was included in a block</p>
-      </b-alert> -->
     </b-form>
   </div>
 </template>
@@ -176,55 +143,74 @@ export default {
       //
       await web3FromAddress(this.selectedAddress)
         .then(async (injector) => {
-          // connect to provider
-          const provider = new Provider({
-            provider: new WsProvider(network.nodeWs),
-          })
-          await provider.api.isReady
+          try {
+            // connect to provider
+            const provider = new Provider({
+              provider: new WsProvider(network.nodeWs),
+            })
+            await provider.api.isReady
 
-          // eslint-disable-next-line no-console
-          console.log('injector:', injector)
-
-          // create signer
-          const wallet = new Signer(
-            provider,
-            this.selectedAddress,
-            injector.signer
-          )
-
-          // eslint-disable-next-line no-console
-          console.log('wallet:', wallet)
-
-          // claim default account
-          if (!(await wallet.isClaimed())) {
             // eslint-disable-next-line no-console
-            console.log(
-              'No claimed EVM account found -> claimed default EVM account: ',
-              await wallet.getAddress()
+            // console.log('injector:', injector)
+
+            // create signer
+            const wallet = new Signer(
+              provider,
+              this.selectedAddress,
+              injector.signer
             )
-            await wallet.claimDefaultAccount()
+
+            // eslint-disable-next-line no-console
+            // console.log('wallet:', wallet)
+
+            // claim default account
+            if (!(await wallet.isClaimed())) {
+              // eslint-disable-next-line no-console
+              console.log(
+                'No claimed EVM account found -> claimed default EVM account: ',
+                await wallet.getAddress()
+              )
+              await wallet.claimDefaultAccount()
+            }
+
+            // eslint-disable-next-line no-console
+            // console.log('evm address', await wallet.getAddress())
+
+            // eslint-disable-next-line no-console
+            // console.log('contract abi:', this.contractAbi)
+
+            const contract = new ethers.Contract(
+              this.contractId,
+              this.contractAbi,
+              wallet
+            )
+
+            this.result = await contract[this.functionName](...this.arguments)
+            // eslint-disable-next-line no-console
+            // console.log('result:', this.result)
+
+            // hide success alert after 20s
+            setTimeout(() => {
+              this.result = null
+            }, 20000)
+          } catch (error) {
+            this.error = error
+            // eslint-disable-next-line
+            console.log('Error: ', this.error)
+            // hide error alert after 20s
+            setTimeout(() => {
+              this.error = null
+            }, 20000)
           }
-
-          // eslint-disable-next-line no-console
-          console.log('evm address', await wallet.getAddress())
-
-          // eslint-disable-next-line no-console
-          console.log('contract abi:', this.contractAbi)
-
-          const contract = new ethers.Contract(
-            this.contractId,
-            this.contractAbi,
-            wallet
-          )
-
-          this.result = await contract[this.functionName](...this.arguments)
-
-          // eslint-disable-next-line no-console
-          console.log('result:', this.result)
         })
         .catch((error) => {
+          this.error = error
           // eslint-disable-next-line
-          console.log('Error: ', error)
+          console.log('Error: ', this.error)
+          // hide error alert after 20s
+          setTimeout(() => {
+            this.error = null
+          }, 20000)
         })
     },
     onReset() {
