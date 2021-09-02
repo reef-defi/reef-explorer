@@ -209,22 +209,18 @@ const processVerificationRequest = async (request, client) => {
     // logger.info({ request: id }, `onChainContractBytecode: ${onChainContractBytecode}`);
 
     const existing = preprocessBytecode(onChainContractBytecode);
-
-    // debug
-    // logger.info({ request: id }, `existing: ${existing}`);
-
     const compiler = await loadCompiler(compiler_version);
     const contracts = [];
     contracts[filename] = { content: source };
 
     // debug
-    logger.info({ request: id }, `filename: ${filename}`);
-    logger.info({ request: id }, `compiler_version: ${compiler_version}`);
-    logger.info({ request: id }, `arguments: ${arguments}`);
-    logger.info({ request: id }, `optimization: ${optimization}`);
-    logger.info({ request: id }, `runs: ${runs}`);
-    logger.info({ request: id }, `target: ${target}`);
-    logger.info({ request: id }, `license: ${license}`);
+    // logger.info({ request: id }, `filename: ${filename}`);
+    // logger.info({ request: id }, `compiler_version: ${compiler_version}`);
+    // logger.info({ request: id }, `arguments: ${arguments}`);
+    // logger.info({ request: id }, `optimization: ${optimization}`);
+    // logger.info({ request: id }, `runs: ${runs}`);
+    // logger.info({ request: id }, `target: ${target}`);
+    // logger.info({ request: id }, `license: ${license}`);
 
     const artifacts = await getContractArtifacts(
       compiler,
@@ -240,6 +236,10 @@ const processVerificationRequest = async (request, client) => {
       return;
     }
     const { isVerified, contractName, contractAbi, requestBytecode } = artifacts;
+
+    // debug
+    logger.info({ request: id }, `existing: ${existing}`);
+    logger.info({ request: id }, `request: ${requestBytecode}`);
 
     if (isVerified) {
       logger.info({ request: id }, `Contract ${contract_id} is verified!`);
