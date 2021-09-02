@@ -63,6 +63,19 @@ const preprocessBytecode = (bytecode) => {
   return filteredBytecode;
 };
 
+// get not verified contracts with 100% matching bytecde
+const getOnChainContractsByBytecode = async(client, bytecode) => {
+  const query = `SELECT contract_id FROM contract WHERE bytecode = $1 AND NOT verified;`;
+  const data = [bytecode];
+  const res = await parametrizedDbQuery(client, query, data);
+  if (res) {
+    if (res.rows.length > 0) {
+      return res.rows.map(({ contract_id }) => contract_id);
+    }
+  }
+  return []
+};
+
 app.post('/api/verificator/request', async (req, res) => {
   try {
     if(!req.files || !req.body.token || !req.body.address || !req.body.compilerVersion || !req.body.optimization || !req.body.optimization || !req.body.runs || !req.body.target || !req.body.license) {
@@ -171,102 +184,6 @@ app.post('/api/verificator/request', async (req, res) => {
   }
 });
 
-app.post('/api/verificator/untrusted-request', async (req, res) => {
-  try {
-    if(!req.files || !req.body.address || !req.body.compilerVersion || !req.body.optimization || !req.body.optimization || !req.body.runs || !req.body.target || !req.body.license) {
-      res.send({
-        status: false,
-        message: 'Input error'
-      });
-    } else {
-       
-      const source = req.files.source;
-
-      // check file extension, only .sol is allowed
-      const fileName = source.name;
-      const fileExtension = fileName.split('.').pop();
-      if (fileExtension !== 'sol') {
-        res.send({
-          status: false,
-          message: 'File error: only sol extension is allowed'
-        });
-      }
-
-      // Insert contract_verification_request
-      const sourceFileContent = source.data.toString('utf8');
-      const id = crypto.randomBytes(20).toString('hex');
-      const timestamp = Date.now();
-      const pool = await getPool();
-      const sql = `INSERT INTO contract_verification_request (
-        id,
-        contract_id,
-        source,
-        filename,
-        compiler_version,
-        optimization,
-        runs,
-        target,
-        license,
-        status,
-        timestamp
-      ) VALUES (
-        $1,
-        $2,
-        $3,
-        $4,
-        $5,
-        $6,
-        $7,
-        $8,
-        $9,
-        $10,
-        $11
-      );`;
-      const data = [
-        id,
-        req.body.address,
-        sourceFileContent.replace(/\x00/g,''),
-        fileName,
-        req.body.compilerVersion,
-        req.body.optimization,
-        req.body.runs,
-        req.body.target,
-        req.body.license,
-        'PENDING',
-        timestamp
-      ];
-      try {
-        await pool.query(sql, data);
-        res.send({
-          status: true,
-          message: 'Received verification request',
-          data: {
-            id,
-            address: req.body.address,
-            source: fileName,
-            sourceMimetype: source.mimetype,
-            sourceSize: source.size,
-            compilerVersion: req.body.compilerVersion,
-            optimization: req.body.optimization,
-            runs: req.body.runs,
-            target: req.body.target,
-            license: req.body.license,
-          }
-        });
-      } catch (error) {
-        console.log('Database error:', error);
-        res.send({
-          status: false,
-          message: 'Database error'
-        });
-      }
-      await pool.end();
-    }
-  } catch (err) {
-    res.status(500).send(err);
-  }
-});
-
 //
 // Endpoint: /api/verificator/deployed-bytecode-request
 //
@@ -322,13 +239,14 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
       } = req.body;
       const pool = await getPool();
       const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode LIKE $2;";
-      const requestBytecode = preprocessBytecode(bytecode);
-      const data = [address, `0x${requestBytecode}%`];
+      const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
+      const data = [address, `0x${preprocessedRequestBytecode}%`];
       const dbres = await pool.query(query, data);
       if (dbres) {
         if (dbres.rows.length === 1) {
-          const chainBytecode = preprocessBytecode(dbres.rows[0].bytecode);
-          if (dbres.rows[0].verified === true && chainBytecode === requestBytecode) {
+          const onChainContractBytecode = dbres.rows[0].bytecode;
+          const preprocessedOnChainContractBytecode = preprocessBytecode(onChainContractBytecode);
+          if (dbres.rows[0].verified === true && preprocessedOnChainContractBytecode === preprocessedRequestContractBytecode) {
             res.send({
               status: false,
               message: 'Error, contract already verified'
@@ -367,6 +285,38 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               } else {
                 target = 'istanbul'
               }
+            }
+            // verify all not verified contracts with the same bytecode
+            const matchedContracts = await getOnChainContractsByBytecode(client, onChainContractBytecode);
+            for (const matchedContractId of matchedContracts) {
+              logger.info({ request: id }, `Updating matched contract ${matchedContractId} data in db`);
+              const query = `UPDATE contract SET
+                name = $1,
+                verified = $2,
+                source = $3,
+                compiler_version = $4,
+                arguments = $5,
+                optimization = $6,
+                runs = $7,
+                target = $8,
+                abi = $9,
+                license = $10
+                WHERE contract_id = $11;
+              `;
+              const data = [
+                name,
+                isVerified,
+                source,
+                compilerVersion,
+                arguments,
+                optimization,
+                runs,
+                target,
+                JSON.stringify(contractAbi),
+                license,
+                matchedContractId
+              ];
+              await parametrizedDbQuery(client, query, data);
             }
             const query = `UPDATE contract
               SET

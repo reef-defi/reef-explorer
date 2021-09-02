@@ -86,6 +86,19 @@ const getOnChainContractBytecode = async (client, contract_id) => {
   return '';
 };
 
+// get not verified contracts with 100% matching bytecde
+const getOnChainContractsByBytecode = async(client, bytecode) => {
+  const query = `SELECT contract_id FROM contract WHERE bytecode = $1 AND NOT verified;`;
+  const data = [bytecode];
+  const res = await parametrizedDbQuery(client, query, data);
+  if (res) {
+    if (res.rows.length > 0) {
+      return res.rows.map(({ contract_id }) => contract_id);
+    }
+  }
+  return []
+};
+
 const loadCompiler = async (version) => (
   new Promise((resolve, reject) => {
     solc.loadRemoteVersion(version, (err, solcSnapshot) => {
@@ -182,6 +195,7 @@ const processVerificationRequest = async (request, client) => {
       source,
       filename,
       compiler_version,
+      // @ts-ignore
       arguments,
       optimization,
       runs,
@@ -230,34 +244,40 @@ const processVerificationRequest = async (request, client) => {
     if (isVerified) {
       logger.info({ request: id }, `Contract ${contract_id} is verified!`);
       await updateRequestStatus(client, id, 'VERIFIED');
-      logger.info({ request: id }, `Updating contract ${contract_id} data in db`);
-      const query = `UPDATE contract SET
-        name = $1,
-        verified = $2,
-        source = $3,
-        compiler_version = $4,
-        arguments = $5,
-        optimization = $6,
-        runs = $7,
-        target = $8,
-        abi = $9,
-        license = $10
-        WHERE contract_id = $11;
-      `;
-      const data = [
-        contractName,
-        isVerified,
-        source,
-        compiler_version,
-        arguments,
-        optimization,
-        runs,
-        target,
-        JSON.stringify(contractAbi),
-        license,
-        contract_id
-      ];
-      await parametrizedDbQuery(client, query, data);
+
+      // verify all not verified contracts with the same bytecode
+      const matchedContracts = await getOnChainContractsByBytecode(client, onChainContractBytecode);
+      for (const matchedContractId of matchedContracts) {
+        logger.info({ request: id }, `Updating matched contract ${matchedContractId} data in db`);
+        const query = `UPDATE contract SET
+          name = $1,
+          verified = $2,
+          source = $3,
+          compiler_version = $4,
+          arguments = $5,
+          optimization = $6,
+          runs = $7,
+          target = $8,
+          abi = $9,
+          license = $10
+          WHERE contract_id = $11;
+        `;
+        const data = [
+          contractName,
+          isVerified,
+          source,
+          compiler_version,
+          arguments,
+          optimization,
+          runs,
+          target,
+          JSON.stringify(contractAbi),
+          license,
+          matchedContractId
+        ];
+        await parametrizedDbQuery(client, query, data);
+      }
+
     } else {
       const bytecodes = JSON.stringify({
         request: requestBytecode,
