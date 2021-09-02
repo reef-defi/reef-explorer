@@ -63,10 +63,11 @@ const preprocessBytecode = (bytecode) => {
   return filteredBytecode;
 };
 
-// get not verified contracts with 100% matching bytecde
+// get not verified contracts with 100% matching bytecde (excluding metadata)
 const getOnChainContractsByBytecode = async(client, bytecode) => {
-  const query = `SELECT contract_id FROM contract WHERE bytecode = $1 AND NOT verified;`;
-  const data = [bytecode];
+  const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
+  const preprocessedBytecode = preprocessBytecode(bytecode);
+  const data = [`0x${preprocessedBytecode}%`];
   const res = await parametrizedDbQuery(client, query, data);
   if (res) {
     if (res.rows.length > 0) {
