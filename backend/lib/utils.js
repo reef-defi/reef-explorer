@@ -1,30 +1,24 @@
 // @ts-check
 const pino = require('pino');
-const { ApiPromise, WsProvider } = require('@polkadot/api');
+const { Provider } = require('@reef-defi/evm-provider');
+const { WsProvider } = require('@polkadot/api');
 const { decodeAddress, encodeAddress } = require('@polkadot/keyring');
 const { hexToU8a, isHex } = require('@polkadot/util');
 const { Client } = require('pg');
 const _ = require('lodash');
-const fs = require('fs');
 const { toChecksumAddress } = require('web3-utils');
 const config = require('../backend.config');
 
 const logger = pino();
 
 module.exports = {
-  getPolkadotAPI: async (loggerOptions, apiCustomTypes) => {
-    let api;
+  getPolkadotAPI: async (loggerOptions) => {
     logger.debug(loggerOptions, `Connecting to ${config.wsProviderUrl}`);
-    const provider = new WsProvider(config.wsProviderUrl);
-    if (apiCustomTypes && apiCustomTypes !== '') {
-      logger.debug(loggerOptions, `Loading types from ./types/${apiCustomTypes}`);
-      const types = JSON.parse(fs.readFileSync(`./types/${apiCustomTypes}`, 'utf8'));
-      api = await ApiPromise.create({ provider, types });
-    } else {
-      api = await ApiPromise.create({ provider });
-    }
-    await api.isReady;
-    return api;
+    const provider = new Provider({
+      provider: new WsProvider(config.wsProviderUrl),
+    });
+    await provider.api.isReady;
+    return provider.api;
   },
   isNodeSynced: async (api, loggerOptions) => {
     let node;

@@ -24,15 +24,12 @@ const logger = pino({
 const loggerOptions = {
   crawler: crawlerName,
 };
-const config = backendConfig.crawlers.find(
-  ({ name }) => name === crawlerName,
-);
 
 const crawler = async () => {
   logger.info(loggerOptions, 'Starting block listener crawler...');
 
   const client = await getClient(loggerOptions);
-  const api = await getPolkadotAPI(loggerOptions, config.apiCustomTypes);
+  const api = await getPolkadotAPI(loggerOptions);
 
   let synced = await isNodeSynced(api, loggerOptions);
   while (!synced) {

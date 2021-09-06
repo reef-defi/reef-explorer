@@ -197,6 +197,7 @@ CREATE TABLE IF NOT EXISTS account  (
   nonce BIGINT NOT NULL,
   timestamp BIGINT NOT NULL,
   block_height BIGINT NOT NULL,
+  evm_address TEXT NOT NULL,
   PRIMARY KEY ( account_id )  
 );
 

@@ -35,10 +35,11 @@ const chunker = (a, n) => Array.from(
 
 const processChunk = async (api, client, accountId) => {
   const timestamp = Math.floor(parseInt(Date.now().toString(), 10) / 1000);
-  const [block, identity, balances] = await Promise.all([
+  const [block, identity, balances, evmAddress] = await Promise.all([
     api.rpc.chain.getBlock().then((result) => result.block.header.number.toNumber()),
     api.derive.accounts.identity(accountId),
     api.derive.balances.all(accountId),
+    api.query.evmAccounts.evmAddresses(accountId),
   ]);
   const availableBalance = balances.availableBalance.toString();
   const freeBalance = balances.freeBalance.toString();
@@ -60,6 +61,7 @@ const processChunk = async (api, client, accountId) => {
     nonce,
     timestamp,
     block,
+    evmAddress,
   ];
   const query = `
     INSERT INTO account (
@@ -73,7 +75,8 @@ const processChunk = async (api, client, accountId) => {
       locked_balance,
       nonce,
       timestamp,
-      block_height
+      block_height,
+      evm_address
     ) VALUES (
       $1,
       $2,
@@ -85,7 +88,8 @@ const processChunk = async (api, client, accountId) => {
       $8,
       $9,
       $10,
-      $11
+      $11,
+      $12
     )
     ON CONFLICT (account_id)
     DO UPDATE SET
@@ -98,7 +102,8 @@ const processChunk = async (api, client, accountId) => {
       locked_balance = EXCLUDED.locked_balance,
       nonce = EXCLUDED.nonce,
       timestamp = EXCLUDED.timestamp,
-      block_height = EXCLUDED.block_height
+      block_height = EXCLUDED.block_height,
+      evm_address = EXCLUDED.evm_address
     WHERE EXCLUDED.block_height > account.block_height
   ;`;
   // eslint-disable-next-line no-await-in-loop
@@ -114,7 +119,7 @@ const crawler = async (delayedStart) => {
   logger.debug(loggerOptions, 'Running active accounts crawler...');
 
   const client = await getClient(loggerOptions);
-  const api = await getPolkadotAPI(loggerOptions, config.apiCustomTypes);
+  const api = await getPolkadotAPI(loggerOptions);
 
   let synced = await isNodeSynced(api, loggerOptions);
   while (!synced) {
