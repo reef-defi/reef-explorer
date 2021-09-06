@@ -18,24 +18,28 @@ services:
       - '9944'
     command: -d /data --chain /data/chain_spec_mainnet.json --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0'
     restart: always
-
   #
   # SQL data base
   #
   postgres:
     image: postgres
     restart: always
+    shm_size: 1gb
     volumes:
       - 'db-data:/var/lib/postgresql/data'
       - './sql/backend.sql:/docker-entrypoint-initdb.d/backend.sql'
     environment:
-      POSTGRES_USER: 'reef'
-      POSTGRES_PASSWORD: 'reef'
+      POSTGRES_USER: 'reefexplorer'
+      POSTGRES_PASSWORD: 'reefexplorer'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U reef']
+      test: ['CMD-SHELL', 'pg_isready -U reefexplorer']
       interval: 5s
       timeout: 5s
       retries: 5
+    # 
+    # TODO: https://pgtune.leopard.in.ua/#/
+    #
+
   #
   # Hasura GraphQL server
   #
@@ -47,29 +51,49 @@ services:
       - 'postgres'
     restart: always
     environment:
-      HASURA_GRAPHQL_DATABASE_URL: postgres://reef:reef@postgres:5432/reef
+      HASURA_GRAPHQL_DATABASE_URL: postgres://reefexplorer:reefexplorer@postgres:5432/reefexplorer
       HASURA_GRAPHQL_ENABLE_CONSOLE: 'true' # set to "false" to disable console
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: public
       HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+
   #
-  # Chain crawler
+  # Block crawler
   #
   crawler:
     image: crawler:latest
     build:
-      context: ../../
-      dockerfile: ./docker/backend/crawler/Dockerfile
+      context: ../
+      dockerfile: ./docker/crawler/Dockerfile
     depends_on:
       - 'postgres'
       - 'substrate-node'
-    restart: on-failure
+    restart: always
     environment:
-      - NODE_ENV=production
-      - WS_PROVIDER_URL=ws://substrate-node:9944
-      - SUBSTRATE_NETWORK=reef
-      # - CRAWLER_BLOCK_LISTENER_DISABLE=true
-      # - CRAWLER_BLOCK_HARVESTER_DISABLE=true
+      NODE_ENV: 'production'
+      NODE_OPTIONS: '--max-old-space-size=8192'
+      WS_PROVIDER_URL: 'ws://substrate-node:9944'
+      SUBSTRATE_NETWORK: 'reef'
+      API_CUSTOM_TYPES: 'reef_custom_types.json'
+      # RANKING_DISABLE: 'true'
+      # ACTIVE_ACCOUNTS_DISABLE: 'true'
+      # BLOCK_LISTENER_DISABLE: 'true'
+      # BLOCK_HARVESTER_DISABLE: 'true'
+      NODE_PG_FORCE_NATIVE: 'true'
+      #
+      #   Available modes:
+      #
+      #   chunks:     Process batchs of 'BLOCK_HARVESTER_CHUNK_SIZE' blocks in parallel (faster)
+      #   sequential: Slower but less resource-intensive
+      #
+      BLOCK_HARVESTER_MODE: 'chunks'
+      BLOCK_HARVESTER_CHUNK_SIZE: '10'
+      BLOCK_HARVESTER_STATS_PRECISION: '2'
+      LOG_LEVEL: 'debug'
+      BLOCK_HARVESTER_START_DELAY_MS: '60000' # 1 min
+      RANKING_START_DELAY_MS: '1800000' # 30 min
+      ACTIVE_ACCOUNTS_START_DELAY_MS: '300000' # 5 min
+      ACTIVE_ACCOUNTS_CHUNK_SIZE: '100'
 
   #
   # Contract verificator API
@@ -79,7 +103,7 @@ services:
     ports:
       - '8000:8000'
     build:
-      context: ../../../verificator-api
+      context: ../../verificator-api
       dockerfile: Dockerfile
     depends_on:
       - 'postgres'
@@ -95,7 +119,7 @@ services:
   verificator:
     image: verificator:latest
     build:
-      context: ../../../verificator
+      context: ../../verificator
       dockerfile: Dockerfile
     depends_on:
       - 'postgres'
