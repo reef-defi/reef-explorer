@@ -75,7 +75,6 @@ const harvestBlock = async (api, client, blockNumber) => {
       runtimeVersion,
       activeEra,
       currentIndex,
-      chainElectionStatus,
       timestampMs,
     ] = await Promise.all([
       api.rpc.chain.getBlock(blockHash),
@@ -87,7 +86,6 @@ const harvestBlock = async (api, client, blockNumber) => {
         .then((res) => (res.toJSON() ? res.toJSON().index : 0)),
       api.query.session.currentIndex.at(blockHash)
         .then((res) => (res || 0)),
-      api.query.electionProviderMultiPhase.currentPhase.at(blockHash),
       api.query.timestamp.now.at(blockHash),
     ]);
 
@@ -96,8 +94,8 @@ const harvestBlock = async (api, client, blockNumber) => {
     const blockAuthorName = getDisplayName(blockAuthorIdentity.identity);
     const timestamp = Math.floor(timestampMs / 1000);
     const { parentHash, extrinsicsRoot, stateRoot } = blockHeader;
-    // Get election status
-    const isElection = Object.getOwnPropertyNames(chainElectionStatus.toJSON())[0] !== 'off';
+    // Get election status, NOTE: there's no election in reef chain rn
+    const isElection = false;
 
     // Store block extrinsics (async)
     processExtrinsics(
