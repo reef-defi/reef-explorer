@@ -48,7 +48,7 @@ CREATE TABLE public.contract (
 );
 
 
-ALTER TABLE public.contract OWNER TO reef;
+ALTER TABLE public.contract OWNER TO reefexplorer;
 
 --
 -- Data for Name: contract; Type: TABLE DATA; Schema: public; Owner: reefexplorer
