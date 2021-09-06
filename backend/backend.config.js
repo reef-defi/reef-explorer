@@ -35,6 +35,7 @@ module.exports = {
       name: 'ranking',
       enabled: !process.env.RANKING_DISABLE,
       crawler: './crawlers/ranking.js',
+      apiCustomTypes: process.env.API_CUSTOM_TYPES || '',
       startDelay: parseInt(process.env.RANKING_START_DELAY_MS, 10) || 15 * 60 * 1000,
       pollingTime:
         parseInt(process.env.RANKING_POLLING_TIME_MS, 10)
@@ -48,6 +49,7 @@ module.exports = {
       name: 'activeAccounts',
       enabled: !process.env.ACTIVE_ACCOUNTS_DISABLE,
       crawler: './crawlers/activeAccounts.js',
+      apiCustomTypes: process.env.API_CUSTOM_TYPES || '',
       startDelay: parseInt(process.env.ACTIVE_ACCOUNTS_START_DELAY_MS, 10) || 60 * 1000,
       chunkSize: parseInt(process.env.ACTIVE_ACCOUNTS_CHUNK_SIZE, 10) || 100,
       pollingTime:
