@@ -274,8 +274,13 @@ module.exports = {
       logger.error(loggerOptions, `Error adding extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
     }
 
+    if (section === 'balances') {
+      module.exports.updateTotalTransfers(client, loggerOptions);
+    }
+
     // store contract
     if (section === 'evm' && method === 'create' && success) {
+      module.exports.updateTotalContracts(client, loggerOptions);
       // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
       const contractId = toChecksumAddress(
         JSON.parse(
@@ -437,38 +442,9 @@ module.exports = {
     }
     return identity.display || '';
   },
-  // TODO: Investigate https://dzone.com/articles/faster-postgresql-counting
-  updateTotals: async (client, loggerOptions) => {
-    await Promise.all([
-      module.exports.updateTotalBlocks(client, loggerOptions),
-      module.exports.updateTotalExtrinsics(client, loggerOptions),
-      module.exports.updateTotalTransfers(client, loggerOptions),
-      module.exports.updateTotalEvents(client, loggerOptions),
-    ]);
-  },
-  updateTotalBlocks: async (client, loggerOptions) => {
-    const sql = `
-      UPDATE total SET count = (SELECT count(*) FROM block) WHERE name = 'blocks';
-    `;
-    try {
-      await client.query(sql);
-    } catch (error) {
-      logger.error(loggerOptions, `Error updating totals: ${error}`);
-    }
-  },
-  updateTotalExtrinsics: async (client, loggerOptions) => {
-    const sql = `
-      UPDATE total SET count = (SELECT count(*) FROM extrinsic) WHERE name = 'extrinsics';
-    `;
-    try {
-      await client.query(sql);
-    } catch (error) {
-      logger.error(loggerOptions, `Error updating total extrinsics: ${error}`);
-    }
-  },
   updateTotalTransfers: async (client, loggerOptions) => {
     const sql = `
-      UPDATE total SET count = (SELECT count(*) FROM extrinsic WHERE section = 'balances' and method = 'transfer' ) WHERE name = 'transfers';
+      UPDATE total SET count = (SELECT count(*) FROM extrinsic WHERE section = 'balances') WHERE name = 'transfers';
     `;
     try {
       await client.query(sql);
@@ -476,14 +452,14 @@ module.exports = {
       logger.error(loggerOptions, `Error updating totals transfers ${error}`);
     }
   },
-  updateTotalEvents: async (client, loggerOptions) => {
+  updateTotalContracts: async (client, loggerOptions) => {
     const sql = `
-      UPDATE total SET count = (SELECT count(*) FROM event) WHERE name = 'events';
+      UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
     `;
     try {
       await client.query(sql);
     } catch (error) {
-      logger.error(loggerOptions, `Error updating total events: ${error}`);
+      logger.error(loggerOptions, `Error updating totals contracts ${error}`);
     }
   },
   updateFinalized: async (client, finalizedBlock, loggerOptions) => {
