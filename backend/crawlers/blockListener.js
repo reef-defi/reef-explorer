@@ -93,16 +93,14 @@ const crawler = async () => {
         const [
           blockAuthorIdentity,
           blockEvents,
-          chainElectionStatus,
         ] = await Promise.all([
           api.derive.accounts.info(blockAuthor),
           api.query.system.events.at(blockHash),
-          api.query.electionProviderMultiPhase.currentPhase(),
         ]);
         const blockAuthorName = getDisplayName(blockAuthorIdentity.identity);
 
-        // Get election status
-        const isElection = Object.getOwnPropertyNames(chainElectionStatus.toJSON())[0] !== 'off';
+        // Get election status, NOTE: there's no election in reef chain rn
+        const isElection = false;
 
         // Totals
         const totalEvents = blockEvents.length || 0;
