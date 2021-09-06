@@ -75,7 +75,6 @@ services:
       NODE_OPTIONS: '--max-old-space-size=8192'
       WS_PROVIDER_URL: 'ws://substrate-node:9944'
       SUBSTRATE_NETWORK: 'reef'
-      API_CUSTOM_TYPES: 'reef_custom_types.json'
       # RANKING_DISABLE: 'true'
       # ACTIVE_ACCOUNTS_DISABLE: 'true'
       # BLOCK_LISTENER_DISABLE: 'true'
