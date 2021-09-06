@@ -28,6 +28,7 @@ services:
     volumes:
       - 'db-data:/var/lib/postgresql/data'
       - './sql/backend.sql:/docker-entrypoint-initdb.d/backend.sql'
+      - './sql/reef_testnet_contracts_dump.sql:/docker-entrypoint-initdb.d/01_contracts.sql'
     environment:
       POSTGRES_USER: 'reefexplorer'
       POSTGRES_PASSWORD: 'reefexplorer'

@@ -27,7 +27,8 @@ services:
     shm_size: 1gb
     volumes:
       - 'db-data:/var/lib/postgresql/data'
-      - './sql/backend.sql:/docker-entrypoint-initdb.d/backend.sql'
+      - './sql/backend.sql:/docker-entrypoint-initdb.d/00_backend.sql'
+      - './sql/reef_mainnet_contracts_dump.sql:/docker-entrypoint-initdb.d/01_contracts.sql'
     environment:
       POSTGRES_USER: 'reefexplorer'
       POSTGRES_PASSWORD: 'reefexplorer'

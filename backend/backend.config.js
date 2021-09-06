@@ -9,7 +9,7 @@ module.exports = {
     host: process.env.POSTGRES_HOST || 'postgres',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
     password: process.env.POSTGRES_PASSWORD || 'reefexplorer',
-    port: process.env.POSTGRES_PORT || 5432,
+    port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
   },
   logLevel: process.env.LOG_LEVEL || 'info', // Use 'debug' to see DEBUG level messages
   crawlers: [

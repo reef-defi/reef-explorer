@@ -6,6 +6,7 @@ const { hexToU8a, isHex } = require('@polkadot/util');
 const { Client } = require('pg');
 const _ = require('lodash');
 const fs = require('fs');
+const { toChecksumAddress } = require('web3-utils');
 const config = require('../backend.config');
 
 const logger = pino();
@@ -271,6 +272,56 @@ module.exports = {
       logger.debug(loggerOptions, `Added extrinsic ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
     } catch (error) {
       logger.error(loggerOptions, `Error adding extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
+    }
+
+    // store contract
+    if (section === 'evm' && method === 'create' && success) {
+      // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
+      const contractId = toChecksumAddress(
+        JSON.parse(
+          JSON.stringify(
+            blockEvents.find(
+              ({ event }) => event.section === 'evm' && event.method === 'Created',
+            ),
+          ),
+        ).event.data[0],
+      );
+      // https://reefscan.com/block/?blockNumber=118307
+      const name = '';
+      const bytecode = extrinsic.args[0];
+      const value = extrinsic.args[1];
+      const gasLimit = extrinsic.args[2];
+      const storageLimit = extrinsic.args[3];
+      const contractSql = `INSERT INTO contract (
+              contract_id,
+              name,
+              bytecode,
+              value,
+              gas_limit,
+              storage_limit,
+              signer,
+              block_height,
+              timestamp
+            ) VALUES (
+              '${contractId}',
+              '${name}',
+              '${bytecode}',
+              '${value}',
+              '${gasLimit}',
+              '${storageLimit}',
+              '${signer}',
+              '${blockNumber}',
+              '${timestamp}'
+            )
+            ON CONFLICT ON CONSTRAINT contract_pkey 
+            DO NOTHING;
+            ;`;
+      try {
+        await client.query(contractSql);
+        logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
+      } catch (error) {
+        logger.error(loggerOptions, `Error adding contract ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
+      }
     }
   },
   processEvents: async (

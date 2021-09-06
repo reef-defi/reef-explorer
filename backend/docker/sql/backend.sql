@@ -200,6 +200,46 @@ CREATE TABLE IF NOT EXISTS account  (
   PRIMARY KEY ( account_id )  
 );
 
+CREATE TABLE IF NOT EXISTS contract  (
+  contract_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  bytecode TEXT NOT NULL,
+  arguments TEXT DEFAULT NULL,
+  value TEXT NOT NULL,
+  gas_limit TEXT NOT NULL,
+  storage_limit TEXT NOT NULL,
+  signer TEXT NOT NULL,
+  block_height BIGINT NOT NULL,
+  verified BOOLEAN DEFAULT FALSE,
+  source TEXT DEFAULT NULL,
+  compiler_version TEXT DEFAULT NULL,
+  optimization BOOLEAN DEFAULT NULL,
+  runs INT DEFAULT NULL,
+  target TEXT DEFAULT NULL,
+  abi TEXT DEFAULT NULL,
+  license TEXT DEFAULT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( contract_id )  
+);
+
+CREATE TABLE IF NOT EXISTS contract_verification_request  (
+  id TEXT NOT NULL,
+  contract_id TEXT NOT NULL,
+  source TEXT NOT NULL,
+  filename TEXT NOT NULL,
+  compiler_version TEXT NOT NULL,
+  arguments TEXT DEFAULT NULL,
+  optimization BOOLEAN NOT NULL,
+  runs INT NOT NULL,
+  target TEXT NOT NULL,
+  license TEXT NOT NULL,
+  status TEXT NOT NULL,
+  error_type TEXT DEFAULT NULL,
+  error_message TEXT DEFAULT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( id )  
+);
+
 CREATE TABLE IF NOT EXISTS total (  
   name TEXT,
   count BIGINT NOT NULL,
@@ -216,7 +256,8 @@ INSERT INTO total (name, count) VALUES
   ('nominator_count', 0),
   ('current_era', 0),
   ('active_era', 0),
-  ('minimum_stake', 0);
+  ('minimum_stake', 0),
+  ('contracts', 0);
 
 CREATE INDEX IF NOT EXISTS block_finalized_idx ON block (finalized);
 CREATE INDEX IF NOT EXISTS block_block_number_idx ON block (block_number);
@@ -249,6 +290,8 @@ GRANT ALL PRIVILEGES ON TABLE era_points_avg TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE featured TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE account TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE total TO reefexplorer;
+GRANT ALL PRIVILEGES ON TABLE contract TO reefexplorer;
+GRANT ALL PRIVILEGES ON TABLE contract_verification_request TO reefexplorer;
 
 --
 -- Fast counters
