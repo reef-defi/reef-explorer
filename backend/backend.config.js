@@ -17,6 +17,7 @@ module.exports = {
       name: 'blockListener',
       enabled: !process.env.BLOCK_LISTENER_DISABLE,
       crawler: './crawlers/blockListener.js',
+      apiCustomTypes: process.env.API_CUSTOM_TYPES || '',
     },
     {
       name: 'blockHarvester',
