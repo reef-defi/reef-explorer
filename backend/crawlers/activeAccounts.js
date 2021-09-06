@@ -61,7 +61,7 @@ const processChunk = async (api, client, accountId) => {
     nonce,
     timestamp,
     block,
-    evmAddress,
+    evmAddress.toString(),
   ];
   const query = `
     INSERT INTO account (
