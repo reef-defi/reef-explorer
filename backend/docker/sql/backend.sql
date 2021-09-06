@@ -273,6 +273,8 @@ CREATE INDEX IF NOT EXISTS event_block_number_idx ON event (block_number);
 CREATE INDEX IF NOT EXISTS event_section_idx ON event (section);
 CREATE INDEX IF NOT EXISTS event_method_idx ON event (method);
 
+CREATE INDEX IF NOT EXISTS account_evm_address_idx ON account (evm_address);
+
 GRANT ALL PRIVILEGES ON TABLE block TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE harvest_error TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE event TO reefexplorer;
