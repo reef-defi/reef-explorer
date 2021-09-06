@@ -12,6 +12,7 @@ const {
   getDisplayName,
   wait,
   logHarvestError,
+  storeGenesisContracts,
 } = require('../lib/utils');
 const backendConfig = require('../backend.config');
 
@@ -285,6 +286,10 @@ const crawler = async (delayedStart) => {
     // eslint-disable-next-line no-await-in-loop
     synced = await isNodeSynced(api, loggerOptions);
   }
+
+  logger.info(loggerOptions, 'Storing genesis contracts...');
+  await storeGenesisContracts(api, client, loggerOptions);
+
   // Get gaps from block table
   // Thanks to @miguelmota: https://gist.github.com/miguelmota/6d40be2ecb083507de1d073443154610
   const sqlSelect = `

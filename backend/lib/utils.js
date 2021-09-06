@@ -8,6 +8,7 @@ const { Client } = require('pg');
 const _ = require('lodash');
 const { toChecksumAddress } = require('web3-utils');
 const config = require('../backend.config');
+const genesisContracts = require('../assets/bytecodes.json');
 
 const logger = pino();
 
@@ -484,5 +485,54 @@ module.exports = {
         DO NOTHING
       ;`;
     await module.exports.dbParamQuery(client, query, data, loggerOptions);
+  },
+  async storeGenesisContracts(api, client, loggerOptions) {
+    // Get timestamp from block #1, genesis doesn't return timestamp
+    const blockHash = await api.rpc.chain.getBlockHash(1);
+    const timestampMs = await api.query.timestamp.now.at(blockHash);
+    const timestamp = Math.floor(timestampMs / 1000);
+    // eslint-disable-next-line no-restricted-syntax
+    for (const contract of genesisContracts) {
+      const blockNumber = 0;
+      const signer = '';
+      const name = contract[0];
+      const contractId = contract[1];
+      const bytecode = contract[2];
+      const value = '';
+      const gasLimit = '';
+      const storageLimit = '';
+      const contractSql = `INSERT INTO contract (
+        contract_id,
+        name,
+        bytecode,
+        value,
+        gas_limit,
+        storage_limit,
+        signer,
+        block_height,
+        timestamp
+      ) VALUES (
+        '${contractId}',
+        '${name}',
+        '${bytecode}',
+        '${value}',
+        '${gasLimit}',
+        '${storageLimit}',
+        '${signer}',
+        '${blockNumber}',
+        '${timestamp}'
+      )
+      ON CONFLICT ON CONSTRAINT contract_pkey 
+      DO NOTHING;
+      ;`;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await client.query(contractSql);
+        // @ts-ignore
+        logger.info(loggerOptions, `Added contract ${name} with address ${contractId} at block #${blockNumber}`);
+      } catch (error) {
+        logger.error(loggerOptions, `Error adding contract ${name} with address ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
+      }
+    }
   },
 };
