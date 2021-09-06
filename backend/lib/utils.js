@@ -16,6 +16,7 @@ module.exports = {
     logger.debug(loggerOptions, `Connecting to ${config.wsProviderUrl}`);
     const provider = new WsProvider(config.wsProviderUrl);
     if (apiCustomTypes && apiCustomTypes !== '') {
+      logger.debug(loggerOptions, `Loading types from ./types/${apiCustomTypes}`);
       const types = JSON.parse(fs.readFileSync(`./types/${apiCustomTypes}`, 'utf8'));
       api = await ApiPromise.create({ provider, types });
     } else {
