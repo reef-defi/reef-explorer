@@ -277,7 +277,9 @@ module.exports = {
       if (section === 'balances' || section === 'currencies') {
         // Store transfer
         const source = signer;
-        const destination = JSON.parse(args)[0].id;
+        const destination = JSON.parse(args)[0].id
+          ? JSON.parse(args)[0].id
+          : JSON.parse(args)[0].address20;
         const amount = section === 'currencies'
           ? JSON.parse(args)[2]
           : JSON.parse(args)[1];
