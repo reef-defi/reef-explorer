@@ -7,6 +7,7 @@ const { hexToU8a, isHex } = require('@polkadot/util');
 const { Client } = require('pg');
 const _ = require('lodash');
 const { toChecksumAddress } = require('web3-utils');
+const { BigNumber } = require('bignumber.js');
 const config = require('../backend.config');
 const genesisContracts = require('../assets/bytecodes.json');
 
@@ -276,12 +277,12 @@ module.exports = {
       if (section === 'balances' || section === 'currencies') {
         // Store transfer
         const source = signer;
-        const destination = extrinsic.args[0].id;
+        const destination = JSON.parse(args)[0].id;
         const amount = section === 'currencies'
-          ? extrinsic.args[2]
-          : extrinsic.args[1];
+          ? JSON.parse(args)[2]
+          : JSON.parse(args)[1];
         const denom = section === 'currencies'
-          ? extrinsic.args[1].token
+          ? JSON.parse(args)[1].token
           : 'REEF';
         const feeAmount = JSON.parse(feeInfo).partialFee;
         const errorMessage = success
@@ -309,7 +310,7 @@ module.exports = {
             '${hash}',
             '${source}',
             '${destination}',
-            '${amount}',
+            '${new BigNumber(amount).toString(10)}',
             '${denom}',
             '${feeAmount}',
             '${success}',
