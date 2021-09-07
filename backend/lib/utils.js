@@ -274,7 +274,6 @@ module.exports = {
     }
 
     if (section === 'balances' || section === 'currencies') {
-      module.exports.updateTotalTransfers(client, loggerOptions);
       // Store transfer
       const from = signer;
       const to = extrinsic.args[0].id;
@@ -327,6 +326,8 @@ module.exports = {
       } catch (error) {
         logger.error(loggerOptions, `Error adding transfer ${blockNumber}-${index}: ${JSON.stringify(error)}`);
       }
+      // update total transfers
+      module.exports.updateTotalTransfers(client, loggerOptions);
     }
 
     // store contract
@@ -503,7 +504,7 @@ module.exports = {
   },
   updateTotalTransfers: async (client, loggerOptions) => {
     const sql = `
-      UPDATE total SET count = (SELECT count(*) FROM extrinsic WHERE section = 'balances') WHERE name = 'transfers';
+      UPDATE total SET count = (SELECT count(*) FROM transfer) WHERE name = 'transfers';
     `;
     try {
       await client.query(sql);
