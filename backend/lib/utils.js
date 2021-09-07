@@ -313,8 +313,8 @@ module.exports = {
             '${amount}',
             '${denom}',
             '${feeAmount}',
-            '${errorMessage}',
             '${success}',
+            '${errorMessage}',
             '${timestamp}'
           )
           ON CONFLICT ON CONSTRAINT transfer_pkey 
