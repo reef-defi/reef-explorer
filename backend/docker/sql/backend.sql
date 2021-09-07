@@ -137,13 +137,13 @@ CREATE TABLE IF NOT EXISTS era_commission_avg (
 CREATE TABLE IF NOT EXISTS era_self_stake (  
   stash_address TEXT NOT NULL,
   era INT NOT NULL,
-  self_stake BIGINT NOT NULL,
+  self_stake NUMERIC(40,0) NOT NULL,
   PRIMARY KEY ( stash_address, era )
 );
 
 CREATE TABLE IF NOT EXISTS era_self_stake_avg (  
   era INT NOT NULL,
-  self_stake_avg BIGINT NOT NULL,
+  self_stake_avg NUMERIC(40,0) NOT NULL,
   PRIMARY KEY ( era )
 );
 
@@ -171,13 +171,6 @@ CREATE TABLE IF NOT EXISTS era_points_avg (
   era INT NOT NULL,
   points_avg FLOAT NOT NULL,
   PRIMARY KEY ( era )
-);
-
-CREATE TABLE IF NOT EXISTS featured (  
-  stash_address TEXT NOT NULL,
-  name TEXT NOT NULL,
-  timestamp BIGINT NOT NULL,
-  PRIMARY KEY ( stash_address )
 );
 
 CREATE TABLE IF NOT EXISTS account  (  
@@ -285,7 +278,6 @@ GRANT ALL PRIVILEGES ON TABLE era_relative_performance TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE era_relative_performance_avg TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE era_points TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE era_points_avg TO reefexplorer;
-GRANT ALL PRIVILEGES ON TABLE featured TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE account TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE total TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE contract TO reefexplorer;
