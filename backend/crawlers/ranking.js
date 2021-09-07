@@ -1,7 +1,6 @@
 // @ts-check
 const { BigNumber } = require('bignumber.js');
 const pino = require('pino');
-const axios = require('axios').default;
 const {
   getClient,
   getPolkadotAPI,
@@ -22,16 +21,6 @@ const loggerOptions = {
 const config = backendConfig.crawlers.find(
   ({ name }) => name === crawlerName,
 );
-
-const getThousandValidators = async () => {
-  try {
-    const response = await axios.get('https://kusama.w3f.community/candidates');
-    return response.data;
-  } catch (error) {
-    logger.error(loggerOptions, `Error fetching Thousand Validator Program stats: ${JSON.stringify(error)}`);
-    return [];
-  }
-};
 
 const isVerifiedIdentity = (identity) => {
   if (identity.judgements.length === 0) {
@@ -190,35 +179,6 @@ const getRandom = (arr, n) => {
   return shuffled.slice(0, n);
 };
 
-const addNewFeaturedValidator = async (client, ranking) => {
-  // rules:
-  // - maximum commission is 10%
-  // - at least 20 KSM own stake
-  // - no previously featured
-
-  // get previously featured
-  const alreadyFeatured = [];
-  const sql = 'SELECT stash_address, timestamp FROM featured';
-  const res = await dbQuery(client, sql, loggerOptions);
-  res.rows.forEach((validator) => alreadyFeatured.push(validator.stash_address));
-  // get candidates that meet the rules
-  const featuredCandidates = ranking
-    .filter((validator) => validator.commission <= 10
-      && validator.selfStake.div(10 ** config.tokenDecimals).gte(20)
-      && !validator.active && !alreadyFeatured.includes(validator.stashAddress))
-    .map(({ rank }) => rank);
-  // get random featured validator of the week
-  const shuffled = [...featuredCandidates].sort(() => 0.5 - Math.random());
-  const randomRank = shuffled[0];
-  const featured = ranking.find((validator) => validator.rank === randomRank);
-  await dbQuery(
-    client,
-    `INSERT INTO featured (stash_address, name, timestamp) VALUES ('${featured.stashAddress}', '${featured.name}', '${new Date().getTime()}')`,
-    loggerOptions,
-  );
-  logger.debug(loggerOptions, `New featured validator added: ${featured.name} ${featured.stashAddress}`);
-};
-
 const insertRankingValidator = async (client, validator, blockHeight, startTime) => {
   const sql = `INSERT INTO ranking (
     block_height,
@@ -236,8 +196,6 @@ const insertRankingValidator = async (client, validator, blockHeight, startTime)
     stash_parent_address_creation_block,
     address_creation_rating,
     controller_address,
-    included_thousand_validators,
-    thousand_validator,
     part_of_cluster,
     cluster_name,
     cluster_members,
@@ -258,9 +216,6 @@ const insertRankingValidator = async (client, validator, blockHeight, startTime)
     slashed,
     slash_rating,
     slashes,
-    council_backing,
-    active_in_governance,
-    governance_rating,
     payout_history,
     payout_rating,
     self_stake,
@@ -314,12 +269,7 @@ const insertRankingValidator = async (client, validator, blockHeight, startTime)
     $41,
     $42,
     $43,
-    $44,
-    $45,
-    $46,
-    $47,
-    $48,
-    $49
+    $44
   )
   ON CONFLICT ON CONSTRAINT ranking_pkey 
   DO NOTHING`;
@@ -339,8 +289,6 @@ const insertRankingValidator = async (client, validator, blockHeight, startTime)
     `${validator.stashParentCreatedAtBlock}`,
     `${validator.addressCreationRating}`,
     `${validator.controllerAddress}`,
-    `${validator.includedThousandValidators}`,
-    `${JSON.stringify(validator.thousandValidator)}`,
     `${validator.partOfCluster}`,
     `${validator.clusterName}`,
     `${validator.clusterMembers}`,
@@ -361,9 +309,6 @@ const insertRankingValidator = async (client, validator, blockHeight, startTime)
     `${validator.slashed}`,
     `${validator.slashRating}`,
     `${JSON.stringify(validator.slashes)}`,
-    `${validator.councilBacking}`,
-    `${validator.activeInGovernance}`,
-    `${validator.governanceRating}`,
     `${JSON.stringify(validator.payoutHistory)}`,
     `${validator.payoutRating}`,
     `${validator.selfStake}`,
@@ -585,7 +530,6 @@ const crawler = async (delayedStart) => {
     withPrefs: true,
   };
   const minMaxEraPerformance = [];
-  const participateInGovernance = [];
   let validators = [];
   let intentions = [];
   let maxPerformance = 0;
@@ -598,11 +542,6 @@ const crawler = async (delayedStart) => {
   try {
     const lastEraInDb = await getLastEraInDb(client);
     logger.debug(loggerOptions, `Last era in DB is ${lastEraInDb}`);
-
-    // thousand validators program data
-    logger.debug(loggerOptions, 'Fetching thousand validator program validators ...');
-    const thousandValidators = await getThousandValidators();
-    logger.debug(loggerOptions, `Got info of ${thousandValidators.length} validators from Thousand Validators program API`);
 
     // chain data
     logger.debug(loggerOptions, 'Fetching chain data ...');
@@ -625,17 +564,11 @@ const crawler = async (delayedStart) => {
       validatorAddresses,
       waitingInfo,
       nominators,
-      councilVotes,
-      proposals,
-      referendums,
     ] = await Promise.all([
       api.rpc.chain.getBlock(),
       api.query.session.validators(),
       api.derive.staking.waitingInfo(stakingQueryFlags),
       api.query.staking.nominators.entries(),
-      api.derive.council.votes(),
-      api.derive.democracy.proposals(),
-      api.derive.democracy.referendums(),
     ]);
 
     logger.debug(loggerOptions, 'Step #3');
@@ -787,13 +720,6 @@ const crawler = async (delayedStart) => {
         targets,
       };
     });
-    proposals.forEach(({ seconds, proposer }) => {
-      participateInGovernance.push(proposer.toString());
-      seconds.forEach((accountId) => participateInGovernance.push(accountId.toString()));
-    });
-    referendums.forEach(({ votes }) => {
-      votes.forEach(({ accountId }) => participateInGovernance.push(accountId.toString()));
-    });
 
     // Merge validators and intentions
     validators = validators.concat(intentions);
@@ -848,14 +774,6 @@ const crawler = async (delayedStart) => {
         } else if (stashCreatedAtBlock <= (blockHeight / 4) * 3) {
           addressCreationRating = 1;
         }
-
-        // thousand validators program
-        const includedThousandValidators = thousandValidators.some(
-          ({ stash }) => stash === stashAddress,
-        );
-        const thousandValidator = includedThousandValidators ? thousandValidators.find(
-          ({ stash }) => stash === stashAddress,
-        ) : '';
 
         // controller
         const controllerAddress = validator.controllerId.toString();
@@ -914,30 +832,6 @@ const crawler = async (delayedStart) => {
           commission,
           commissionHistory,
         );
-
-        // governance
-        const councilBacking = validator.identity?.parent
-          ? councilVotes.some(
-            (vote) => vote[0].toString() === validator.accountId.toString(),
-          )
-            || councilVotes.some(
-              (vote) => vote[0].toString() === validator.identity.parent.toString(),
-            )
-          : councilVotes.some(
-            (vote) => vote[0].toString() === validator.accountId.toString(),
-          );
-        const activeInGovernance = validator.identity?.parent
-          ? participateInGovernance.includes(validator.accountId.toString())
-            || participateInGovernance.includes(
-              validator.identity.parent.toString(),
-            )
-          : participateInGovernance.includes(validator.accountId.toString());
-        let governanceRating = 0;
-        if (councilBacking && activeInGovernance) {
-          governanceRating = 3;
-        } else if (councilBacking || activeInGovernance) {
-          governanceRating = 2;
-        }
 
         // era points and frecuency of payouts
         const eraPointsHistory = [];
@@ -1049,7 +943,6 @@ const crawler = async (delayedStart) => {
           + commissionRating
           + eraPointsRating
           + slashRating
-          + governanceRating
           + payoutRating;
 
         return {
@@ -1066,8 +959,6 @@ const crawler = async (delayedStart) => {
           stashParentCreatedAtBlock,
           addressCreationRating,
           controllerAddress,
-          includedThousandValidators,
-          thousandValidator,
           partOfCluster,
           clusterName,
           clusterMembers,
@@ -1086,9 +977,6 @@ const crawler = async (delayedStart) => {
           slashed,
           slashRating,
           slashes,
-          councilBacking,
-          activeInGovernance,
-          governanceRating,
           payoutHistory,
           payoutRating,
           selfStake,
@@ -1245,20 +1133,6 @@ const crawler = async (delayedStart) => {
       `DELETE FROM ranking WHERE block_height != '${blockHeight}';`,
       loggerOptions,
     );
-
-    // featured validator
-    const sql = 'SELECT stash_address, timestamp FROM featured ORDER BY timestamp DESC LIMIT 1';
-    const res = await dbQuery(client, sql, loggerOptions);
-    if (res.rows.length === 0) {
-      await addNewFeaturedValidator(client, ranking);
-    } else {
-      const currentFeatured = res.rows[0];
-      const currentTimestamp = new Date().getTime();
-      if (currentTimestamp - currentFeatured.timestamp > config.featuredTimespan) {
-        // timespan passed, let's add a new featured validator
-        await addNewFeaturedValidator(client, ranking);
-      }
-    }
 
     logger.debug(loggerOptions, 'Disconnecting from API');
     await api.disconnect().catch((error) => logger.error(loggerOptions, `API disconnect error: ${JSON.stringify(error)}`));

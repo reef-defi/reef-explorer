@@ -82,8 +82,6 @@ CREATE TABLE IF NOT EXISTS ranking (
   stash_parent_address_creation_block BIGINT NOT NULL,
   address_creation_rating INT NOT NULL,
   controller_address TEXT NOT NULL,
-  included_thousand_validators BOOLEAN NOT NULL,
-  thousand_validator TEXT NOT NULL,
   part_of_cluster BOOLEAN NOT NULL,
   cluster_name TEXT NOT NULL,
   cluster_members INT NOT NULL,
