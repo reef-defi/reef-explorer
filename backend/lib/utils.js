@@ -312,7 +312,7 @@ module.exports = {
             '${destination}',
             '${new BigNumber(amount).toString(10)}',
             '${denom}',
-            '${feeAmount}',
+            '${new BigNumber(feeAmount).toString(10)}',
             '${success}',
             '${errorMessage}',
             '${timestamp}'
