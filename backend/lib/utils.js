@@ -284,10 +284,9 @@ module.exports = {
           ? extrinsic.args[1].token
           : 'REEF';
         const feeAmount = JSON.parse(feeInfo).partialFee;
-        let errorMessage = '';
-        if (!success) {
-          errorMessage = module.exports.getExtrinsicError(index, blockEvents);
-        }
+        const errorMessage = success
+          ? ''
+          : module.exports.getExtrinsicError(index, blockEvents);
         sql = `INSERT INTO transfer (
             block_number,
             extrinsic_index,
