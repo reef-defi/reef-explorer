@@ -231,7 +231,7 @@ CREATE TABLE IF NOT EXISTS contract_verification_request  (
 
 CREATE TABLE IF NOT EXISTS total (  
   name TEXT,
-  count BIGINT NOT NULL,
+  count NUMERIC(40,0) NOT NULL,
   PRIMARY KEY ( name )
 );
 
