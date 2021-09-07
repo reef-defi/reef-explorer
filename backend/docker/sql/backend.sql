@@ -39,6 +39,24 @@ CREATE TABLE IF NOT EXISTS event (
   PRIMARY KEY ( block_number, event_index ) 
 );
 
+CREATE TABLE IF NOT EXISTS staking_reward (  
+  block_number BIGINT NOT NULL,
+  event_index INT NOT NULL,
+  account_id TEXT NOT NULL,
+  amount NUMERIC(40,0) NOT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( block_number, event_index ) 
+);
+
+CREATE TABLE IF NOT EXISTS staking_slash (  
+  block_number BIGINT NOT NULL,
+  event_index INT NOT NULL,
+  account_id TEXT NOT NULL,
+  amount NUMERIC(40,0) NOT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( block_number, event_index ) 
+);
+
 CREATE TABLE IF NOT EXISTS extrinsic (  
   block_number BIGINT NOT NULL,
   extrinsic_index INT NOT NULL,
@@ -289,16 +307,38 @@ CREATE INDEX IF NOT EXISTS extrinsic_block_number_idx ON extrinsic (block_number
 CREATE INDEX IF NOT EXISTS extrinsic_section_idx ON extrinsic (section);
 CREATE INDEX IF NOT EXISTS extrinsic_method_idx ON extrinsic (method);
 CREATE INDEX IF NOT EXISTS extrinsic_signer_idx ON extrinsic (signer);
+CREATE INDEX IF NOT EXISTS extrinsic_hash_idx ON extrinsic (hash);
+
+CREATE INDEX IF NOT EXISTS signed_extrinsic_block_number_idx ON signed_extrinsic (block_number);
+CREATE INDEX IF NOT EXISTS signed_extrinsic_section_idx ON signed_extrinsic (section);
+CREATE INDEX IF NOT EXISTS signed_extrinsic_method_idx ON signed_extrinsic (method);
+CREATE INDEX IF NOT EXISTS signed_extrinsic_signer_idx ON signed_extrinsic (signer);
+CREATE INDEX IF NOT EXISTS signed_extrinsic_hash_idx ON signed_extrinsic (hash);
+
+CREATE INDEX IF NOT EXISTS transfer_block_number_idx ON transfer (block_number);
+CREATE INDEX IF NOT EXISTS transfer_section_idx ON transfer (section);
+CREATE INDEX IF NOT EXISTS transfer_method_idx ON transfer (method);
+CREATE INDEX IF NOT EXISTS transfer_source_idx ON transfer (source);
+CREATE INDEX IF NOT EXISTS transfer_destination_idx ON transfer (destination);
+CREATE INDEX IF NOT EXISTS transfer_hash_idx ON transfer (hash);
 
 CREATE INDEX IF NOT EXISTS event_block_number_idx ON event (block_number);
 CREATE INDEX IF NOT EXISTS event_section_idx ON event (section);
 CREATE INDEX IF NOT EXISTS event_method_idx ON event (method);
+
+CREATE INDEX IF NOT EXISTS staking_reward_block_number_idx ON staking_reward (block_number);
+CREATE INDEX IF NOT EXISTS staking_reward_account_id_idx ON staking_reward (account_id);
+
+CREATE INDEX IF NOT EXISTS staking_slash_block_number_idx ON staking_slash (block_number);
+CREATE INDEX IF NOT EXISTS staking_slash_account_id_idx ON staking_slash (account_id);
 
 CREATE INDEX IF NOT EXISTS account_evm_address_idx ON account (evm_address);
 
 GRANT ALL PRIVILEGES ON TABLE block TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE harvest_error TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE event TO reefexplorer;
+GRANT ALL PRIVILEGES ON TABLE staking_reward TO reefexplorer;
+GRANT ALL PRIVILEGES ON TABLE staking_slash TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE extrinsic TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE signed_extrinsic TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE transfer TO reefexplorer;
