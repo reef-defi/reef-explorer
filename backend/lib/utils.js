@@ -235,149 +235,150 @@ module.exports = {
       logger.error(loggerOptions, `Error adding extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
     }
 
-    // Store signed extrinsic
-    sql = `INSERT INTO signed_extrinsic (
-      block_number,
-      extrinsic_index,
-      signer,
-      section,
-      method,
-      args,
-      hash,
-      doc,
-      fee_info,
-      fee_details,
-      success,
-      timestamp
-    ) VALUES (
-      '${blockNumber}',
-      '${index}',
-      '${signer}',
-      '${section}',
-      '${method}',
-      '${args}',
-      '${hash}',
-      '${doc}',
-      '${feeInfo}',
-      '${feeDetails}',
-      '${success}',
-      '${timestamp}'
-    )
-    ON CONFLICT ON CONSTRAINT signed_extrinsic_pkey 
-    DO NOTHING;
-    ;`;
-    try {
-      await client.query(sql);
-      logger.debug(loggerOptions, `Added signed extrinsic ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
-    } catch (error) {
-      logger.error(loggerOptions, `Error adding signed extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
-    }
-
-    if (section === 'balances' || section === 'currencies') {
-      // Store transfer
-      const source = signer;
-      const destination = extrinsic.args[0].id;
-      const amount = section === 'currencies'
-        ? JSON.parse(extrinsic.args)[2]
-        : JSON.parse(extrinsic.args)[1];
-      const denom = section === 'currencies'
-        ? JSON.parse(extrinsic.args)[1].token
-        : 'REEF';
-      const feeAmount = JSON.parse(feeInfo).partialFee;
-      let errorMessage = '';
-      if (!success) {
-        errorMessage = module.exports.getExtrinsicError(index, blockEvents);
-      }
-      sql = `INSERT INTO transfer (
-          block_number,
-          extrinsic_index,
-          section,
-          method,
-          hash,
-          source,
-          destination,
-          amount,
-          denom,
-          fee_amount,      
-          success,
-          error_message,
-          timestamp
-        ) VALUES (
-          '${blockNumber}',
-          '${index}',
-          '${section}',
-          '${method}',
-          '${hash}',
-          '${source}',
-          '${destination}',
-          '${amount}',
-          '${denom}',
-          '${feeAmount}',
-          '${errorMessage}',
-          '${success}',
-          '${timestamp}'
-        )
-        ON CONFLICT ON CONSTRAINT transfer_pkey 
-        DO NOTHING;
-        ;`;
+    if (isSigned) {
+      // Store signed extrinsic
+      sql = `INSERT INTO signed_extrinsic (
+        block_number,
+        extrinsic_index,
+        signer,
+        section,
+        method,
+        args,
+        hash,
+        doc,
+        fee_info,
+        fee_details,
+        success,
+        timestamp
+      ) VALUES (
+        '${blockNumber}',
+        '${index}',
+        '${signer}',
+        '${section}',
+        '${method}',
+        '${args}',
+        '${hash}',
+        '${doc}',
+        '${feeInfo}',
+        '${feeDetails}',
+        '${success}',
+        '${timestamp}'
+      )
+      ON CONFLICT ON CONSTRAINT signed_extrinsic_pkey 
+      DO NOTHING;
+      ;`;
       try {
         await client.query(sql);
-        logger.debug(loggerOptions, `Added transfer ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
+        logger.debug(loggerOptions, `Added signed extrinsic ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
       } catch (error) {
-        logger.error(loggerOptions, `Error adding transfer ${blockNumber}-${index}: ${JSON.stringify(error)}`);
+        logger.error(loggerOptions, `Error adding signed extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
       }
-      // update total transfers
-      module.exports.updateTotalTransfers(client, loggerOptions);
-    }
+      if (section === 'balances' || section === 'currencies') {
+        // Store transfer
+        const source = signer;
+        const destination = extrinsic.args[0].id;
+        const amount = section === 'currencies'
+          ? JSON.parse(extrinsic.args)[2]
+          : JSON.parse(extrinsic.args)[1];
+        const denom = section === 'currencies'
+          ? JSON.parse(extrinsic.args)[1].token
+          : 'REEF';
+        const feeAmount = JSON.parse(feeInfo).partialFee;
+        let errorMessage = '';
+        if (!success) {
+          errorMessage = module.exports.getExtrinsicError(index, blockEvents);
+        }
+        sql = `INSERT INTO transfer (
+            block_number,
+            extrinsic_index,
+            section,
+            method,
+            hash,
+            source,
+            destination,
+            amount,
+            denom,
+            fee_amount,      
+            success,
+            error_message,
+            timestamp
+          ) VALUES (
+            '${blockNumber}',
+            '${index}',
+            '${section}',
+            '${method}',
+            '${hash}',
+            '${source}',
+            '${destination}',
+            '${amount}',
+            '${denom}',
+            '${feeAmount}',
+            '${errorMessage}',
+            '${success}',
+            '${timestamp}'
+          )
+          ON CONFLICT ON CONSTRAINT transfer_pkey 
+          DO NOTHING;
+          ;`;
+        try {
+          await client.query(sql);
+          logger.debug(loggerOptions, `Added transfer ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
+        } catch (error) {
+          logger.error(loggerOptions, `Error adding transfer ${blockNumber}-${index}: ${JSON.stringify(error)}`);
+        }
+        // update total transfers
+        module.exports.updateTotalTransfers(client, loggerOptions);
+      }
 
-    // store contract
-    if (section === 'evm' && method === 'create' && success) {
-      module.exports.updateTotalContracts(client, loggerOptions);
-      // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
-      const contractId = toChecksumAddress(
-        JSON.parse(
-          JSON.stringify(
-            blockEvents.find(
-              ({ event }) => event.section === 'evm' && event.method === 'Created',
+      // store contract
+      if (section === 'evm' && method === 'create' && success) {
+        module.exports.updateTotalContracts(client, loggerOptions);
+        // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
+        const contractId = toChecksumAddress(
+          JSON.parse(
+            JSON.stringify(
+              blockEvents.find(
+                ({ event }) => event.section === 'evm' && event.method === 'Created',
+              ),
             ),
-          ),
-        ).event.data[0],
-      );
-      // https://reefscan.com/block/?blockNumber=118307
-      const name = '';
-      const bytecode = extrinsic.args[0];
-      const value = extrinsic.args[1];
-      const gasLimit = extrinsic.args[2];
-      const storageLimit = extrinsic.args[3];
-      const contractSql = `INSERT INTO contract (
-              contract_id,
-              name,
-              bytecode,
-              value,
-              gas_limit,
-              storage_limit,
-              signer,
-              block_height,
-              timestamp
-            ) VALUES (
-              '${contractId}',
-              '${name}',
-              '${bytecode}',
-              '${value}',
-              '${gasLimit}',
-              '${storageLimit}',
-              '${signer}',
-              '${blockNumber}',
-              '${timestamp}'
-            )
-            ON CONFLICT ON CONSTRAINT contract_pkey 
-            DO NOTHING;
-            ;`;
-      try {
-        await client.query(contractSql);
-        logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
-      } catch (error) {
-        logger.error(loggerOptions, `Error adding contract ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
+          ).event.data[0],
+        );
+        // https://reefscan.com/block/?blockNumber=118307
+        const name = '';
+        const bytecode = extrinsic.args[0];
+        const value = extrinsic.args[1];
+        const gasLimit = extrinsic.args[2];
+        const storageLimit = extrinsic.args[3];
+        const contractSql = `INSERT INTO contract (
+            contract_id,
+            name,
+            bytecode,
+            value,
+            gas_limit,
+            storage_limit,
+            signer,
+            block_height,
+            timestamp
+          ) VALUES (
+            '${contractId}',
+            '${name}',
+            '${bytecode}',
+            '${value}',
+            '${gasLimit}',
+            '${storageLimit}',
+            '${signer}',
+            '${blockNumber}',
+            '${timestamp}'
+          )
+          ON CONFLICT ON CONSTRAINT contract_pkey 
+          DO NOTHING;
+          ;`;
+        try {
+          await client.query(contractSql);
+          logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
+        } catch (error) {
+          logger.error(loggerOptions, `Error adding contract ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
+        }
       }
     }
   },
