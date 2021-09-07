@@ -236,7 +236,7 @@ module.exports = {
     }
 
     // Store signed extrinsic
-    sql = `INSERT INTO extrinsic (
+    sql = `INSERT INTO signed_extrinsic (
       block_number,
       extrinsic_index,
       signer,
