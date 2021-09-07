@@ -278,10 +278,10 @@ module.exports = {
         const source = signer;
         const destination = extrinsic.args[0].id;
         const amount = section === 'currencies'
-          ? JSON.parse(extrinsic.args)[2]
-          : JSON.parse(extrinsic.args)[1];
+          ? extrinsic.args[2]
+          : extrinsic.args[1];
         const denom = section === 'currencies'
-          ? JSON.parse(extrinsic.args)[1].token
+          ? extrinsic.args[1].token
           : 'REEF';
         const feeAmount = JSON.parse(feeInfo).partialFee;
         let errorMessage = '';
