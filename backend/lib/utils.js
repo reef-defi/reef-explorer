@@ -273,8 +273,60 @@ module.exports = {
       logger.error(loggerOptions, `Error adding signed extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
     }
 
-    if (section === 'balances') {
+    if (section === 'balances' || section === 'currencies') {
       module.exports.updateTotalTransfers(client, loggerOptions);
+      // Store transfer
+      const from = signer;
+      const to = extrinsic.args[0].id;
+      const amount = section === 'currencies'
+        ? JSON.parse(extrinsic.args)[2]
+        : JSON.parse(extrinsic.args)[1];
+      const denom = section === 'currencies'
+        ? JSON.parse(extrinsic.args)[1].token
+        : 'REEF';
+      const feeAmount = JSON.parse(feeInfo).partialFee;
+      let errorMessage = '';
+      if (!success) {
+        errorMessage = module.exports.getExtrinsicError(index, blockEvents);
+      }
+      sql = `INSERT INTO transfer (
+          block_number,
+          extrinsic_index,
+          section,
+          method,
+          hash,
+          from,
+          to,
+          amount,
+          denom,
+          fee_amount,      
+          success,
+          error_message,
+          timestamp
+        ) VALUES (
+          '${blockNumber}',
+          '${index}',
+          '${section}',
+          '${method}',
+          '${hash}',
+          '${from}',
+          '${to}',
+          '${amount}',
+          '${denom}',
+          '${feeAmount}',
+          '${errorMessage}',
+          '${success}',
+          '${timestamp}'
+        )
+        ON CONFLICT ON CONSTRAINT transfer_pkey 
+        DO NOTHING;
+        ;`;
+      try {
+        await client.query(sql);
+        logger.debug(loggerOptions, `Added transfer ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
+      } catch (error) {
+        logger.error(loggerOptions, `Error adding transfer ${blockNumber}-${index}: ${JSON.stringify(error)}`);
+      }
     }
 
     // store contract
@@ -430,6 +482,14 @@ module.exports = {
     });
     return extrinsicSuccess;
   },
+  getExtrinsicError: (index, blockEvents) => JSON.stringify(
+    blockEvents
+      .find(({ event, phase }) => (
+        parseInt(phase.toHuman().ApplyExtrinsic, 10) === index
+          && event.section === 'system'
+          && event.method === 'ExtrinsicFailed'
+      )).event.data || '',
+  ),
   getDisplayName: (identity) => {
     if (
       identity.displayParent

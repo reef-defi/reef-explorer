@@ -72,6 +72,23 @@ CREATE TABLE IF NOT EXISTS signed_extrinsic (
   PRIMARY KEY ( block_number, extrinsic_index ) 
 );
 
+CREATE TABLE IF NOT EXISTS transfer (  
+  block_number BIGINT NOT NULL,
+  extrinsic_index INT NOT NULL,
+  section TEXT NOT NULL,
+  method TEXT NOT NULL,
+  hash TEXT NOT NULL,
+  from TEXT NOT NULL,
+  to TEXT NOT NULL,
+  amount NUMERIC(40,0) NOT NULL,
+  denom TEXT NOT NULL,
+  fee_amount NUMERIC(40,0) NOT NULL,
+  success BOOLEAN NOT NULL,
+  error_message TEXT DEFAULT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( block_number, extrinsic_index ) 
+);
+
 CREATE TABLE IF NOT EXISTS log  (  
   block_number BIGINT NOT NULL,
   log_index INT NOT NULL,
@@ -284,6 +301,7 @@ GRANT ALL PRIVILEGES ON TABLE harvest_error TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE event TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE extrinsic TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE signed_extrinsic TO reefexplorer;
+GRANT ALL PRIVILEGES ON TABLE transfer TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE ranking TO reefexplorer;
 
 GRANT ALL PRIVILEGES ON TABLE era_vrc_score TO reefexplorer;
