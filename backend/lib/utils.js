@@ -183,40 +183,6 @@ module.exports = {
     const success = module.exports.getExtrinsicSuccess(index, blockEvents);
 
     // Fees
-
-    // TODO: Investigate why this queries fail
-    //
-    // This throws an error at certain blocks
-    //
-    // const blockNumber = 5935949;
-    // const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
-    // const { block } = await api.rpc.chain.getBlock(blockHash);
-    // for (const extrinsic of block.extrinsics) {
-    //   if (extrinsic.isSigned) {
-    //     const queryFeeDetails= await api.rpc.payment.queryFeeDetails(
-    //       extrinsic.toHex(),
-    //       blockHash
-    //     ).catch(error => console.log(error)) || '';
-    //     const queryInfo = await api.rpc.payment.queryInfo(
-    //       extrinsic.toHex(),
-    //       blockHash
-    //     ).catch(error => console.log(error)) || '';
-    //     console.log(JSON.stringify(queryFeeDetails));
-    //     console.log(JSON.stringify(queryInfo));
-    //   }
-    // }
-
-    // let feeInfo = '';
-    // let feeDetails = '';
-    // if (isSigned) {
-    //   feeInfo = await api.rpc.payment.queryInfo(extrinsic.toHex(), blockHash)
-    //     .then((result) => JSON.stringify(result.toJSON()))
-    //     .catch(() => {}) || '';
-    //   feeDetails = await api.rpc.payment.queryFeeDetails(extrinsic.toHex(), blockHash)
-    //     .then((result) => JSON.stringify(result.toJSON()))
-    //     .catch(() => {}) || '';
-    // }
-
     let feeInfo = '';
     let feeDetails = '';
     if (isSigned) {
@@ -230,7 +196,7 @@ module.exports = {
       ]);
     }
 
-    const sql = `INSERT INTO extrinsic (
+    let sql = `INSERT INTO extrinsic (
         block_number,
         extrinsic_index,
         is_signed,
@@ -267,6 +233,44 @@ module.exports = {
       logger.debug(loggerOptions, `Added extrinsic ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
     } catch (error) {
       logger.error(loggerOptions, `Error adding extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
+    }
+
+    // Store signed extrinsic
+    sql = `INSERT INTO extrinsic (
+      block_number,
+      extrinsic_index,
+      signer,
+      section,
+      method,
+      args,
+      hash,
+      doc,
+      fee_info,
+      fee_details,
+      success,
+      timestamp
+    ) VALUES (
+      '${blockNumber}',
+      '${index}',
+      '${signer}',
+      '${section}',
+      '${method}',
+      '${args}',
+      '${hash}',
+      '${doc}',
+      '${feeInfo}',
+      '${feeDetails}',
+      '${success}',
+      '${timestamp}'
+    )
+    ON CONFLICT ON CONSTRAINT signed_extrinsic_pkey 
+    DO NOTHING;
+    ;`;
+    try {
+      await client.query(sql);
+      logger.debug(loggerOptions, `Added signed extrinsic ${blockNumber}-${index} (${module.exports.shortHash(hash)}) ${section} ➡ ${method}`);
+    } catch (error) {
+      logger.error(loggerOptions, `Error adding signed extrinsic ${blockNumber}-${index}: ${JSON.stringify(error)}`);
     }
 
     if (section === 'balances') {
