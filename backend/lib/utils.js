@@ -401,7 +401,7 @@ module.exports = {
     client, blockNumber, record, index, timestamp, loggerOptions,
   ) => {
     const { event, phase } = record;
-    const sql = `INSERT INTO event (
+    let sql = `INSERT INTO event (
       block_number,
       event_index,
       section,
@@ -427,6 +427,57 @@ module.exports = {
       logger.debug(loggerOptions, `Added event #${blockNumber}-${index} ${event.section} ➡ ${event.method}`);
     } catch (error) {
       logger.error(loggerOptions, `Error adding event #${blockNumber}-${index}: ${error}, sql: ${sql}`);
+    }
+
+    // Store staking reward
+    if (event.section === 'staking' && event.method === 'Reward') {
+      sql = `INSERT INTO staking_reward (
+        block_number,
+        event_index,
+        account_id,
+        amount,
+        timestamp
+      ) VALUES (
+        '${blockNumber}',
+        '${index}',
+        '${event.data[0]}',
+        '${new BigNumber(event.data[1]).toString(10)}',
+        '${timestamp}'
+      )
+      ON CONFLICT ON CONSTRAINT staking_reward_pkey 
+      DO NOTHING
+      ;`;
+      try {
+        await client.query(sql);
+        logger.debug(loggerOptions, `Added staking reward #${blockNumber}-${index} ${event.section} ➡ ${event.method}`);
+      } catch (error) {
+        logger.error(loggerOptions, `Error adding staking reward #${blockNumber}-${index}: ${error}, sql: ${sql}`);
+      }
+    }
+    // Store staking slash
+    if (event.section === 'staking' && event.method === 'Slash') {
+      sql = `INSERT INTO staking_slash (
+        block_number,
+        event_index,
+        account_id,
+        amount,
+        timestamp
+      ) VALUES (
+        '${blockNumber}',
+        '${index}',
+        '${event.data[0]}',
+        '${new BigNumber(event.data[1]).toString(10)}',
+        '${timestamp}'
+      )
+      ON CONFLICT ON CONSTRAINT staking_slash_pkey 
+      DO NOTHING
+      ;`;
+      try {
+        await client.query(sql);
+        logger.debug(loggerOptions, `Added staking slash #${blockNumber}-${index} ${event.section} ➡ ${event.method}`);
+      } catch (error) {
+        logger.error(loggerOptions, `Error adding staking slash #${blockNumber}-${index}: ${error}, sql: ${sql}`);
+      }
     }
   },
   processLogs: async (client, blockNumber, logs, timestamp, loggerOptions) => {
