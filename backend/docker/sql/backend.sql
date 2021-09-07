@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS transfer (
   method TEXT NOT NULL,
   hash TEXT NOT NULL,
   from TEXT NOT NULL,
-  to TEXT NOT NULL,
+  destination TEXT NOT NULL,
   amount NUMERIC(40,0) NOT NULL,
   denom TEXT NOT NULL,
   fee_amount NUMERIC(40,0) NOT NULL,

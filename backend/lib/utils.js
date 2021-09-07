@@ -276,7 +276,7 @@ module.exports = {
     if (section === 'balances' || section === 'currencies') {
       // Store transfer
       const from = signer;
-      const to = extrinsic.args[0].id;
+      const destination = extrinsic.args[0].id;
       const amount = section === 'currencies'
         ? JSON.parse(extrinsic.args)[2]
         : JSON.parse(extrinsic.args)[1];
@@ -295,7 +295,7 @@ module.exports = {
           method,
           hash,
           from,
-          to,
+          destination,
           amount,
           denom,
           fee_amount,      
@@ -309,7 +309,7 @@ module.exports = {
           '${method}',
           '${hash}',
           '${from}',
-          '${to}',
+          '${destination}',
           '${amount}',
           '${denom}',
           '${feeAmount}',
