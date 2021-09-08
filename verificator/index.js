@@ -319,10 +319,10 @@ const processVerificationRequest = async (request, client, provider) => {
           JSON.stringify(contractAbi),
           license,
           isErc20,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          tokenTotalSupply,
+          tokenName.toString(),
+          tokenSymbol.toString(),
+          tokenDecimals.toString(),
+          tokenTotalSupply.toString(),
           matchedContractId
         ];
         await parametrizedDbQuery(client, query, data);

@@ -363,10 +363,10 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
                 JSON.stringify(contractAbi),
                 license,
                 isErc20,
-                tokenName,
-                tokenSymbol,
-                tokenDecimals,
-                tokenTotalSupply,
+                tokenName.toString(),
+                tokenSymbol.toString(),
+                tokenDecimals.toString(),
+                tokenTotalSupply.toString(),
                 matchedContractId
               ];
               await parametrizedDbQuery(client, query, data);
