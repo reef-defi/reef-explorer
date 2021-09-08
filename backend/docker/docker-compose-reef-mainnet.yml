@@ -108,6 +108,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - 'postgres'
+      - 'substrate-node'
     restart: always
     environment:
       - NODE_ENV=production
@@ -124,6 +125,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - 'postgres'
+      - 'substrate-node'
     restart: always
 
 #
