@@ -13,7 +13,7 @@
     "@polkadot/api": "^5.8.3",
     "@reef-defi/evm-provider": "^0.1.9",
     "dotenv": "^10.0.0",
-    "pg": "^8.6.0",
+    "pg": "^8.7.1",
     "pino": "^6.11.3",
     "solc": "^0.8.4"
   }
