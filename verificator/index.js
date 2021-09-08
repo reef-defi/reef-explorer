@@ -9,10 +9,10 @@ const loggerOptions = {};
 // Configuration
 const pollingTime = 30 * 1000; // 30 seconds
 const postgresConnParams = {
-  user: process.env.POSTGRES_USER || 'reef',
+  user: process.env.POSTGRES_USER || 'reefexplorer',
   host: process.env.POSTGRES_HOST || 'postgres',
-  database: process.env.POSTGRES_DATABASE || 'reef',
-  password: process.env.POSTGRES_PASSWORD || 'reef',
+  database: process.env.POSTGRES_DATABASE || 'reefexplorer',
+  password: process.env.POSTGRES_PASSWORD || 'reefexplorer',
   port: parseInt(process.env.POSTGRES_PORT) || 5432,
 };
 
