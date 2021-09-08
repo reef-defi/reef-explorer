@@ -52,6 +52,16 @@
                         <span>{{ parsedAccount.accountId }}</span>
                       </td>
                     </tr>
+                    <tr v-if="parsedAccount.evmAddress">
+                      <td>{{ $t('details.account.evm_address') }}</td>
+                      <td>
+                        <eth-identicon
+                          :address="parsedAccount.evmAddress"
+                          :size="20"
+                        />
+                        <span>{{ parsedAccount.evmAddress }}</span>
+                      </td>
+                    </tr>
                     <tr v-if="parsedAccount.identity.display">
                       <td>Identity::display</td>
                       <td class="text-right">
@@ -274,6 +284,7 @@ export default {
           subscription account($account_id: String!) {
             account(where: { account_id: { _eq: $account_id } }) {
               account_id
+              evm_address
               balances
               available_balance
               free_balance
@@ -294,6 +305,7 @@ export default {
           if (data.account[0]) {
             this.parsedAccount = {
               accountId: data.account[0].account_id,
+              evmAddress: data.account[0].evm_address,
               availableBalance: data.account[0].available_balance,
               freeBalance: data.account[0].free_balance,
               lockedBalance: data.account[0].locked_balance,

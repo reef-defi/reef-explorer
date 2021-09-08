@@ -156,6 +156,18 @@
                   </nuxt-link>
                 </div>
               </template>
+              <template #cell(evm_address)="data">
+                <span v-if="data.item.evm_address">
+                  <eth-identicon :address="data.item.evm_address" :size="20" />
+                  <nuxt-link :to="`/account/${data.item.account_id}`">
+                    {{
+                      data.item.evm_address
+                        ? shortHash(data.item.evm_address)
+                        : ''
+                    }}
+                  </nuxt-link>
+                </span>
+              </template>
               <template #cell(free_balance)="data">
                 <p class="text-right mb-0">
                   {{ formatAmount(data.item.free_balance) }}
@@ -282,6 +294,7 @@ export default {
           class: `d-none d-sm-none d-md-table-cell d-lg-table-cell d-xl-table-cell`,
         },
         { key: 'account_id', label: 'Account', sortable: true },
+        { key: 'evm_address', label: 'EVM address', sortable: true },
         {
           key: 'free_balance',
           label: this.$t('pages.accounts.free_balance'),
@@ -380,6 +393,7 @@ export default {
           query account {
             account(order_by: { free_balance: desc }, where: {}) {
               account_id
+              evm_address
               identity_display
               identity_display_parent
               available_balance

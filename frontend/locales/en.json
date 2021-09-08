@@ -202,6 +202,7 @@
       "account": "Account",
       "free_balance": "Free Balance",
       "account_id": "Account ID",
+      "evm_address": "EVM address",
       "account_nonce": "Account Nonce",
       "total_balance": "Total Balance",
       "available_balance": "Available Balance",
