@@ -182,7 +182,7 @@ module.exports = {
     const hash = extrinsic.hash.toHex();
     const doc = extrinsic.meta.documentation
       ? extrinsic.meta.documentation.toString().replace(/'/g, "''")
-      : extrinsic.meta.doc.toString().replace(/'/g, "''");
+      : extrinsic.meta.docs.toString().replace(/'/g, "''");
     const success = module.exports.getExtrinsicSuccess(index, blockEvents);
 
     // Fees
