@@ -343,11 +343,11 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
                 runs = $7,
                 target = $8,
                 abi = $9,
-                license = $10
-                is_erc20 = $11
-                token_name = $12
-                token_symbol = $13
-                token_decimals = $14
+                license = $10,
+                is_erc20 = $11,
+                token_name = $12,
+                token_symbol = $13,
+                token_decimals = $14,
                 token_total_supply = $15
                 WHERE contract_id = $16;
               `;

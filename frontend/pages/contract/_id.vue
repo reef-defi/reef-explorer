@@ -162,7 +162,7 @@
                 <b-tab title="Contract executions">
                   <contract-executions :contract-id="contractId" />
                 </b-tab>
-                <b-tab title="Contract call">
+                <b-tab v-if="contract.verified" title="Contract call">
                   <contract-call
                     :contract-id="contractId"
                     :contract-name="contract.name"
