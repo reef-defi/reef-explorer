@@ -3,7 +3,7 @@ require('dotenv').config();
 module.exports = {
   recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
   httpPort: process.env.PORT || 8000,
-  nodeWs: 'wss://testnet-rpc.reefscan.com/ws',
+  nodeWs: 'wss://rpc-testnet.reefscan.com/ws',
   postgresConnParams: {
     user: process.env.POSTGRES_USER || 'reefexplorer',
     host: process.env.POSTGRES_HOST || 'postgres',
