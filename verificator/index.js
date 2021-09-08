@@ -4,20 +4,15 @@ const pino = require('pino');
 const logger = pino();
 const { Client } = require('pg');
 require('dotenv').config();
+const config = require('./verificator.config');
+const { options } = require('@reef-defi/api');
+const { Provider } = require('@reef-defi/evm-provider');
+const { WsProvider } = require('@polkadot/api');
+const { ethers } = require('ethers');
 const loggerOptions = {};
 
-// Configuration
-const pollingTime = 30 * 1000; // 30 seconds
-const postgresConnParams = {
-  user: process.env.POSTGRES_USER || 'reefexplorer',
-  host: process.env.POSTGRES_HOST || 'postgres',
-  database: process.env.POSTGRES_DATABASE || 'reefexplorer',
-  password: process.env.POSTGRES_PASSWORD || 'reefexplorer',
-  port: parseInt(process.env.POSTGRES_PORT) || 5432,
-};
-
 const getClient = async () => {
-  const client = new Client(postgresConnParams);
+  const client = new Client(config.postgresConnParams);
   await client.connect();
   return client;
 };
@@ -188,7 +183,7 @@ const stringMatch = (a, b) => {
   return (weight * 100);
 }
 
-const processVerificationRequest = async (request, client) => {
+const processVerificationRequest = async (request, client, provider) => {
   try {
     const {
       id,
@@ -249,6 +244,50 @@ const processVerificationRequest = async (request, client) => {
       // verify all not verified contracts with the same bytecode
       const matchedContracts = await getOnChainContractsByBytecode(client, onChainContractBytecode);
       for (const matchedContractId of matchedContracts) {
+
+        //
+        // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
+        //
+        // function name() public view returns (string)
+        // function symbol() public view returns (string)
+        // function decimals() public view returns (uint8)
+        // function totalSupply() public view returns (uint256)
+        // function balanceOf(address _owner) public view returns (uint256 balance)
+        // function transfer(address _to, uint256 _value) public returns (bool success)
+        // function transferFrom(address _from, address _to, uint256 _value) public returns (bool success)
+        // function approve(address _spender, uint256 _value) public returns (bool success)
+        // function allowance(address _owner, address _spender) public view returns (uint256 remaining)
+        //
+        let isErc20 = false;
+        let tokenName = null;
+        let tokenSymbol = null;
+        let tokenDecimals = null;
+        let tokenTotalSupply = null;
+        const contract = new ethers.Contract(
+          matchedContractId,
+          contractAbi,
+          provider
+        )
+
+        if (
+          typeof contract['name()'] === 'function'
+          && typeof contract['symbol()'] === 'function'
+          && typeof contract['decimals()'] === 'function'
+          && typeof contract['totalSupply()'] === 'function'
+          && typeof contract['balanceOf(address _owner)'] === 'function'
+          && typeof contract['transfer(address _to, uint256 _value)'] === 'function'
+          && typeof contract['transferFrom(address _from, address _to, uint256 _value)'] === 'function'
+          && typeof contract['approve(address _spender, uint256 _value)'] === 'function'
+          && typeof contract['allowance(address _owner, address _spender)'] === 'function'
+        ) {
+          isErc20 = true;
+          tokenName = await contract['name()']();
+          tokenSymbol = await contract['symbol()']();
+          tokenDecimals = await contract['decimals()']();
+          tokenTotalSupply = await contract['totalSupply()']();
+          logger.info({ request: id }, `Contract ${matchedContractId} is an ERC20 token '${tokenName}' with total supply of ${tokenTotalSupply} ${tokenSymbol} (${tokenDecimals} decimals)`);
+        }
+
         logger.info({ request: id }, `Updating matched contract ${matchedContractId} data in db`);
         const query = `UPDATE contract SET
           name = $1,
@@ -261,7 +300,12 @@ const processVerificationRequest = async (request, client) => {
           target = $8,
           abi = $9,
           license = $10
-          WHERE contract_id = $11;
+          is_erc20 = $11
+          token_name = $12
+          token_symbol = $13
+          token_decimals = $14
+          token_total_supply = $15
+          WHERE contract_id = $16;
         `;
         const data = [
           contractName,
@@ -274,6 +318,11 @@ const processVerificationRequest = async (request, client) => {
           target,
           JSON.stringify(contractAbi),
           license,
+          isErc20,
+          tokenName,
+          tokenSymbol,
+          tokenDecimals,
+          tokenTotalSupply,
           matchedContractId
         ];
         await parametrizedDbQuery(client, query, data);
@@ -302,17 +351,26 @@ const main = async () => {
   logger.info(loggerOptions, `Starting contract verificator`);
   logger.info(loggerOptions, `Connecting to db`);
   const client = await getClient();
+  logger.info(loggerOptions, `Connecting to chain rpc ${config.nodeWs}`);
+  const provider = new Provider(
+    options({
+      provider: new WsProvider(config.nodeWs),
+    })
+  )
+  await provider.api.isReady
   logger.info(loggerOptions, `Processing pending requests`);
   const pendingRequests = await getPendingRequests(client);
   for (const request of pendingRequests) {
-    await processVerificationRequest(request, client);
+    await processVerificationRequest(request, client, provider);
   }
   logger.info(loggerOptions, `Disconnecting from db`);
   await client.end();
-  logger.info(loggerOptions, `Contract verificator finished, sleeping ${pollingTime / 1000}s`);
+  logger.info(loggerOptions, `Disconnecting from chain rpc`);
+  provider.api.disconnect();
+  logger.info(loggerOptions, `Contract verificator finished, sleeping ${config.pollingTime / 1000}s`);
   setTimeout(
     () => main(),
-    pollingTime,
+    config.pollingTime,
   );
 };
 
