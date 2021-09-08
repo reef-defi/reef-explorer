@@ -258,6 +258,13 @@ CREATE TABLE IF NOT EXISTS contract  (
   target TEXT DEFAULT NULL,
   abi TEXT DEFAULT NULL,
   license TEXT DEFAULT NULL,
+  is_erc20 BOOLEAN DEFAULT FALSE,
+  -- token tracker
+  token_name TEXT DEFAULT NULL,
+  token_symbol TEXT DEFAULT NULL,
+  token_decimals INT DEFAULT NULL,
+  token_total_supply NUMERIC(40,0) DEFAULT NULL,
+  -- token tracker
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( contract_id )  
 );

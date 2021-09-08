@@ -6,9 +6,9 @@ export const network = {
   ss58Format: 42,
   coinGeckoDenom: 'reef-finance',
   nodeWs: 'wss://rpc-testnet.reefscan.com/ws',
-  backendWs: 'wss://testnet.reefscan.com/api/v3',
-  backendHttp: 'https://testnet.reefscan.com/api/v3',
-  verificatorApi: 'https://testnet.reefscan.com/api/verificator',
+  backendWs: 'wss://dev.reef.polkastats.io/api/v3',
+  backendHttp: 'https://dev.reef.polkastats.io/api/v3',
+  verificatorApi: 'https://dev.reef.polkastats.io/api/verificator',
   googleAnalytics: '',
   theme: '@/assets/scss/themes/reef.scss',
 }
