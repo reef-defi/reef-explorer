@@ -270,15 +270,15 @@ const processVerificationRequest = async (request, client, provider) => {
         )
 
         if (
-          typeof contract['name()'] === 'function'
-          && typeof contract['symbol()'] === 'function'
-          && typeof contract['decimals()'] === 'function'
-          && typeof contract['totalSupply()'] === 'function'
-          && typeof contract['balanceOf(address _owner)'] === 'function'
-          && typeof contract['transfer(address _to, uint256 _value)'] === 'function'
-          && typeof contract['transferFrom(address _from, address _to, uint256 _value)'] === 'function'
-          && typeof contract['approve(address _spender, uint256 _value)'] === 'function'
-          && typeof contract['allowance(address _owner, address _spender)'] === 'function'
+          typeof contract['name'] === 'function'
+          && typeof contract['symbol'] === 'function'
+          && typeof contract['decimals'] === 'function'
+          && typeof contract['totalSupply'] === 'function'
+          && typeof contract['balanceOf'] === 'function'
+          && typeof contract['transfer'] === 'function'
+          && typeof contract['transferFrom'] === 'function'
+          && typeof contract['approve'] === 'function'
+          && typeof contract['allowance'] === 'function'
         ) {
           isErc20 = true;
           tokenName = await contract['name()']();
