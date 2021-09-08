@@ -105,7 +105,7 @@ export default {
       //
       // disconnect provider
       //
-      provider.api.disconnect()
+      await provider.api.disconnect()
     },
     onReset() {
       // reset form

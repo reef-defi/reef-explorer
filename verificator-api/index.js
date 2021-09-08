@@ -371,7 +371,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               ];
               await parametrizedDbQuery(client, query, data);
             }
-            provider.api.disconnect();
+            await provider.api.disconnect();
             await pool.query(query, data);
             res.send({
               status: true,

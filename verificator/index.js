@@ -366,7 +366,7 @@ const main = async () => {
   logger.info(loggerOptions, `Disconnecting from db`);
   await client.end();
   logger.info(loggerOptions, `Disconnecting from chain rpc`);
-  provider.api.disconnect();
+  await provider.api.disconnect();
   logger.info(loggerOptions, `Contract verificator finished, sleeping ${config.pollingTime / 1000}s`);
   setTimeout(
     () => main(),

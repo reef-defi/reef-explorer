@@ -189,6 +189,8 @@ export default {
             // eslint-disable-next-line no-console
             // console.log('result:', this.result)
 
+            await provider.api.disconnect()
+
             // hide success alert after 20s
             setTimeout(() => {
               this.result = null
