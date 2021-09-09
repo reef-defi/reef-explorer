@@ -83,7 +83,7 @@
     },
     "accounts": {
       "active_accounts": "Cuentas activas",
-      "search_placeholder": "Buscar cuenta por dirección o identidad",
+      "search_placeholder": "Buscar cuenta por dirección, dirección EVM o identidad",
       "sort": "Ordenar",
       "account_details": "Detalles de la cuenta",
       "rank": "Rank",

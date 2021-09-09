@@ -83,7 +83,7 @@
     },
     "accounts": {
       "active_accounts": "Active accounts",
-      "search_placeholder": "Search account by address or identity",
+      "search_placeholder": "Search account by address, EVM address or identity",
       "sort": "Sort",
       "account_details": "Account details",
       "rank": "Rank",
