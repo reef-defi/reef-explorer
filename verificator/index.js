@@ -104,6 +104,10 @@ const loadCompiler = async (version) => (
 );
 
 const preprocessBytecode = (bytecode) => {
+
+  // debug
+  logger.info(loggerOptions, `bytecode: ${bytecode}`);
+
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
@@ -117,6 +121,9 @@ const preprocessBytecode = (bytecode) => {
   //
   const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
   filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
+
+  // debug
+  logger.info(loggerOptions, `processed bytecode: ${bytecode}`);
 
   return filteredBytecode;
 };
@@ -210,13 +217,13 @@ const processVerificationRequest = async (request, client, provider) => {
     contracts[filename] = { content: source };
 
     // debug
-    // logger.info({ request: id }, `filename: ${filename}`);
-    // logger.info({ request: id }, `compiler_version: ${compiler_version}`);
-    // logger.info({ request: id }, `arguments: ${arguments}`);
-    // logger.info({ request: id }, `optimization: ${optimization}`);
-    // logger.info({ request: id }, `runs: ${runs}`);
-    // logger.info({ request: id }, `target: ${target}`);
-    // logger.info({ request: id }, `license: ${license}`);
+    logger.info({ request: id }, `filename: ${filename}`);
+    logger.info({ request: id }, `compiler_version: ${compiler_version}`);
+    logger.info({ request: id }, `arguments: ${arguments}`);
+    logger.info({ request: id }, `optimization: ${optimization}`);
+    logger.info({ request: id }, `runs: ${runs}`);
+    logger.info({ request: id }, `target: ${target}`);
+    logger.info({ request: id }, `license: ${license}`);
 
     const artifacts = await getContractArtifacts(
       compiler,
@@ -234,8 +241,8 @@ const processVerificationRequest = async (request, client, provider) => {
     const { isVerified, contractName, contractAbi, requestBytecode } = artifacts;
 
     // debug
-    // logger.info({ request: id }, `existing: ${existing}`);
-    // logger.info({ request: id }, `request: ${requestBytecode}`);
+    logger.info({ request: id }, `existing: ${existing}`);
+    logger.info({ request: id }, `request: ${requestBytecode}`);
 
     if (isVerified) {
       logger.info({ request: id }, `Contract ${contract_id} is verified!`);
