@@ -26,6 +26,7 @@
           <b-nav-item right to="/events">Events</b-nav-item>
           <b-nav-item right to="/accounts">Accounts</b-nav-item>
           <b-nav-item right to="/contracts">Contracts</b-nav-item>
+          <b-nav-item right to="/tokens">Tokens</b-nav-item>
         </b-navbar-nav>
         <b-dropdown class="my-md-2 ml-md-2 network" variant="primary2">
           <template #button-content>

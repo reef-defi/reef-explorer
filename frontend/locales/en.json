@@ -195,6 +195,10 @@
     },
     "verifyContract": {
       "title": "Verify & publish contract source code"
+    },
+    "tokens": {
+      "title": "ERC20 tokens",
+      "search_placeholder": "Search by contract address or block number"
     }
   },
   "details": {
