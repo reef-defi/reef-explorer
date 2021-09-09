@@ -481,6 +481,14 @@ module.exports = {
         logger.error(loggerOptions, `Error adding staking slash #${blockNumber}-${index}: ${error}, sql: ${sql}`);
       }
     }
+    // Update account evm address
+    if (event.section === 'evmAccounts' && event.method === 'ClaimAccount') {
+      const accountId = event.data[0];
+      const evmAddress = event.data[1];
+      const query = 'UPDATE account SET evm_address = $1 WHERE account_id = $2;';
+      // eslint-disable-next-line no-await-in-loop
+      await module.exports.dbParamQuery(client, query, [evmAddress, accountId], loggerOptions);
+    }
   },
   processLogs: async (client, blockNumber, logs, timestamp, loggerOptions) => {
     const startTime = new Date().getTime();
