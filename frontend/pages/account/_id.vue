@@ -54,7 +54,7 @@
                     </tr>
                     <tr v-if="parsedAccount.evmAddress">
                       <td>{{ $t('details.account.evm_address') }}</td>
-                      <td>
+                      <td class="text-right">
                         <eth-identicon
                           :address="parsedAccount.evmAddress"
                           :size="20"
@@ -240,6 +240,7 @@ export default {
     ReceivedTransfers,
   },
   mixins: [commonMixin],
+  middleware: ['account'],
   data() {
     return {
       network,
