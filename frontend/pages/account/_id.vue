@@ -197,21 +197,15 @@
               <b-tabs class="mt-4" content-class="mt-4" fill>
                 <b-tab active>
                   <template #title>
+                    <h5>Transfers</h5>
+                  </template>
+                  <AccountTransfers :account-id="accountId" />
+                </b-tab>
+                <b-tab>
+                  <template #title>
                     <h5>Activity</h5>
                   </template>
                   <Activities :account-id="accountId" />
-                </b-tab>
-                <b-tab>
-                  <template #title>
-                    <h5>Sent transfers</h5>
-                  </template>
-                  <SentTransfers :account-id="accountId" />
-                </b-tab>
-                <b-tab>
-                  <template #title>
-                    <h5>Received transfers</h5>
-                  </template>
-                  <ReceivedTransfers :account-id="accountId" />
                 </b-tab>
               </b-tabs>
             </div>
@@ -226,8 +220,7 @@ import gql from 'graphql-tag'
 import Identicon from '@/components/Identicon.vue'
 import Loading from '@/components/Loading.vue'
 import Activities from '@/components/Activities.vue'
-import SentTransfers from '@/components/SentTransfers.vue'
-import ReceivedTransfers from '@/components/ReceivedTransfers.vue'
+import AccountTransfers from '@/components/AccountTransfers.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
 
@@ -236,8 +229,7 @@ export default {
     Identicon,
     Loading,
     Activities,
-    SentTransfers,
-    ReceivedTransfers,
+    AccountTransfers,
   },
   mixins: [commonMixin],
   middleware: ['account'],

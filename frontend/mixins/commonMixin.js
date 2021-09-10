@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js'
 import gql from 'graphql-tag'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { checkAddressChecksum } from 'web3-utils'
+import moment from 'moment'
 import { network } from '@/frontend.config.js'
 import { reefChainErrors } from '@/reef-chain-errors.js'
 
@@ -149,6 +150,10 @@ export default {
           .description
       }
       return ''
+    },
+    fromNow: (timestamp) => {
+      const date = moment.unix(timestamp)
+      return moment(date).fromNow()
     },
   },
 }
