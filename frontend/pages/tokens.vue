@@ -59,6 +59,11 @@
                     }}
                   </p>
                 </template>
+                <template #cell(holders_aggregate)="data">
+                  <p class="mb-0">
+                    {{ data.item.holders_aggregate.aggregate.count }}
+                  </p>
+                </template>
               </b-table>
             </div>
             <!-- pagination -->
@@ -162,6 +167,11 @@ export default {
           label: 'TotalSupply',
           sortable: true,
         },
+        {
+          key: 'holders_aggregate',
+          label: 'Holders',
+          sortable: true,
+        },
       ],
     }
   },
@@ -206,6 +216,11 @@ export default {
               token_decimals
               token_total_supply
               timestamp
+              holders_aggregate {
+                aggregate {
+                  count(columns: holder_account_id)
+                }
+              }
             }
           }
         `,
@@ -223,6 +238,8 @@ export default {
         },
         result({ data }) {
           this.tokens = data.contract
+          // eslint-disable-next-line no-console
+          console.log(this.tokens)
           if (this.filter) {
             this.totalRows = this.tokens.length
           }

@@ -44,8 +44,9 @@ const crawler = async (delayedStart) => {
     synced = await isNodeSynced(api, loggerOptions);
   }
 
+  const wsProvider = new WsProvider(backendConfig.wsProviderUrl);
   const provider = new Provider({
-    provider: new WsProvider(backendConfig.wsProviderUrl),
+    provider: wsProvider,
   });
   await provider.api.isReady;
 
@@ -134,11 +135,14 @@ const crawler = async (delayedStart) => {
   logger.debug(loggerOptions, 'Disconnecting from API');
   await provider.api.disconnect().catch((error) => logger.error(loggerOptions, `API disconnect error: ${JSON.stringify(error)}`));
 
+  logger.debug(loggerOptions, 'Disconnecting from WS provider');
+  await wsProvider.disconnect().catch((error) => logger.error(loggerOptions, `WS provider disconnect error: ${JSON.stringify(error)}`));
+
   logger.debug(loggerOptions, 'Disconnecting from DB');
   await client.end().catch((error) => logger.error(loggerOptions, `DB disconnect error: ${JSON.stringify(error)}`));
 
   const endTime = new Date().getTime();
-  logger.info(loggerOptions, `Processed ${tokens.length} tokens and ${accounts.length} accounts in ${((endTime - startTime) / 1000).toFixed(0)}s`);
+  logger.info(loggerOptions, `Processed ${tokens.rows.length} tokens and ${accounts.rows.length} accounts in ${((endTime - startTime) / 1000).toFixed(0)}s`);
 
   logger.info(loggerOptions, `Next execution in ${(config.pollingTime / 60000).toFixed(0)}m...`);
   setTimeout(
