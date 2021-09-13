@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@polkadot/api": "^4.9.2",
-    "@reef-defi/evm-provider": "^0.1.9",
+    "@reef-defi/evm-provider": "^0.1.10",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",

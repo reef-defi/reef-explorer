@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@polkadot/api": "^4.9.2",
-    "@reef-defi/evm-provider": "^0.1.9",
+    "@reef-defi/evm-provider": "^0.1.10",
     "dotenv": "^10.0.0",
     "pg": "^8.6.0",
     "pino": "^6.11.3",
