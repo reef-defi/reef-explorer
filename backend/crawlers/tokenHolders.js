@@ -124,7 +124,7 @@ const crawler = async (delayedStart) => {
           token.contract_id,
           account.evm_address,
         ];
-        const query = 'DELETE FROM token_holder WHERE contract_id = $1 AND evm_address = $2;';
+        const query = 'DELETE FROM token_holder WHERE contract_id = $1 AND holder_evm_address = $2;';
         // eslint-disable-next-line no-await-in-loop
         await dbParamQuery(client, query, data, loggerOptions);
       }
