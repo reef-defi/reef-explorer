@@ -7,7 +7,6 @@ const { ethers } = require('ethers');
 const {
   wait,
   getClient,
-  getPolkadotAPI,
   isNodeSynced,
   dbQuery,
   dbParamQuery,
@@ -34,15 +33,6 @@ const crawler = async (delayedStart) => {
   logger.debug(loggerOptions, 'Running token holders crawler...');
 
   const client = await getClient(loggerOptions);
-  const api = await getPolkadotAPI(loggerOptions);
-
-  let synced = await isNodeSynced(api, loggerOptions);
-  while (!synced) {
-    // eslint-disable-next-line no-await-in-loop
-    await wait(10000);
-    // eslint-disable-next-line no-await-in-loop
-    synced = await isNodeSynced(api, loggerOptions);
-  }
 
   const wsProvider = new WsProvider(backendConfig.wsProviderUrl);
   const provider = new Provider({
@@ -50,12 +40,20 @@ const crawler = async (delayedStart) => {
   });
   await provider.api.isReady;
 
+  let synced = await isNodeSynced(provider.api, loggerOptions);
+  while (!synced) {
+    // eslint-disable-next-line no-await-in-loop
+    await wait(10000);
+    // eslint-disable-next-line no-await-in-loop
+    synced = await isNodeSynced(provider.api, loggerOptions);
+  }
+
   const [
     { block },
     timestampMs,
   ] = await Promise.all([
-    api.rpc.chain.getBlock(),
-    api.query.timestamp.now(),
+    provider.api.rpc.chain.getBlock(),
+    provider.api.query.timestamp.now(),
   ]);
   const timestamp = Math.floor(timestampMs / 1000);
   const blockHeight = block.header.number.toString();
