@@ -238,11 +238,11 @@
       "extrinsics": "Extrinsics",
       "section": "Sección",
       "method": "Método",
+      "hash": "Hash",
+      "signer": "Firmante",
+      "args": "Argumentos",
       "phase": "Fase",
       "data": "Datos",
-      "signer": "Firmante",
-      "hash": "Hash",
-      "args": "Argumentos",
       "timestamp": "Fecha y hora",
       "genesis": "🎁 Bloque génesis",
       "success": "Resultado",
@@ -250,23 +250,41 @@
       "index": "Índice",
       "engine": "Motor",
       "total_issuance": "Emisión total"
+    },
+    "extrinsic": {
+      "extrinsic_details": "Detalles del extrinsic"
+    },
+    "contract": {
+      "signer": "Firmante",
+      "value": "Valor",
+      "gas_limit": "Límite de gas",
+      "storage_limit": "Límite de almacenamiento",
+      "bytecode": "Bytecode",
+      "verified": "¿Verificado?",
+      "abi": "ABI",
+      "compiler_version": "Versión del compilador",
+      "optimization": "¿Optimización activada?",
+      "runs": "Runs (optimización)",
+      "target": "EVM target (optimización)",
+      "license": "Licencia open source"
+    },
+    "token": {
+      "created": "Creado por",
+      "value": "Valor",
+      "gas_limit": "Límite de gas",
+      "storage_limit": "Límite de almacenamiento",
+      "bytecode": "Bytecode",
+      "verified": "¿Verificado?",
+      "abi": "ABI",
+      "compiler_version": "Versión del compilador",
+      "optimization": "¿Optimización activada?",
+      "runs": "Runs (optimización)",
+      "target": "EVM target (optimización)",
+      "license": "Licencia open source",
+      "token_name": "Nombre del token",
+      "token_symbol": "Símbolo",
+      "token_decimals": "Decimales",
+      "token_total_supply": "Suministro total"
     }
-  },
-  "extrinsic": {
-    "extrinsic_details": "Detalles del extrinsic"
-  },
-  "contract": {
-    "signer": "Firmante",
-    "value": "Valor",
-    "gas_limit": "Límite de gas",
-    "storage_limit": "Límite de almacenamiento",
-    "bytecode": "Bytecode",
-    "verified": "¿Verificado?",
-    "abi": "ABI",
-    "compiler_version": "Versión del compilador",
-    "optimization": "¿Optimización activada?",
-    "runs": "Runs (optimización)",
-    "target": "EVM target (optimización)",
-    "license": "Licencia open source"
   }
 }

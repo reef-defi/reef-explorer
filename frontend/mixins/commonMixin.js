@@ -32,6 +32,12 @@ export default {
         .toFixed(2)
         .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${network.tokenSymbol}`
     },
+    formatTokenAmount(amount, decimals, denom) {
+      return `${new BigNumber(amount)
+        .div(new BigNumber(10).pow(decimals))
+        .toFixed(2)
+        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${denom}`
+    },
     capitalize(s) {
       if (typeof s !== 'string') return ''
       return s.charAt(0).toUpperCase() + s.slice(1)

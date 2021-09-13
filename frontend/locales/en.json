@@ -243,7 +243,6 @@
       "args": "Arguments",
       "phase": "Phase",
       "data": "Data",
-      "account_details": "Account details",
       "timestamp": "Timestamp",
       "genesis": "🎁 Genesis block",
       "success": "Success",
@@ -268,6 +267,24 @@
       "runs": "Runs (optimization)",
       "target": "EVM target (optimization)",
       "license": "Open source license"
+    },
+    "token": {
+      "created": "Created by",
+      "value": "Value",
+      "gas_limit": "Gas limit",
+      "storage_limit": "Storage limit",
+      "bytecode": "Bytecode",
+      "verified": "Verified",
+      "abi": "ABI",
+      "compiler_version": "Compiler version",
+      "optimization": "Optimization enabled",
+      "runs": "Runs (optimization)",
+      "target": "EVM target (optimization)",
+      "license": "Open source license",
+      "token_name": "Token name",
+      "token_symbol": "Token symbol",
+      "token_decimals": "Decimals",
+      "token_total_supply": "Total supply"
     }
   }
 }

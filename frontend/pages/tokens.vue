@@ -30,9 +30,9 @@
             </b-row>
             <div class="table-responsive">
               <b-table striped hover :fields="fields" :items="tokens">
-                <template #cell(name)="data">
+                <template #cell(token_name)="data">
                   <p class="mb-0">
-                    <nuxt-link :to="`/contract/${data.item.contract_id}`">
+                    <nuxt-link :to="`/token/${data.item.contract_id}`">
                       {{ data.item.name }}
                     </nuxt-link>
                   </p>
@@ -120,7 +120,6 @@
 
 <script>
 import gql from 'graphql-tag'
-import { BigNumber } from 'bignumber.js'
 import commonMixin from '@/mixins/commonMixin.js'
 import Loading from '@/components/Loading.vue'
 import { paginationOptions } from '@/frontend.config.js'
@@ -179,12 +178,6 @@ export default {
     setPageSize(num) {
       localStorage.paginationOptions = num
       this.perPage = parseInt(num)
-    },
-    formatTokenAmount(amount, decimals, denom) {
-      return `${new BigNumber(amount)
-        .div(new BigNumber(10).pow(decimals))
-        .toFixed(2)
-        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${denom}`
     },
   },
   apollo: {
