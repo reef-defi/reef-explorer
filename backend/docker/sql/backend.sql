@@ -269,6 +269,16 @@ CREATE TABLE IF NOT EXISTS contract  (
   PRIMARY KEY ( contract_id )  
 );
 
+CREATE TABLE IF NOT EXISTS token_holder  (
+  contract_id TEXT NOT NULL,
+  holder_account_id TEXT DEFAULT NULL,
+  holder_evm_address TEXT DEFAULT NULL,
+  balance NUMERIC(40,0) DEFAULT NULL,
+  block_height BIGINT NOT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( contract_id, holder_evm_address )  
+);
+
 CREATE TABLE IF NOT EXISTS contract_verification_request  (
   id TEXT NOT NULL,
   contract_id TEXT NOT NULL,
@@ -364,6 +374,7 @@ GRANT ALL PRIVILEGES ON TABLE account TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE total TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE contract TO reefexplorer;
 GRANT ALL PRIVILEGES ON TABLE contract_verification_request TO reefexplorer;
+GRANT ALL PRIVILEGES ON TABLE token_holder TO reefexplorer;
 
 --
 -- Fast counters
