@@ -626,7 +626,7 @@ app.post('/api/account/tokens', async (req, res) => {
       ];
       const query = `
         SELECT
-          contract_id,
+          th.contract_id,
           holder_account_id,
           holder_evm_address,
           balance,
@@ -636,8 +636,7 @@ app.post('/api/account/tokens', async (req, res) => {
           token_holder AS th,
           contract AS c
         WHERE
-          (holder_account_id = $1
-          OR holder_evm_address = $1)
+          (holder_account_id = $1 OR holder_evm_address = $1)
           AND th.contract_id = c.contract_id
       ;`;
       const dbres = await pool.query(query, data);
