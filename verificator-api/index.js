@@ -232,7 +232,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
       const pool = await getPool();
       const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode LIKE $2;";
       const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
-      const data = [address, `0x${preprocessedRequestBytecode}%`];
+      const data = [address, `0x${preprocessedRequestContractBytecode}%`];
       const dbres = await pool.query(query, data);
       if (dbres) {
         if (dbres.rows.length === 1) {
