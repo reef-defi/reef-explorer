@@ -152,7 +152,7 @@ app.post('/api/verificator/request', async (req, res) => {
             status: true,
             message: 'Received verification request',
             data: {
-              id: JSON.stringify(id),
+              id,
               address: req.body.address,
               source: fileName,
               sourceMimetype: source.mimetype,
