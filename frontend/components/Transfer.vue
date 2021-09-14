@@ -83,7 +83,7 @@
         </tr>
         <tr>
           <td>Amount</td>
-          <td>
+          <td class="amount">
             {{
               formatAmount(
                 transfer.section === 'currencies'
