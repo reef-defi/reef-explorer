@@ -20,6 +20,15 @@ const getPool = async () => {
   return pool;
 }
 
+const parametrizedDbQuery = async (client, query, data) => {
+  try {
+    return await client.query(query, data);
+  } catch (error) {
+    return false;
+  }
+};
+
+
 const app = express();
 
 // Enable file upload
@@ -287,7 +296,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               }
             }
             // verify all not verified contracts with the same bytecode
-            const matchedContracts = await getOnChainContractsByBytecode(client, onChainContractBytecode);
+            const matchedContracts = await getOnChainContractsByBytecode(pool, onChainContractBytecode);
             for (const matchedContractId of matchedContracts) {
               //
               // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
@@ -369,7 +378,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
                 tokenTotalSupply.toString(),
                 matchedContractId
               ];
-              await parametrizedDbQuery(client, query, data);
+              await parametrizedDbQuery(pool, query, data);
             }
             await provider.api.disconnect();
             await pool.query(query, data);
