@@ -360,7 +360,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
                 optimization,
                 runs,
                 target,
-                JSON.stringify(contractAbi),
+                abi,
                 license,
                 isErc20,
                 tokenName.toString(),
