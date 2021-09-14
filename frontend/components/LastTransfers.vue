@@ -42,7 +42,10 @@
           </div>
           <div v-else>
             <p class="mb-0">
-              {{ shortAddress(data.item.to || '') }}
+              <eth-identicon :address="data.item.to" :size="20" />
+              <nuxt-link :to="`/account/${data.item.to}`">
+                {{ shortHash(data.item.to) }}
+              </nuxt-link>
             </p>
           </div>
         </template>
