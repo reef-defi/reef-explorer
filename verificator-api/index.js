@@ -525,6 +525,142 @@ app.get('/api/staking/rewards', async (req, res) => {
   }
 });
 
+app.post('/api/verificator/request-status', async (req, res) => {
+  if(!req.params.id) {
+    res.send({
+      status: false,
+      message: 'Input error'
+    });
+  } else {
+    try {
+      const requestId = req.params.id;
+      const data = [
+        requestId
+      ];
+      const query = `
+        SELECT
+          contract_id
+          status
+          error_type
+          error_message
+        FROM contract_verification_request
+        WHERE id = $1
+      ;`;
+      const dbres = await pool.query(query, data);
+      if (dbres.rows.length > 0) {
+        if (res.rows[0].status) {
+          const requestStatus = dbres.rows[0].status;
+          const contractId = dbres.rows[0].contract_id;
+          const errorType = dbres.rows[0].error_type;
+          const errorMessage = dbres.rows[0].error_message;
+          res.send({
+            status: true,
+            message: 'Request found',
+            data: {
+              id: JSON.stringify(requestId),
+              address: contractId,
+              status: requestStatus,
+              error_type: errorType,
+              error_message: errorMessage,
+            }
+          });
+        } else {
+          res.send({
+            status: false,
+            message: 'Request not found'
+          });
+        }
+      } else {
+        res.send({
+          status: false,
+          message: 'Request not found'
+        });
+      }
+    } catch (error) {
+      res.send({
+        status: false,
+        message: 'Error'
+      });
+    }
+  }
+});
+
+app.get('/api/price/reef', async (req, res) => {
+  const denom = 'reef-finance';
+  await axios
+    .get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${denom}&vs_currencies=usd&include_24hr_change=true`
+    )
+    .then((response) => {
+      res.send({
+        status: true,
+        message: 'Success',
+        data: {
+          usd: response.data[denom].usd,
+          usd_24h_change: response.data[denom].usd_24h_change,
+        }
+      });
+    })
+    .catch((error) => {
+      res.send({
+        status: false,
+        message: 'Error'
+      });
+    })
+});
+
+
+// Accepts account id or EVM address
+app.post('/api/account/tokens', async (req, res) => {
+  if(!req.params.account) {
+    res.send({
+      status: false,
+      message: 'Input error, account parameter should be a valid Reef account id or EVM address'
+    });
+  } else {
+    try {
+      const account = req.params.account;
+      const data = [
+        account
+      ];
+      const query = `
+        SELECT
+          contract_id,
+          holder_evm_address,
+          balance
+        FROM token_holder
+        WHERE holder_account_id = $1 OR holder_evm_address = $1
+      ;`;
+      const dbres = await pool.query(query, data);
+      if (dbres.rows.length > 0) {
+        const balances = dbres.rows.map((token) => ({
+          contract_id: token.contract_id,
+          balance: token.balance,
+        }));
+        res.send({
+          status: true,
+          message: 'Request found',
+          data: {
+            account_id: accountId,
+            evm_address: holder_evm_address,
+            balances,
+          }
+        });
+      } else {
+        res.send({
+          status: false,
+          message: 'Request not found'
+        });
+      }
+    } catch (error) {
+      res.send({
+        status: false,
+        message: 'Error'
+      });
+    }
+  }
+});
+
 // Make uploads directory static
 app.use(express.static('uploads'));
 
