@@ -435,7 +435,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
             status: true,
             message: 'Request found',
             data: {
-              id: JSON.stringify(requestId),
+              id: JSON.parse(JSON.stringify(requestId)),
               address: contractId,
               status: requestStatus,
               error_type: errorType,
