@@ -619,6 +619,7 @@ app.post('/api/account/tokens', async (req, res) => {
     });
   } else {
     try {
+      const pool = await getPool();
       const account = req.body.account;
       const data = [
         account
