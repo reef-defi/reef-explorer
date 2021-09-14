@@ -626,6 +626,7 @@ app.post('/api/account/tokens', async (req, res) => {
       const query = `
         SELECT
           contract_id,
+          holder_account_id,
           holder_evm_address,
           balance
         FROM token_holder
@@ -641,8 +642,8 @@ app.post('/api/account/tokens', async (req, res) => {
           status: true,
           message: 'Request found',
           data: {
-            account_id: accountId,
-            evm_address: holder_evm_address,
+            account_id: dbres.rows[0].holder_account_id,
+            evm_address: dbres.rows[0].holder_evm_address,
             balances,
           }
         });
