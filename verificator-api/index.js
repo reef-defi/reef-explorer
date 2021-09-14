@@ -417,6 +417,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
       ];
       const query = `
         SELECT
+          id,
           contract_id
           status
           error_type
@@ -427,6 +428,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
       const dbres = await pool.query(query, data);
       if (dbres.rows.length > 0) {
         if (res.rows[0].status) {
+          const id = dbres.rows[0].id;
           const requestStatus = dbres.rows[0].status;
           const contractId = dbres.rows[0].contract_id;
           const errorType = dbres.rows[0].error_type;
@@ -435,7 +437,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
             status: true,
             message: 'Request found',
             data: {
-              id: JSON.parse(JSON.stringify(requestId)),
+              id,
               address: contractId,
               status: requestStatus,
               error_type: errorType,
