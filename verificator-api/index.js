@@ -20,14 +20,13 @@ const getPool = async () => {
   return pool;
 }
 
-const parametrizedDbQuery = async (client, query, data) => {
+const parametrizedDbQuery = async (pool, query, data) => {
   try {
-    return await client.query(query, data);
+    return await pool.query(query, data);
   } catch (error) {
     return false;
   }
 };
-
 
 const app = express();
 
@@ -64,11 +63,11 @@ const preprocessBytecode = (bytecode) => {
 };
 
 // get not verified contracts with 100% matching bytecde (excluding metadata)
-const getOnChainContractsByBytecode = async(client, bytecode) => {
+const getOnChainContractsByBytecode = async(pool, bytecode) => {
   const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
   const preprocessedBytecode = preprocessBytecode(bytecode);
   const data = [`0x${preprocessedBytecode}%`];
-  const res = await parametrizedDbQuery(client, query, data);
+  const res = await parametrizedDbQuery(pool, query, data);
   if (res) {
     if (res.rows.length > 0) {
       return res.rows.map(({ contract_id }) => contract_id);
