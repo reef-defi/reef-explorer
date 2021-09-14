@@ -161,5 +161,8 @@ export default {
       const date = moment.unix(timestamp)
       return moment(date).fromNow()
     },
+    formatTimestamp: (timestamp) => {
+      return moment.unix(timestamp).format('YYYY/MM/DD HH:mm:ss')
+    },
   },
 }

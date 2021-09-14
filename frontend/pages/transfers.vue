@@ -39,6 +39,13 @@
                     </nuxt-link>
                   </p>
                 </template>
+                <template #cell(timestamp)="data">
+                  <p class="mb-0">
+                    <font-awesome-icon :icon="['far', 'clock']" />
+                    {{ fromNow(data.item.timestamp) }}
+                    ({{ formatTimestamp(data.item.timestamp) }})
+                  </p>
+                </template>
                 <template #cell(hash)="data">
                   <p class="mb-0">
                     <nuxt-link :to="`/transfer/${data.item.hash}`">
@@ -189,6 +196,11 @@ export default {
           sortable: true,
         },
         {
+          key: 'timestamp',
+          label: 'Age',
+          sortable: true,
+        },
+        {
           key: 'from',
           label: 'From',
           sortable: true,
@@ -257,6 +269,7 @@ export default {
               hash
               args
               success
+              timestamp
             }
           }
         `,
@@ -285,6 +298,7 @@ export default {
                   ? JSON.parse(transfer.args)[2]
                   : JSON.parse(transfer.args)[1],
               success: transfer.success,
+              timestamp: transfer.timestamp,
             }
           })
           this.loading = false

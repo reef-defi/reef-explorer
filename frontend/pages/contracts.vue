@@ -157,11 +157,6 @@ export default {
       totalRows: 1,
       fields: [
         {
-          key: 'block_height',
-          label: 'Block',
-          sortable: true,
-        },
-        {
           key: 'name',
           label: 'Name',
           sortable: true,
@@ -169,6 +164,11 @@ export default {
         {
           key: 'contract_id',
           label: 'Contract address',
+          sortable: true,
+        },
+        {
+          key: 'block_height',
+          label: 'Created at block',
           sortable: true,
         },
         {

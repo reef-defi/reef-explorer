@@ -331,3 +331,11 @@ h1 {
 .eth-identicon {
   cursor: pointer;
 }
+
+.last-events,
+.last-transfers,
+.last-activity,
+.last-blocks,
+.last-extrinsics {
+  font-size: 0.85rem;
+}

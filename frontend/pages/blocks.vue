@@ -37,6 +37,13 @@
                     </nuxt-link>
                   </p>
                 </template>
+                <template #cell(timestamp)="data">
+                  <p class="mb-0">
+                    <font-awesome-icon :icon="['far', 'clock']" />
+                    {{ fromNow(data.item.timestamp) }}
+                    ({{ formatTimestamp(data.item.timestamp) }})
+                  </p>
+                </template>
                 <template #cell(finalized)="data">
                   <p v-if="data.item.finalized" class="mb-0">
                     <font-awesome-icon icon="check" class="text-success" />
@@ -133,6 +140,11 @@ export default {
           sortable: true,
         },
         {
+          key: 'timestamp',
+          label: 'Age',
+          sortable: true,
+        },
+        {
           key: 'finalized',
           label: 'Finalized',
           sortable: true,
@@ -181,6 +193,7 @@ export default {
               block_hash
               total_extrinsics
               total_events
+              timestamp
             }
           }
         `,
