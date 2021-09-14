@@ -49,6 +49,10 @@
     },
     "loading": {
       "loading_data": "Loading data, please be patient..."
+    },
+    "account_token_balances": {
+      "search": "Search token by token name or contract address",
+      "no_token_found": "No tokens found"
     }
   },
   "layout": {

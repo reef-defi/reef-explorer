@@ -158,6 +158,8 @@ export default {
       return ''
     },
     fromNow: (timestamp) => {
+      moment.relativeTimeThreshold('s', 60)
+      moment.relativeTimeThreshold('ss', 0)
       const date = moment.unix(timestamp)
       return moment(date).fromNow()
     },
