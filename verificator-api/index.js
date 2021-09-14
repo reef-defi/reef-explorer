@@ -309,7 +309,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               let tokenTotalSupply = null;
               const contract = new ethers.Contract(
                 matchedContractId,
-                contractAbi,
+                abi,
                 provider
               )
 
@@ -352,7 +352,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
                 WHERE contract_id = $16;
               `;
               const data = [
-                contractName,
+                name,
                 isVerified,
                 source,
                 compilerVersion,
