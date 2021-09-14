@@ -329,10 +329,8 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
                 tokenSymbol = await contract['symbol()']();
                 tokenDecimals = await contract['decimals()']();
                 tokenTotalSupply = await contract['totalSupply()']();
-                logger.info({ request: id }, `Contract ${matchedContractId} is an ERC20 token '${tokenName}' with total supply of ${tokenTotalSupply} ${tokenSymbol} (${tokenDecimals} decimals)`);
               }
-
-              logger.info({ request: id }, `Updating matched contract ${matchedContractId} data in db`);
+              
               const query = `UPDATE contract SET
                 name = $1,
                 verified = $2,
