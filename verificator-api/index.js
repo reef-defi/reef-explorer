@@ -629,15 +629,24 @@ app.post('/api/account/tokens', async (req, res) => {
           contract_id,
           holder_account_id,
           holder_evm_address,
-          balance
-        FROM token_holder
-        WHERE holder_account_id = $1 OR holder_evm_address = $1
+          balance,
+          token_decimals,
+          token_symbol
+        FROM
+          token_holder AS th,
+          contract AS c
+        WHERE
+          (holder_account_id = $1
+          OR holder_evm_address = $1)
+          AND th.contract_id = c.contract_id
       ;`;
       const dbres = await pool.query(query, data);
       if (dbres.rows.length > 0) {
         const balances = dbres.rows.map((token) => ({
           contract_id: token.contract_id,
           balance: token.balance,
+          decimals: token.token_decimals,
+          symbol: token.token_symbol,
         }));
         res.send({
           status: true,
