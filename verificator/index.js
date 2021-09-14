@@ -198,8 +198,7 @@ const processVerificationRequest = async (request, client, provider) => {
       source,
       filename,
       compiler_version,
-      // @ts-ignore
-      arguments,
+      arguments: args,
       optimization,
       runs,
       target,
@@ -219,7 +218,7 @@ const processVerificationRequest = async (request, client, provider) => {
     // debug
     // logger.info({ request: id }, `filename: ${filename}`);
     // logger.info({ request: id }, `compiler_version: ${compiler_version}`);
-    // logger.info({ request: id }, `arguments: ${arguments}`);
+    // logger.info({ request: id }, `arguments: ${args}`);
     // logger.info({ request: id }, `optimization: ${optimization}`);
     // logger.info({ request: id }, `runs: ${runs}`);
     // logger.info({ request: id }, `target: ${target}`);
@@ -319,7 +318,7 @@ const processVerificationRequest = async (request, client, provider) => {
           isVerified,
           source,
           compiler_version,
-          arguments,
+          args,
           optimization,
           runs,
           target,
