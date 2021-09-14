@@ -152,7 +152,7 @@ app.post('/api/verificator/request', async (req, res) => {
             status: true,
             message: 'Received verification request',
             data: {
-              id,
+              id: JSON.stringify(id),
               address: req.body.address,
               source: fileName,
               sourceMimetype: source.mimetype,
@@ -437,7 +437,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
             status: true,
             message: 'Request found',
             data: {
-              id: requestId,
+              id: JSON.stringify(requestId),
               address: contractId,
               status: requestStatus,
               error_type: errorType,
