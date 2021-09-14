@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const ApiEndPoint = 'https://dev.reef.reefscan.com/api/account/tokens';
+const ApiEndPoint = 'https://dev.reef.polkastats.io/api/account/tokens';
 
 //
 // Endpoint: /api/account/tokens

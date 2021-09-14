@@ -612,14 +612,14 @@ app.get('/api/price/reef', async (req, res) => {
 
 // Accepts account id or EVM address
 app.post('/api/account/tokens', async (req, res) => {
-  if(!req.params.account) {
+  if(!req.body.account) {
     res.send({
       status: false,
       message: 'Input error, account parameter should be a valid Reef account id or EVM address'
     });
   } else {
     try {
-      const account = req.params.account;
+      const account = req.body.account;
       const data = [
         account
       ];
