@@ -19,6 +19,14 @@
                 <span v-else>
                   {{ contractId }}
                 </span>
+                <b-badge
+                  v-if="contract.is_erc20"
+                  :to="`/token/${contract.contract_id}`"
+                  class="ml-2"
+                  variant="info"
+                >
+                  ERC-20 token
+                </b-badge>
               </h4>
               <b-tabs content-class="mt-3">
                 <b-tab title="General" active>
@@ -229,6 +237,7 @@ export default {
               target
               abi
               license
+              is_erc20
               timestamp
             }
           }

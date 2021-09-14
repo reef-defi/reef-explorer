@@ -19,7 +19,7 @@
                 <span v-else>
                   {{ contractId }}
                 </span>
-                <b-badge class="ml-2" variant="info">ERC20 token</b-badge>
+                <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
               </h4>
               <b-tabs content-class="mt-3">
                 <b-tab title="Token info" active>
@@ -28,25 +28,25 @@
                       <tbody>
                         <tr v-if="contract.token_name">
                           <td>{{ $t('details.token.token_name') }}</td>
-                          <td class="text-right">
+                          <td>
                             {{ contract.token_name }}
                           </td>
                         </tr>
                         <tr v-if="contract.token_symbol">
                           <td>{{ $t('details.token.token_symbol') }}</td>
-                          <td class="text-right">
+                          <td>
                             {{ contract.token_symbol }}
                           </td>
                         </tr>
                         <tr v-if="contract.token_decimals">
                           <td>{{ $t('details.token.token_decimals') }}</td>
-                          <td class="text-right">
+                          <td>
                             {{ contract.token_decimals }}
                           </td>
                         </tr>
                         <tr v-if="contract.token_total_supply">
                           <td>{{ $t('details.token.token_total_supply') }}</td>
-                          <td class="text-right">
+                          <td class="amount">
                             {{
                               formatTokenAmount(
                                 contract.token_total_supply,
@@ -58,14 +58,14 @@
                         </tr>
                         <tr>
                           <td>Contract address</td>
-                          <td class="text-right">
+                          <td>
                             <eth-identicon :address="contractId" :size="16" />
                             {{ contractId }}
                           </td>
                         </tr>
                         <tr>
                           <td>Created at block</td>
-                          <td class="text-right">
+                          <td>
                             <nuxt-link
                               :to="`/block?blockNumber=${contract.block_height}`"
                             >
@@ -75,7 +75,7 @@
                         </tr>
                         <tr>
                           <td>{{ $t('details.token.created') }}</td>
-                          <td class="text-right">
+                          <td>
                             <div v-if="contract.signer">
                               <Identicon
                                 :key="contract.signer"
@@ -105,13 +105,13 @@
                       <tbody>
                         <tr>
                           <td>{{ $t('details.token.compiler_version') }}</td>
-                          <td class="text-right">
+                          <td>
                             {{ contract.compiler_version }}
                           </td>
                         </tr>
                         <tr>
                           <td>{{ $t('details.token.optimization') }}</td>
-                          <td class="text-right">
+                          <td>
                             <p v-if="contract.optimization" class="mb-0">
                               <font-awesome-icon
                                 icon="check"
@@ -128,25 +128,25 @@
                         </tr>
                         <tr>
                           <td>{{ $t('details.token.runs') }}</td>
-                          <td class="text-right">
+                          <td>
                             {{ contract.runs }}
                           </td>
                         </tr>
                         <tr>
                           <td>{{ $t('details.token.target') }}</td>
-                          <td class="text-right">
+                          <td>
                             {{ contract.target }}
                           </td>
                         </tr>
                         <tr>
                           <td>{{ $t('details.token.license') }}</td>
-                          <td class="text-right">
+                          <td>
                             {{ contract.license }}
                           </td>
                         </tr>
                         <tr v-if="contract.bytecode">
                           <td>{{ $t('details.token.bytecode') }}</td>
-                          <td class="text-right">
+                          <td>
                             <span class="bytecode" style="color: #aaa">{{
                               contract.bytecode
                             }}</span>
@@ -154,7 +154,7 @@
                         </tr>
                         <tr v-if="contract.abi">
                           <td>{{ $t('details.token.abi') }}</td>
-                          <td class="text-right">
+                          <td>
                             <vue-json-pretty :data="JSON.parse(contract.abi)" />
                           </td>
                         </tr>

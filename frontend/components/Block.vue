@@ -6,60 +6,64 @@
           formatNumber(parsedBlock.block_number)
         }}
       </h4>
-      <table class="table table-striped block-table">
-        <tbody>
-          <tr>
-            <td>{{ $t('details.block.timestamp') }}</td>
-            <td class="text-right">
-              <p class="mb-0">
-                {{ getDateFromTimestamp(parsedBlock.timestamp) }}
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td>{{ $t('details.block.finalized') }}</td>
-            <td class="text-right">
-              <p v-if="parsedBlock.finalized" class="mb-0">
-                <font-awesome-icon icon="check" class="text-success" />
-              </p>
-              <p v-else class="mb-0">
-                <font-awesome-icon icon="clock" class="text-light" />
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td>{{ $t('details.block.block_hash') }}</td>
-            <td class="text-right">
-              <p class="mb-0">{{ parsedBlock.block_hash }}</p>
-            </td>
-          </tr>
-          <tr>
-            <td>{{ $t('details.block.extrinsic_root') }}</td>
-            <td class="text-right">
-              <p class="mb-0">{{ parsedBlock.extrinsics_root }}</p>
-            </td>
-          </tr>
-          <tr>
-            <td>{{ $t('details.block.parent_hash') }}</td>
-            <td class="text-right">
-              <span v-if="parsedBlock.block_number === 0"> -- </span>
-              <span v-else>
-                <nuxt-link
-                  :to="`/block?blockNumber=${parsedBlock.block_number - 1}`"
-                >
-                  {{ parsedBlock.parent_hash }}
-                </nuxt-link>
-              </span>
-            </td>
-          </tr>
-          <tr>
-            <td>{{ $t('details.block.state_root') }}</td>
-            <td class="text-right">
-              <p class="mb-0">{{ parsedBlock.state_root }}</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive pb-4">
+        <table class="table table-striped block-table">
+          <tbody>
+            <tr>
+              <td>{{ $t('details.block.timestamp') }}</td>
+              <td>
+                <p class="mb-0">
+                  <font-awesome-icon :icon="['far', 'clock']" />
+                  {{ fromNow(parsedBlock.timestamp) }}
+                  ({{ formatTimestamp(parsedBlock.timestamp) }})
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td>{{ $t('details.block.finalized') }}</td>
+              <td>
+                <p v-if="parsedBlock.finalized" class="mb-0">
+                  <font-awesome-icon icon="check" class="text-success" />
+                </p>
+                <p v-else class="mb-0">
+                  <font-awesome-icon icon="clock" class="text-light" />
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td>{{ $t('details.block.block_hash') }}</td>
+              <td>
+                <p class="mb-0">{{ parsedBlock.block_hash }}</p>
+              </td>
+            </tr>
+            <tr>
+              <td>{{ $t('details.block.extrinsic_root') }}</td>
+              <td>
+                <p class="mb-0">{{ parsedBlock.extrinsics_root }}</p>
+              </td>
+            </tr>
+            <tr>
+              <td>{{ $t('details.block.parent_hash') }}</td>
+              <td>
+                <span v-if="parsedBlock.block_number === 0"> -- </span>
+                <span v-else>
+                  <nuxt-link
+                    :to="`/block?blockNumber=${parsedBlock.block_number - 1}`"
+                  >
+                    {{ parsedBlock.parent_hash }}
+                  </nuxt-link>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>{{ $t('details.block.state_root') }}</td>
+              <td>
+                <p class="mb-0">{{ parsedBlock.state_root }}</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <b-tabs class="mt-4" content-class="mt-4" fill>
         <b-tab active>
           <template #title>

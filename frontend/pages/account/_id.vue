@@ -43,7 +43,7 @@
                   <tbody>
                     <tr>
                       <td>{{ $t('details.account.account_id') }}</td>
-                      <td class="text-right">
+                      <td>
                         <Identicon
                           :key="parsedAccount.accountId"
                           :address="parsedAccount.accountId"
@@ -54,7 +54,7 @@
                     </tr>
                     <tr v-if="parsedAccount.evmAddress">
                       <td>{{ $t('details.account.evm_address') }}</td>
-                      <td class="text-right">
+                      <td>
                         <eth-identicon
                           :address="parsedAccount.evmAddress"
                           :size="20"
@@ -64,7 +64,7 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.display">
                       <td>Identity::display</td>
-                      <td class="text-right">
+                      <td>
                         <span
                           v-if="
                             parsedAccount.identity.display &&
@@ -81,7 +81,7 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.email">
                       <td>Identity::email</td>
-                      <td class="text-right">
+                      <td>
                         <a
                           :href="`mailto:${parsedAccount.identity.email}`"
                           target="_blank"
@@ -91,19 +91,19 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.legal">
                       <td>Identity::legal</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.identity.legal }}
                       </td>
                     </tr>
                     <tr v-if="parsedAccount.identity.riot">
                       <td>Identity::riot</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.identity.riot }}
                       </td>
                     </tr>
                     <tr v-if="parsedAccount.identity.web">
                       <td>Identity::web</td>
-                      <td class="text-right">
+                      <td>
                         <a :href="parsedAccount.identity.web" target="_blank">{{
                           parsedAccount.identity.web
                         }}</a>
@@ -111,7 +111,7 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.twitter">
                       <td>Identity::twitter</td>
-                      <td class="text-right">
+                      <td>
                         <a
                           :href="`https://twitter.com/${parsedAccount.identity.twitter.substr(
                             1,
@@ -124,7 +124,7 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.judgements">
                       <td>Identity::judgements</td>
-                      <td class="text-right">
+                      <td>
                         <span
                           v-if="parsedAccount.identity.judgements.length > 0"
                         >
@@ -135,19 +135,19 @@
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.account_nonce') }}</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.nonce }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.total_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.freeBalance) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.available_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{
                           formatAmount(parsedAccount.balances.availableBalance)
                         }}
@@ -155,13 +155,13 @@
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.locked_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.lockedBalance) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.reserved_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{
                           formatAmount(parsedAccount.balances.reservedBalance)
                         }}
@@ -169,25 +169,25 @@
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.is_vesting') }}</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.balances.isVesting ? `Yes` : `No` }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.vested_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.vestedBalance) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.vesting_total') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.vestingTotal) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.voting_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.votingBalance) }}
                       </td>
                     </tr>

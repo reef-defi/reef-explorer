@@ -15,7 +15,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else>
+        <div v-else class="accounts">
           <!-- Filter -->
           <b-row>
             <b-col lg="12" class="mb-3">
@@ -253,7 +253,7 @@
               ></b-pagination>
             </div>
           </div>
-        </template>
+        </div>
       </b-container>
     </section>
   </div>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="main py-5">
+      <b-container class="page-transfers main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>
@@ -12,7 +12,7 @@
             </h1>
           </b-col>
         </b-row>
-        <div class="last-transfers">
+        <div class="transfers">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>

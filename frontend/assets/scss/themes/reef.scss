@@ -251,7 +251,7 @@ h1 {
 .block-table tr td .identicon {
   display: inline-block;
 }
-.block-page .amount {
+.amount {
   color: $primary2;
   font-weight: 700;
 }
@@ -338,4 +338,26 @@ h1 {
 .last-blocks,
 .last-extrinsics {
   font-size: 0.85rem;
+}
+
+.page-accounts .accounts,
+.page-events .events,
+.page-transfers .transfers,
+.page-contracts .contracts,
+.page-activity .activity,
+.page-blocks .blocks,
+.page-extrinsics .extrinsics,
+.page-tokens .tokens {
+  font-size: 0.85rem !important;
+}
+
+.page-accounts .accounts .btn,
+.page-events .events .btn,
+.page-transfers .transfers .btn,
+.page-contracts .contracts .btn,
+.page-activity .activity .btn,
+.page-blocks .blocks .btn,
+.page-extrinsics .extrinsics .btn,
+.page-tokens .tokens .btn {
+  font-size: 0.85rem !important;
 }
