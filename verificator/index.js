@@ -4,20 +4,15 @@ const pino = require('pino');
 const logger = pino();
 const { Client } = require('pg');
 require('dotenv').config();
+const config = require('./verificator.config');
+const { options } = require('@reef-defi/api');
+const { Provider } = require('@reef-defi/evm-provider');
+const { WsProvider } = require('@polkadot/api');
+const { ethers } = require('ethers');
 const loggerOptions = {};
 
-// Configuration
-const pollingTime = 30 * 1000; // 30 seconds
-const postgresConnParams = {
-  user: process.env.POSTGRES_USER || 'reef',
-  host: process.env.POSTGRES_HOST || 'postgres',
-  database: process.env.POSTGRES_DATABASE || 'reef',
-  password: process.env.POSTGRES_PASSWORD || 'reef',
-  port: parseInt(process.env.POSTGRES_PORT) || 5432,
-};
-
 const getClient = async () => {
-  const client = new Client(postgresConnParams);
+  const client = new Client(config.postgresConnParams);
   await client.connect();
   return client;
 };
@@ -109,6 +104,10 @@ const loadCompiler = async (version) => (
 );
 
 const preprocessBytecode = (bytecode) => {
+
+  // debug
+  // logger.info(loggerOptions, `bytecode: ${bytecode}`);
+
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
@@ -122,6 +121,9 @@ const preprocessBytecode = (bytecode) => {
   //
   const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
   filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
+
+  // debug
+  // logger.info(loggerOptions, `processed bytecode: ${bytecode}`);
 
   return filteredBytecode;
 };
@@ -188,7 +190,7 @@ const stringMatch = (a, b) => {
   return (weight * 100);
 }
 
-const processVerificationRequest = async (request, client) => {
+const processVerificationRequest = async (request, client, provider) => {
   try {
     const {
       id,
@@ -196,8 +198,7 @@ const processVerificationRequest = async (request, client) => {
       source,
       filename,
       compiler_version,
-      // @ts-ignore
-      arguments,
+      arguments: args,
       optimization,
       runs,
       target,
@@ -217,7 +218,7 @@ const processVerificationRequest = async (request, client) => {
     // debug
     // logger.info({ request: id }, `filename: ${filename}`);
     // logger.info({ request: id }, `compiler_version: ${compiler_version}`);
-    // logger.info({ request: id }, `arguments: ${arguments}`);
+    // logger.info({ request: id }, `arguments: ${args}`);
     // logger.info({ request: id }, `optimization: ${optimization}`);
     // logger.info({ request: id }, `runs: ${runs}`);
     // logger.info({ request: id }, `target: ${target}`);
@@ -249,6 +250,50 @@ const processVerificationRequest = async (request, client) => {
       // verify all not verified contracts with the same bytecode
       const matchedContracts = await getOnChainContractsByBytecode(client, onChainContractBytecode);
       for (const matchedContractId of matchedContracts) {
+
+        //
+        // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
+        //
+        // function name() public view returns (string)
+        // function symbol() public view returns (string)
+        // function decimals() public view returns (uint8)
+        // function totalSupply() public view returns (uint256)
+        // function balanceOf(address _owner) public view returns (uint256 balance)
+        // function transfer(address _to, uint256 _value) public returns (bool success)
+        // function transferFrom(address _from, address _to, uint256 _value) public returns (bool success)
+        // function approve(address _spender, uint256 _value) public returns (bool success)
+        // function allowance(address _owner, address _spender) public view returns (uint256 remaining)
+        //
+        let isErc20 = false;
+        let tokenName = null;
+        let tokenSymbol = null;
+        let tokenDecimals = null;
+        let tokenTotalSupply = null;
+        const contract = new ethers.Contract(
+          matchedContractId,
+          contractAbi,
+          provider
+        )
+
+        if (
+          typeof contract['name'] === 'function'
+          && typeof contract['symbol'] === 'function'
+          && typeof contract['decimals'] === 'function'
+          && typeof contract['totalSupply'] === 'function'
+          && typeof contract['balanceOf'] === 'function'
+          && typeof contract['transfer'] === 'function'
+          && typeof contract['transferFrom'] === 'function'
+          && typeof contract['approve'] === 'function'
+          && typeof contract['allowance'] === 'function'
+        ) {
+          isErc20 = true;
+          tokenName = await contract['name()']();
+          tokenSymbol = await contract['symbol()']();
+          tokenDecimals = await contract['decimals()']();
+          tokenTotalSupply = await contract['totalSupply()']();
+          logger.info({ request: id }, `Contract ${matchedContractId} is an ERC20 token '${tokenName}' with total supply of ${tokenTotalSupply} ${tokenSymbol} (${tokenDecimals} decimals)`);
+        }
+
         logger.info({ request: id }, `Updating matched contract ${matchedContractId} data in db`);
         const query = `UPDATE contract SET
           name = $1,
@@ -260,20 +305,30 @@ const processVerificationRequest = async (request, client) => {
           runs = $7,
           target = $8,
           abi = $9,
-          license = $10
-          WHERE contract_id = $11;
+          license = $10,
+          is_erc20 = $11,
+          token_name = $12,
+          token_symbol = $13,
+          token_decimals = $14,
+          token_total_supply = $15
+          WHERE contract_id = $16;
         `;
         const data = [
           contractName,
           isVerified,
           source,
           compiler_version,
-          arguments,
+          args,
           optimization,
           runs,
           target,
           JSON.stringify(contractAbi),
           license,
+          isErc20,
+          tokenName ? tokenName.toString() : null,
+          tokenSymbol ? tokenSymbol.toString() : null,
+          tokenDecimals ? tokenDecimals.toString(): null,
+          tokenTotalSupply ? tokenTotalSupply.toString() : null,
           matchedContractId
         ];
         await parametrizedDbQuery(client, query, data);
@@ -302,17 +357,26 @@ const main = async () => {
   logger.info(loggerOptions, `Starting contract verificator`);
   logger.info(loggerOptions, `Connecting to db`);
   const client = await getClient();
+  logger.info(loggerOptions, `Connecting to chain rpc ${config.nodeWs}`);
+  const provider = new Provider(
+    options({
+      provider: new WsProvider(config.nodeWs),
+    })
+  )
+  await provider.api.isReady
   logger.info(loggerOptions, `Processing pending requests`);
   const pendingRequests = await getPendingRequests(client);
   for (const request of pendingRequests) {
-    await processVerificationRequest(request, client);
+    await processVerificationRequest(request, client, provider);
   }
   logger.info(loggerOptions, `Disconnecting from db`);
   await client.end();
-  logger.info(loggerOptions, `Contract verificator finished, sleeping ${pollingTime / 1000}s`);
+  logger.info(loggerOptions, `Disconnecting from chain rpc`);
+  await provider.api.disconnect();
+  logger.info(loggerOptions, `Contract verificator finished, sleeping ${config.pollingTime / 1000}s`);
   setTimeout(
     () => main(),
-    pollingTime,
+    config.pollingTime,
   );
 };
 

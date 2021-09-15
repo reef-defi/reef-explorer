@@ -102,7 +102,7 @@
           </td>
         </tr>
         <tr>
-          <td>Success</td>
+          <td>Status</td>
           <td>
             <font-awesome-icon
               v-if="extrinsic.success"

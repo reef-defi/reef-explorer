@@ -68,11 +68,22 @@
                 {{ JSON.parse(transfer.args)[0].id }}
               </nuxt-link>
             </div>
+            <div v-if="JSON.parse(transfer.args)[0].address20">
+              <eth-identicon
+                :address="JSON.parse(transfer.args)[0].address20"
+                :size="20"
+              />
+              <nuxt-link
+                :to="`/account/${JSON.parse(transfer.args)[0].address20}`"
+              >
+                {{ JSON.parse(transfer.args)[0].address20 }}
+              </nuxt-link>
+            </div>
           </td>
         </tr>
         <tr>
           <td>Amount</td>
-          <td>
+          <td class="amount">
             {{
               formatAmount(
                 transfer.section === 'currencies'
@@ -91,7 +102,7 @@
           </td>
         </tr>
         <tr>
-          <td>Success</td>
+          <td>Status</td>
           <td>
             <font-awesome-icon
               v-if="transfer.success"

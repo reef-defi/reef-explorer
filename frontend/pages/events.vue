@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="main py-5">
+      <b-container class="page-events main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>
@@ -12,7 +12,7 @@
             </h1>
           </b-col>
         </b-row>
-        <div class="last-events">
+        <div class="events">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
@@ -30,6 +30,19 @@
             </b-row>
             <div class="table-responsive">
               <b-table striped hover :fields="fields" :items="events">
+                <template #cell(event_index)="data">
+                  <p class="mb-0">
+                    <nuxt-link
+                      v-b-tooltip.hover
+                      :to="`/event/${data.item.block_number}/${data.item.event_index}`"
+                      title="Check event information"
+                    >
+                      #{{ formatNumber(data.item.block_number) }}-{{
+                        data.item.event_index
+                      }}
+                    </nuxt-link>
+                  </p>
+                </template>
                 <template #cell(block_number)="data">
                   <p class="mb-0">
                     <nuxt-link
@@ -37,6 +50,13 @@
                     >
                       #{{ formatNumber(data.item.block_number) }}
                     </nuxt-link>
+                  </p>
+                </template>
+                <template #cell(timestamp)="data">
+                  <p class="mb-0">
+                    <font-awesome-icon :icon="['far', 'clock']" />
+                    {{ fromNow(data.item.timestamp) }}
+                    ({{ formatTimestamp(data.item.timestamp) }})
                   </p>
                 </template>
                 <template #cell(section)="data">
@@ -123,18 +143,23 @@ export default {
       totalRows: 1,
       fields: [
         {
+          key: 'event_index',
+          label: 'Event',
+          sortable: true,
+        },
+        {
           key: 'block_number',
           label: 'Block',
           sortable: true,
         },
         {
-          key: 'event_index',
-          label: 'Index',
+          key: 'timestamp',
+          label: 'Age',
           sortable: true,
         },
         {
           key: 'section',
-          label: 'Event',
+          label: 'Section/Method',
           sortable: true,
         },
         {
@@ -172,6 +197,7 @@ export default {
               method
               phase
               section
+              timestamp
             }
           }
         `,

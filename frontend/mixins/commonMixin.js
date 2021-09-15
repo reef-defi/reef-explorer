@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js'
 import gql from 'graphql-tag'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { checkAddressChecksum } from 'web3-utils'
+import moment from 'moment'
 import { network } from '@/frontend.config.js'
 import { reefChainErrors } from '@/reef-chain-errors.js'
 
@@ -30,6 +31,12 @@ export default {
         .div(new BigNumber(10).pow(network.tokenDecimals))
         .toFixed(2)
         .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${network.tokenSymbol}`
+    },
+    formatTokenAmount(amount, decimals, denom) {
+      return `${new BigNumber(amount)
+        .div(new BigNumber(10).pow(decimals))
+        .toFixed(2)
+        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${denom}`
     },
     capitalize(s) {
       if (typeof s !== 'string') return ''
@@ -149,6 +156,15 @@ export default {
           .description
       }
       return ''
+    },
+    fromNow: (timestamp) => {
+      moment.relativeTimeThreshold('s', 60)
+      moment.relativeTimeThreshold('ss', 0)
+      const date = moment.unix(timestamp)
+      return moment(date).fromNow()
+    },
+    formatTimestamp: (timestamp) => {
+      return moment.unix(timestamp).format('YYYY/MM/DD HH:mm:ss')
     },
   },
 }

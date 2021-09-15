@@ -56,7 +56,7 @@
 import { ethers } from 'ethers'
 import { Provider, Signer } from '@reef-defi/evm-provider'
 import { WsProvider } from '@polkadot/api'
-
+import gql from 'graphql-tag'
 import {
   web3Accounts,
   web3Enable,
@@ -119,11 +119,23 @@ export default {
     const accounts = await web3Accounts()
     if (accounts.length > 0) {
       this.extensionAccounts = accounts
-      accounts.forEach((account) =>
-        this.extensionAddresses.push(
-          encodeAddress(account.address, network.ss58Format)
+      for (const account of accounts) {
+        const encodedAddress = encodeAddress(
+          account.address,
+          network.ss58Format
         )
-      )
+        // eslint-disable-next-line no-console
+        console.log('account:', account)
+        const evmAddress = await this.getEVMAddress(encodedAddress)
+        this.extensionAddresses.push({
+          value: encodedAddress,
+          text: evmAddress
+            ? `${account.meta.name}: ${this.shortAddress(
+                encodedAddress
+              )} (${this.shortHash(evmAddress)})`
+            : `${account.meta.name}: ${this.shortAddress(encodedAddress)}`,
+        })
+      }
       if (
         this.extensionAccounts.length > 0 &&
         this.extensionAddresses.length > 0
@@ -189,6 +201,8 @@ export default {
             // eslint-disable-next-line no-console
             // console.log('result:', this.result)
 
+            await provider.api.disconnect()
+
             // hide success alert after 20s
             setTimeout(() => {
               this.result = null
@@ -220,6 +234,35 @@ export default {
       // eslint-disable-next-line no-console
       // console.log(index, event)
       this.arguments[index] = event
+    },
+    async getEVMAddress(accountId) {
+      // eslint-disable-next-line no-console
+      console.log(accountId)
+      // eslint-disable-next-line no-console
+      console.log('getEVMAddress')
+      const client = this.$apolloProvider.defaultClient
+      const query = gql`
+        query account {
+          account(where: {account_id: {_eq: "${accountId}"}}) {
+            evm_address
+          }
+        }
+      `
+      const response = await client.query({ query })
+      // eslint-disable-next-line no-console
+      console.log(response)
+      if (response.data.account.length > 0) {
+        const evmAddress = response.data.account[0].evm_address
+        if (evmAddress) {
+          // eslint-disable-next-line no-console
+          console.log(evmAddress)
+          return evmAddress
+        } else {
+          return ''
+        }
+      } else {
+        return ''
+      }
     },
   },
 }

@@ -43,7 +43,7 @@
                   <tbody>
                     <tr>
                       <td>{{ $t('details.account.account_id') }}</td>
-                      <td class="text-right">
+                      <td>
                         <Identicon
                           :key="parsedAccount.accountId"
                           :address="parsedAccount.accountId"
@@ -52,9 +52,19 @@
                         <span>{{ parsedAccount.accountId }}</span>
                       </td>
                     </tr>
+                    <tr v-if="parsedAccount.evmAddress">
+                      <td>{{ $t('details.account.evm_address') }}</td>
+                      <td>
+                        <eth-identicon
+                          :address="parsedAccount.evmAddress"
+                          :size="20"
+                        />
+                        <span>{{ parsedAccount.evmAddress }}</span>
+                      </td>
+                    </tr>
                     <tr v-if="parsedAccount.identity.display">
                       <td>Identity::display</td>
-                      <td class="text-right">
+                      <td>
                         <span
                           v-if="
                             parsedAccount.identity.display &&
@@ -71,7 +81,7 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.email">
                       <td>Identity::email</td>
-                      <td class="text-right">
+                      <td>
                         <a
                           :href="`mailto:${parsedAccount.identity.email}`"
                           target="_blank"
@@ -81,19 +91,19 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.legal">
                       <td>Identity::legal</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.identity.legal }}
                       </td>
                     </tr>
                     <tr v-if="parsedAccount.identity.riot">
                       <td>Identity::riot</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.identity.riot }}
                       </td>
                     </tr>
                     <tr v-if="parsedAccount.identity.web">
                       <td>Identity::web</td>
-                      <td class="text-right">
+                      <td>
                         <a :href="parsedAccount.identity.web" target="_blank">{{
                           parsedAccount.identity.web
                         }}</a>
@@ -101,7 +111,7 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.twitter">
                       <td>Identity::twitter</td>
-                      <td class="text-right">
+                      <td>
                         <a
                           :href="`https://twitter.com/${parsedAccount.identity.twitter.substr(
                             1,
@@ -114,7 +124,7 @@
                     </tr>
                     <tr v-if="parsedAccount.identity.judgements">
                       <td>Identity::judgements</td>
-                      <td class="text-right">
+                      <td>
                         <span
                           v-if="parsedAccount.identity.judgements.length > 0"
                         >
@@ -125,19 +135,19 @@
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.account_nonce') }}</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.nonce }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.total_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.freeBalance) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.available_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{
                           formatAmount(parsedAccount.balances.availableBalance)
                         }}
@@ -145,13 +155,13 @@
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.locked_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.lockedBalance) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.reserved_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{
                           formatAmount(parsedAccount.balances.reservedBalance)
                         }}
@@ -159,25 +169,25 @@
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.is_vesting') }}</td>
-                      <td class="text-right">
+                      <td>
                         {{ parsedAccount.balances.isVesting ? `Yes` : `No` }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.vested_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.vestedBalance) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.vesting_total') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.vestingTotal) }}
                       </td>
                     </tr>
                     <tr>
                       <td>{{ $t('details.account.voting_balance') }}</td>
-                      <td class="text-right amount">
+                      <td class="amount">
                         {{ formatAmount(parsedAccount.balances.votingBalance) }}
                       </td>
                     </tr>
@@ -187,21 +197,33 @@
               <b-tabs class="mt-4" content-class="mt-4" fill>
                 <b-tab active>
                   <template #title>
+                    <h5>Transfers</h5>
+                  </template>
+                  <AccountTransfers :account-id="accountId" />
+                </b-tab>
+                <b-tab>
+                  <template #title>
+                    <h5>Tokens</h5>
+                  </template>
+                  <account-token-balances :account-id="accountId" />
+                </b-tab>
+                <b-tab>
+                  <template #title>
                     <h5>Activity</h5>
                   </template>
                   <Activities :account-id="accountId" />
                 </b-tab>
                 <b-tab>
                   <template #title>
-                    <h5>Sent transfers</h5>
+                    <h5>Rewards</h5>
                   </template>
-                  <SentTransfers :account-id="accountId" />
+                  <staking-rewards :account-id="accountId" />
                 </b-tab>
                 <b-tab>
                   <template #title>
-                    <h5>Received transfers</h5>
+                    <h5>Slashes</h5>
                   </template>
-                  <ReceivedTransfers :account-id="accountId" />
+                  <staking-slashes :account-id="accountId" />
                 </b-tab>
               </b-tabs>
             </div>
@@ -216,20 +238,25 @@ import gql from 'graphql-tag'
 import Identicon from '@/components/Identicon.vue'
 import Loading from '@/components/Loading.vue'
 import Activities from '@/components/Activities.vue'
-import SentTransfers from '@/components/SentTransfers.vue'
-import ReceivedTransfers from '@/components/ReceivedTransfers.vue'
+import AccountTransfers from '@/components/AccountTransfers.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
+import StakingRewards from '@/components/StakingRewards.vue'
+import StakingSlashes from '@/components/StakingSlashes.vue'
+import AccountTokenBalances from '@/components/AccountTokenBalances.vue'
 
 export default {
   components: {
     Identicon,
     Loading,
     Activities,
-    SentTransfers,
-    ReceivedTransfers,
+    AccountTransfers,
+    StakingRewards,
+    StakingSlashes,
+    AccountTokenBalances,
   },
   mixins: [commonMixin],
+  middleware: ['account'],
   data() {
     return {
       network,
@@ -274,6 +301,7 @@ export default {
           subscription account($account_id: String!) {
             account(where: { account_id: { _eq: $account_id } }) {
               account_id
+              evm_address
               balances
               available_balance
               free_balance
@@ -294,6 +322,7 @@ export default {
           if (data.account[0]) {
             this.parsedAccount = {
               accountId: data.account[0].account_id,
+              evmAddress: data.account[0].evm_address,
               availableBalance: data.account[0].available_balance,
               freeBalance: data.account[0].free_balance,
               lockedBalance: data.account[0].locked_balance,

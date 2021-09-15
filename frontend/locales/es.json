@@ -36,11 +36,23 @@
       "progress": "Progreso"
     },
     "transfers": {
-      "search": "Buscar transferencia por número de bloque, hash o dirección de procedencia",
+      "search": "Buscar transferencia por número de bloque, hash, dirección de destino o dirección de procedencia",
       "no_transfer_found": "No se han encontrado transferencias"
     },
+    "staking_rewards": {
+      "search": "Buscar recompensa por número de bloque",
+      "no_reward_found": "No se han encontrado recompensas"
+    },
+    "staking_slashes": {
+      "search": "Buscar slash por número de bloque",
+      "no_slash_found": "No se han encontrado slashes"
+    },  
     "loading": {
       "loading_data": "Cargando datos, por favor sea paciente..."
+    },
+    "account_token_balances": {
+      "search": "Buscar token por nombre de token o dirección de contrato",
+      "no_token_found": "No se han encontrado tokens"
     }
   },
   "layout": {
@@ -83,7 +95,7 @@
     },
     "accounts": {
       "active_accounts": "Cuentas activas",
-      "search_placeholder": "Buscar cuenta por dirección o identidad",
+      "search_placeholder": "Buscar cuenta por dirección, dirección EVM o identidad",
       "sort": "Ordenar",
       "account_details": "Detalles de la cuenta",
       "rank": "Rank",
@@ -195,6 +207,10 @@
     },
     "verifyContract": {
       "title": "Verifica y publica el código fuente de tu contrato"
+    },
+    "tokens": {
+      "title": "Token tracker",
+      "search_placeholder": "Buscar por dirección de contrato o número de bloque"
     }
   },
   "details": {
@@ -202,6 +218,7 @@
       "account": "Cuenta",
       "free_balance": "Fondo libre",
       "account_id": "Dirección",
+      "evm_address": "Dirección EVM",
       "account_nonce": "Nonce",
       "total_balance": "Fondo Total",
       "available_balance": "Fondo Disponible",
@@ -233,11 +250,11 @@
       "extrinsics": "Extrinsics",
       "section": "Sección",
       "method": "Método",
+      "hash": "Hash",
+      "signer": "Firmante",
+      "args": "Argumentos",
       "phase": "Fase",
       "data": "Datos",
-      "signer": "Firmante",
-      "hash": "Hash",
-      "args": "Argumentos",
       "timestamp": "Fecha y hora",
       "genesis": "🎁 Bloque génesis",
       "success": "Resultado",
@@ -245,23 +262,41 @@
       "index": "Índice",
       "engine": "Motor",
       "total_issuance": "Emisión total"
+    },
+    "extrinsic": {
+      "extrinsic_details": "Detalles del extrinsic"
+    },
+    "contract": {
+      "signer": "Firmante",
+      "value": "Valor",
+      "gas_limit": "Límite de gas",
+      "storage_limit": "Límite de almacenamiento",
+      "bytecode": "Bytecode",
+      "verified": "¿Verificado?",
+      "abi": "ABI",
+      "compiler_version": "Versión del compilador",
+      "optimization": "¿Optimización activada?",
+      "runs": "Runs (optimización)",
+      "target": "EVM target (optimización)",
+      "license": "Licencia open source"
+    },
+    "token": {
+      "created": "Creado por",
+      "value": "Valor",
+      "gas_limit": "Límite de gas",
+      "storage_limit": "Límite de almacenamiento",
+      "bytecode": "Bytecode",
+      "verified": "¿Verificado?",
+      "abi": "ABI",
+      "compiler_version": "Versión del compilador",
+      "optimization": "¿Optimización activada?",
+      "runs": "Runs (optimización)",
+      "target": "EVM target (optimización)",
+      "license": "Licencia open source",
+      "token_name": "Nombre del token",
+      "token_symbol": "Símbolo",
+      "token_decimals": "Decimales",
+      "token_total_supply": "Suministro total"
     }
-  },
-  "extrinsic": {
-    "extrinsic_details": "Detalles del extrinsic"
-  },
-  "contract": {
-    "signer": "Firmante",
-    "value": "Valor",
-    "gas_limit": "Límite de gas",
-    "storage_limit": "Límite de almacenamiento",
-    "bytecode": "Bytecode",
-    "verified": "¿Verificado?",
-    "abi": "ABI",
-    "compiler_version": "Versión del compilador",
-    "optimization": "¿Optimización activada?",
-    "runs": "Runs (optimización)",
-    "target": "EVM target (optimización)",
-    "license": "Licencia open source"
   }
 }

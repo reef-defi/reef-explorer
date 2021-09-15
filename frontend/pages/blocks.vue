@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="main py-5">
+      <b-container class="page-blocks main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>
@@ -12,7 +12,7 @@
             </h1>
           </b-col>
         </b-row>
-        <div class="last-blocks">
+        <div class="blocks">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
@@ -35,6 +35,13 @@
                     <nuxt-link :to="`/block/${data.item.block_hash}`">
                       #{{ formatNumber(data.item.block_number) }}
                     </nuxt-link>
+                  </p>
+                </template>
+                <template #cell(timestamp)="data">
+                  <p class="mb-0">
+                    <font-awesome-icon :icon="['far', 'clock']" />
+                    {{ fromNow(data.item.timestamp) }}
+                    ({{ formatTimestamp(data.item.timestamp) }})
                   </p>
                 </template>
                 <template #cell(finalized)="data">
@@ -133,6 +140,11 @@ export default {
           sortable: true,
         },
         {
+          key: 'timestamp',
+          label: 'Age',
+          sortable: true,
+        },
+        {
           key: 'finalized',
           label: 'Finalized',
           sortable: true,
@@ -181,6 +193,7 @@ export default {
               block_hash
               total_extrinsics
               total_events
+              timestamp
             }
           }
         `,

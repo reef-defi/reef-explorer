@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="main py-5">
+      <b-container class="page-transfers main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>
@@ -12,7 +12,7 @@
             </h1>
           </b-col>
         </b-row>
-        <div class="last-transfers">
+        <div class="transfers">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
@@ -37,6 +37,13 @@
                     >
                       #{{ formatNumber(data.item.block_number) }}
                     </nuxt-link>
+                  </p>
+                </template>
+                <template #cell(timestamp)="data">
+                  <p class="mb-0">
+                    <font-awesome-icon :icon="['far', 'clock']" />
+                    {{ fromNow(data.item.timestamp) }}
+                    ({{ formatTimestamp(data.item.timestamp) }})
                   </p>
                 </template>
                 <template #cell(hash)="data">
@@ -73,7 +80,10 @@
                   </div>
                   <div v-else>
                     <p class="mb-0">
-                      {{ shortAddress(data.item.to || '') }}
+                      <eth-identicon :address="data.item.to" :size="20" />
+                      <nuxt-link :to="`/account/${data.item.to}`">
+                        {{ shortHash(data.item.to) }}
+                      </nuxt-link>
                     </p>
                   </div>
                 </template>
@@ -186,6 +196,11 @@ export default {
           sortable: true,
         },
         {
+          key: 'timestamp',
+          label: 'Age',
+          sortable: true,
+        },
+        {
           key: 'from',
           label: 'From',
           sortable: true,
@@ -254,6 +269,7 @@ export default {
               hash
               args
               success
+              timestamp
             }
           }
         `,
@@ -282,6 +298,7 @@ export default {
                   ? JSON.parse(transfer.args)[2]
                   : JSON.parse(transfer.args)[1],
               success: transfer.success,
+              timestamp: transfer.timestamp,
             }
           })
           this.loading = false

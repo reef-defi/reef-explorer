@@ -1,18 +1,18 @@
 <template>
   <div>
     <section>
-      <b-container class="page-activity main py-5">
+      <b-container class="page-tokens main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>
-              {{ $t('pages.activity.title') }}
+              {{ $t('pages.tokens.title') }}
               <small v-if="totalRows !== 1" class="ml-1" style="font-size: 1rem"
                 >[{{ formatNumber(totalRows) }}]</small
               >
             </h1>
           </b-col>
         </b-row>
-        <div class="activity">
+        <div class="tokens">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
@@ -24,56 +24,44 @@
                   id="filterInput"
                   v-model="filter"
                   type="search"
-                  :placeholder="$t('pages.activity.search_placeholder')"
+                  :placeholder="$t('pages.tokens.search_placeholder')"
                 />
               </b-col>
             </b-row>
             <div class="table-responsive">
-              <b-table striped hover :fields="fields" :items="extrinsics">
-                <template #cell(block_number)="data">
+              <b-table striped hover :fields="fields" :items="tokens">
+                <template #cell(token_name)="data">
                   <p class="mb-0">
-                    <nuxt-link
-                      :to="`/extrinsic/${data.item.block_number}/${data.item.extrinsic_index}`"
-                    >
-                      {{ data.item.block_number }}-{{
-                        data.item.extrinsic_index
-                      }}
+                    <nuxt-link :to="`/token/${data.item.contract_id}`">
+                      {{ data.item.name }}
                     </nuxt-link>
                   </p>
                 </template>
-                <template #cell(signer)="data">
+                <template #cell(contract_id)="data">
                   <p class="mb-0">
-                    <Identicon
-                      :key="data.item.signer"
-                      :address="data.item.signer"
-                      :size="20"
+                    <eth-identicon
+                      :address="data.item.contract_id"
+                      :size="16"
                     />
-                    <nuxt-link :to="`/account/${data.item.signer}`">
-                      {{ shortAddress(data.item.signer) }}
+                    <nuxt-link :to="`/contract/${data.item.contract_id}`">
+                      {{ data.item.contract_id }}
                     </nuxt-link>
                   </p>
                 </template>
-                <template #cell(hash)="data">
-                  <p class="mb-0">{{ shortHash(data.item.hash) }}</p>
-                </template>
-                <template #cell(section)="data">
+                <template #cell(token_total_supply)="data">
                   <p class="mb-0">
-                    {{ data.item.section }} ➡
-                    {{ data.item.method }}
+                    {{
+                      formatTokenAmount(
+                        data.item.token_total_supply,
+                        data.item.token_decimals,
+                        data.item.token_symbol
+                      )
+                    }}
                   </p>
                 </template>
-                <template #cell(success)="data">
+                <template #cell(holders_aggregate)="data">
                   <p class="mb-0">
-                    <font-awesome-icon
-                      v-if="data.item.success"
-                      icon="check"
-                      class="text-success"
-                    />
-                    <font-awesome-icon
-                      v-else
-                      icon="times"
-                      class="text-danger"
-                    />
+                    {{ data.item.holders_aggregate.aggregate.count }}
                   </p>
                 </template>
               </b-table>
@@ -144,8 +132,8 @@ export default {
   data() {
     return {
       loading: true,
-      filter: null,
-      extrinsics: [],
+      filter: '',
+      tokens: [],
       paginationOptions,
       perPage: localStorage.paginationOptions
         ? parseInt(localStorage.paginationOptions)
@@ -154,28 +142,33 @@ export default {
       totalRows: 1,
       fields: [
         {
-          key: 'block_number',
-          label: 'Extrinsic',
+          key: 'token_name',
+          label: 'Name',
           sortable: true,
         },
         {
-          key: 'signer',
-          label: 'Signer',
+          key: 'contract_id',
+          label: 'Contract address',
           sortable: true,
         },
         {
-          key: 'hash',
-          label: 'Hash',
+          key: 'token_symbol',
+          label: 'Symbol',
           sortable: true,
         },
         {
-          key: 'section',
-          label: 'Extrinsic',
+          key: 'token_decimals',
+          label: 'Decimals',
           sortable: true,
         },
         {
-          key: 'success',
-          label: 'Success',
+          key: 'token_total_supply',
+          label: 'TotalSupply',
+          sortable: true,
+        },
+        {
+          key: 'holders_aggregate',
+          label: 'Holders',
           sortable: true,
         },
       ],
@@ -189,94 +182,80 @@ export default {
   },
   apollo: {
     $subscribe: {
-      extrinsic: {
+      tokens: {
         query: gql`
-          subscription extrinsics(
-            $blockNumber: bigint
-            $extrinsicHash: String
-            $signer: String
+          subscription contract(
+            $blockHeight: bigint
+            $contractId: String
             $perPage: Int!
             $offset: Int!
           ) {
-            extrinsic(
+            contract(
               limit: $perPage
               offset: $offset
               where: {
-                block_number: { _eq: $blockNumber }
-                hash: { _eq: $extrinsicHash }
-                is_signed: { _eq: true }
-                signer: { _eq: $signer }
+                block_height: { _eq: $blockHeight }
+                contract_id: { _eq: $contractId }
+                is_erc20: { _eq: true }
               }
-              order_by: { block_number: desc, extrinsic_index: desc }
+              order_by: { block_height: desc }
             ) {
-              block_number
-              extrinsic_index
-              is_signed
+              contract_id
+              name
               signer
-              section
-              method
-              hash
-              success
+              block_height
+              token_name
+              token_symbol
+              token_decimals
+              token_total_supply
+              timestamp
+              holders_aggregate {
+                aggregate {
+                  count(columns: holder_account_id)
+                }
+              }
             }
           }
         `,
         variables() {
           return {
-            blockNumber: this.isBlockNumber(this.filter)
+            blockHeight: this.isBlockNumber(this.filter)
               ? parseInt(this.filter)
               : undefined,
-            extrinsicHash: this.isHash(this.filter) ? this.filter : undefined,
-            signer: this.isAddress(this.filter) ? this.filter : undefined,
+            contractId: this.isContractId(this.filter)
+              ? this.filter
+              : undefined,
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
         },
         result({ data }) {
-          this.extrinsics = data.extrinsic
+          this.tokens = data.contract
+          // eslint-disable-next-line no-console
+          console.log(this.tokens)
+          if (this.filter) {
+            this.totalRows = this.tokens.length
+          }
           this.loading = false
         },
       },
-      count: {
+      totaltokens: {
         query: gql`
-          subscription count(
-            $blockNumber: bigint
-            $extrinsicHash: String
-            $signer: String
-          ) {
-            extrinsic_aggregate(
-              where: {
-                block_number: { _eq: $blockNumber }
-                hash: { _eq: $extrinsicHash }
-                is_signed: { _eq: true }
-                signer: { _eq: $signer }
-              }
-            ) {
+          query contract_aggregate {
+            contract_aggregate(where: { is_erc20: { _eq: true } }) {
               aggregate {
                 count
               }
             }
           }
         `,
-        variables() {
-          return {
-            blockNumber: this.filter ? parseInt(this.filter) : undefined,
-            extrinsicHash: this.isHash(this.filter) ? this.filter : undefined,
-            signer: this.isAddress(this.filter) ? this.filter : undefined,
-          }
-        },
         result({ data }) {
-          this.totalRows = data.extrinsic_aggregate.aggregate.count
+          if (!this.filter) {
+            this.totalRows = data.contract_aggregate.aggregate.count
+          }
         },
       },
     },
   },
 }
 </script>
-
-<style>
-.last-blocks .identicon {
-  display: inline-block;
-  margin: 0 0.2rem 0 0;
-  cursor: copy;
-}
-</style>

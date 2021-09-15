@@ -7,27 +7,26 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { Pool } = require('pg');
 const axios = require('axios');
-
-const postgresConnParams = {
-  user: process.env.POSTGRES_USER || 'reef',
-  host: process.env.POSTGRES_HOST || 'postgres',
-  database: process.env.POSTGRES_DATABASE || 'reef',
-  password: process.env.POSTGRES_PASSWORD || 'reef',
-  port: process.env.POSTGRES_PORT || 5432,
-};
-
-// Recaptcha
-const secret = process.env.RECAPTCHA_SECRET || '';
-
-// Http port
-const port = process.env.PORT || 8000;
+const { options } = require('@reef-defi/api');
+const { Provider } = require('@reef-defi/evm-provider');
+const { WsProvider } = require('@polkadot/api');
+const { ethers } = require('ethers');
+const config = require('./api.config');
 
 // Connnect to db
 const getPool = async () => {
-  const pool = new Pool(postgresConnParams);
+  const pool = new Pool(config.postgresConnParams);
   await pool.connect();
   return pool;
 }
+
+const parametrizedDbQuery = async (pool, query, data) => {
+  try {
+    return await pool.query(query, data);
+  } catch (error) {
+    return false;
+  }
+};
 
 const app = express();
 
@@ -64,11 +63,11 @@ const preprocessBytecode = (bytecode) => {
 };
 
 // get not verified contracts with 100% matching bytecde (excluding metadata)
-const getOnChainContractsByBytecode = async(client, bytecode) => {
+const getOnChainContractsByBytecode = async(pool, bytecode) => {
   const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
   const preprocessedBytecode = preprocessBytecode(bytecode);
   const data = [`0x${preprocessedBytecode}%`];
-  const res = await parametrizedDbQuery(client, query, data);
+  const res = await parametrizedDbQuery(pool, query, data);
   if (res) {
     if (res.rows.length > 0) {
       return res.rows.map(({ contract_id }) => contract_id);
@@ -88,7 +87,7 @@ app.post('/api/verificator/request', async (req, res) => {
       // console.log(req);
       const token = req.body.token;
       const response = await fetch(
-        `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`
+        `https://www.google.com/recaptcha/api/siteverify?secret=${config.recaptchaSecret}&response=${token}`
       );
       const success = JSON.parse(await response.text()).success;
       if (success) {     
@@ -230,7 +229,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
         name,
         source,
         bytecode,
-        arguments,
+        arguments:args,
         abi,
         compilerVersion,
         optimization,
@@ -241,7 +240,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
       const pool = await getPool();
       const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode LIKE $2;";
       const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
-      const data = [address, `0x${preprocessedRequestBytecode}%`];
+      const data = [address, `0x${preprocessedRequestContractBytecode}%`];
       const dbres = await pool.query(query, data);
       if (dbres) {
         if (dbres.rows.length === 1) {
@@ -253,6 +252,14 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               message: 'Error, contract already verified'
             });
           } else {
+            // connect to provider
+            const provider = new Provider(
+              options({
+                provider: new WsProvider(config.nodeWs),
+              })
+            )
+            await provider.api.isReady
+
             const isVerified = true;
             // find out default target
             if (target === 'default') {
@@ -288,9 +295,50 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
               }
             }
             // verify all not verified contracts with the same bytecode
-            const matchedContracts = await getOnChainContractsByBytecode(client, onChainContractBytecode);
+            const matchedContracts = await getOnChainContractsByBytecode(pool, onChainContractBytecode);
             for (const matchedContractId of matchedContracts) {
-              logger.info({ request: id }, `Updating matched contract ${matchedContractId} data in db`);
+              //
+              // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
+              //
+              // function name() public view returns (string)
+              // function symbol() public view returns (string)
+              // function decimals() public view returns (uint8)
+              // function totalSupply() public view returns (uint256)
+              // function balanceOf(address _owner) public view returns (uint256 balance)
+              // function transfer(address _to, uint256 _value) public returns (bool success)
+              // function transferFrom(address _from, address _to, uint256 _value) public returns (bool success)
+              // function approve(address _spender, uint256 _value) public returns (bool success)
+              // function allowance(address _owner, address _spender) public view returns (uint256 remaining)
+              //
+              let isErc20 = false;
+              let tokenName = null;
+              let tokenSymbol = null;
+              let tokenDecimals = null;
+              let tokenTotalSupply = null;
+              const contract = new ethers.Contract(
+                matchedContractId,
+                abi,
+                provider
+              )
+
+              if (
+                typeof contract['name'] === 'function'
+                && typeof contract['symbol'] === 'function'
+                && typeof contract['decimals'] === 'function'
+                && typeof contract['totalSupply'] === 'function'
+                && typeof contract['balanceOf'] === 'function'
+                && typeof contract['transfer'] === 'function'
+                && typeof contract['transferFrom'] === 'function'
+                && typeof contract['approve'] === 'function'
+                && typeof contract['allowance'] === 'function'
+              ) {
+                isErc20 = true;
+                tokenName = await contract['name()']();
+                tokenSymbol = await contract['symbol()']();
+                tokenDecimals = await contract['decimals()']();
+                tokenTotalSupply = await contract['totalSupply()']();
+              }
+              
               const query = `UPDATE contract SET
                 name = $1,
                 verified = $2,
@@ -301,51 +349,35 @@ app.post('/api/verificator/deployed-bytecode-request', async (req, res) => {
                 runs = $7,
                 target = $8,
                 abi = $9,
-                license = $10
-                WHERE contract_id = $11;
+                license = $10,
+                is_erc20 = $11,
+                token_name = $12,
+                token_symbol = $13,
+                token_decimals = $14,
+                token_total_supply = $15
+                WHERE contract_id = $16;
               `;
               const data = [
                 name,
                 isVerified,
                 source,
                 compilerVersion,
-                arguments,
+                args,
                 optimization,
                 runs,
                 target,
-                JSON.stringify(contractAbi),
+                abi,
                 license,
+                isErc20,
+                tokenName ? tokenName.toString() : null,
+                tokenSymbol ? tokenSymbol.toString() : null,
+                tokenDecimals ? tokenDecimals.toString(): null,
+                tokenTotalSupply ? tokenTotalSupply.toString() : null,
                 matchedContractId
               ];
-              await parametrizedDbQuery(client, query, data);
+              await parametrizedDbQuery(pool, query, data);
             }
-            const query = `UPDATE contract
-              SET
-                name = $1,
-                verified = $2,
-                source = $3,
-                compiler_version = $4,
-                optimization = $5,
-                runs = $6,
-                target = $7,
-                abi = $8,
-                license = $9,
-                arguments = $10
-              WHERE contract_id = $11;
-            `;
-            const data = [
-              name,
-              isVerified,
-              source,
-              compilerVersion,
-              optimization,
-              runs,
-              target,
-              abi,
-              license,
-              arguments,
-              address,
-            ];
+            await provider.api.disconnect();
             await pool.query(query, data);
             res.send({
               status: true,
@@ -385,6 +417,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
       ];
       const query = `
         SELECT
+          id,
           contract_id
           status
           error_type
@@ -395,6 +428,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
       const dbres = await pool.query(query, data);
       if (dbres.rows.length > 0) {
         if (res.rows[0].status) {
+          const id = dbres.rows[0].id;
           const requestStatus = dbres.rows[0].status;
           const contractId = dbres.rows[0].contract_id;
           const errorType = dbres.rows[0].error_type;
@@ -403,7 +437,7 @@ app.post('/api/verificator/request-status', async (req, res) => {
             status: true,
             message: 'Request found',
             data: {
-              id: requestId,
+              id,
               address: contractId,
               status: requestStatus,
               error_type: errorType,
@@ -493,10 +527,156 @@ app.get('/api/staking/rewards', async (req, res) => {
   }
 });
 
+app.post('/api/verificator/request-status', async (req, res) => {
+  if(!req.params.id) {
+    res.send({
+      status: false,
+      message: 'Input error'
+    });
+  } else {
+    try {
+      const requestId = req.params.id;
+      const data = [
+        requestId
+      ];
+      const query = `
+        SELECT
+          contract_id
+          status
+          error_type
+          error_message
+        FROM contract_verification_request
+        WHERE id = $1
+      ;`;
+      const dbres = await pool.query(query, data);
+      if (dbres.rows.length > 0) {
+        if (res.rows[0].status) {
+          const requestStatus = dbres.rows[0].status;
+          const contractId = dbres.rows[0].contract_id;
+          const errorType = dbres.rows[0].error_type;
+          const errorMessage = dbres.rows[0].error_message;
+          res.send({
+            status: true,
+            message: 'Request found',
+            data: {
+              id: JSON.stringify(requestId),
+              address: contractId,
+              status: requestStatus,
+              error_type: errorType,
+              error_message: errorMessage,
+            }
+          });
+        } else {
+          res.send({
+            status: false,
+            message: 'Request not found'
+          });
+        }
+      } else {
+        res.send({
+          status: false,
+          message: 'Request not found'
+        });
+      }
+    } catch (error) {
+      res.send({
+        status: false,
+        message: 'Error'
+      });
+    }
+  }
+});
+
+app.get('/api/price/reef', async (req, res) => {
+  const denom = 'reef-finance';
+  await axios
+    .get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${denom}&vs_currencies=usd&include_24hr_change=true`
+    )
+    .then((response) => {
+      res.send({
+        status: true,
+        message: 'Success',
+        data: {
+          usd: response.data[denom].usd,
+          usd_24h_change: response.data[denom].usd_24h_change,
+        }
+      });
+    })
+    .catch((error) => {
+      res.send({
+        status: false,
+        message: 'Error'
+      });
+    })
+});
+
+
+// Accepts account id or EVM address
+app.post('/api/account/tokens', async (req, res) => {
+  if(!req.body.account) {
+    res.send({
+      status: false,
+      message: 'Input error, account parameter should be a valid Reef account id or EVM address'
+    });
+  } else {
+    try {
+      const pool = await getPool();
+      const account = req.body.account;
+      const data = [
+        account
+      ];
+      const query = `
+        SELECT
+          th.contract_id,
+          holder_account_id,
+          holder_evm_address,
+          balance,
+          token_decimals,
+          token_symbol
+        FROM
+          token_holder AS th,
+          contract AS c
+        WHERE
+          (holder_account_id = $1 OR holder_evm_address = $1)
+          AND th.contract_id = c.contract_id
+      ;`;
+      const dbres = await pool.query(query, data);
+      if (dbres.rows.length > 0) {
+        const balances = dbres.rows.map((token) => ({
+          contract_id: token.contract_id,
+          balance: token.balance,
+          decimals: token.token_decimals,
+          symbol: token.token_symbol,
+        }));
+        res.send({
+          status: true,
+          message: 'Request found',
+          data: {
+            account_id: dbres.rows[0].holder_account_id,
+            evm_address: dbres.rows[0].holder_evm_address,
+            balances,
+          }
+        });
+      } else {
+        res.send({
+          status: false,
+          message: 'Request not found'
+        });
+      }
+    } catch (error) {
+      res.send({
+        status: false,
+        message: 'Error'
+      });
+    }
+  }
+});
+
 // Make uploads directory static
 app.use(express.static('uploads'));
 
 // Start app
-app.listen(port, () => 
-  console.log(`Contract verificator API is listening on port ${port}.`)
+app.listen(config.httpPort, () => 
+  console.log(`Contract verificator API is listening on port ${config.httpPort}.`)
 );

@@ -36,11 +36,23 @@
       "progress": "Progress"
     },
     "transfers": {
-      "search": "Search transfer by block number, hash or source address",
+      "search": "Search transfer by block number, hash, source or destination address",
       "no_transfer_found": "No transfer found"
+    },
+    "staking_rewards": {
+      "search": "Search reward by block number",
+      "no_reward_found": "No reward found"
+    },
+    "staking_slashes": {
+      "search": "Search slash by block number",
+      "no_slash_found": "No slash found"
     },
     "loading": {
       "loading_data": "Loading data, please be patient..."
+    },
+    "account_token_balances": {
+      "search": "Search token by token name or contract address",
+      "no_token_found": "No tokens found"
     }
   },
   "layout": {
@@ -83,7 +95,7 @@
     },
     "accounts": {
       "active_accounts": "Active accounts",
-      "search_placeholder": "Search account by address or identity",
+      "search_placeholder": "Search account by address, EVM address or identity",
       "sort": "Sort",
       "account_details": "Account details",
       "rank": "Rank",
@@ -195,6 +207,10 @@
     },
     "verifyContract": {
       "title": "Verify & publish contract source code"
+    },
+    "tokens": {
+      "title": "Token tracker",
+      "search_placeholder": "Search by contract address or block number"
     }
   },
   "details": {
@@ -202,6 +218,7 @@
       "account": "Account",
       "free_balance": "Free Balance",
       "account_id": "Account ID",
+      "evm_address": "EVM address",
       "account_nonce": "Account Nonce",
       "total_balance": "Total Balance",
       "available_balance": "Available Balance",
@@ -238,7 +255,6 @@
       "args": "Arguments",
       "phase": "Phase",
       "data": "Data",
-      "account_details": "Account details",
       "timestamp": "Timestamp",
       "genesis": "🎁 Genesis block",
       "success": "Success",
@@ -263,6 +279,24 @@
       "runs": "Runs (optimization)",
       "target": "EVM target (optimization)",
       "license": "Open source license"
+    },
+    "token": {
+      "created": "Created by",
+      "value": "Value",
+      "gas_limit": "Gas limit",
+      "storage_limit": "Storage limit",
+      "bytecode": "Bytecode",
+      "verified": "Verified",
+      "abi": "ABI",
+      "compiler_version": "Compiler version",
+      "optimization": "Optimization enabled",
+      "runs": "Runs (optimization)",
+      "target": "EVM target (optimization)",
+      "license": "Open source license",
+      "token_name": "Token name",
+      "token_symbol": "Token symbol",
+      "token_decimals": "Decimals",
+      "token_total_supply": "Total supply"
     }
   }
 }

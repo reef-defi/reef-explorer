@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="main py-5">
+      <b-container class="page-verify-contract main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>

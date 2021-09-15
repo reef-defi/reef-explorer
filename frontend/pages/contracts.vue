@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="main py-5">
+      <b-container class="page-contracts main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>
@@ -12,7 +12,7 @@
             </h1>
           </b-col>
         </b-row>
-        <div class="last-blocks">
+        <div class="contracts">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
@@ -157,11 +157,6 @@ export default {
       totalRows: 1,
       fields: [
         {
-          key: 'block_height',
-          label: 'Block',
-          sortable: true,
-        },
-        {
           key: 'name',
           label: 'Name',
           sortable: true,
@@ -169,6 +164,11 @@ export default {
         {
           key: 'contract_id',
           label: 'Contract address',
+          sortable: true,
+        },
+        {
+          key: 'block_height',
+          label: 'Created at block',
           sortable: true,
         },
         {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="main py-5">
+      <b-container class="page-extrinsics main py-5">
         <b-row class="mb-2">
           <b-col cols="12">
             <h1>
@@ -12,7 +12,7 @@
             </h1>
           </b-col>
         </b-row>
-        <div class="last-extrinsics">
+        <div class="extrinsics">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
@@ -41,8 +41,19 @@
                     </nuxt-link>
                   </p>
                 </template>
+                <template #cell(timestamp)="data">
+                  <p class="mb-0">
+                    <font-awesome-icon :icon="['far', 'clock']" />
+                    {{ fromNow(data.item.timestamp) }}
+                    ({{ formatTimestamp(data.item.timestamp) }})
+                  </p>
+                </template>
                 <template #cell(hash)="data">
-                  <p class="mb-0">{{ shortHash(data.item.hash) }}</p>
+                  <p class="mb-0">
+                    <nuxt-link :to="`/extrinsic/${data.item.hash}`">
+                      {{ shortHash(data.item.hash) }}
+                    </nuxt-link>
+                  </p>
                 </template>
                 <template #cell(section)="data">
                   <p class="mb-0">
@@ -142,18 +153,23 @@ export default {
       totalRows: 1,
       fields: [
         {
-          key: 'block_number',
-          label: 'Extrinsic',
-          sortable: true,
-        },
-        {
           key: 'hash',
           label: 'Hash',
           sortable: true,
         },
         {
-          key: 'section',
+          key: 'block_number',
           label: 'Extrinsic',
+          sortable: true,
+        },
+        {
+          key: 'timestamp',
+          label: 'Age',
+          sortable: true,
+        },
+        {
+          key: 'section',
+          label: 'Section/Method',
           sortable: true,
         },
         {
@@ -193,6 +209,7 @@ export default {
               method
               hash
               success
+              timestamp
             }
           }
         `,

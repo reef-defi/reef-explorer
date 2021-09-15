@@ -6,7 +6,7 @@
           <Loading />
         </div>
         <template v-else-if="!contract">
-          <h1 class="text-center">Contract not found!</h1>
+          <h1 class="text-center">Token not found!</h1>
         </template>
         <template v-else>
           <div class="card mb-4">
@@ -19,30 +19,53 @@
                 <span v-else>
                   {{ contractId }}
                 </span>
-                <b-badge
-                  v-if="contract.is_erc20"
-                  :to="`/token/${contract.contract_id}`"
-                  class="ml-2"
-                  variant="info"
-                >
-                  ERC-20 token
-                </b-badge>
+                <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
               </h4>
               <b-tabs content-class="mt-3">
-                <b-tab title="General" active>
+                <b-tab title="Token info" active>
                   <div class="table-responsive pb-4">
                     <table class="table table-striped">
                       <tbody>
+                        <tr v-if="contract.token_name">
+                          <td>{{ $t('details.token.token_name') }}</td>
+                          <td>
+                            {{ contract.token_name }}
+                          </td>
+                        </tr>
+                        <tr v-if="contract.token_symbol">
+                          <td>{{ $t('details.token.token_symbol') }}</td>
+                          <td>
+                            {{ contract.token_symbol }}
+                          </td>
+                        </tr>
+                        <tr v-if="contract.token_decimals">
+                          <td>{{ $t('details.token.token_decimals') }}</td>
+                          <td>
+                            {{ contract.token_decimals }}
+                          </td>
+                        </tr>
+                        <tr v-if="contract.token_total_supply">
+                          <td>{{ $t('details.token.token_total_supply') }}</td>
+                          <td class="amount">
+                            {{
+                              formatTokenAmount(
+                                contract.token_total_supply,
+                                contract.token_decimals,
+                                contract.token_symbol
+                              )
+                            }}
+                          </td>
+                        </tr>
                         <tr>
                           <td>Contract address</td>
-                          <td class="text-right">
+                          <td>
                             <eth-identicon :address="contractId" :size="16" />
                             {{ contractId }}
                           </td>
                         </tr>
                         <tr>
                           <td>Created at block</td>
-                          <td class="text-right">
+                          <td>
                             <nuxt-link
                               :to="`/block?blockNumber=${contract.block_height}`"
                             >
@@ -51,8 +74,8 @@
                           </td>
                         </tr>
                         <tr>
-                          <td>{{ $t('details.contract.signer') }}</td>
-                          <td class="text-right">
+                          <td>{{ $t('details.token.created') }}</td>
+                          <td>
                             <div v-if="contract.signer">
                               <Identicon
                                 :key="contract.signer"
@@ -65,66 +88,30 @@
                             </div>
                           </td>
                         </tr>
-                        <tr v-if="contract.value">
-                          <td>{{ $t('details.contract.value') }}</td>
-                          <td class="text-right">
-                            {{ contract.value }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.gas_limit">
-                          <td>{{ $t('details.contract.gas_limit') }}</td>
-                          <td class="text-right">
-                            {{ contract.gas_limit }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.storage_limit">
-                          <td>{{ $t('details.contract.storage_limit') }}</td>
-                          <td class="text-right">
-                            {{ contract.storage_limit }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.bytecode">
-                          <td>{{ $t('details.contract.bytecode') }}</td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.bytecode
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.verified') }}</td>
-                          <td class="text-right">
-                            <p v-if="contract.verified" class="mb-0">
-                              <font-awesome-icon
-                                icon="check"
-                                class="text-success"
-                              />
-                            </p>
-                            <p v-else class="mb-0">
-                              <font-awesome-icon
-                                icon="times"
-                                class="text-danger"
-                              />
-                            </p>
-                          </td>
-                        </tr>
                       </tbody>
                     </table>
                   </div>
+                </b-tab>
+                <b-tab title="Holders">
+                  <token-holders
+                    :holders="contract.holders"
+                    :decimals="contract.token_decimals"
+                    :symbol="contract.token_symbol"
+                  />
                 </b-tab>
                 <b-tab v-if="contract.verified" title="Developer">
                   <div class="table-responsive pb-4">
                     <table class="table table-striped">
                       <tbody>
                         <tr>
-                          <td>{{ $t('details.contract.compiler_version') }}</td>
-                          <td class="text-right">
+                          <td>{{ $t('details.token.compiler_version') }}</td>
+                          <td>
                             {{ contract.compiler_version }}
                           </td>
                         </tr>
                         <tr>
-                          <td>{{ $t('details.contract.optimization') }}</td>
-                          <td class="text-right">
+                          <td>{{ $t('details.token.optimization') }}</td>
+                          <td>
                             <p v-if="contract.optimization" class="mb-0">
                               <font-awesome-icon
                                 icon="check"
@@ -140,21 +127,35 @@
                           </td>
                         </tr>
                         <tr>
-                          <td>{{ $t('details.contract.runs') }}</td>
-                          <td class="text-right">
+                          <td>{{ $t('details.token.runs') }}</td>
+                          <td>
                             {{ contract.runs }}
                           </td>
                         </tr>
                         <tr>
-                          <td>{{ $t('details.contract.target') }}</td>
-                          <td class="text-right">
+                          <td>{{ $t('details.token.target') }}</td>
+                          <td>
                             {{ contract.target }}
                           </td>
                         </tr>
                         <tr>
-                          <td>{{ $t('details.contract.license') }}</td>
-                          <td class="text-right">
+                          <td>{{ $t('details.token.license') }}</td>
+                          <td>
                             {{ contract.license }}
+                          </td>
+                        </tr>
+                        <tr v-if="contract.bytecode">
+                          <td>{{ $t('details.token.bytecode') }}</td>
+                          <td>
+                            <span class="bytecode" style="color: #aaa">{{
+                              contract.bytecode
+                            }}</span>
+                          </td>
+                        </tr>
+                        <tr v-if="contract.abi">
+                          <td>{{ $t('details.token.abi') }}</td>
+                          <td>
+                            <vue-json-pretty :data="JSON.parse(contract.abi)" />
                           </td>
                         </tr>
                       </tbody>
@@ -164,10 +165,7 @@
                 <b-tab v-if="contract.verified" title="Verified source">
                   <pre>{{ contract.source }}</pre>
                 </b-tab>
-                <b-tab v-if="contract.verified" title="ABI">
-                  <vue-json-pretty :data="JSON.parse(contract.abi)" />
-                </b-tab>
-                <b-tab title="Contract executions">
+                <b-tab title="Interactions">
                   <contract-executions :contract-id="contractId" />
                 </b-tab>
                 <b-tab v-if="contract.verified" title="Contract call">
@@ -237,8 +235,21 @@ export default {
               target
               abi
               license
-              is_erc20
+              token_name
+              token_symbol
+              token_decimals
+              token_total_supply
               timestamp
+              holders {
+                holder_account_id
+                holder_evm_address
+                balance
+              }
+              holders_aggregate {
+                aggregate {
+                  count(columns: holder_account_id)
+                }
+              }
             }
           }
         `,
