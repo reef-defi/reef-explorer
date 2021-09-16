@@ -4,7 +4,31 @@ Open source block explorer for [Reef Finance](https://reef.finance) hosted at [h
 
 ## Dependencies
 
-You will need `nodejs` and `yarn`, `docker` and `docker-compose`.
+In Ubuntu 20.04 server you can do:
+
+```
+apt update
+apt upgrade
+apt install git build-essential apt-transport-https ca-certificates curl software-properties-common libpq-dev
+
+# docker
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+apt update
+apt install docker-ce
+
+# docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
+# node v14
+curl -sL https://deb.nodesource.com/setup_14.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt install nodejs
+
+# yarn
+npm install --global yarn
+```
 
 ## Install
 
@@ -14,6 +38,118 @@ Install mono-repo:
 git clone https://github.com/reef-defi/reef-explorer.git
 cd reef-explorer
 yarn
+```
+
+### Backend
+
+Before build dockers be sure to edit `HASURA_GRAPHQL_ADMIN_SECRET` environmment variable in the proper docker-compose file `backend/docker/docker-compose-reef-mainnet.yml` or `backend/docker/docker-compose-reef-testnet.yml`.
+
+Mainnet:
+
+```
+yarn workspace backend docker:mainnet
+```
+
+Or Testnet:
+
+```
+yarn workspace backend docker:testnet
+```
+
+That will build and start all the required dockers:
+
+- PostgreSQL
+- Hasura GraphQL server
+- Parity Polkadot client
+- Nodejs crawler
+- Verificator
+- API
+
+### Hasura configuration
+
+After that you need to access to Hasura console at http://server_ip_address:8082 and:
+
+- Login as admin using the password you previously set in `HASURA_GRAPHQL_ADMIN_SECRET`
+- Track all tables
+- For all tables go to Permissions and add a new ROLE named 'public' ony with SELECT permissions.
+- In `contract` table create a new Array relationship called `holders` that maps `token_holder`.`contract_id ` → `contract`.`contract_id`
+- In `token_holder` table create a new Object relationship called `contract` that maps `token_holder`.`contract_id ` → `contract`.`contract_id`
+
+### Nginx configuration
+
+You can use Nginx as a inverse proxy for Hasura GraphQL and also to serve the static frontend.
+
+Example nginx config `/etc/nginx/sites-available/default` with SSL enabled using Certbot:
+
+```
+server {
+    root /usr/local/reef-explorer/frontend/dist;
+    index index.html index.htm index.nginx-debian.html;
+    server_name yourdomain.io;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/v3 {
+            proxy_pass http://localhost:8082/v1/graphql;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+    }
+
+    location /api/verificator {
+           proxy_pass http://localhost:8000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection "upgrade";
+    }
+
+    location /api/price {
+           proxy_pass http://localhost:8000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection "upgrade";
+    }
+
+    location /api/staking {
+           proxy_pass http://localhost:8000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection "upgrade";
+    }
+
+    location /api/account/tokens {
+           proxy_pass http://localhost:8000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection "upgrade";
+    }
+
+    listen [::]:443 ssl ipv6only=on;
+    listen 443 ssl;
+    ssl_certificate /etc/letsencrypt/live/yourdomain.io/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.io/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+}
+
+server {
+    if ($host = yourdomain.io) {
+        return 301 https://$host$request_uri;
+    }
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name yourdomain.io;
+    return 404;
+}
+```
+
+Apply your new configuration:
+
+```
+ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+systemctl restart nginx
 ```
 
 ### Frontend
@@ -44,21 +180,7 @@ yarn workspace frontend dev
 yarn workspace frontend generate
 ```
 
-### Backend
-
-To build and start all the required dockers.
-
-#### Mainnet
-
-```bash
-yarn workspace backend docker:mainnet
-```
-
-#### Testnet
-
-```bash
-yarn workspace backend docker:testnet
-```
+## Howto
 
 #### Clean dockers
 
@@ -73,7 +195,7 @@ yarn workspace backend docker:clean
 Create PostgreSQL database backup:
 
 ```bash
-docker:postgres:backup
+yarn workspace backend docker:postgres:backup
 ```
 
 #### Create Reef-node blockchain database backup
@@ -86,4 +208,12 @@ bash docker/backend/scripts/backup.sh
 
 ```bash
 bash docker/backend/scripts/restore-backup.sh
+```
+
+#### Contract table backup
+
+Create contracts table backup:
+
+```bash
+yarn workspace backend docker:postgres:backup:contracts
 ```
