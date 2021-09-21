@@ -59,7 +59,7 @@ module.exports = {
       startDelay: parseInt(process.env.TOKEN_HOLDERS_START_DELAY_MS, 10) || 60 * 1000,
       pollingTime:
         parseInt(process.env.TOKEN_HOLDERS_POLLING_TIME_MS, 10)
-        || 10 * 1000, // 10 seconds
+        || 60 * 60 * 1000, // 1 hour
     },
   ],
 };
