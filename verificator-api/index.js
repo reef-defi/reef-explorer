@@ -651,7 +651,7 @@ app.post('/api/account/tokens', async (req, res) => {
         }));
         res.send({
           status: true,
-          message: 'Request found',
+          message: 'Success',
           data: {
             account_id: dbres.rows[0].holder_account_id,
             evm_address: dbres.rows[0].holder_evm_address,
@@ -660,8 +660,13 @@ app.post('/api/account/tokens', async (req, res) => {
         });
       } else {
         res.send({
-          status: false,
-          message: 'Request not found'
+          status: true,
+          message: 'Success',
+          data: {
+            account_id: dbres.rows[0].holder_account_id,
+            evm_address: dbres.rows[0].holder_evm_address,
+            balances: [],
+          }
         });
       }
     } catch (error) {
