@@ -3,7 +3,7 @@ const pino = require('pino');
 const {
   dbQuery,
   getClient,
-  getPolkadotAPI,
+  getProviderAPI,
   isNodeSynced,
   wait,
   shortHash,
@@ -29,7 +29,8 @@ const crawler = async () => {
   logger.info(loggerOptions, 'Starting block listener crawler...');
 
   const client = await getClient(loggerOptions);
-  const api = await getPolkadotAPI(loggerOptions);
+  const provider = await getProviderAPI(loggerOptions);
+  const { api } = provider
 
   let synced = await isNodeSynced(api, loggerOptions);
   while (!synced) {
@@ -156,7 +157,7 @@ const crawler = async () => {
         await Promise.all([
           // Store block extrinsics
           processExtrinsics(
-            api,
+            provider,
             client,
             blockNumber,
             blockHash,

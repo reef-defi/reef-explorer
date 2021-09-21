@@ -3,7 +3,7 @@ const pino = require('pino');
 const {
   getClient,
   dbQuery,
-  getPolkadotAPI,
+  getProviderAPI,
   isNodeSynced,
   shortHash,
   processExtrinsics,
@@ -64,7 +64,8 @@ const healthCheck = async (client) => {
   logger.debug(loggerOptions, `Health check finished in ${((endTime - startTime) / 1000).toFixed(config.statsPrecision)}s`);
 };
 
-const harvestBlock = async (api, client, blockNumber) => {
+const harvestBlock = async (provider, client, blockNumber) => {
+  const { api } = provider
   const startTime = new Date().getTime();
   try {
     const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
@@ -93,14 +94,14 @@ const harvestBlock = async (api, client, blockNumber) => {
     const blockAuthor = blockHeader.author || '';
     const blockAuthorIdentity = await api.derive.accounts.info(blockHeader.author);
     const blockAuthorName = getDisplayName(blockAuthorIdentity.identity);
-    const timestamp = Math.floor(timestampMs / 1000);
+    const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
     const { parentHash, extrinsicsRoot, stateRoot } = blockHeader;
     // Get election status, NOTE: there's no election in reef chain rn
     const isElection = false;
 
     // Store block extrinsics (async)
     processExtrinsics(
-      api,
+      provider,
       client,
       blockNumber,
       blockHash,
@@ -184,7 +185,7 @@ const harvestBlock = async (api, client, blockNumber) => {
 };
 
 // eslint-disable-next-line no-unused-vars
-const harvestBlocksSeq = async (api, client, startBlock, endBlock) => {
+const harvestBlocksSeq = async (provider, client, startBlock, endBlock) => {
   const blocks = range(startBlock, endBlock, 1);
   const blockProcessingTimes = [];
   let maxTimeMs = 0;
@@ -195,7 +196,7 @@ const harvestBlocksSeq = async (api, client, startBlock, endBlock) => {
   for (const blockNumber of blocks) {
     const blockStartTime = Date.now();
     // eslint-disable-next-line no-await-in-loop
-    await harvestBlock(api, client, blockNumber);
+    await harvestBlock(provider, client, blockNumber);
     const blockEndTime = new Date().getTime();
 
     // Cook some stats
@@ -216,7 +217,7 @@ const harvestBlocksSeq = async (api, client, startBlock, endBlock) => {
   }
 };
 
-const harvestBlocks = async (api, client, startBlock, endBlock) => {
+const harvestBlocks = async (provider, client, startBlock, endBlock) => {
   const blocks = range(startBlock, endBlock, 1);
 
   const chunks = chunker(blocks, config.chunkSize);
@@ -234,7 +235,7 @@ const harvestBlocks = async (api, client, startBlock, endBlock) => {
     // eslint-disable-next-line no-await-in-loop
     await Promise.all(
       chunk.map(
-        (blockNumber) => harvestBlock(api, client, blockNumber),
+        (blockNumber) => harvestBlock(provider, client, blockNumber),
       ),
     );
     const chunkEndTime = new Date().getTime();
@@ -278,7 +279,8 @@ const crawler = async (delayedStart) => {
   // Delete blocks that don't have all its events or extrinsics in db
   await healthCheck(client);
 
-  const api = await getPolkadotAPI(loggerOptions);
+  const provider = await getProviderAPI(loggerOptions);
+  const { api } = provider;
   let synced = await isNodeSynced(api, loggerOptions);
   while (!synced) {
     // eslint-disable-next-line no-await-in-loop
@@ -323,7 +325,7 @@ const crawler = async (delayedStart) => {
       if (config.mode === 'chunks') {
         // eslint-disable-next-line no-await-in-loop
         await harvestBlocks(
-          api,
+          provider,
           client,
           parseInt(row.gap_start, 10),
           parseInt(row.gap_end, 10),
@@ -331,7 +333,7 @@ const crawler = async (delayedStart) => {
       } else {
         // eslint-disable-next-line no-await-in-loop
         await harvestBlocksSeq(
-          api,
+          provider,
           client,
           parseInt(row.gap_start, 10),
           parseInt(row.gap_end, 10),

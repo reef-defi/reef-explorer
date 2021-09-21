@@ -1,14 +1,12 @@
 // @ts-check
 const pino = require('pino');
-const { Provider } = require('@reef-defi/evm-provider');
-const { WsProvider } = require('@polkadot/api');
-const { ethers } = require('ethers');
 const {
   wait,
   getClient,
+  getProviderAPI,
   isNodeSynced,
   dbQuery,
-  dbParamQuery,
+  updateTokenHolders,
 } = require('../lib/utils');
 const backendConfig = require('../backend.config');
 
@@ -30,14 +28,8 @@ const crawler = async (delayedStart) => {
   }
 
   logger.debug(loggerOptions, 'Running token holders crawler...');
-
   const client = await getClient(loggerOptions);
-
-  const wsProvider = new WsProvider(backendConfig.wsProviderUrl);
-  const provider = new Provider({
-    provider: wsProvider,
-  });
-  await provider.api.isReady;
+  const provider = await getProviderAPI(loggerOptions);
 
   let synced = await isNodeSynced(provider.api, loggerOptions);
   while (!synced) {
@@ -54,7 +46,7 @@ const crawler = async (delayedStart) => {
     provider.api.rpc.chain.getBlock(),
     provider.api.query.timestamp.now(),
   ]);
-  const timestamp = Math.floor(timestampMs / 1000);
+  const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
   const blockHeight = block.header.number.toString();
 
   const startTime = new Date().getTime();
@@ -70,70 +62,11 @@ const crawler = async (delayedStart) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const token of tokens.rows) {
     logger.info(loggerOptions, `Processing token ${token.token_name} (${token.contract_id})`);
-    const contract = new ethers.Contract(
-      token.contract_id,
-      JSON.parse(token.abi),
-      provider,
-    );
-    // eslint-disable-next-line no-restricted-syntax
-    for (const account of accounts.rows) {
-      // eslint-disable-next-line no-await-in-loop
-      const balance = await contract.balanceOf(account.evm_address);
-      if (balance > 0) {
-        // eslint-disable-next-line no-console
-        logger.info(loggerOptions, `Holder: ${account.evm_address} (${balance})`);
-        // Update token_holder table
-        const data = [
-          token.contract_id,
-          account.account_id,
-          account.evm_address,
-          balance.toString(),
-          blockHeight,
-          timestamp,
-        ];
-        const query = `
-          INSERT INTO token_holder (
-            contract_id,
-            holder_account_id,
-            holder_evm_address,
-            balance,
-            block_height,
-            timestamp
-          ) VALUES (
-            $1,
-            $2,
-            $3,
-            $4,
-            $5,
-            $6
-          )
-          ON CONFLICT ( contract_id, holder_evm_address )
-          DO UPDATE SET
-            balance = EXCLUDED.balance,
-            block_height = EXCLUDED.block_height,
-            timestamp = EXCLUDED.timestamp
-          WHERE EXCLUDED.block_height > token_holder.block_height
-        ;`;
-        // eslint-disable-next-line no-await-in-loop
-        await dbParamQuery(client, query, data, loggerOptions);
-      } else {
-        // Ensure there's no entry in token_holder
-        const data = [
-          token.contract_id,
-          account.evm_address,
-        ];
-        const query = 'DELETE FROM token_holder WHERE contract_id = $1 AND holder_evm_address = $2;';
-        // eslint-disable-next-line no-await-in-loop
-        await dbParamQuery(client, query, data, loggerOptions);
-      }
-    }
+    await updateTokenHolders(client, provider, token.contract_id, JSON.parse(token.abi), accounts, blockHeight, timestamp, loggerOptions);
   }
 
   logger.debug(loggerOptions, 'Disconnecting from API');
   await provider.api.disconnect().catch((error) => logger.error(loggerOptions, `API disconnect error: ${JSON.stringify(error)}`));
-
-  logger.debug(loggerOptions, 'Disconnecting from WS provider');
-  await wsProvider.disconnect().catch((error) => logger.error(loggerOptions, `WS provider disconnect error: ${JSON.stringify(error)}`));
 
   logger.debug(loggerOptions, 'Disconnecting from DB');
   await client.end().catch((error) => logger.error(loggerOptions, `DB disconnect error: ${JSON.stringify(error)}`));

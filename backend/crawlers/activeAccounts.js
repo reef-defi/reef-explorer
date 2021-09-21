@@ -3,7 +3,7 @@ const pino = require('pino');
 const {
   wait,
   getClient,
-  getPolkadotAPI,
+  getProviderAPI,
   isNodeSynced,
   dbParamQuery,
 } = require('../lib/utils');
@@ -119,7 +119,7 @@ const crawler = async (delayedStart) => {
   logger.debug(loggerOptions, 'Running active accounts crawler...');
 
   const client = await getClient(loggerOptions);
-  const api = await getPolkadotAPI(loggerOptions);
+  const { api } = await getProviderAPI(loggerOptions);
 
   let synced = await isNodeSynced(api, loggerOptions);
   while (!synced) {
