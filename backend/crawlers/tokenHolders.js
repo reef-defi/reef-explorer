@@ -2,7 +2,6 @@
 const pino = require('pino');
 const { Provider } = require('@reef-defi/evm-provider');
 const { WsProvider } = require('@polkadot/api');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const { ethers } = require('ethers');
 const {
   wait,
