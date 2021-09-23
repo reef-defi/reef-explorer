@@ -460,3 +460,55 @@ CREATE TRIGGER event_count_trunc AFTER TRUNCATE ON event
 -- initialize the counter table
 UPDATE total SET count = (SELECT count(*) FROM event) WHERE name = 'events';
 COMMIT;
+
+-- Contracts
+START TRANSACTION;
+CREATE FUNCTION contract_count() RETURNS trigger LANGUAGE plpgsql AS
+$$BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE total SET count = count + 1 WHERE name = 'contracts';
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE total SET count = count - 1 WHERE name = 'contracts';
+    RETURN OLD;
+  ELSE
+    UPDATE total SET count = 0 WHERE name = 'contracts';
+    RETURN NULL;
+  END IF;
+END;$$;
+CREATE CONSTRAINT TRIGGER contract_count_mod
+  AFTER INSERT OR DELETE ON event
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE contract_count();
+-- TRUNCATE triggers must be FOR EACH STATEMENT
+CREATE TRIGGER contract_count_trunc AFTER TRUNCATE ON contract
+  FOR EACH STATEMENT EXECUTE PROCEDURE contract_count();
+-- initialize the counter table
+UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
+COMMIT;
+
+-- Transfers
+START TRANSACTION;
+CREATE FUNCTION transfer_count() RETURNS trigger LANGUAGE plpgsql AS
+$$BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE total SET count = count + 1 WHERE name = 'transfers';
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE total SET count = count - 1 WHERE name = 'transfers';
+    RETURN OLD;
+  ELSE
+    UPDATE total SET count = 0 WHERE name = 'transfers';
+    RETURN NULL;
+  END IF;
+END;$$;
+CREATE CONSTRAINT TRIGGER transfer_count_mod
+  AFTER INSERT OR DELETE ON event
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE transfer_count();
+-- TRUNCATE triggers must be FOR EACH STATEMENT
+CREATE TRIGGER transfer_count_trunc AFTER TRUNCATE ON transfer
+  FOR EACH STATEMENT EXECUTE PROCEDURE transfer_count();
+-- initialize the counter table
+UPDATE total SET count = (SELECT count(*) FROM transfer) WHERE name = 'transfers';
+COMMIT;

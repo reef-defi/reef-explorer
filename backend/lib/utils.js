@@ -341,13 +341,10 @@ module.exports = {
         } catch (error) {
           logger.error(loggerOptions, `Error adding transfer ${blockNumber}-${index}: ${JSON.stringify(error)}`);
         }
-        // update total transfers
-        module.exports.updateTotalTransfers(client, loggerOptions);
       }
 
       // store contract
       if (section === 'evm' && method === 'create' && success) {
-        module.exports.updateTotalContracts(client, loggerOptions);
         // 0x29c08687a237fdc32d115f6b6c885428d170a2d8
         const contractId = toChecksumAddress(
           JSON.parse(
@@ -394,10 +391,11 @@ module.exports = {
         } catch (error) {
           logger.error(loggerOptions, `Error adding contract ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
         }
-        // check & verify directly by matching bytecode with already verified contracts
-
-        // check ERC-20 interface and set token data/holders if contract is an ERC-20 token
-
+        //
+        // - check & verify directly by matching bytecode with already verified contracts
+        // - check ERC-20 interface and set token data/holders if contract is an ERC-20 token
+        //
+        module.exports.processNewContract(client, provider, contractId, bytecode, loggerOptions);
       }
       // update token_holder table if needed
       if (section === 'evm' && method === 'call' && success) {
@@ -606,26 +604,6 @@ module.exports = {
       return `${identity.displayParent} / ${identity.display}`;
     }
     return identity.display || '';
-  },
-  updateTotalTransfers: async (client, loggerOptions) => {
-    const sql = `
-      UPDATE total SET count = (SELECT count(*) FROM transfer) WHERE name = 'transfers';
-    `;
-    try {
-      await client.query(sql);
-    } catch (error) {
-      logger.error(loggerOptions, `Error updating totals transfers ${error}`);
-    }
-  },
-  updateTotalContracts: async (client, loggerOptions) => {
-    const sql = `
-      UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
-    `;
-    try {
-      await client.query(sql);
-    } catch (error) {
-      logger.error(loggerOptions, `Error updating totals contracts ${error}`);
-    }
   },
   updateFinalized: async (client, finalizedBlock, loggerOptions) => {
     const sql = `
