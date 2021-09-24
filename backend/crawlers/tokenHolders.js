@@ -9,6 +9,7 @@ const {
   updateTokenHolders,
 } = require('../lib/utils');
 const backendConfig = require('../backend.config');
+const erc20Abi = require('../assets/erc20Abi.json');
 
 const crawlerName = 'tokenHolders';
 const logger = pino({
@@ -56,13 +57,13 @@ const crawler = async (delayedStart) => {
   const accounts = await dbQuery(client, accountsQuery, loggerOptions);
 
   // Get tokens
-  const tokensQuery = 'SELECT contract_id, abi, token_name, token_symbol FROM contract WHERE is_erc20 IS TRUE;';
+  const tokensQuery = 'SELECT contract_id, token_name, token_symbol FROM contract WHERE is_erc20 IS TRUE;';
   const tokens = await dbQuery(client, tokensQuery, loggerOptions);
 
   // eslint-disable-next-line no-restricted-syntax
   for (const token of tokens.rows) {
     logger.info(loggerOptions, `Processing token ${token.token_name} (${token.contract_id})`);
-    await updateTokenHolders(client, provider, token.contract_id, JSON.parse(token.abi), accounts, blockHeight, timestamp, loggerOptions);
+    await updateTokenHolders(client, provider, token.contract_id, erc20Abi, accounts, blockHeight, timestamp, loggerOptions);
   }
 
   logger.debug(loggerOptions, 'Disconnecting from API');
