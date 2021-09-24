@@ -745,12 +745,9 @@ module.exports = {
     }
   },
   async processNewContract(client, provider, contractId, bytecode, loggerOptions) {
-    logger.debug(loggerOptions, `processNewContract -> processing contract ${contractId}`);
     // find verified contract with the same preprocesses bytecode
     const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
-    const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode, loggerOptions);
-    logger.debug(loggerOptions, `processNewContract -> bytecode: ${bytecode}`);
-    logger.debug(loggerOptions, `processNewContract -> preprocessedRequestContractBytecode: ${preprocessedRequestContractBytecode}`);
+    const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
     const dbres = await client.query(
       query,
       [
@@ -760,7 +757,6 @@ module.exports = {
     );
     if (dbres) {
       if (dbres.rows.length === 1) {
-        logger.debug(loggerOptions, `processNewContract -> bytecode match! verify contract using same compilation data`);
         // verify new contract using same compilation data
         const isVerified = true;
         // TODO: extract contract arguments
@@ -823,7 +819,6 @@ module.exports = {
         ];
         await module.exports.dbParamQuery(client, query, data, loggerOptions);
         if (isErc20) {
-          logger.debug(loggerOptions, `processNewContract -> contract IS an ERC-20 token, update token holders`);
           // contract IS an ERC-20 token, update token holders
           const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
           const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
@@ -839,7 +834,6 @@ module.exports = {
           await module.exports.updateTokenHolders(client, provider, contractId, abi, accounts, blockHeight, timestamp, loggerOptions);
         }
       } else {
-        logger.debug(loggerOptions, `processNewContract -> contract is not verified but let's check if it's an ERC-20 token`);
         // contract is not verified but let's check if it's an ERC-20 token
         const {
           isErc20,
@@ -849,7 +843,6 @@ module.exports = {
           tokenTotalSupply
         } = await module.exports.isErc20Token(contractId, provider);
         if (isErc20) {
-          logger.debug(loggerOptions, `processNewContract -> contract IS an ERC-20 token!`);
           // contract IS an ERC-20 token!
           const query = `
             UPDATE
@@ -886,14 +879,11 @@ module.exports = {
           const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
           const blockHeight = block.header.number.toString();
           await module.exports.updateTokenHolders(client, provider, contractId, erc20Abi, accounts, blockHeight, timestamp, loggerOptions);
-        } else {
-          logger.debug(loggerOptions, `processNewContract -> contract is NOT an ERC-20 token!`);
         }
       }
     }
   },
-  preprocessBytecode(bytecode, loggerOptions) {
-    logger.debug(loggerOptions, `processNewContract -> preprocessBytecode -> bytecode: ${bytecode}`);
+  preprocessBytecode(bytecode) {
     let filteredBytecode = "";
     const start = bytecode.indexOf('6080604052');
     //
@@ -901,16 +891,12 @@ module.exports = {
     //
     const ipfsMetadataEnd = bytecode.indexOf('a264697066735822');
     filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
-
-    logger.debug(loggerOptions, `processNewContract -> preprocessBytecode-> filteredBytecode: ${filteredBytecode}`);
   
     //
     // metadata separator for 0.5.16
     //
     const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
     filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
-
-    logger.debug(loggerOptions, `processNewContract -> preprocessBytecode-> filteredBytecode: ${filteredBytecode}`);
   
     return filteredBytecode;
   },
