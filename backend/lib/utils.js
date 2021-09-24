@@ -748,7 +748,7 @@ module.exports = {
     logger.debug(loggerOptions, `processNewContract -> processing contract ${contractId}`);
     // find verified contract with the same preprocesses bytecode
     const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
-    const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
+    const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode, loggerOptions);
     logger.debug(loggerOptions, `processNewContract -> bytecode: ${bytecode}`);
     logger.debug(loggerOptions, `processNewContract -> preprocessedRequestContractBytecode: ${preprocessedRequestContractBytecode}`);
     const dbres = await client.query(
@@ -892,7 +892,8 @@ module.exports = {
       }
     }
   },
-  preprocessBytecode(bytecode) {
+  preprocessBytecode(bytecode, loggerOptions) {
+    logger.debug(loggerOptions, `processNewContract -> preprocessBytecode -> bytecode: ${bytecode}`);
     let filteredBytecode = "";
     const start = bytecode.indexOf('6080604052');
     //
@@ -900,12 +901,16 @@ module.exports = {
     //
     const ipfsMetadataEnd = bytecode.indexOf('a264697066735822');
     filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
+
+    logger.debug(loggerOptions, `processNewContract -> preprocessBytecode-> filteredBytecode: ${filteredBytecode}`);
   
     //
     // metadata separator for 0.5.16
     //
     const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
     filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
+
+    logger.debug(loggerOptions, `processNewContract -> preprocessBytecode-> filteredBytecode: ${filteredBytecode}`);
   
     return filteredBytecode;
   },
