@@ -17,9 +17,43 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 ALTER TABLE ONLY public.contract DROP CONSTRAINT contract_pkey;
+DROP TABLE public.contract;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: contract; Type: TABLE; Schema: public; Owner: reefexplorer
+--
+
+CREATE TABLE public.contract (
+    contract_id text NOT NULL,
+    name text NOT NULL,
+    bytecode text NOT NULL,
+    arguments text,
+    value text NOT NULL,
+    gas_limit text NOT NULL,
+    storage_limit text NOT NULL,
+    signer text NOT NULL,
+    block_height bigint NOT NULL,
+    verified boolean DEFAULT false,
+    source text,
+    compiler_version text,
+    optimization boolean,
+    runs integer,
+    target text,
+    abi text,
+    license text,
+    is_erc20 boolean DEFAULT false,
+    token_name text,
+    token_symbol text,
+    token_decimals integer,
+    token_total_supply numeric(40,0) DEFAULT NULL::numeric,
+    "timestamp" bigint NOT NULL
+);
+
+
+ALTER TABLE public.contract OWNER TO reefexplorer;
 
 --
 -- Data for Name: contract; Type: TABLE DATA; Schema: public; Owner: reefexplorer
@@ -78,6 +112,35 @@ COPY public.contract (contract_id, name, bytecode, arguments, value, gas_limit, 
 
 ALTER TABLE ONLY public.contract
     ADD CONSTRAINT contract_pkey PRIMARY KEY (contract_id);
+
+
+--
+-- Contracts fast counter
+--
+START TRANSACTION;
+CREATE FUNCTION contract_count() RETURNS trigger LANGUAGE plpgsql AS
+$$BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE total SET count = count + 1 WHERE name = 'contracts';
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE total SET count = count - 1 WHERE name = 'contracts';
+    RETURN OLD;
+  ELSE
+    UPDATE total SET count = 0 WHERE name = 'contracts';
+    RETURN NULL;
+  END IF;
+END;$$;
+CREATE CONSTRAINT TRIGGER contract_count_mod
+  AFTER INSERT OR DELETE ON contract
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE contract_count();
+-- TRUNCATE triggers must be FOR EACH STATEMENT
+CREATE TRIGGER contract_count_trunc AFTER TRUNCATE ON contract
+  FOR EACH STATEMENT EXECUTE PROCEDURE contract_count();
+-- initialize the counter table
+UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
+COMMIT;
 
 
 --
