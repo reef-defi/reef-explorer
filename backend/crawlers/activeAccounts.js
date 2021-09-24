@@ -1,5 +1,6 @@
 // @ts-check
 const pino = require('pino');
+const { toChecksumAddress } = require('web3-utils');
 const {
   wait,
   getClient,
@@ -61,7 +62,7 @@ const processChunk = async (api, client, accountId) => {
     nonce,
     timestamp,
     block,
-    evmAddress.toString(),
+    toChecksumAddress(evmAddress.toString()),
   ];
   const query = `
     INSERT INTO account (
