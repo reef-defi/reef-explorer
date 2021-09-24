@@ -11,8 +11,6 @@ export default async function ({ app, route, store, redirect }) {
       }
     `
     const response = await client.query({ query })
-    // eslint-disable-next-line no-console
-    console.log(response)
     if (response.data.account.length > 0) {
       const accountId = response.data.account[0].account_id
       if (accountId) {

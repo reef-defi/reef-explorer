@@ -71,10 +71,6 @@ export default {
   },
   methods: {
     getInputs(functionName) {
-      // eslint-disable-next-line no-console
-      console.log(
-        this.contractAbi.find((method) => method.name === functionName).inputs
-      )
       return this.contractAbi.find((method) => method.name === functionName)
         .inputs
     },
@@ -99,9 +95,6 @@ export default {
       )
       this.result = await contract[this.functionName](...this.arguments)
 
-      // eslint-disable-next-line no-console
-      // console.log('result:', this.result)
-
       //
       // disconnect provider
       //
@@ -111,8 +104,6 @@ export default {
       // reset form
     },
     setValue(index, event) {
-      // eslint-disable-next-line no-console
-      // console.log(index, event)
       this.arguments[index] = event
     },
   },

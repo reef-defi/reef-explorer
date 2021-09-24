@@ -53,6 +53,9 @@
     "account_token_balances": {
       "search": "Search token by token name or contract address",
       "no_token_found": "No tokens found"
+    },
+    "activity": {
+      "no_activity_found": "No activities found"
     }
   },
   "layout": {

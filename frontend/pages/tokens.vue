@@ -31,9 +31,14 @@
             <div class="table-responsive">
               <b-table striped hover :fields="fields" :items="tokens">
                 <template #cell(token_name)="data">
-                  <p class="mb-0">
+                  <p v-if="data.item.name" class="mb-0">
                     <nuxt-link :to="`/token/${data.item.contract_id}`">
                       {{ data.item.name }}
+                    </nuxt-link>
+                  </p>
+                  <p v-else class="mb-0">
+                    <nuxt-link :to="`/token/${data.item.contract_id}`">
+                      {{ shortHash(data.item.contract_id) }}
                     </nuxt-link>
                   </p>
                 </template>
@@ -231,8 +236,6 @@ export default {
         },
         result({ data }) {
           this.tokens = data.contract
-          // eslint-disable-next-line no-console
-          console.log(this.tokens)
           if (this.filter) {
             this.totalRows = this.tokens.length
           }

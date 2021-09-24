@@ -19,6 +19,10 @@
               <Extrinsic :extrinsic="parsedExtrinsic" />
             </div>
           </div>
+          <extrinsic-events
+            :block-number="parseInt(parsedExtrinsic.block_number)"
+            :extrinsic-index="parseInt(parsedExtrinsic.extrinsic_index)"
+          />
         </template>
       </b-container>
     </section>
