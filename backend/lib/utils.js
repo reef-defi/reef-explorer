@@ -397,7 +397,7 @@ module.exports = {
         // - check & verify directly by matching bytecode with already verified contracts
         // - check ERC-20 interface and set token data/holders if contract is an ERC-20 token
         //
-        module.exports.processNewContract(client, provider, contractId, bytecode, loggerOptions);
+        module.exports.processNewContract(client, provider, contractId, bytecode.toString(), loggerOptions);
       }
       // update token_holder table if needed
       if (section === 'evm' && method === 'call' && success) {
