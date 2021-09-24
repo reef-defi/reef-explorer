@@ -240,6 +240,35 @@ CREATE TABLE IF NOT EXISTS account  (
   PRIMARY KEY ( account_id )  
 );
 
+CREATE TABLE IF NOT EXISTS contract  (
+  contract_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  bytecode TEXT NOT NULL,
+  arguments TEXT DEFAULT NULL,
+  value TEXT NOT NULL,
+  gas_limit TEXT NOT NULL,
+  storage_limit TEXT NOT NULL,
+  signer TEXT NOT NULL,
+  block_height BIGINT NOT NULL,
+  verified BOOLEAN DEFAULT FALSE,
+  source TEXT DEFAULT NULL,
+  compiler_version TEXT DEFAULT NULL,
+  optimization BOOLEAN DEFAULT NULL,
+  runs INT DEFAULT NULL,
+  target TEXT DEFAULT NULL,
+  abi TEXT DEFAULT NULL,
+  license TEXT DEFAULT NULL,
+  -- token tracker
+  is_erc20 BOOLEAN DEFAULT FALSE,
+  token_name TEXT DEFAULT NULL,
+  token_symbol TEXT DEFAULT NULL,
+  token_decimals INT DEFAULT NULL,
+  token_total_supply NUMERIC(40,0) DEFAULT NULL,
+  -- token tracker
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( contract_id )  
+);
+
 CREATE TABLE IF NOT EXISTS token_holder  (
   contract_id TEXT NOT NULL,
   holder_account_id TEXT DEFAULT NULL,
@@ -379,7 +408,6 @@ CREATE TRIGGER block_count_trunc AFTER TRUNCATE ON block
 UPDATE total SET count = (SELECT count(*) FROM block) WHERE name = 'blocks';
 COMMIT;
 
-
 -- Extrinsics
 START TRANSACTION;
 CREATE FUNCTION extrinsic_count() RETURNS trigger LANGUAGE plpgsql AS
@@ -433,6 +461,31 @@ CREATE TRIGGER event_count_trunc AFTER TRUNCATE ON event
 UPDATE total SET count = (SELECT count(*) FROM event) WHERE name = 'events';
 COMMIT;
 
+-- Contracts
+START TRANSACTION;
+CREATE FUNCTION contract_count() RETURNS trigger LANGUAGE plpgsql AS
+$$BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE total SET count = count + 1 WHERE name = 'contracts';
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE total SET count = count - 1 WHERE name = 'contracts';
+    RETURN OLD;
+  ELSE
+    UPDATE total SET count = 0 WHERE name = 'contracts';
+    RETURN NULL;
+  END IF;
+END;$$;
+CREATE CONSTRAINT TRIGGER contract_count_mod
+  AFTER INSERT OR DELETE ON contract
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE contract_count();
+-- TRUNCATE triggers must be FOR EACH STATEMENT
+CREATE TRIGGER contract_count_trunc AFTER TRUNCATE ON contract
+  FOR EACH STATEMENT EXECUTE PROCEDURE contract_count();
+-- initialize the counter table
+UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
+COMMIT;
 
 -- Transfers
 START TRANSACTION;

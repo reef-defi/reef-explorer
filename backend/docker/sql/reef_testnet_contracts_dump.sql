@@ -308,35 +308,6 @@ ALTER TABLE ONLY public.contract
 
 
 --
--- Contracts fast counter
---
-START TRANSACTION;
-CREATE FUNCTION contract_count() RETURNS trigger LANGUAGE plpgsql AS
-$$BEGIN
-  IF TG_OP = 'INSERT' THEN
-    UPDATE total SET count = count + 1 WHERE name = 'contracts';
-    RETURN NEW;
-  ELSIF TG_OP = 'DELETE' THEN
-    UPDATE total SET count = count - 1 WHERE name = 'contracts';
-    RETURN OLD;
-  ELSE
-    UPDATE total SET count = 0 WHERE name = 'contracts';
-    RETURN NULL;
-  END IF;
-END;$$;
-CREATE CONSTRAINT TRIGGER contract_count_mod
-  AFTER INSERT OR DELETE ON contract
-  DEFERRABLE INITIALLY DEFERRED
-  FOR EACH ROW EXECUTE PROCEDURE contract_count();
--- TRUNCATE triggers must be FOR EACH STATEMENT
-CREATE TRIGGER contract_count_trunc AFTER TRUNCATE ON contract
-  FOR EACH STATEMENT EXECUTE PROCEDURE contract_count();
--- initialize the counter table
-UPDATE total SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
-COMMIT;
-
-
---
 -- PostgreSQL database dump complete
 --
 
