@@ -748,9 +748,9 @@ module.exports = {
     logger.debug(loggerOptions, `processNewContract -> processing contract ${contractId}`);
     // find verified contract with the same preprocesses bytecode
     const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
-    logger.debug(loggerOptions, `processNewContract -> query ${query}`);
     const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
-    logger.debug(loggerOptions, `processNewContract -> preprocessedRequestContractBytecode ${preprocessedRequestContractBytecode}`);
+    logger.debug(loggerOptions, `processNewContract -> bytecode: ${bytecode}`);
+    logger.debug(loggerOptions, `processNewContract -> preprocessedRequestContractBytecode: ${preprocessedRequestContractBytecode}`);
     const dbres = await client.query(
       query,
       [
