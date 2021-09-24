@@ -13,7 +13,9 @@ const config = require('../backend.config');
 const genesisContracts = require('../assets/bytecodes.json');
 const erc20Abi = require('../assets/erc20Abi.json');
 
-const logger = pino();
+const logger = pino({
+  level: config.logLevel,
+});
 
 module.exports = {
   getPolkadotAPI: async (loggerOptions) => {
