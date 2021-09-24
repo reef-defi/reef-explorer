@@ -819,7 +819,7 @@ module.exports = {
           tokenTotalSupply ? tokenTotalSupply.toString() : null,
           contractId
         ];
-        await module.exports.parametrizedDbQuery(client, query, data);
+        await module.exports.dbParamQuery(client, query, data, loggerOptions);
         if (isErc20) {
           logger.debug(loggerOptions, `processNewContract -> contract IS an ERC-20 token, update token holders`);
           // contract IS an ERC-20 token, update token holders
@@ -869,7 +869,7 @@ module.exports = {
             tokenTotalSupply ? tokenTotalSupply.toString() : null,
             contractId
           ];
-          await module.exports.parametrizedDbQuery(client, query, data);
+          await module.exports.dbParamQuery(client, query, data, loggerOptions);
 
           // update token holders
           const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
