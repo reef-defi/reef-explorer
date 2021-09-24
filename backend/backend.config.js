@@ -56,10 +56,10 @@ module.exports = {
       name: 'tokenHolders',
       enabled: !process.env.TOKEN_HOLDERS_DISABLE,
       crawler: './crawlers/tokenHolders.js',
-      startDelay: parseInt(process.env.TOKEN_HOLDERS_START_DELAY_MS, 10) || 60 * 1000,
+      startDelay: parseInt(process.env.TOKEN_HOLDERS_START_DELAY_MS, 10) || 2 * 60 * 1000,
       pollingTime:
         parseInt(process.env.TOKEN_HOLDERS_POLLING_TIME_MS, 10)
-        || 60 * 60 * 1000, // 1 hour
+        || 1 * 60 * 1000, // 1 min
     },
   ],
 };
