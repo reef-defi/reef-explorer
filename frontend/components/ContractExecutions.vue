@@ -2,9 +2,18 @@
   <div class="contract-executions">
     <div class="table-responsive">
       <b-table striped hover :fields="fields" :items="extrinsics">
+        <template #cell(hash)="data">
+          <p class="mb-0">
+            <nuxt-link :to="`/contract/call/${data.item.hash}`">
+              {{ shortHash(data.item.hash) }}
+            </nuxt-link>
+          </p>
+        </template>
         <template #cell(timestamp)="data">
           <p class="mb-0">
-            {{ formatTimestamp(data.item.timestamp) }}
+            <font-awesome-icon :icon="['far', 'clock']" />
+            {{ fromNow(data.item.timestamp) }}
+            ({{ formatTimestamp(data.item.timestamp) }})
           </p>
         </template>
         <template #cell(block_number)="data">
@@ -16,11 +25,6 @@
                 data.item.extrinsic_index
               }}
             </nuxt-link>
-          </p>
-        </template>
-        <template #cell(hash)="data">
-          <p class="mb-0">
-            {{ shortHash(data.item.hash) }}
           </p>
         </template>
         <template #cell(signer)="data">
@@ -72,19 +76,19 @@ export default {
       extrinsics: [],
       fields: [
         {
+          key: 'hash',
+          label: 'Call',
+          class: 'd-none d-sm-none d-md-none d-lg-block d-xl-block',
+          sortable: true,
+        },
+        {
           key: 'timestamp',
-          label: 'Date/time',
+          label: 'Timestamp',
           sortable: true,
         },
         {
           key: 'block_number',
           label: 'Extrinsic',
-          sortable: true,
-        },
-        {
-          key: 'hash',
-          label: 'Hash',
-          class: 'd-none d-sm-none d-md-none d-lg-block d-xl-block',
           sortable: true,
         },
         {

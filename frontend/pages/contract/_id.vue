@@ -31,7 +31,7 @@
               <b-tabs content-class="mt-3">
                 <b-tab title="General" active>
                   <div class="table-responsive pb-4">
-                    <table class="table table-striped">
+                    <table class="table contract-data table-striped">
                       <tbody>
                         <tr>
                           <td>Contract address</td>

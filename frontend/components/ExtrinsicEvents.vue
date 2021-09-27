@@ -52,12 +52,12 @@ export default {
       fields: [
         {
           key: 'block_number',
-          label: 'Id',
+          label: 'Event',
           sortable: true,
         },
         {
           key: 'section',
-          label: 'Event',
+          label: 'Section & method',
           sortable: true,
         },
         {
@@ -108,6 +108,7 @@ export default {
 .extrinsic-events .table th,
 .extrinsic-events .table td {
   padding: 0.45rem;
+  word-break: break-all;
 }
 .extrinsic-events .table thead th {
   border-bottom: 0;
@@ -116,5 +117,11 @@ export default {
   display: inline-block;
   margin: 0 0.2rem 0 0;
   cursor: copy;
+}
+.extrinsic-events .table td:first-child {
+  width: 10%;
+}
+.extrinsic-events .table td:nth-child(2) {
+  width: 20%;
 }
 </style>
