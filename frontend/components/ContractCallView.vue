@@ -53,6 +53,17 @@
           </td>
         </tr>
         <tr>
+          <td>Signer EVM address</td>
+          <td>
+            <div v-if="evmAddress">
+              <eth-identicon :address="evmAddress" :size="16" />
+              <nuxt-link :to="`/account/${extrinsic.signer}`">
+                {{ evmAddress }}
+              </nuxt-link>
+            </div>
+          </td>
+        </tr>
+        <tr>
           <td>Contract</td>
           <td>
             <eth-identicon :address="contract.contract_id" :size="16" />
@@ -182,6 +193,7 @@
 <script>
 import { Promised } from 'vue-promised'
 import InputDataDecoder from 'ethereum-input-data-decoder'
+import gql from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import erc20Abi from '@/assets/erc20Abi.json'
 export default {
@@ -200,7 +212,11 @@ export default {
   data() {
     return {
       erc20Abi,
+      evmAddress: undefined,
     }
+  },
+  async created() {
+    this.evmAddress = await this.getEVMAddress(this.extrinsic.signer)
   },
   methods: {
     parseMessage(message, abi) {
@@ -216,6 +232,27 @@ export default {
         console.log('decoding error:', error)
       }
       return decoded
+    },
+    async getEVMAddress(accountId) {
+      const client = this.$apolloProvider.defaultClient
+      const query = gql`
+          query account {
+            account(where: {account_id: {_eq: "${accountId}"}}) {
+              evm_address
+            }
+          }
+        `
+      const response = await client.query({ query })
+      if (response.data.account.length > 0) {
+        const evmAddress = response.data.account[0].evm_address
+        if (evmAddress) {
+          return evmAddress
+        } else {
+          return ''
+        }
+      } else {
+        return ''
+      }
     },
   },
 }

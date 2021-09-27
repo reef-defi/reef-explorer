@@ -124,18 +124,18 @@ export default {
       fields: [
         {
           key: 'token_name',
-          label: 'Token name',
+          label: 'Token',
           sortable: true,
+        },
+        {
+          key: 'contract_id',
+          label: 'Address',
+          sortable: false,
         },
         {
           key: 'balance',
           label: 'Balance',
           sortable: true,
-        },
-        {
-          key: 'contract_id',
-          label: 'Contract id',
-          sortable: false,
         },
       ],
     }
