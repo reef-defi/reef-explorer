@@ -204,8 +204,18 @@ export default {
   },
   methods: {
     parseMessage(message, abi) {
-      const decoder = new InputDataDecoder(abi)
-      return decoder.decodeData(message)
+      // this could fail if contract is erc20 token and
+      // it's not verified and the call is not an standard
+      // ERC-20 interface method call
+      let decoded = ''
+      try {
+        const decoder = new InputDataDecoder(abi)
+        decoded = decoder.decodeData(message)
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log('decoding error:', error)
+      }
+      return decoded
     },
   },
 }
