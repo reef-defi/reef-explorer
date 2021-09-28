@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="extrinsic && contract"
-    class="contract-call-view table-responsive pb-4"
+    class="contract-transaction table-responsive pb-4"
   >
     <table class="table table-striped extrinsic-table">
       <tbody>
@@ -258,7 +258,7 @@ export default {
 }
 </script>
 <style>
-.contract-call-view td {
+.contract-transaction td {
   word-break: break-all;
 }
 </style>

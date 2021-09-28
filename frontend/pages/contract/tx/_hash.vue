@@ -6,15 +6,16 @@
           <Loading />
         </div>
         <template v-else-if="!extrinsic">
-          <h1 class="text-center">Contract call not found!</h1>
+          <h1 class="text-center">Contract tx not found!</h1>
         </template>
         <template v-else>
           <div class="card mt-4 mb-3">
             <div class="card-body">
-              <h4 class="text-center mb-4">
-                Contract call {{ shortHash(extrinsic.hash) }}
-              </h4>
-              <contract-call-view :contract="contract" :extrinsic="extrinsic" />
+              <h4 class="text-center mb-4">Contract transaction</h4>
+              <contract-transaction
+                :contract="contract"
+                :extrinsic="extrinsic"
+              />
             </div>
           </div>
           <extrinsic-events
@@ -31,12 +32,12 @@ import { toChecksumAddress } from 'web3-utils'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import gql from 'graphql-tag'
-import ContractCallView from '@/components/ContractCallView.vue'
+import ContractTransaction from '@/components/ContractTransaction.vue'
 
 export default {
   components: {
     Loading,
-    ContractCallView,
+    ContractTransaction,
   },
   mixins: [commonMixin],
   data() {
