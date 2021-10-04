@@ -117,6 +117,11 @@ export default {
       })
       // https://github.com/nuxt/nuxt.js/issues/1142
       config.resolve.alias.vue = 'vue/dist/vue.common'
+
+      // https://stackoverflow.com/questions/57161839/module-not-found-error-cant-resolve-fs-in
+      config.node = {
+        fs: 'empty',
+      }
     },
   },
 

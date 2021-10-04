@@ -124,18 +124,18 @@ export default {
       fields: [
         {
           key: 'token_name',
-          label: 'Token name',
+          label: 'Token',
           sortable: true,
+        },
+        {
+          key: 'contract_id',
+          label: 'Address',
+          sortable: false,
         },
         {
           key: 'balance',
           label: 'Balance',
           sortable: true,
-        },
-        {
-          key: 'contract_id',
-          label: 'Contract id',
-          sortable: false,
         },
       ],
     }
@@ -181,8 +181,6 @@ export default {
           return !this.accountId
         },
         result({ data }) {
-          // eslint-disable-next-line no-console
-          console.log(data)
           this.balances = data.token_holder.map((balance) => ({
             contract_id: balance.contract_id,
             holder_account_id: balance.holder_account_id,
@@ -192,8 +190,6 @@ export default {
             token_name: balance.contract.token_name,
             token_symbol: balance.contract.token_symbol,
           }))
-          // eslint-disable-next-line no-console
-          console.log(this.balances)
           this.totalRows = this.balances.length
           this.loading = false
         },

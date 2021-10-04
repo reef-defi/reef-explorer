@@ -211,7 +211,7 @@
                   <template #title>
                     <h5>Activity</h5>
                   </template>
-                  <Activities :account-id="accountId" />
+                  <Activity :account-id="accountId" />
                 </b-tab>
                 <b-tab>
                   <template #title>
@@ -237,7 +237,7 @@
 import gql from 'graphql-tag'
 import Identicon from '@/components/Identicon.vue'
 import Loading from '@/components/Loading.vue'
-import Activities from '@/components/Activities.vue'
+import Activity from '@/components/Activity.vue'
 import AccountTransfers from '@/components/AccountTransfers.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
@@ -249,7 +249,7 @@ export default {
   components: {
     Identicon,
     Loading,
-    Activities,
+    Activity,
     AccountTransfers,
     StakingRewards,
     StakingSlashes,

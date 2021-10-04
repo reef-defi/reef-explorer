@@ -3,7 +3,7 @@ const { BigNumber } = require('bignumber.js');
 const pino = require('pino');
 const {
   getClient,
-  getPolkadotAPI,
+  getProviderAPI,
   isNodeSynced,
   wait,
   dbQuery,
@@ -511,7 +511,7 @@ const crawler = async (delayedStart) => {
   const startTime = new Date().getTime();
 
   const client = await getClient(loggerOptions);
-  const api = await getPolkadotAPI(loggerOptions);
+  const { api } = await getProviderAPI(loggerOptions);
 
   let synced = await isNodeSynced(api, loggerOptions);
   while (!synced) {

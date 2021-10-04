@@ -124,8 +124,6 @@ export default {
           account.address,
           network.ss58Format
         )
-        // eslint-disable-next-line no-console
-        console.log('account:', account)
         const evmAddress = await this.getEVMAddress(encodedAddress)
         this.extensionAddresses.push({
           value: encodedAddress,
@@ -162,18 +160,12 @@ export default {
             })
             await provider.api.isReady
 
-            // eslint-disable-next-line no-console
-            // console.log('injector:', injector)
-
             // create signer
             const wallet = new Signer(
               provider,
               this.selectedAddress,
               injector.signer
             )
-
-            // eslint-disable-next-line no-console
-            // console.log('wallet:', wallet)
 
             // claim default account
             if (!(await wallet.isClaimed())) {
@@ -185,12 +177,6 @@ export default {
               await wallet.claimDefaultAccount()
             }
 
-            // eslint-disable-next-line no-console
-            // console.log('evm address', await wallet.getAddress())
-
-            // eslint-disable-next-line no-console
-            // console.log('contract abi:', this.contractAbi)
-
             const contract = new ethers.Contract(
               this.contractId,
               this.contractAbi,
@@ -198,8 +184,6 @@ export default {
             )
 
             this.result = await contract[this.functionName](...this.arguments)
-            // eslint-disable-next-line no-console
-            // console.log('result:', this.result)
 
             await provider.api.disconnect()
 
@@ -231,15 +215,9 @@ export default {
       // reset form
     },
     setValue(index, event) {
-      // eslint-disable-next-line no-console
-      // console.log(index, event)
       this.arguments[index] = event
     },
     async getEVMAddress(accountId) {
-      // eslint-disable-next-line no-console
-      console.log(accountId)
-      // eslint-disable-next-line no-console
-      console.log('getEVMAddress')
       const client = this.$apolloProvider.defaultClient
       const query = gql`
         query account {
@@ -249,13 +227,9 @@ export default {
         }
       `
       const response = await client.query({ query })
-      // eslint-disable-next-line no-console
-      console.log(response)
       if (response.data.account.length > 0) {
         const evmAddress = response.data.account[0].evm_address
         if (evmAddress) {
-          // eslint-disable-next-line no-console
-          console.log(evmAddress)
           return evmAddress
         } else {
           return ''

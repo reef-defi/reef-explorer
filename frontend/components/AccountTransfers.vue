@@ -191,7 +191,6 @@ export default {
           label: 'Date',
           sortable: true,
         },
-
         {
           key: 'source',
           label: 'From',

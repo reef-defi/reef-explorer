@@ -1,23 +1,12 @@
 <template>
-  <div class="sent-transfers">
+  <div class="activity">
     <div v-if="loading" class="text-center py-4">
       <Loading />
     </div>
     <div v-else-if="activities.length === 0" class="text-center py-4">
-      <h5>{{ $t('components.transfers.no_transfer_found') }}</h5>
+      <h5>{{ $t('components.activity.no_activity_found') }}</h5>
     </div>
     <div v-else>
-      <!-- Filter -->
-      <!-- <b-row style="margin-bottom: 1rem">
-        <b-col cols="12">
-          <b-form-input
-            id="filterInput"
-            v-model="filter"
-            type="search"
-            :placeholder="$t('components.transfers.search')"
-          />
-        </b-col>
-      </b-row> -->
       <JsonCSV
         :data="activities"
         class="download-csv mb-2"
@@ -37,6 +26,13 @@
           :filter="filter"
           @filtered="onFiltered"
         >
+          <template #cell(hash)="data">
+            <p class="mb-0">
+              <nuxt-link :to="`/extrinsic/${data.item.hash}`">
+                {{ shortHash(data.item.hash) }}
+              </nuxt-link>
+            </p>
+          </template>
           <template #cell(block_number)="data">
             <p class="mb-0">
               <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
@@ -44,11 +40,10 @@
               </nuxt-link>
             </p>
           </template>
-          <template #cell(hash)="data">
+          <template #cell(timestamp)="data">
             <p class="mb-0">
-              <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
-                {{ shortHash(data.item.hash) }}
-              </nuxt-link>
+              <font-awesome-icon :icon="['far', 'clock']" />
+              {{ fromNow(data.item.timestamp) }}
             </p>
           </template>
           <template #cell(signer)="data">
@@ -140,19 +135,24 @@ export default {
       totalRows: 1,
       fields: [
         {
+          key: 'hash',
+          label: 'Hash',
+          sortable: true,
+        },
+        {
           key: 'block_number',
-          label: 'Block number',
+          label: 'Block',
           class: 'd-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell',
+          sortable: true,
+        },
+        {
+          key: 'timestamp',
+          label: 'Date',
           sortable: true,
         },
         {
           key: 'signer',
           label: 'Signer',
-          sortable: true,
-        },
-        {
-          key: 'hash',
-          label: 'Hash',
           sortable: true,
         },
         {
@@ -197,6 +197,7 @@ export default {
               section
               method
               success
+              timestamp
             }
           }
         `,
@@ -220,7 +221,7 @@ export default {
 </script>
 
 <style>
-.sent-transfers {
+.activity {
   background-color: white;
 }
 .spinner {

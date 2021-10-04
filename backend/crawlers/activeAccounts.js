@@ -1,9 +1,10 @@
 // @ts-check
 const pino = require('pino');
+const { toChecksumAddress } = require('web3-utils');
 const {
   wait,
   getClient,
-  getPolkadotAPI,
+  getProviderAPI,
   isNodeSynced,
   dbParamQuery,
 } = require('../lib/utils');
@@ -61,7 +62,7 @@ const processChunk = async (api, client, accountId) => {
     nonce,
     timestamp,
     block,
-    evmAddress.toString(),
+    evmAddress.toString() !== '' ? toChecksumAddress(evmAddress.toString()) : '',
   ];
   const query = `
     INSERT INTO account (
@@ -119,7 +120,7 @@ const crawler = async (delayedStart) => {
   logger.debug(loggerOptions, 'Running active accounts crawler...');
 
   const client = await getClient(loggerOptions);
-  const api = await getPolkadotAPI(loggerOptions);
+  const { api } = await getProviderAPI(loggerOptions);
 
   let synced = await isNodeSynced(api, loggerOptions);
   while (!synced) {

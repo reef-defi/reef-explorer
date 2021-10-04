@@ -14,7 +14,9 @@
           <td>Timestamp</td>
           <td>
             <p class="mb-0">
-              {{ getDateFromTimestamp(transfer.timestamp) }}
+              <font-awesome-icon :icon="['far', 'clock']" />
+              {{ fromNow(transfer.timestamp) }}
+              ({{ formatTimestamp(transfer.timestamp) }})
             </p>
           </td>
         </tr>

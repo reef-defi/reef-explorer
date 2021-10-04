@@ -1,5 +1,5 @@
 <template>
-  <div class="contract-call">
+  <div class="contract-execute">
     <b-alert variant="warning" show dismissible>
       <p class="text-center mt-4">
         Support for write contract calls (marked with
@@ -114,7 +114,7 @@ export default {
 </script>
 
 <style>
-.contract-call .card-title {
+.contract-execute .card-title {
   font-size: 1.2rem;
   margin-bottom: 2rem;
 }
