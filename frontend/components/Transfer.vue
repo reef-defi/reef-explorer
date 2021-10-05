@@ -72,13 +72,17 @@
             </div>
             <div v-if="JSON.parse(transfer.args)[0].address20">
               <eth-identicon
-                :address="JSON.parse(transfer.args)[0].address20"
+                :address="
+                  toChecksumAddress(JSON.parse(transfer.args)[0].address20)
+                "
                 :size="20"
               />
               <nuxt-link
-                :to="`/account/${JSON.parse(transfer.args)[0].address20}`"
+                :to="`/account/${toChecksumAddress(
+                  JSON.parse(transfer.args)[0].address20
+                )}`"
               >
-                {{ JSON.parse(transfer.args)[0].address20 }}
+                {{ toChecksumAddress(JSON.parse(transfer.args)[0].address20) }}
               </nuxt-link>
             </div>
           </td>
@@ -137,6 +141,7 @@
 <script>
 import { Promised } from 'vue-promised'
 import commonMixin from '@/mixins/commonMixin.js'
+import { toChecksumAddress } from 'web3-utils'
 export default {
   components: { Promised },
   mixins: [commonMixin],
@@ -144,6 +149,11 @@ export default {
     transfer: {
       type: Object,
       default: () => undefined,
+    },
+  },
+  methods: {
+    toChecksumAddress(address) {
+      return toChecksumAddress(address)
     },
   },
 }
