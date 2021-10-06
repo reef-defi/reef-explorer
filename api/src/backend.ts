@@ -21,7 +21,7 @@ interface BasicPool {
   userPoolBalance: string;
 }
 
-// Renamed from Pool to ReefPool to avoid collision with pg Pool
+// Renamed from Pool to ReefPool to avoid name collision with pg Pool
 interface ReefPool extends BasicPool {
   token1: Token;
   token2: Token;
