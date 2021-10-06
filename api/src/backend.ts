@@ -57,7 +57,7 @@ const getPool = async (): Promise<Pool> => {
 const app = express();
 
 // Get User Reef Balance
-const USER_BALANCE_QUERY = `SELECT balance FROM token_holder WHERE holder_evm_address OR holder_account_id = $1`;
+const USER_BALANCE_QUERY = `SELECT balance FROM token_holder WHERE holder_account_id = $1 OR holder_evm_address = $1`;
 app.post('/api/user-balance', async (req: any, res) => {
   try {
     const userAddress = req.body.userAddress;
