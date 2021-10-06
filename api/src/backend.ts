@@ -57,12 +57,12 @@ const getPool = async (): Promise<Pool> => {
 const app = express();
 
 // Get User Reef Balance
-const TOKEN_QUERY = `SELECT balance FROM token_holder WHERE holder_evm_address OR holder_account_id = $1`;
+const USER_BALANCE_QUERY = `SELECT balance FROM token_holder WHERE holder_evm_address OR holder_account_id = $1`;
 app.post('/api/user-balance', async (req: any, res) => {
   try {
     const userAddress = req.body.userAddress;
     const pool = await getPool();
-    const dbres = await pool.query(TOKEN_QUERY, [userAddress]);
+    const dbres = await pool.query(USER_BALANCE_QUERY, [userAddress]);
     res.send(dbres.rows[0].balance || 0);
     await pool.end();
   } catch (e) {
