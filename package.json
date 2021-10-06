@@ -17,7 +17,7 @@
     "url": "https://github.com/reef-defi/reef-explorer/issues"
   },
   "homepage": "https://github.com/reef-defi/reef-explorer#readme",
-  "workspaces": ["frontend", "backend", "verificator-api", "verificator"],
+  "workspaces": ["api","backend","frontend","verificator"],
   "scripts": {},
   "resolutions": {
     "@ethersproject/abstract-signer": "5.0.9",
