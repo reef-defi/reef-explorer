@@ -56,22 +56,23 @@ const getPool = async (): Promise<Pool> => {
 
 const app = express();
 
+// Parse incoming requests with JSON payloads
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
+
 // Get User Reef Balance
 const USER_BALANCE_QUERY = `SELECT balance FROM token_holder WHERE (holder_account_id = $1 OR holder_evm_address = $1) AND contract_id = $2`;
 const REEF_CONTRACT = '0x0000000000000000000000000000000001000000';
 app.post('/api/user-balance', async (req: any, res) => {
   try {
-    const userAddress = req.params.userAddress;
-    console.log(req);
+    const userAddress = req.body.userAddress;
     const pool = await getPool();
     const dbres = await pool.query(USER_BALANCE_QUERY, [userAddress, REEF_CONTRACT]);
-    console.log(dbres);
     res.send({
       balance: dbres.rows[0].balance
     });
     await pool.end();
   } catch (e) {
-    console.log(e);
     res.send({
       balance: 0
     })
