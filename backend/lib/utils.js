@@ -636,7 +636,7 @@ module.exports = {
       ;`;
     await module.exports.dbParamQuery(client, query, data, loggerOptions);
   },
-  async storeGenesisContracts(api, client, provider, loggerOptions) {
+  async storeGenesisContracts(api, client, loggerOptions) {
     // Get timestamp from block #1, genesis doesn't return timestamp
     const blockHash = await api.rpc.chain.getBlockHash(1);
     const timestampMs = await api.query.timestamp.now.at(blockHash);
@@ -863,7 +863,7 @@ module.exports = {
           tokenSymbol,
           tokenDecimals,
           tokenTotalSupply
-        } = await module.exports.isErc20Token(contractId, provider);
+        } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
         
         const query = `UPDATE contract SET
           name = $1,
@@ -925,7 +925,7 @@ module.exports = {
           tokenSymbol,
           tokenDecimals,
           tokenTotalSupply
-        } = await module.exports.isErc20Token(contractId, provider);
+        } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
         if (isErc20) {
           // contract IS an ERC-20 token!
           const query = `
@@ -984,7 +984,7 @@ module.exports = {
   
     return filteredBytecode;
   },
-  async isErc20Token(contractId, provider) {
+  async isErc20Token(contractId, provider, loggerOptions) {
     //
     // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
     //
@@ -1004,28 +1004,31 @@ module.exports = {
     let tokenDecimals = null;
     let tokenTotalSupply = null;
 
-    const contract = new ethers.Contract(
-      contractId,
-      erc20Abi,
-      provider
-    )
-
-    if (
-      typeof contract['name'] === 'function'
-      && typeof contract['symbol'] === 'function'
-      && typeof contract['decimals'] === 'function'
-      && typeof contract['totalSupply'] === 'function'
-      && typeof contract['balanceOf'] === 'function'
-      && typeof contract['transfer'] === 'function'
-      && typeof contract['transferFrom'] === 'function'
-      && typeof contract['approve'] === 'function'
-      && typeof contract['allowance'] === 'function'
-    ) {
-      isErc20 = true;
-      tokenName = await contract['name()']();
-      tokenSymbol = await contract['symbol()']();
-      tokenDecimals = await contract['decimals()']();
-      tokenTotalSupply = await contract['totalSupply()']();
+    try {
+      const contract = new ethers.Contract(
+        contractId,
+        erc20Abi,
+        provider
+      )
+      if (
+        typeof contract['name'] === 'function'
+        && typeof contract['symbol'] === 'function'
+        && typeof contract['decimals'] === 'function'
+        && typeof contract['totalSupply'] === 'function'
+        && typeof contract['balanceOf'] === 'function'
+        && typeof contract['transfer'] === 'function'
+        && typeof contract['transferFrom'] === 'function'
+        && typeof contract['approve'] === 'function'
+        && typeof contract['allowance'] === 'function'
+      ) {
+        isErc20 = true;
+        tokenName = await contract['name()']();
+        tokenSymbol = await contract['symbol()']();
+        tokenDecimals = await contract['decimals()']();
+        tokenTotalSupply = await contract['totalSupply()']();
+      }
+    } catch (error) {
+      logger.error(loggerOptions, `Error detecting erc20 contract ${contractId}: ${JSON.stringify(error)}`);
     }
     return {
       isErc20,
