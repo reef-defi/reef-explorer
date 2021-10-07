@@ -63,10 +63,14 @@ app.post('/api/user-balance', async (req: any, res) => {
     const userAddress = req.body.userAddress;
     const pool = await getPool();
     const dbres = await pool.query(USER_BALANCE_QUERY, [userAddress]);
-    res.send(dbres.rows[0].balance);
+    res.send({
+      balance: dbres.rows[0].balance
+    });
     await pool.end();
   } catch (e) {
-    res.send(0)
+    res.send({
+      balance: 0
+    })
   }
 });
 
