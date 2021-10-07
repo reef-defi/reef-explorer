@@ -1,5 +1,6 @@
 // @ts-check
 import express = require('express');
+import morgan = require('morgan');
 import { Pool } from 'pg';
 import config = require('../api.config');
 
@@ -59,6 +60,9 @@ const app = express();
 // Parse incoming requests with JSON payloads
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
+
+// Logger
+app.use(morgan('dev'));
 
 // Get User Reef Balance
 const USER_BALANCE_QUERY = `SELECT balance FROM token_holder WHERE (holder_account_id = $1 OR holder_evm_address = $1) AND contract_id = $2`;
