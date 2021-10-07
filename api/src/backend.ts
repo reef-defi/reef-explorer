@@ -62,7 +62,7 @@ const REEF_CONTRACT = '0x0000000000000000000000000000000001000000';
 app.post('/api/user-balance', async (req: any, res) => {
   try {
     const userAddress = req.params.userAddress;
-    console.log(userAddress);
+    console.log(req);
     const pool = await getPool();
     const dbres = await pool.query(USER_BALANCE_QUERY, [userAddress, REEF_CONTRACT]);
     console.log(dbres);
