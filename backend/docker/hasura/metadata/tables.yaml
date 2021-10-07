@@ -83,6 +83,11 @@
       - token_symbol
       - token_decimals
       - token_total_supply
+      - token_validated
+      - token_description
+      - token_icon_url
+      - token_coingecko_id
+      - token_coinmarketcap_id
       - timestamp
       filter: {}
       allow_aggregations: true
