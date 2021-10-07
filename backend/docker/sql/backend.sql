@@ -264,6 +264,11 @@ CREATE TABLE IF NOT EXISTS contract  (
   token_symbol TEXT DEFAULT NULL,
   token_decimals INT DEFAULT NULL,
   token_total_supply NUMERIC(40,0) DEFAULT NULL,
+  token_validated BOOLEAN DEFAULT FALSE,
+  token_description TEXT DEFAULT NULL,
+  token_icon_url TEXT DEFAULT NULL,
+  token_coingecko_id TEXT DEFAULT NULL,
+  token_coinmarketcap_id TEXT DEFAULT NULL,
   -- token tracker
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( contract_id )  
