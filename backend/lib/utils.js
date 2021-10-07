@@ -668,39 +668,38 @@ module.exports = {
         const tokenDecimals = 18;
         const tokenTotalSupply = null;
         contractSql = `INSERT INTO contract (
-          contract_id,
-          name,
-          bytecode,
-          value,
-          gas_limit,
-          storage_limit,
-          signer,
-          block_height,
-          is_erc20,
-          token_name,
-          token_symbol,
-          token_decimals,
-          token_total_supply,
-          timestamp
-        ) VALUES (
-          $1,
-          $2,
-          $3,
-          $4,
-          $5,
-          $6,
-          $7,
-          $8,
-          $9,
-          $10,
-          $11,
-          $12,
-          $13,
-          $14
-        )
-        ON CONFLICT ON CONSTRAINT
-          contract_pkey 
-        DO UPDATE
+            contract_id,
+            name,
+            bytecode,
+            value,
+            gas_limit,
+            storage_limit,
+            signer,
+            block_height,
+            is_erc20,
+            token_name,
+            token_symbol,
+            token_decimals,
+            token_total_supply,
+            timestamp
+          ) VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            $7,
+            $8,
+            $9,
+            $10,
+            $11,
+            $12,
+            $13,
+            $14
+          )
+          ON CONFLICT ON CONSTRAINT contract_pkey
+          DO UPDATE
         ;`;
         data = [
           contractId,
@@ -720,28 +719,28 @@ module.exports = {
         ];
       } else {
         contractSql = `INSERT INTO contract (
-          contract_id,
-          name,
-          bytecode,
-          value,
-          gas_limit,
-          storage_limit,
-          signer,
-          block_height,
-          timestamp
-        ) VALUES (
-          $1,
-          $2,
-          $3,
-          $4,
-          $5,
-          $6,
-          $7,
-          $8,
-          $9,
-        )
-        ON CONFLICT ON CONSTRAINT contract_pkey 
-        DO NOTHING;
+            contract_id,
+            name,
+            bytecode,
+            value,
+            gas_limit,
+            storage_limit,
+            signer,
+            block_height,
+            timestamp
+          ) VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            $7,
+            $8,
+            $9
+          )
+          ON CONFLICT ON CONSTRAINT contract_pkey 
+          DO NOTHING
         ;`;
         data = [
           contractId,
