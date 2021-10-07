@@ -698,8 +698,9 @@ module.exports = {
           $13,
           $14
         )
-        ON CONFLICT ON CONSTRAINT contract_pkey 
-        DO NOTHING;
+        ON CONFLICT ON CONSTRAINT
+          contract_pkey 
+        DO UPDATE
         ;`;
         data = [
           contractId,
