@@ -71,6 +71,7 @@ app.post('/api/user-balance', async (req: any, res) => {
     });
     await pool.end();
   } catch (e) {
+    console.log(e);
     res.send({
       balance: 0
     })
