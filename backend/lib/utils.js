@@ -651,39 +651,117 @@ module.exports = {
       const value = '';
       const gasLimit = '';
       const storageLimit = '';
-      const contractSql = `INSERT INTO contract (
-        contract_id,
-        name,
-        bytecode,
-        value,
-        gas_limit,
-        storage_limit,
-        signer,
-        block_height,
-        timestamp
-      ) VALUES (
-        '${contractId}',
-        '${name}',
-        '${bytecode}',
-        '${value}',
-        '${gasLimit}',
-        '${storageLimit}',
-        '${signer}',
-        '${blockNumber}',
-        '${timestamp}'
-      )
-      ON CONFLICT ON CONSTRAINT contract_pkey 
-      DO NOTHING;
-      ;`;
+      let contractSql = '';
+      let data = [];
+
+      //
+      //   REEF ERC20
+      //
+      // - totalSupply() is virtual, it just reflects on chain REEF supply
+      // - token holders will be added first time tokenHolders.js executes
+      // - token holders are updated in every REEF contract call, just like others erc20 contracts
+      //
+      if (name === 'REEF') {
+        const isErc20 = true;
+        const tokenName = name;
+        const tokenSymbol = name;
+        const tokenDecimals = 18;
+        const tokenTotalSupply = null;
+        contractSql = `INSERT INTO contract (
+          contract_id,
+          name,
+          bytecode,
+          value,
+          gas_limit,
+          storage_limit,
+          signer,
+          block_height,
+          is_erc20,
+          token_name,
+          token_symbol,
+          token_decimals,
+          token_total_supply,
+          timestamp
+        ) VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          $9,
+          $10,
+          $11,
+          $12,
+          $13,
+          $14
+        )
+        ON CONFLICT ON CONSTRAINT contract_pkey 
+        DO NOTHING;
+        ;`;
+        data = [
+          contractId,
+          name,
+          bytecode,
+          value,
+          gasLimit,
+          storageLimit,
+          signer,
+          blockNumber,
+          isErc20,
+          tokenName,
+          tokenSymbol,
+          tokenDecimals,
+          tokenTotalSupply,
+          timestamp,
+        ];
+      } else {
+        contractSql = `INSERT INTO contract (
+          contract_id,
+          name,
+          bytecode,
+          value,
+          gas_limit,
+          storage_limit,
+          signer,
+          block_height,
+          timestamp
+        ) VALUES (
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7,
+          $8,
+          $9,
+        )
+        ON CONFLICT ON CONSTRAINT contract_pkey 
+        DO NOTHING;
+        ;`;
+        data = [
+          contractId,
+          name,
+          bytecode,
+          value,
+          gasLimit,
+          storageLimit,
+          signer,
+          blockNumber,
+          timestamp,
+        ];
+      }
       try {
         // eslint-disable-next-line no-await-in-loop
-        await client.query(contractSql);
+        await client.query(contractSql, data);
         // @ts-ignore
         logger.info(loggerOptions, `Added contract ${name} with address ${contractId} at block #${blockNumber}`);
       } catch (error) {
         logger.error(loggerOptions, `Error adding contract ${name} with address ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
       }
-      module.exports.processNewContract(client, provider, contractId, bytecode, loggerOptions);
     }
   },
   async updateTokenHolders(client, provider, contractId, contractAbi, accounts, blockHeight, timestamp, loggerOptions) {
