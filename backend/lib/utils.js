@@ -777,8 +777,13 @@ module.exports = {
     );
     // eslint-disable-next-line no-restricted-syntax
     for (const account of accounts.rows) {
-      // eslint-disable-next-line no-await-in-loop
-      const balance = await contract.balanceOf(account.evm_address);
+      let balance = 0;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        balance = await contract.balanceOf(account.evm_address);
+      } catch(error) {
+        logger.error(loggerOptions, `Error getting balances for address ${account.evm_address} and contract ${contractId}: ${JSON.stringify(error)}`);
+      }
       if (balance > 0) {
         // eslint-disable-next-line no-console
         logger.info(loggerOptions, `Holder: ${account.evm_address} (${balance})`);
