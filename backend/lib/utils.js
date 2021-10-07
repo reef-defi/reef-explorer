@@ -636,7 +636,7 @@ module.exports = {
       ;`;
     await module.exports.dbParamQuery(client, query, data, loggerOptions);
   },
-  async storeGenesisContracts(api, client, loggerOptions) {
+  async storeGenesisContracts(api, client, provider, loggerOptions) {
     // Get timestamp from block #1, genesis doesn't return timestamp
     const blockHash = await api.rpc.chain.getBlockHash(1);
     const timestampMs = await api.query.timestamp.now.at(blockHash);
@@ -683,6 +683,7 @@ module.exports = {
       } catch (error) {
         logger.error(loggerOptions, `Error adding contract ${name} with address ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
       }
+      module.exports.processNewContract(client, provider, contractId, bytecode, loggerOptions);
     }
   },
   async updateTokenHolders(client, provider, contractId, contractAbi, accounts, blockHeight, timestamp, loggerOptions) {

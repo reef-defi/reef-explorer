@@ -57,7 +57,6 @@ const getPool = async (): Promise<Pool> => {
 const app = express();
 
 // Get User Reef Balance
-// TODO: process genesis contracts in backend to detect erc20 tokens
 const USER_BALANCE_QUERY = `SELECT balance FROM token_holder WHERE holder_account_id = $1 OR holder_evm_address = $1`;
 app.post('/api/user-balance', async (req: any, res) => {
   try {
