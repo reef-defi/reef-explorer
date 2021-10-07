@@ -699,7 +699,12 @@ module.exports = {
             $14
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
-          DO UPDATE
+          DO UPDATE SET
+            is_erc20 = EXCLUDED.is_erc20,
+            token_name = EXCLUDED.token_name,
+            token_symbol = EXCLUDED.token_symbol,
+            token_decimals = EXCLUDED.token_decimals,
+            token_total_supply = EXCLUDED.token_total_supply
         ;`;
         data = [
           contractId,
