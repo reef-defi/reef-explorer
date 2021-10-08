@@ -623,6 +623,7 @@ module.exports = {
     const data = [
       blockNumber,
       errorString,
+      error.stack,
       timestamp,
     ];
     const query = `
