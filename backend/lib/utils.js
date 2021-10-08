@@ -627,9 +627,9 @@ module.exports = {
     ];
     const query = `
       INSERT INTO
-        harvest_error (block_number, error, timestamp)
+        harvest_error (block_number, error, stack, timestamp)
       VALUES
-        ($1, $2, $3)
+        ($1, $2, $3, $4)
       ON CONFLICT ON CONSTRAINT
         harvest_error_pkey 
         DO NOTHING

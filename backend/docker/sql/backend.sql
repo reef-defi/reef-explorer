@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS block (
 CREATE TABLE IF NOT EXISTS harvest_error (  
   block_number BIGINT NOT NULL,
   error TEXT NOT NULL,
+  stack TEXT NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( block_number )
 );
