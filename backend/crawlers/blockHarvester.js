@@ -14,7 +14,7 @@ const {
   logHarvestError,
   storeGenesisContracts,
 } = require('../lib/utils');
-const { get } = require('stack-trace');
+import { get } from 'stack-trace';
 const backendConfig = require('../backend.config');
 
 const crawlerName = 'blockHarvester';
