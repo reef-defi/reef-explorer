@@ -1,5 +1,4 @@
 // @ts-check
-Error.stackTraceLimit = Infinity;
 const pino = require('pino');
 const {
   getClient,

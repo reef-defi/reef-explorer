@@ -1,5 +1,4 @@
 // @ts-check
-Error.stackTraceLimit = Infinity;
 const pino = require('pino');
 const { Provider } = require('@reef-defi/evm-provider');
 const { WsProvider } = require('@polkadot/api');
