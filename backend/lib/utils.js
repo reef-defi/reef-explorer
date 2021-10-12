@@ -1026,15 +1026,16 @@ module.exports = {
         && typeof contract['transferFrom'] === 'function'
         && typeof contract['approve'] === 'function'
         && typeof contract['allowance'] === 'function'
+        && await contract.balanceOf('0x0000000000000000000000000000000000000000')
       ) {
         isErc20 = true;
-        tokenName = await contract['name()']();
-        tokenSymbol = await contract['symbol()']();
-        tokenDecimals = await contract['decimals()']();
-        tokenTotalSupply = await contract['totalSupply()']();
+        tokenName = await contract.name();
+        tokenSymbol = await contract.symbol();
+        tokenDecimals = await contract.decimals();
+        tokenTotalSupply = await contract.totalSupply();
       }
     } catch (error) {
-      logger.error(loggerOptions, `Error detecting erc20 contract ${contractId}: ${JSON.stringify(error)}`);
+      // logger.error(loggerOptions, `Error detecting erc20 contract ${contractId}: ${JSON.stringify(error)}`);
     }
     return {
       isErc20,
