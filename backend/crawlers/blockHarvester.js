@@ -14,7 +14,6 @@ const {
   logHarvestError,
   storeGenesisContracts,
 } = require('../lib/utils');
-import { get } from 'stack-trace';
 const backendConfig = require('../backend.config');
 
 const crawlerName = 'blockHarvester';
@@ -180,9 +179,8 @@ const harvestBlock = async (provider, client, blockNumber) => {
       logger.error(loggerOptions, `Error adding block #${blockNumber}: ${error}`);
     }
   } catch (error) {
-    const trace = get();
     logger.error(loggerOptions, `Error adding block #${blockNumber}: ${error}`);
-    await logHarvestError(client, blockNumber, error, trace, loggerOptions);
+    await logHarvestError(client, blockNumber, error, loggerOptions);
   }
 };
 

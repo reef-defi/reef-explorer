@@ -1,4 +1,4 @@
-FROM node:current
+FROM node:fermium
 
 WORKDIR /usr/app/crawler
 
