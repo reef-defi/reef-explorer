@@ -1,3 +1,5 @@
+// Old api, just for reference
+
 // @ts-check
 const express = require('express');
 const fileUpload = require('express-fileupload');
@@ -12,7 +14,7 @@ const { options } = require('@reef-defi/api');
 const { Provider } = require('@reef-defi/evm-provider');
 const { WsProvider } = require('@polkadot/api');
 const { ethers } = require('ethers');
-const config = require('./api.config');
+const config = require('../api.config');
 
 // Connnect to db
 const getPool = async () => {
