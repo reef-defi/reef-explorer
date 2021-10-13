@@ -323,7 +323,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req: any, res) => 
             const provider = new Provider({
               provider: new WsProvider(config.nodeWs),
             });
-            await provider.api.isReady
+            await provider.api.isReady;
 
             const isVerified = true;
             // find out default target
@@ -384,7 +384,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req: any, res) => 
                 matchedContractId,
                 abi,
                 provider
-              )
+              );
 
               if (
                 typeof contract['name'] === 'function'
