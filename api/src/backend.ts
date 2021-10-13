@@ -116,6 +116,111 @@ const getOnChainContractsByBytecode = async(pool: any, bytecode: string): Promis
   return []
 };
 
+// Get Token
+const TOKEN_QUERY = 'SELECT name, icon_url, decimals FROM contract WHERE contract_id = $1';
+const getToken = async (tokenAddress: string): Promise<Token> => {
+  const pool = await getPool();
+  const res = await pool.query(TOKEN_QUERY, [tokenAddress]);
+  ensure(res.rows.length > 0, "Not found");
+  return {
+    name: res.rows[0].name,
+    iconUrl: res.rows[0].iconUrl,
+    decimals: res.rows[0].decimals,
+    userBalance: '0',
+    address: tokenAddress,
+  }
+};
+
+// Get USer Token, userAddress can be a substrate account id or evm address
+const USER_TOKEN_QUERY = `
+  SELECT
+    c.name,
+    c.icon_url,
+    c.decimals,
+    balance
+  FROM
+    token_holder AS th,
+    contract AS c
+  WHERE
+    th.contract_id = $1 AND
+    th.contract_id = c.contract_id AND
+    (th.holder_account_id = $2 OR th.holder_evm_address = $2)
+`;
+const getUserToken = async (tokenAddress: string, userAddress): Promise<Token> => {
+  const pool = await getPool();
+  const res = await pool.query(USER_TOKEN_QUERY, [tokenAddress, userAddress]);
+  ensure(res.rows.length > 0, "Not found");
+
+  return {
+    name: res.rows[0].name,
+    iconUrl: res.rows[0].iconUrl,
+    decimals: res.rows[0].decimals,
+    userBalance: res.rows[0].userBalance,
+    address: tokenAddress,
+  }
+}
+
+const resolveTokenQuery = async (tokenAddress: string, userAddress?: string): Promise<Token> => userAddress
+  ? getUserToken(tokenAddress, userAddress)
+  : getToken(tokenAddress);
+
+const combinations = <T,> (values: T[]): [T, T][] => {
+  var comb: [T, T][] = [];
+  for (let i = 0; i < values.length; i ++) {
+    for (let j = i + 1; j < values.length; j ++) {
+      comb.push([values[i], values[j]]);
+    }
+  }
+  return comb;
+}
+
+// TODO
+
+// // Get User Pool
+// const POOL_QUERY = 'SELECT <Address> <Decimals> <Reserve1> <Reserve2> <User-Balance> <Total-Supply> <MinimumLiquidity> WHERE <TokenAddress1> = $1 AND <TokenAddress2> = $2';
+// const getPool = async (tokenAddress1: string, tokenAddress2: string): Promise<BasicPool> => {
+//   const query = POOL_QUERY
+//     .replace("$1", tokenAddress1)
+//     .replace("$2", tokenAddress2);
+  
+//   const res = await pool.query(query) // TODO replace pool with appropriate table
+//   ensure(res.rows > 0, "Pool does not exist"); // TODO ensure pool exist
+
+//   return {
+//     userPoolBalance: 0,
+//     decimals: res.rows[0].decimals,
+//     reserve1: res.rows[0].reserve1,
+//     reserve2: res.rows[0].reserve2,
+//     poolAddress: res.rows[0].address,
+//     totalSupply: res.rows[0].totalSupply,
+//     minimumLiquidity: res.rows[0].minimumLiquidity,
+//   }
+// }
+
+// const USER_POOL_QUERY = `${POOL_QUERY} AND <User-Address> = $3`;
+// const getUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<BasicPool> => {
+//   const query = USER_POOL_QUERY
+//     .replace("$1", tokenAddress1)
+//     .replace("$2", tokenAddress2)
+//     .replace("$3", userAddress);
+
+//   const res = await pool.query(query) // TODO replace pool with appropriate table
+//   ensure(res.rows > 0, "Pool does not exist"); // TODO ensure pool exist
+  
+//   return {
+//     decimals: res.rows[0].decimals,
+//     reserve1: res.rows[0].reserve1,
+//     reserve2: res.rows[0].reserve2,
+//     poolAddress: res.rows[0].address,
+//     totalSupply: res.rows[0].totalSupply,
+//     userPoolBalance: res.rows[0].userPoolBalance,
+//     minimumLiquidity: res.rows[0].minimumLiquidity,
+//   }
+// }
+
+// const resolvePoolQuery = async (tokenAddress1: string, tokenAddress2: string, userAddress?: string) => userAddress
+//   ? getUserPool(tokenAddress1, tokenAddress2, userAddress)
+//   : getPool(tokenAddress1, tokenAddress2);
 
 //
 // Express setup
@@ -380,28 +485,34 @@ app.post('/api/verificator/deployed-bytecode-request', async (req: any, res) => 
               let tokenSymbol = null;
               let tokenDecimals = null;
               let tokenTotalSupply = null;
-              const contract = new ethers.Contract(
-                matchedContractId,
-                abi,
-                provider
-              );
 
-              if (
-                typeof contract['name'] === 'function'
-                && typeof contract['symbol'] === 'function'
-                && typeof contract['decimals'] === 'function'
-                && typeof contract['totalSupply'] === 'function'
-                && typeof contract['balanceOf'] === 'function'
-                && typeof contract['transfer'] === 'function'
-                && typeof contract['transferFrom'] === 'function'
-                && typeof contract['approve'] === 'function'
-                && typeof contract['allowance'] === 'function'
-              ) {
-                isErc20 = true;
-                tokenName = await contract['name()']();
-                tokenSymbol = await contract['symbol()']();
-                tokenDecimals = await contract['decimals()']();
-                tokenTotalSupply = await contract['totalSupply()']();
+              try {
+                const contract = new ethers.Contract(
+                  matchedContractId,
+                  abi,
+                  provider
+                );
+
+                if (
+                  typeof contract['name'] === 'function'
+                  && typeof contract['symbol'] === 'function'
+                  && typeof contract['decimals'] === 'function'
+                  && typeof contract['totalSupply'] === 'function'
+                  && typeof contract['balanceOf'] === 'function'
+                  && typeof contract['transfer'] === 'function'
+                  && typeof contract['transferFrom'] === 'function'
+                  && typeof contract['approve'] === 'function'
+                  && typeof contract['allowance'] === 'function'
+                  && await contract.balanceOf('0x0000000000000000000000000000000000000000')
+                ) {
+                  isErc20 = true;
+                  tokenName = await contract.name();
+                  tokenSymbol = await contract.symbol();
+                  tokenDecimals = await contract.decimals();
+                  tokenTotalSupply = await contract.totalSupply();
+                }
+              } catch (error) {
+                console.log('Error: ', error);
               }
               
               const query = `UPDATE contract SET
@@ -686,6 +797,72 @@ app.post('/api/user-balance', async (req: any, res) => {
     })
   }
 });
+
+// Get User Token
+app.post('/api/get-user-token', async (req: any, res) => {
+  try {
+    ensure(req.tokenAddress, "tokenAddress does not exist!");
+    const token = resolveTokenQuery(req.tokenAddress, req.userAddress);
+    res.send(token)
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
+
+// TODO: Get User Pool
+// app.post('/api/get-user-pool', async (req: PoolReq, res: Promise<Pool>) => {
+//   try {
+//     ensure(req.tokenAddress1, 'tokenAddress1 does not exist');
+//     ensure(req.tokenAddress2, 'tokenAddress2 does not exist');
+
+//     const token1 = await resolveTokenQuery(req.tokenAddress1, req.userAddress);
+//     const token2 = await resolveTokenQuery(req.tokenAddress2, req.userAddress);
+
+//     const pool = await resolvePoolQuery(
+//       req.tokenAddress1,
+//       req.tokenAddress2,
+//       req.userAddress
+//     );
+
+//     res.send({...pool, token1, token2});
+//   } catch (e) {
+//     res.status(400).send(e);
+//   }
+// });
+
+// TODO: Get Reef Tokens List
+// app.post('/api/get-reef-token-list', async (req: BasicReq, res: Promise<Token[]>) => {
+//   try {
+//     const res = await Promise.all(
+//       validatedTokens
+//         .map(({address}) => await resolveTokenQuery(address, req.userAddress))
+//     );
+//     res.send(res);
+//   } catch (e) {
+//     res.status(400).send(e);
+//   }
+// });
+
+// TODO: Get Reef Pool List - Return all existing pools from Reef token list
+// app.post('/api/get-reef-pool-list', async (req: BasicReq, res: Promise<Pool[]>) => {
+//   const addresses = validatedTokens.map(({address}) => address);
+//   const resolvedPools = await Promise.all(
+//     combinations(addresses)
+//     .map(async ([address1, address2]) => {
+//       // Its a bit hacky to isolate non existing pools
+//       try {
+//         return await resolvePoolQuery(address1, address2, req.userAddress);
+//       } catch (e) {
+//         return undefined;
+//       }
+//     })
+//   );
+//   // Removing undefined pools
+//   const pools = resolvedPools
+//     .filter((pool) => !!pool);
+  
+//   res.send(pools);
+// });
 
 app.listen(config.httpPort, () => 
   console.log(`Reef explorer API is listening on port ${config.httpPort}.`)
