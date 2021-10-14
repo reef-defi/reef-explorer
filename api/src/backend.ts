@@ -83,6 +83,15 @@ const parametrizedDbQuery = async (pool: any, query: string, data: any[]): Promi
   }
 };
 
+// database query
+const dbQuery = async (pool: any, query: string): Promise<any> | null => {
+  try {
+    return await pool.query(query);
+  } catch (error) {
+    return null;
+  }
+};
+
 // Remove metadata from bytecode
 const preprocessBytecode = (bytecode: string): string => {
   let filteredBytecode = "";
@@ -115,6 +124,33 @@ const getOnChainContractsByBytecode = async(pool: any, bytecode: string): Promis
   }
   return []
 };
+
+// Get validated tokens
+//
+// {
+//   "name": "REEF",
+//   "address": "0x0000000000000000000000000000000001000000",
+//   "iconUrl": "https://s2.coinmarketcap.com/static/img/coins/64x64/6951.png",
+//   "coingeckoId": "reef-finance"
+// },
+//
+const getValidatedTokens = async(pool: any): Promise<any[]> => {
+  const query = `SELECT contract_id, token_name, icon_url, token_coingecko_id FROM contract WHERE token_validated IS TRUE;`;
+  const res = await dbQuery(pool, query);
+  if (res) {
+    if (res.rows.length > 0) {
+      return res.rows.map((token) => ({
+        name: token.token_name,
+        address: token.contract_id,
+        iconUrl: token.icon_url,
+        coingeckoId: token.token_coingecko_id,
+      }));
+    }
+  }
+  return []
+};
+
+
 
 // Get Token
 const TOKEN_QUERY = 'SELECT name, icon_url, decimals FROM contract WHERE contract_id = $1';
@@ -830,21 +866,25 @@ app.post('/api/get-user-token', async (req: any, res) => {
 //   }
 // });
 
-// TODO: Get Reef Tokens List
-// app.post('/api/get-reef-token-list', async (req: BasicReq, res: Promise<Token[]>) => {
-//   try {
-//     const res = await Promise.all(
-//       validatedTokens
-//         .map(({address}) => await resolveTokenQuery(address, req.userAddress))
-//     );
-//     res.send(res);
-//   } catch (e) {
-//     res.status(400).send(e);
-//   }
-// });
+// Get Reef Tokens List
+app.post('/api/get-reef-token-list', async (req: any, res) => {
+  try {
+    const pool = await getPool();
+    const validatedTokens = await getValidatedTokens(pool);
+    const tokenList = await Promise.all(
+      validatedTokens
+        .map(({address}) => resolveTokenQuery(address, req.userAddress))
+    );
+    res.send(tokenList);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
 
 // TODO: Get Reef Pool List - Return all existing pools from Reef token list
-// app.post('/api/get-reef-pool-list', async (req: BasicReq, res: Promise<Pool[]>) => {
+// app.post('/api/get-reef-pool-list', async (req: any, res) => {
+//   const pool = await getPool();
+//   const validatedTokens = await getValidatedTokens(pool);
 //   const addresses = validatedTokens.map(({address}) => address);
 //   const resolvedPools = await Promise.all(
 //     combinations(addresses)
