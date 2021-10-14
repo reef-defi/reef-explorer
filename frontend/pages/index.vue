@@ -3,10 +3,9 @@
     <section>
       <Search />
       <b-container class="main py-5 dashboard">
-        <Chain />
         <LastBlocks />
         <LastTransfers />
-        <div class="row" style="margin-top: 30px">
+        <div class="row" style="margin-top: 35px">
           <div class="col-md-6 mb-4">
             <LastExtrinsics />
           </div>
@@ -23,7 +22,6 @@ import LastBlocks from '@/components/LastBlocks.vue'
 import LastTransfers from '@/components/LastTransfers.vue'
 import LastExtrinsics from '@/components/LastExtrinsics.vue'
 import LastEvents from '@/components/LastEvents.vue'
-import Chain from '@/components/Chain.vue'
 import Search from '@/components/Search.vue'
 import { network } from '@/frontend.config.js'
 
@@ -33,7 +31,6 @@ export default {
     LastTransfers,
     LastExtrinsics,
     LastEvents,
-    Chain,
     Search,
   },
   data: () => {

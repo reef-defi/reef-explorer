@@ -11,6 +11,7 @@
         placeholder="Search by block number, block hash, extrinsic hash or account address"
         @keydown.native="doSearch"
       />
+      <Chain />
     </div>
 
     <bubbles :amount="20" />
@@ -19,10 +20,11 @@
 
 <script>
 import commonMixin from '@/mixins/commonMixin.js'
+import Chain from '@/components/Chain.vue'
 import bubbles from './BubblesAnimation.vue'
 
 export default {
-  components: { bubbles },
+  components: { bubbles, Chain },
   mixins: [commonMixin],
   data() {
     return {
@@ -58,15 +60,9 @@ export default {
 <style lang="scss">
 .search-section {
   position: relative;
-  padding: 70px 0 125px 0;
-  background: linear-gradient(130deg, #b01f6c, #3c127b);
+  padding: 70px 0 0 0;
+  background: linear-gradient(130deg, #a51863, #3c127b);
   margin: 0 !important;
-
-  & + .main {
-    > .chain-info:first-child {
-      margin-top: -90px;
-    }
-  }
 
   .search-section__label {
     font-size: 15px;
@@ -82,6 +78,7 @@ export default {
     transition: all 0.2s;
     position: relative;
     z-index: 2;
+    margin-bottom: 70px;
 
     &::placeholder {
       color: rgba(black, 0.75);
@@ -102,11 +99,12 @@ export default {
   }
 
   @media only screen and (max-width: 576px) {
-    padding: 40px 10px 90px 10px;
+    padding: 40px 10px 5px 10px;
 
     .search-section__input {
       font-size: 14px;
       padding: 25px 20px;
+      margin-bottom: 45px;
     }
   }
 }

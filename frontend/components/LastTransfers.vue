@@ -134,7 +134,7 @@ export default {
 }
 
 * + .last-transfers {
-  margin-top: 30px;
+  margin-top: 35px;
 }
 
 .last-transfers {

@@ -15,6 +15,7 @@ export default {
 <style lang="scss">
 .table__wrapper {
   width: 100%;
+  overflow: auto;
 
   .table {
     width: 100%;
