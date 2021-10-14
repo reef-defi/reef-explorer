@@ -65,15 +65,9 @@ That will build and start all the required dockers:
 - Verificator
 - API
 
-### Hasura configuration
+### Hasura console
 
-After that you need to access to Hasura console at http://server_ip_address:8082 and:
-
-- Login as admin using the password you previously set in `HASURA_GRAPHQL_ADMIN_SECRET`
-- Track all tables
-- For all tables go to Permissions and add a new ROLE named 'public' ony with SELECT permissions.
-- In `contract` table create a new Array relationship called `holders` that maps `token_holder`.`contract_id ` → `contract`.`contract_id`
-- In `token_holder` table create a new Object relationship called `contract` that maps `token_holder`.`contract_id ` → `contract`.`contract_id`
+After that you can access Hasura console at http://server_ip_address:8082
 
 ### Nginx configuration
 
