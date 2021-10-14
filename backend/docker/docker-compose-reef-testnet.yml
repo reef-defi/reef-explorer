@@ -30,6 +30,7 @@ services:
       - './sql/backend.sql:/docker-entrypoint-initdb.d/00_backend.sql'
       - './sql/contracts_testnet.sql:/docker-entrypoint-initdb.d/01_contracts.sql'
       - './sql/counters.sql:/docker-entrypoint-initdb.d/02_counters.sql'
+      - './sql/post.sql:/docker-entrypoint-initdb.d/03_post.sql'
     environment:
       POSTGRES_USER: 'reefexplorer'
       POSTGRES_PASSWORD: 'reefexplorer'
@@ -101,14 +102,14 @@ services:
       ACTIVE_ACCOUNTS_CHUNK_SIZE: '100'
 
   #
-  # Contract verificator API
+  # API
   #
-  verificator-api:
-    image: verificator-api:latest
+  api:
+    image: api:latest
     ports:
       - '8000:8000'
     build:
-      context: ../../verificator-api
+      context: ../../api
       dockerfile: Dockerfile
     depends_on:
       - 'postgres'

@@ -49,6 +49,11 @@ CREATE TABLE public.contract (
     token_symbol text,
     token_decimals integer,
     token_total_supply numeric(40,0) DEFAULT NULL::numeric,
+    token_validated BOOLEAN DEFAULT FALSE,
+    token_description TEXT DEFAULT NULL,
+    token_icon_url TEXT DEFAULT NULL,
+    token_coingecko_id TEXT DEFAULT NULL,
+    token_coinmarketcap_id TEXT DEFAULT NULL,
     "timestamp" bigint NOT NULL
 );
 

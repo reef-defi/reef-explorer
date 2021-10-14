@@ -4230,7 +4230,7 @@ export default {
           }
         }
 
-        // call verificator-api
+        // call verificator api
         const formData = new FormData()
         formData.append('source', vm.source)
         formData.append('address', toChecksumAddress(vm.address)) // save address checksum

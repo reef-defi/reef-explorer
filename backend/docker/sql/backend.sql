@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS block (
   spec_version INT NOT NULL,
   total_events INT NOT NULL,
   total_extrinsics INT NOT NULL,
-  total_issuance NUMERIC(40,0) NOT NULL,
+  total_issuance NUMERIC(80,0) NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( block_number )
 );
@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS block (
 CREATE TABLE IF NOT EXISTS harvest_error (  
   block_number BIGINT NOT NULL,
   error TEXT NOT NULL,
+  stack TEXT NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( block_number )
 );
@@ -43,7 +44,7 @@ CREATE TABLE IF NOT EXISTS staking_reward (
   block_number BIGINT NOT NULL,
   event_index INT NOT NULL,
   account_id TEXT NOT NULL,
-  amount NUMERIC(40,0) NOT NULL,
+  amount NUMERIC(80,0) NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( block_number, event_index ) 
 );
@@ -52,7 +53,7 @@ CREATE TABLE IF NOT EXISTS staking_slash (
   block_number BIGINT NOT NULL,
   event_index INT NOT NULL,
   account_id TEXT NOT NULL,
-  amount NUMERIC(40,0) NOT NULL,
+  amount NUMERIC(80,0) NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( block_number, event_index ) 
 );
@@ -98,9 +99,9 @@ CREATE TABLE IF NOT EXISTS transfer (
   hash TEXT NOT NULL,
   source TEXT NOT NULL,
   destination TEXT NOT NULL,
-  amount NUMERIC(40,0) NOT NULL,
+  amount NUMERIC(80,0) NOT NULL,
   denom TEXT NOT NULL,
-  fee_amount NUMERIC(40,0) NOT NULL,
+  fee_amount NUMERIC(80,0) NOT NULL,
   success BOOLEAN NOT NULL,
   error_message TEXT DEFAULT NULL,
   timestamp BIGINT NOT NULL,
@@ -155,9 +156,9 @@ CREATE TABLE IF NOT EXISTS ranking (
   slashes TEXT NOT NULL,
   payout_history TEXT NOT NULL,
   payout_rating INT NOT NULL,
-  self_stake NUMERIC(40,0) NOT NULL,
-  other_stake NUMERIC(40,0) NOT NULL,
-  total_stake NUMERIC(40,0) NOT NULL,
+  self_stake NUMERIC(80,0) NOT NULL,
+  other_stake NUMERIC(80,0) NOT NULL,
+  total_stake NUMERIC(80,0) NOT NULL,
   stake_history TEXT NOT NULL,
   total_rating INT NOT NULL,
   dominated BOOLEAN NOT NULL,
@@ -188,13 +189,13 @@ CREATE TABLE IF NOT EXISTS era_commission_avg (
 CREATE TABLE IF NOT EXISTS era_self_stake (  
   stash_address TEXT NOT NULL,
   era INT NOT NULL,
-  self_stake NUMERIC(40,0) NOT NULL,
+  self_stake NUMERIC(80,0) NOT NULL,
   PRIMARY KEY ( stash_address, era )
 );
 
 CREATE TABLE IF NOT EXISTS era_self_stake_avg (  
   era INT NOT NULL,
-  self_stake_avg NUMERIC(40,0) NOT NULL,
+  self_stake_avg NUMERIC(80,0) NOT NULL,
   PRIMARY KEY ( era )
 );
 
@@ -230,9 +231,9 @@ CREATE TABLE IF NOT EXISTS account  (
   identity_display TEXT NOT NULL,
   identity_display_parent TEXT NOT NULL,
   balances TEXT NOT NULL,
-  available_balance NUMERIC(40,0) NOT NULL,
-  free_balance NUMERIC(40,0) NOT NULL,
-  locked_balance NUMERIC(40,0) NOT NULL,
+  available_balance NUMERIC(80,0) NOT NULL,
+  free_balance NUMERIC(80,0) NOT NULL,
+  locked_balance NUMERIC(80,0) NOT NULL,
   nonce BIGINT NOT NULL,
   timestamp BIGINT NOT NULL,
   block_height BIGINT NOT NULL,
@@ -263,7 +264,12 @@ CREATE TABLE IF NOT EXISTS contract  (
   token_name TEXT DEFAULT NULL,
   token_symbol TEXT DEFAULT NULL,
   token_decimals INT DEFAULT NULL,
-  token_total_supply NUMERIC(40,0) DEFAULT NULL,
+  token_total_supply NUMERIC(80,0) DEFAULT NULL,
+  token_validated BOOLEAN DEFAULT FALSE,
+  token_description TEXT DEFAULT NULL,
+  token_icon_url TEXT DEFAULT NULL,
+  token_coingecko_id TEXT DEFAULT NULL,
+  token_coinmarketcap_id TEXT DEFAULT NULL,
   -- token tracker
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( contract_id )  
@@ -273,7 +279,7 @@ CREATE TABLE IF NOT EXISTS token_holder  (
   contract_id TEXT NOT NULL,
   holder_account_id TEXT DEFAULT NULL,
   holder_evm_address TEXT DEFAULT NULL,
-  balance NUMERIC(40,0) DEFAULT NULL,
+  balance NUMERIC(80,0) DEFAULT NULL,
   block_height BIGINT NOT NULL,
   timestamp BIGINT NOT NULL,
   PRIMARY KEY ( contract_id, holder_evm_address )  
@@ -297,9 +303,28 @@ CREATE TABLE IF NOT EXISTS contract_verification_request  (
   PRIMARY KEY ( id )  
 );
 
+CREATE TABLE IF NOT EXISTS pool (
+  address TEXT NOT NULL,
+  decimals INT NOT NULL,
+  reserve1 NUMERIC(80,0) NOT NULL,
+  reserve2 NUMERIC(80,0) NOT NULL,
+  total_supply NUMERIC(80,0) NOT NULL,
+  minimum_liquidity NUMERIC(80,0) NOT NULL,
+  token1 TEXT NOT NULL,
+  token2 TEXT NOT NULL,
+  PRIMARY KEY ( address )
+);
+
+CREATE TABLE IF NOT EXISTS pool_user (
+  pool_address TEXT NOT NULL,
+  user_address TEXT NOT NULL,
+  balance NUMERIC(80,0) NOT NULL,
+  PRIMARY KEY ( pool_address, user_address )
+);
+
 CREATE TABLE IF NOT EXISTS total (  
   name TEXT,
-  count NUMERIC(40,0) NOT NULL,
+  count NUMERIC(80,0) NOT NULL,
   PRIMARY KEY ( name )
 );
 
