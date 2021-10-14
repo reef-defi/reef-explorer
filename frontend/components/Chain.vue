@@ -223,8 +223,43 @@ export default {
 }
 </script>
 
-<style>
-.chain-info .card {
-  box-shadow: 0 8px 20px 0 rgb(40 133 208 / 15%);
+<style lang="scss">
+.chain-info {
+  .card {
+    border: none;
+    box-shadow: 0 0 10px -10px rgba(#0f233f, 0.5),
+      0 5px 15px -5px rgba(#0f233f, 0.25);
+    transition: all 0.15s;
+
+    h4 {
+      font-size: 15px;
+      line-height: 17px;
+      color: darken(#6b6c6f, 10%);
+      margin-bottom: 5px !important;
+    }
+
+    h6 {
+      font-size: 19px;
+      line-height: 23px;
+      font-weight: 600;
+      margin-bottom: 0 !important;
+      color: #0f233f;
+    }
+
+    a {
+      h6 {
+        background: linear-gradient(90deg, #a93185, #5531a9);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: #5531a9;
+      }
+    }
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 10px -10px rgba(#0f233f, 0.5),
+        0 10px 20px -5px rgba(#0f233f, 0.25);
+    }
+  }
 }
 </style>
