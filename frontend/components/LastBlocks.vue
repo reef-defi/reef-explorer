@@ -1,33 +1,46 @@
 <template>
   <div class="last-blocks">
-    <div class="table-responsive">
-      <b-table striped hover :fields="fields" :items="blocks">
-        <template #cell(block_number)="data">
-          <p class="mb-0">
-            <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
-              #{{ formatNumber(data.item.block_number) }}
-            </nuxt-link>
-          </p>
-        </template>
-        <template #cell(finalized)="data">
-          <p v-if="data.item.finalized" class="mb-0">
-            <font-awesome-icon icon="check" class="text-success" />
-          </p>
-          <p v-else class="mb-0">
-            <font-awesome-icon icon="clock" class="text-light" />
-          </p>
-        </template>
-        <template #cell(block_hash)="data">
-          <p class="mb-0">
-            {{ shortHash(data.item.block_hash) }}
-          </p>
-        </template>
-      </b-table>
+    <div class="headline">
+      <nuxt-link
+        v-b-tooltip.hover
+        :to="`/blocks`"
+        title="Click to see last blocks"
+      >
+        Last blocks
+      </nuxt-link>
     </div>
+
+    <Table>
+      <Row v-for="(item, index) in blocks" :key="'item-' + index">
+        <Cell label="Block" :link="`/block?blockNumber=${item.block_number}`"
+          ># {{ formatNumber(item.block_number) }}</Cell
+        >
+
+        <Cell label="Hash">{{ shortHash(item.block_hash) }}</Cell>
+
+        <Cell label="Status">
+          <font-awesome-icon
+            :icon="item.finalized ? 'check' : 'spinner'"
+            :class="
+              item.finalized ? 'text-success' : 'last-blocks__processing-icon'
+            "
+            style="margin-right: 5px"
+          />
+          <span>{{ item.finalized ? 'Finalized' : 'Processing' }}</span>
+        </Cell>
+
+        <Cell label="Extrinsics" align="center">{{
+          item.total_extrinsics
+        }}</Cell>
+
+        <Cell label="Events" align="center">{{ item.total_events }}</Cell>
+      </Row>
+    </Table>
   </div>
 </template>
 
 <script>
+import '@/components/Table'
 import commonMixin from '@/mixins/commonMixin.js'
 import gql from 'graphql-tag'
 
@@ -36,33 +49,6 @@ export default {
   data: () => {
     return {
       blocks: [],
-      fields: [
-        {
-          key: 'block_number',
-          label: 'Block',
-          sortable: true,
-        },
-        {
-          key: 'finalized',
-          label: 'Finalized',
-          sortable: true,
-        },
-        {
-          key: 'block_hash',
-          label: 'Hash',
-          sortable: true,
-        },
-        {
-          key: 'total_extrinsics',
-          label: 'Extrinsics',
-          sortable: true,
-        },
-        {
-          key: 'total_events',
-          label: 'Events',
-          sortable: true,
-        },
-      ],
     }
   },
   apollo: {
@@ -88,17 +74,20 @@ export default {
 }
 </script>
 
-<style>
-.last-blocks .table th,
-.last-blocks .table td {
-  padding: 0.45rem;
-}
-.last-blocks .table thead th {
-  border-bottom: 0;
-}
-.last-blocks .identicon {
-  display: inline-block;
-  margin: 0 0.2rem 0 0;
-  cursor: copy;
+<style lang="scss">
+.last-blocks {
+  .last-blocks__processing-icon {
+    opacity: 0.75;
+    animation: spin 1.5s linear infinite;
+
+    @keyframes spin {
+      from {
+        transform: none;
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  }
 }
 </style>

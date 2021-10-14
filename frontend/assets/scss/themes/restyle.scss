@@ -3,3 +3,19 @@
     border-radius: 99px;
   }
 }
+
+.headline {
+  font-size: 23px;
+  font-weight: 600;
+  
+  a {
+    background: linear-gradient(90deg, #a93185, #5531a9);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: $primary2;
+  }
+
+  & + * {
+    margin-top: 15px;
+  }
+}

@@ -1,33 +1,29 @@
 <template>
   <div class="last-extrinsics">
-    <div class="table-responsive">
-      <b-table striped hover :fields="fields" :items="extrinsics">
-        <template #cell(block_number)="data">
-          <p class="mb-0">
-            <nuxt-link
-              v-b-tooltip.hover
-              :to="`/extrinsic/${data.item.block_number}/${data.item.extrinsic_index}`"
-              title="Check extrinsic information"
-            >
-              #{{ formatNumber(data.item.block_number) }}-{{
-                data.item.extrinsic_index
-              }}
-            </nuxt-link>
-          </p>
-        </template>
-        <template #cell(hash)="data">
-          <p class="mb-0">
-            {{ shortHash(data.item.hash) }}
-          </p>
-        </template>
-        <template #cell(section)="data">
-          <p class="mb-0">
-            {{ data.item.section }} ➡
-            {{ data.item.method }}
-          </p>
-        </template>
-      </b-table>
+    <div class="headline">
+      <nuxt-link
+        v-b-tooltip.hover
+        :to="`/blocks`"
+        title="Click to see last extrinsics"
+      >
+        Last extrinsics
+      </nuxt-link>
     </div>
+
+    <Table>
+      <Row v-for="(item, index) in extrinsics" :key="'item-' + index">
+        <Cell
+          label="Id"
+          :link="`/extrinsic/${item.block_number}/${item.extrinsic_index}`"
+          >#{{ formatNumber(item.block_number) }}-{{
+            item.extrinsic_index
+          }}</Cell
+        >
+
+        <Cell label="Hash">{{ shortHash(item.hash) }}</Cell>
+        <Cell label="Extrinsic">{{ item.section }} ➡ {{ item.method }}</Cell>
+      </Row>
+    </Table>
   </div>
 </template>
 
@@ -40,24 +36,6 @@ export default {
   data() {
     return {
       extrinsics: [],
-      fields: [
-        {
-          key: 'block_number',
-          label: 'Id',
-          sortable: true,
-        },
-        {
-          key: 'hash',
-          label: 'Hash',
-          class: 'd-none d-sm-none d-md-none d-lg-block d-xl-block',
-          sortable: true,
-        },
-        {
-          key: 'section',
-          label: 'Extrinsic',
-          sortable: true,
-        },
-      ],
     }
   },
   apollo: {
@@ -85,18 +63,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.last-extrinsics .table th,
-.last-extrinsics .table td {
-  padding: 0.45rem;
-}
-.last-extrinsics .table thead th {
-  border-bottom: 0;
-}
-.last-extrinsics .identicon {
-  display: inline-block;
-  margin: 0 0.2rem 0 0;
-  cursor: copy;
-}
-</style>
