@@ -312,7 +312,7 @@ CREATE TABLE IF NOT EXISTS pool (
   minimum_liquidity NUMERIC(40,0) NOT NULL,
   token1 TEXT NOT NULL,
   token2 TEXT NOT NULL,
-  PRIMARY KEY ( pool_address )
+  PRIMARY KEY ( address )
 );
 
 CREATE TABLE IF NOT EXISTS pool_user (
