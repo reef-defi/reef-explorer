@@ -68,7 +68,7 @@ const ensure = (condition: boolean, message: string) => {
 
 // Connnect to db
 // TODO: refactor!!!
-const getPool = async (): Promise<Pool> => {
+const getPgPool = async (): Promise<Pool> => {
   const pool = new Pool(config.postgresConnParams);
   await pool.connect();
   return pool;
@@ -155,7 +155,7 @@ const getValidatedTokens = async(pool: any): Promise<any[]> => {
 // Get Token
 const TOKEN_QUERY = 'SELECT name, icon_url, decimals FROM contract WHERE contract_id = $1';
 const getToken = async (tokenAddress: string): Promise<Token> => {
-  const pool = await getPool();
+  const pool = await getPgPool();
   const res = await pool.query(TOKEN_QUERY, [tokenAddress]);
   ensure(res.rows.length > 0, "Not found");
   return {
@@ -183,7 +183,7 @@ const USER_TOKEN_QUERY = `
     (th.holder_account_id = $2 OR th.holder_evm_address = $2)
 `;
 const getUserToken = async (tokenAddress: string, userAddress): Promise<Token> => {
-  const pool = await getPool();
+  const pool = await getPgPool();
   const res = await pool.query(USER_TOKEN_QUERY, [tokenAddress, userAddress]);
   ensure(res.rows.length > 0, "Not found");
 
@@ -210,53 +210,59 @@ const combinations = <T,> (values: T[]): [T, T][] => {
   return comb;
 }
 
-// TODO
+// Get User Pool
+const POOL_QUERY = 'SELECT address, decimals, reserve1, reserve2, total_supply, minimum_liquidity WHERE token1 = $1 AND token2 = $2';
+const getPool = async (tokenAddress1: string, tokenAddress2: string): Promise<BasicPool> => {
+  const pool = await getPgPool();
+  const res = await pool.query(POOL_QUERY, [tokenAddress1, tokenAddress2]);
+  ensure(res.rows.length > 0, "Pool does not exist");
 
-// // Get User Pool
-// const POOL_QUERY = 'SELECT <Address> <Decimals> <Reserve1> <Reserve2> <User-Balance> <Total-Supply> <MinimumLiquidity> WHERE <TokenAddress1> = $1 AND <TokenAddress2> = $2';
-// const getPool = async (tokenAddress1: string, tokenAddress2: string): Promise<BasicPool> => {
-//   const query = POOL_QUERY
-//     .replace("$1", tokenAddress1)
-//     .replace("$2", tokenAddress2);
+  return {
+    userPoolBalance: '0',
+    decimals: res.rows[0].decimals,
+    reserve1: res.rows[0].reserve1,
+    reserve2: res.rows[0].reserve2,
+    poolAddress: res.rows[0].address,
+    totalSupply: res.rows[0].total_supply,
+    minimumLiquidity: res.rows[0].minimum_liquidity,
+  }
+}
+
+const USER_POOL_QUERY =
+  `SELECT
+    address,
+    decimals,
+    reserve1,
+    reserve2,
+    total_supply,
+    minimum_liquidity,
+    balance
+  FROM
+    pool AS p,
+    pool_user AS pu
+  WHERE
+    token1 = $1 AND
+    token2 = $2 AND
+    user_address = $3`;
+const getUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<BasicPool> => {
+  const pool = await getPgPool();
+  const res = await pool.query(POOL_QUERY, [tokenAddress1, tokenAddress2, userAddress]);
+  ensure(res.rows.length > 0, "Pool does not exist");
   
-//   const res = await pool.query(query) // TODO replace pool with appropriate table
-//   ensure(res.rows > 0, "Pool does not exist"); // TODO ensure pool exist
+  return {
+    decimals: res.rows[0].decimals,
+    reserve1: res.rows[0].reserve1,
+    reserve2: res.rows[0].reserve2,
+    poolAddress: res.rows[0].address,
+    totalSupply: res.rows[0].total_supply,
+    userPoolBalance: res.rows[0].balance,
+    minimumLiquidity: res.rows[0].minimum_liquidity,
+  }
+}
 
-//   return {
-//     userPoolBalance: 0,
-//     decimals: res.rows[0].decimals,
-//     reserve1: res.rows[0].reserve1,
-//     reserve2: res.rows[0].reserve2,
-//     poolAddress: res.rows[0].address,
-//     totalSupply: res.rows[0].totalSupply,
-//     minimumLiquidity: res.rows[0].minimumLiquidity,
-//   }
-// }
-
-// const USER_POOL_QUERY = `${POOL_QUERY} AND <User-Address> = $3`;
-// const getUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<BasicPool> => {
-//   const query = USER_POOL_QUERY
-//     .replace("$1", tokenAddress1)
-//     .replace("$2", tokenAddress2)
-//     .replace("$3", userAddress);
-
-//   const res = await pool.query(query) // TODO replace pool with appropriate table
-//   ensure(res.rows > 0, "Pool does not exist"); // TODO ensure pool exist
-  
-//   return {
-//     decimals: res.rows[0].decimals,
-//     reserve1: res.rows[0].reserve1,
-//     reserve2: res.rows[0].reserve2,
-//     poolAddress: res.rows[0].address,
-//     totalSupply: res.rows[0].totalSupply,
-//     userPoolBalance: res.rows[0].userPoolBalance,
-//     minimumLiquidity: res.rows[0].minimumLiquidity,
-//   }
-// }
-
-// const resolvePoolQuery = async (tokenAddress1: string, tokenAddress2: string, userAddress?: string) => userAddress
-//   ? getUserPool(tokenAddress1, tokenAddress2, userAddress)
-//   : getPool(tokenAddress1, tokenAddress2);
+const resolvePoolQuery = async (tokenAddress1: string, tokenAddress2: string, userAddress?: string) => userAddress
+  ? getUserPool(tokenAddress1, tokenAddress2, userAddress)
+  : getPool(tokenAddress1, tokenAddress2);
 
 //
 // Express setup
@@ -315,7 +321,7 @@ app.post('/api/verificator/request', async (req: any, res) => {
         const sourceFileContent = source.data.toString('utf8');
         const id = crypto.randomBytes(20).toString('hex');
         const timestamp = Date.now();
-        const pool = await getPool();
+        const pool = await getPgPool();
         const sql = `INSERT INTO contract_verification_request (
           id,
           contract_id,
@@ -445,7 +451,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req: any, res) => 
         target,
         license,
       } = req.body;
-      const pool = await getPool();
+      const pool = await getPgPool();
       const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode LIKE $2;";
       const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
       const data = [address, `0x${preprocessedRequestContractBytecode}%`];
@@ -624,7 +630,7 @@ app.post('/api/verificator/request-status', async (req: any, res) => {
   } else {
     try {
       const requestId = req.params.id;
-      const pool = await getPool();
+      const pool = await getPgPool();
       const data = [
         requestId
       ];
@@ -681,7 +687,7 @@ app.post('/api/verificator/request-status', async (req: any, res) => {
 
 app.get('/api/staking/rewards', async (req: any, res) => {
   try {
-    const pool = await getPool();
+    const pool = await getPgPool();
     const query = `
       SELECT
         block_number,
@@ -752,7 +758,7 @@ app.post('/api/account/tokens', async (req: any, res) => {
     });
   } else {
     try {
-      const pool = await getPool();
+      const pool = await getPgPool();
       const account = req.body.account;
       const data = [
         account
@@ -821,7 +827,7 @@ const REEF_CONTRACT = '0x0000000000000000000000000000000001000000';
 app.post('/api/user-balance', async (req: any, res) => {
   try {
     const userAddress = req.body.userAddress;
-    const pool = await getPool();
+    const pool = await getPgPool();
     const dbres = await pool.query(USER_BALANCE_QUERY, [userAddress, REEF_CONTRACT]);
     res.send({
       balance: dbres.rows[0].balance
@@ -845,31 +851,31 @@ app.post('/api/get-user-token', async (req: any, res) => {
   }
 });
 
-// TODO: Get User Pool
-// app.post('/api/get-user-pool', async (req: PoolReq, res: Promise<Pool>) => {
-//   try {
-//     ensure(req.tokenAddress1, 'tokenAddress1 does not exist');
-//     ensure(req.tokenAddress2, 'tokenAddress2 does not exist');
+// Get User Pool
+app.post('/api/get-user-pool', async (req: any, res) => {
+  try {
+    ensure(req.tokenAddress1, 'tokenAddress1 does not exist');
+    ensure(req.tokenAddress2, 'tokenAddress2 does not exist');
 
-//     const token1 = await resolveTokenQuery(req.tokenAddress1, req.userAddress);
-//     const token2 = await resolveTokenQuery(req.tokenAddress2, req.userAddress);
+    const token1 = await resolveTokenQuery(req.tokenAddress1, req.userAddress);
+    const token2 = await resolveTokenQuery(req.tokenAddress2, req.userAddress);
 
-//     const pool = await resolvePoolQuery(
-//       req.tokenAddress1,
-//       req.tokenAddress2,
-//       req.userAddress
-//     );
+    const pool = await resolvePoolQuery(
+      req.tokenAddress1,
+      req.tokenAddress2,
+      req.userAddress
+    );
 
-//     res.send({...pool, token1, token2});
-//   } catch (e) {
-//     res.status(400).send(e);
-//   }
-// });
+    res.send({...pool, token1, token2});
+  } catch (e) {
+    res.status(400).send(e);
+  }
+});
 
 // Get Reef Tokens List
 app.post('/api/get-reef-token-list', async (req: any, res) => {
   try {
-    const pool = await getPool();
+    const pool = await getPgPool();
     const validatedTokens = await getValidatedTokens(pool);
     const tokenList = await Promise.all(
       validatedTokens
@@ -881,28 +887,28 @@ app.post('/api/get-reef-token-list', async (req: any, res) => {
   }
 });
 
-// TODO: Get Reef Pool List - Return all existing pools from Reef token list
-// app.post('/api/get-reef-pool-list', async (req: any, res) => {
-//   const pool = await getPool();
-//   const validatedTokens = await getValidatedTokens(pool);
-//   const addresses = validatedTokens.map(({address}) => address);
-//   const resolvedPools = await Promise.all(
-//     combinations(addresses)
-//     .map(async ([address1, address2]) => {
-//       // Its a bit hacky to isolate non existing pools
-//       try {
-//         return await resolvePoolQuery(address1, address2, req.userAddress);
-//       } catch (e) {
-//         return undefined;
-//       }
-//     })
-//   );
-//   // Removing undefined pools
-//   const pools = resolvedPools
-//     .filter((pool) => !!pool);
+// Get Reef Pool List - Return all existing pools from Reef token list
+app.post('/api/get-reef-pool-list', async (req: any, res) => {
+  const pool = await getPgPool();
+  const validatedTokens = await getValidatedTokens(pool);
+  const addresses = validatedTokens.map(({address}) => address);
+  const resolvedPools = await Promise.all(
+    combinations(addresses)
+    .map(async ([address1, address2]) => {
+      // Its a bit hacky to isolate non existing pools
+      try {
+        return await resolvePoolQuery(address1, address2, req.userAddress);
+      } catch (e) {
+        return undefined;
+      }
+    })
+  );
+  // Removing undefined pools
+  const pools = resolvedPools
+    .filter((pool) => !!pool);
   
-//   res.send(pools);
-// });
+  res.send(pools);
+});
 
 app.listen(config.httpPort, () => 
   console.log(`Reef explorer API is listening on port ${config.httpPort}.`)

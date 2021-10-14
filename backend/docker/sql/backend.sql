@@ -303,6 +303,25 @@ CREATE TABLE IF NOT EXISTS contract_verification_request  (
   PRIMARY KEY ( id )  
 );
 
+CREATE TABLE IF NOT EXISTS pool (
+  address TEXT NOT NULL,
+  decimals INT NOT NULL,
+  reserve1 NUMERIC(40,0) NOT NULL,
+  reserve2 NUMERIC(40,0) NOT NULL,
+  total_supply NUMERIC(40,0) NOT NULL,
+  minimum_liquidity NUMERIC(40,0) NOT NULL,
+  token1 TEXT NOT NULL,
+  token2 TEXT NOT NULL,
+  PRIMARY KEY ( pool_address )
+);
+
+CREATE TABLE IF NOT EXISTS pool_user (
+  pool_address TEXT NOT NULL,
+  user_address TEXT NOT NULL,
+  balance NUMERIC(40,0) NOT NULL,
+  PRIMARY KEY ( pool_address, user_address )
+);
+
 CREATE TABLE IF NOT EXISTS total (  
   name TEXT,
   count NUMERIC(40,0) NOT NULL,
