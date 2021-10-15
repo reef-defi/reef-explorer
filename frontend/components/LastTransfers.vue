@@ -6,13 +6,13 @@
         :to="`/blocks`"
         title="Click to see last transfers"
       >
-        Last transfers
+        Last Transfers
       </nuxt-link>
     </div>
 
     <Table>
       <Row v-for="(item, index) in transfers" :key="'item-' + index">
-        <Cell label="Block" :link="`/transfer/${item.hash}`">{{
+        <Cell label="Hash" :link="`/transfer/${item.hash}`">{{
           shortHash(item.hash)
         }}</Cell>
 

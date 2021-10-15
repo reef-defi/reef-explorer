@@ -6,7 +6,7 @@
         :to="`/blocks`"
         title="Click to see last blocks"
       >
-        Last blocks
+        Last Blocks
       </nuxt-link>
     </div>
 

@@ -6,7 +6,7 @@
         :to="`/blocks`"
         title="Click to see last extrinsics"
       >
-        Last extrinsics
+        Last Extrinsics
       </nuxt-link>
     </div>
 
@@ -15,7 +15,7 @@
         <Cell
           label="Id"
           :link="`/extrinsic/${item.block_number}/${item.extrinsic_index}`"
-          >#{{ formatNumber(item.block_number) }}-{{
+          ># {{ formatNumber(item.block_number) }}-{{
             item.extrinsic_index
           }}</Cell
         >
