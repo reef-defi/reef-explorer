@@ -97,11 +97,19 @@ export default {
 
         &:not(.table-cell__content--fill) {
           &:not(:hover) {
-            background: linear-gradient(90deg, #a93185, #5531a9);
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: #5531a9;
             box-shadow: inset 0 0 0 1px rgba(#8d1b70, 0.75);
+
+            &,
+            span {
+              background: linear-gradient(90deg, #a93185, #5531a9);
+              background-clip: text;
+              -webkit-text-fill-color: transparent;
+              color: #5531a9;
+            }
+
+            span {
+              font-weight: 500;
+            }
           }
 
           &:hover {
