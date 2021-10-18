@@ -223,6 +223,10 @@ export default {
       color: #ff51ca;
       margin-bottom: 5px !important;
       text-shadow: 1px 1px 1px rgba(black, 0.25);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     h6 {
