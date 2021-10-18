@@ -51,7 +51,7 @@ const processChunk = async (api, client, accountId) => {
   const JSONbalances = JSON.stringify(balances);
   const nonce = balances.accountNonce.toString();
   const evmAddress = chainEvmAddress.toString() !== '' ? toChecksumAddress(chainEvmAddress.toString()) : null;
-  const evmNonce = evmAddress ? await api.query.evm.accounts(evmAddress).then((res) => res.toJSON()?.nonce || null) : null;
+  const evmNonce = evmAddress ? await api.query.evm.accounts(evmAddress).then((res) => res.toJSON()?.nonce || 0) : null;
 
   const data = [
     accountId,
