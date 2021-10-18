@@ -30,7 +30,7 @@
     </div>
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">Total Extrinsics</h4>
+        <h4 class="mb-3">Total extrinsics</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/extrinsics"
@@ -44,7 +44,7 @@
     </div>
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">Total Events</h4>
+        <h4 class="mb-3">Total events</h4>
         <nuxt-link v-b-tooltip.hover to="/events" title="Click to see events!">
           <h6 class="d-inline-block">{{ formatNumber(totalEvents) }}</h6>
         </nuxt-link>
