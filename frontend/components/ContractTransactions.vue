@@ -42,7 +42,7 @@
                 :to="`/account/${data.item.signer}`"
                 :title="$t('pages.accounts.account_details')"
               >
-                <Identicon
+                <ReefIdenticon
                   :key="data.item.signer"
                   :address="data.item.signer"
                   :size="20"
@@ -68,10 +68,10 @@
 </template>
 
 <script>
-import commonMixin from '@/mixins/commonMixin.js'
 import gql from 'graphql-tag'
 // eslint-disable-next-line no-unused-vars
 import moment from 'moment'
+import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
   mixins: [commonMixin],

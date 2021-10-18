@@ -66,7 +66,7 @@
           </template>
           <template #cell(source)="data">
             <p class="mb-0">
-              <Identicon
+              <ReefIdenticon
                 :key="data.item.source"
                 :address="data.item.source"
                 :size="20"
@@ -81,7 +81,7 @@
           </template>
           <template #cell(destination)="data">
             <p class="mb-0">
-              <Identicon
+              <ReefIdenticon
                 :key="data.item.destination"
                 :address="data.item.destination"
                 :size="20"
@@ -141,13 +141,13 @@
 import gql from 'graphql-tag'
 import JsonCSV from 'vue-json-csv'
 import commonMixin from '@/mixins/commonMixin.js'
-import Identicon from '@/components/Identicon.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import { paginationOptions } from '@/frontend.config.js'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
     JsonCSV,
     Loading,
   },

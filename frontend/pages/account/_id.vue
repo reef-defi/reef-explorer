@@ -12,7 +12,7 @@
           <div class="card mb-4">
             <div class="card-body">
               <p class="text-center mb-2">
-                <Identicon
+                <ReefIdenticon
                   :key="parsedAccount.accountId"
                   :address="parsedAccount.accountId"
                   :size="80"
@@ -44,7 +44,7 @@
                     <tr>
                       <td>{{ $t('details.account.account_id') }}</td>
                       <td>
-                        <Identicon
+                        <ReefIdenticon
                           :key="parsedAccount.accountId"
                           :address="parsedAccount.accountId"
                           :size="20"
@@ -235,7 +235,7 @@
 </template>
 <script>
 import gql from 'graphql-tag'
-import Identicon from '@/components/Identicon.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import Activity from '@/components/Activity.vue'
 import AccountTransfers from '@/components/AccountTransfers.vue'
@@ -247,7 +247,7 @@ import AccountTokenBalances from '@/components/AccountTokenBalances.vue'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
     Loading,
     Activity,
     AccountTransfers,

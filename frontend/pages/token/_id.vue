@@ -77,7 +77,7 @@
                           <td>{{ $t('details.token.created') }}</td>
                           <td>
                             <div v-if="contract.signer">
-                              <Identicon
+                              <ReefIdenticon
                                 :key="contract.signer"
                                 :address="contract.signer"
                                 :size="20"
@@ -185,17 +185,17 @@
 </template>
 <script>
 import gql from 'graphql-tag'
-import Identicon from '@/components/Identicon.vue'
-import Loading from '@/components/Loading.vue'
-import commonMixin from '@/mixins/commonMixin.js'
-import { network } from '@/frontend.config.js'
 import VueJsonPretty from 'vue-json-pretty'
 import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
+import Loading from '@/components/Loading.vue'
+import commonMixin from '@/mixins/commonMixin.js'
+import { network } from '@/frontend.config.js'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
     Loading,
     VueJsonPretty,
     ContractTransactions,

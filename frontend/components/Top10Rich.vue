@@ -4,7 +4,7 @@
       <b-table striped hover :fields="fields" :items="richList">
         <template #cell(account_id)="data">
           <p class="mb-0 d-inline-block">
-            <Identicon
+            <ReefIdenticon
               :key="data.item.account_id"
               :address="data.item.account_id"
               :size="20"
@@ -37,11 +37,11 @@
 <script>
 import gql from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
-import Identicon from '@/components/Identicon.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
   },
   mixins: [commonMixin],
   data() {

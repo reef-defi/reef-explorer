@@ -41,7 +41,7 @@
           <td>Signer</td>
           <td>
             <div v-if="extrinsic.signer">
-              <Identicon
+              <ReefIdenticon
                 :key="extrinsic.signer"
                 :address="extrinsic.signer"
                 :size="20"

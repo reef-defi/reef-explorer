@@ -91,12 +91,15 @@
               </template>
               <template #cell(account_id)="data">
                 <div
-                  class="d-block d-sm-block d-md-none d-lg-none d-xl-none text-center"
+                  class="
+                    d-block d-sm-block d-md-none d-lg-none d-xl-none
+                    text-center
+                  "
                 >
                   <p class="mb-2">
                     {{ $t('pages.accounts.rank') }} #{{ data.item.rank }}
                   </p>
-                  <Identicon
+                  <ReefIdenticon
                     :key="data.item.account_id"
                     :address="data.item.account_id"
                     :size="40"
@@ -146,7 +149,7 @@
                   </table>
                 </div>
                 <div class="d-none d-sm-none d-md-block d-lg-block d-xl-block">
-                  <Identicon
+                  <ReefIdenticon
                     :key="data.item.account_id"
                     :address="data.item.account_id"
                     :size="20"
@@ -261,7 +264,7 @@
 <script>
 import gql from 'graphql-tag'
 import JsonCSV from 'vue-json-csv'
-import Identicon from '@/components/Identicon.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { paginationOptions } from '@/frontend.config.js'
@@ -269,7 +272,7 @@ import { paginationOptions } from '@/frontend.config.js'
 export default {
   components: {
     Loading,
-    Identicon,
+    ReefIdenticon,
     JsonCSV,
   },
   mixins: [commonMixin],

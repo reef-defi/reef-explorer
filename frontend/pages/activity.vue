@@ -43,7 +43,7 @@
                 </template>
                 <template #cell(signer)="data">
                   <p class="mb-0">
-                    <Identicon
+                    <ReefIdenticon
                       :key="data.item.signer"
                       :address="data.item.signer"
                       :size="20"
