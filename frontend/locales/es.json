@@ -225,6 +225,7 @@
       "free_balance": "Fondo libre",
       "account_id": "Dirección",
       "evm_address": "Dirección EVM",
+      "evm_nonce": "Nonce EVM",
       "account_nonce": "Nonce",
       "total_balance": "Fondo Total",
       "available_balance": "Fondo Disponible",

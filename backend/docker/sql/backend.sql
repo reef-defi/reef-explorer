@@ -238,6 +238,7 @@ CREATE TABLE IF NOT EXISTS account  (
   timestamp BIGINT NOT NULL,
   block_height BIGINT NOT NULL,
   evm_address TEXT DEFAULT NULL,
+  evm_nonce INT DEFAULT NULL,
   PRIMARY KEY ( account_id )  
 );
 

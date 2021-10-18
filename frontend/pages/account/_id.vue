@@ -62,6 +62,12 @@
                         <span>{{ parsedAccount.evmAddress }}</span>
                       </td>
                     </tr>
+                    <tr v-if="parsedAccount.evmNonce">
+                      <td>{{ $t('details.account.evm_nonce') }}</td>
+                      <td>
+                        <span>{{ parsedAccount.evmNonce }}</span>
+                      </td>
+                    </tr>
                     <tr v-if="parsedAccount.identity.display">
                       <td>Identity::display</td>
                       <td>
@@ -302,6 +308,7 @@ export default {
             account(where: { account_id: { _eq: $account_id } }) {
               account_id
               evm_address
+              evm_nonce
               balances
               available_balance
               free_balance
@@ -323,6 +330,7 @@ export default {
             this.parsedAccount = {
               accountId: data.account[0].account_id,
               evmAddress: data.account[0].evm_address,
+              evmNonce: data.account[0].evm_nonce,
               availableBalance: data.account[0].available_balance,
               freeBalance: data.account[0].free_balance,
               lockedBalance: data.account[0].locked_balance,
