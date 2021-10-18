@@ -261,14 +261,6 @@ COPY public.contract (contract_id, name, bytecode, arguments, value, gas_limit, 
 
 
 --
--- Name: contract contract_pkey; Type: CONSTRAINT; Schema: public; Owner: reefexplorer
---
-
-ALTER TABLE ONLY public.contract
-    ADD CONSTRAINT contract_pkey PRIMARY KEY (contract_id);
-
-
---
 -- PostgreSQL database dump complete
 --
 
