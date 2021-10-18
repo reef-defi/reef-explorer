@@ -110,7 +110,8 @@ const processChunk = async (api, client, accountId) => {
       nonce = EXCLUDED.nonce,
       timestamp = EXCLUDED.timestamp,
       block_height = EXCLUDED.block_height,
-      evm_address = EXCLUDED.evm_address
+      evm_address = EXCLUDED.evm_address,
+      evm_nonce = EXCLUDED.evm_nonce
     WHERE EXCLUDED.block_height > account.block_height
   ;`;
   // eslint-disable-next-line no-await-in-loop
