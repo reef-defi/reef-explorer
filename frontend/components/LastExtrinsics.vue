@@ -11,17 +11,20 @@
     </div>
 
     <Table>
+      <THead>
+        <Cell>Id</Cell>
+        <Cell>Hash</Cell>
+        <Cell>Extrinsic</Cell>
+      </THead>
       <Row v-for="(item, index) in extrinsics" :key="'item-' + index">
-        <Cell
-          label="Id"
-          :link="`/extrinsic/${item.block_number}/${item.extrinsic_index}`"
+        <Cell :link="`/extrinsic/${item.block_number}/${item.extrinsic_index}`"
           ># {{ formatNumber(item.block_number) }}-{{
             item.extrinsic_index
           }}</Cell
         >
 
-        <Cell label="Hash">{{ shortHash(item.hash) }}</Cell>
-        <Cell label="Extrinsic">{{ item.section }} ➡ {{ item.method }}</Cell>
+        <Cell>{{ shortHash(item.hash) }}</Cell>
+        <Cell>{{ item.section }} ➡ {{ item.method }}</Cell>
       </Row>
     </Table>
   </div>

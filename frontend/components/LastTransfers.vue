@@ -11,13 +11,16 @@
     </div>
 
     <Table>
+      <THead>
+        <Cell>Hash</Cell>
+        <Cell>From</Cell>
+        <Cell>To</Cell>
+        <Cell>Amount</Cell>
+      </THead>
       <Row v-for="(item, index) in transfers" :key="'item-' + index">
-        <Cell label="Hash" :link="`/transfer/${item.hash}`">{{
-          shortHash(item.hash)
-        }}</Cell>
+        <Cell :link="`/transfer/${item.hash}`">{{ shortHash(item.hash) }}</Cell>
 
         <Cell
-          label="From"
           :link="{ url: `/account/${item.from}`, fill: false }"
           :title="$t('pages.accounts.account_details')"
         >
@@ -26,7 +29,6 @@
         </Cell>
 
         <Cell
-          label="To"
           :link="{ url: `/account/${item.to}`, fill: false }"
           :title="$t('pages.accounts.account_details')"
         >
@@ -44,7 +46,7 @@
           }}</span>
         </Cell>
 
-        <Cell label="Amount">
+        <Cell>
           {{ formatAmount(item.amount) }}
         </Cell>
       </Row>
