@@ -82,6 +82,9 @@ $table-accent-bg: #c2d7ec2b !default;
 @import 'bootstrap/scss/bootstrap.scss';
 @import 'bootstrap-vue/src/index.scss';
 
+// Restyle
+@import './restyle.scss';
+
 // global styles
 @font-face {
   font-family: 'Poppins';
