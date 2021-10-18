@@ -113,13 +113,16 @@ const preprocessBytecode = (bytecode: string): string => {
 
 // Get not verified contracts with 100% matching bytecde (excluding metadata)
 const getOnChainContractsByBytecode = async(pool: any, bytecode: string): Promise<string[]> => {
-  const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
-  const preprocessedBytecode = preprocessBytecode(bytecode);
-  const data = [`0x${preprocessedBytecode}%`];
-  const res = await parametrizedDbQuery(pool, query, data);
-  if (res) {
-    if (res.rows.length > 0) {
-      return res.rows.map(({ contract_id }) => contract_id);
+  // bytecode excluding metadata should never be empty / dont match dummy contracts
+  if (bytecode !== '' && bytecode !== '0x') {
+    const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
+    const preprocessedBytecode = preprocessBytecode(bytecode);
+    const data = [`0x${preprocessedBytecode}%`];
+    const res = await parametrizedDbQuery(pool, query, data);
+    if (res) {
+      if (res.rows.length > 0) {
+        return res.rows.map(({ contract_id }) => contract_id);
+      }
     }
   }
   return []

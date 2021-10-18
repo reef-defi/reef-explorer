@@ -835,118 +835,73 @@ module.exports = {
     }
   },
   async processNewContract(client, provider, contractId, bytecode, loggerOptions) {
-    // find verified contract with the same preprocesses bytecode
-    const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
-    const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
-    const dbres = await client.query(
-      query,
-      [
-        contractId,
-        `0x${preprocessedRequestContractBytecode}%`
-      ]
-    );
-    if (dbres) {
-      if (dbres.rows.length === 1) {
-        // verify new contract using same compilation data
-        const isVerified = true;
-        // TODO: extract contract arguments
-        const args = '';
-        const {
-          name,
-          source,
-          compilerVersion,
-          optimization,
-          runs,
-          target,
-          abi,
-          license
-        } = dbres.rows[0];
+    // bytecode excluding metadata should never be empty / dont match dummy contracts
+    if (bytecode !== '' && bytecode !== '0x') {
+      // find verified contract with the same preprocesses bytecode
+      const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
+      const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
+      const dbres = await client.query(
+        query,
+        [
+          contractId,
+          `0x${preprocessedRequestContractBytecode}%`
+        ]
+      );
+      if (dbres) {
+        if (dbres.rows.length === 1) {
+          // verify new contract using same compilation data
+          const isVerified = true;
+          // TODO: extract contract arguments
+          const args = '';
+          const {
+            name,
+            source,
+            compilerVersion,
+            optimization,
+            runs,
+            target,
+            abi,
+            license
+          } = dbres.rows[0];
 
-        // check if it's an ERC-20 token
-        const {
-          isErc20,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          tokenTotalSupply
-        } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
-        
-        const query = `UPDATE contract SET
-          name = $1,
-          verified = $2,
-          source = $3,
-          compiler_version = $4,
-          arguments = $5,
-          optimization = $6,
-          runs = $7,
-          target = $8,
-          abi = $9,
-          license = $10,
-          is_erc20 = $11,
-          token_name = $12,
-          token_symbol = $13,
-          token_decimals = $14,
-          token_total_supply = $15
-          WHERE contract_id = $16;
-        `;
-        const data = [
-          name,
-          isVerified,
-          source,
-          compilerVersion,
-          args,
-          optimization,
-          runs,
-          target,
-          abi,
-          license,
-          isErc20,
-          tokenName ? tokenName.toString() : null,
-          tokenSymbol ? tokenSymbol.toString() : null,
-          tokenDecimals ? tokenDecimals.toString(): null,
-          tokenTotalSupply ? tokenTotalSupply.toString() : null,
-          contractId
-        ];
-        await module.exports.dbParamQuery(client, query, data, loggerOptions);
-        if (isErc20) {
-          // contract IS an ERC-20 token, update token holders
-          const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
-          const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
-          const [
-            { block },
-            timestampMs,
-          ] = await Promise.all([
-            provider.api.rpc.chain.getBlock(),
-            provider.api.query.timestamp.now(),
-          ]);
-          const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
-          const blockHeight = block.header.number.toString();
-          await module.exports.updateTokenHolders(client, provider, contractId, abi, accounts, blockHeight, timestamp, loggerOptions);
-        }
-      } else {
-        // contract is not verified but let's check if it's an ERC-20 token
-        const {
-          isErc20,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          tokenTotalSupply
-        } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
-        if (isErc20) {
-          // contract IS an ERC-20 token!
-          const query = `
-            UPDATE
-              contract
-            SET
-              is_erc20 = $1,
-              token_name = $2,
-              token_symbol = $3,
-              token_decimals = $4,
-              token_total_supply = $5
-            WHERE
-              contract_id = $6;
+          // check if it's an ERC-20 token
+          const {
+            isErc20,
+            tokenName,
+            tokenSymbol,
+            tokenDecimals,
+            tokenTotalSupply
+          } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
+          
+          const query = `UPDATE contract SET
+            name = $1,
+            verified = $2,
+            source = $3,
+            compiler_version = $4,
+            arguments = $5,
+            optimization = $6,
+            runs = $7,
+            target = $8,
+            abi = $9,
+            license = $10,
+            is_erc20 = $11,
+            token_name = $12,
+            token_symbol = $13,
+            token_decimals = $14,
+            token_total_supply = $15
+            WHERE contract_id = $16;
           `;
           const data = [
+            name,
+            isVerified,
+            source,
+            compilerVersion,
+            args,
+            optimization,
+            runs,
+            target,
+            abi,
+            license,
             isErc20,
             tokenName ? tokenName.toString() : null,
             tokenSymbol ? tokenSymbol.toString() : null,
@@ -955,20 +910,68 @@ module.exports = {
             contractId
           ];
           await module.exports.dbParamQuery(client, query, data, loggerOptions);
+          if (isErc20) {
+            // contract IS an ERC-20 token, update token holders
+            const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
+            const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
+            const [
+              { block },
+              timestampMs,
+            ] = await Promise.all([
+              provider.api.rpc.chain.getBlock(),
+              provider.api.query.timestamp.now(),
+            ]);
+            const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
+            const blockHeight = block.header.number.toString();
+            await module.exports.updateTokenHolders(client, provider, contractId, abi, accounts, blockHeight, timestamp, loggerOptions);
+          }
+        } else {
+          // contract is not verified but let's check if it's an ERC-20 token
+          const {
+            isErc20,
+            tokenName,
+            tokenSymbol,
+            tokenDecimals,
+            tokenTotalSupply
+          } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
+          if (isErc20) {
+            // contract IS an ERC-20 token!
+            const query = `
+              UPDATE
+                contract
+              SET
+                is_erc20 = $1,
+                token_name = $2,
+                token_symbol = $3,
+                token_decimals = $4,
+                token_total_supply = $5
+              WHERE
+                contract_id = $6;
+            `;
+            const data = [
+              isErc20,
+              tokenName ? tokenName.toString() : null,
+              tokenSymbol ? tokenSymbol.toString() : null,
+              tokenDecimals ? tokenDecimals.toString(): null,
+              tokenTotalSupply ? tokenTotalSupply.toString() : null,
+              contractId
+            ];
+            await module.exports.dbParamQuery(client, query, data, loggerOptions);
 
-          // update token holders
-          const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
-          const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
-          const [
-            { block },
-            timestampMs,
-          ] = await Promise.all([
-            provider.api.rpc.chain.getBlock(),
-            provider.api.query.timestamp.now(),
-          ]);
-          const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
-          const blockHeight = block.header.number.toString();
-          await module.exports.updateTokenHolders(client, provider, contractId, erc20Abi, accounts, blockHeight, timestamp, loggerOptions);
+            // update token holders
+            const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
+            const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
+            const [
+              { block },
+              timestampMs,
+            ] = await Promise.all([
+              provider.api.rpc.chain.getBlock(),
+              provider.api.query.timestamp.now(),
+            ]);
+            const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
+            const blockHeight = block.header.number.toString();
+            await module.exports.updateTokenHolders(client, provider, contractId, erc20Abi, accounts, blockHeight, timestamp, loggerOptions);
+          }
         }
       }
     }
