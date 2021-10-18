@@ -109,6 +109,7 @@
 
 <script>
 import gql from 'graphql-tag'
+import { BigNumber } from 'bignumber.js'
 import commonMixin from '../mixins/commonMixin.js'
 import { network } from '../frontend.config.js'
 
@@ -193,6 +194,14 @@ export default {
           this.totalAccounts = parseInt(data.account_aggregate.aggregate.count)
         },
       },
+    },
+  },
+  methods: {
+    formatAmount(amount) {
+      return `${new BigNumber(amount)
+        .div(new BigNumber(10).pow(network.tokenDecimals))
+        .toFixed(0)
+        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${network.tokenSymbol}`
     },
   },
 }
