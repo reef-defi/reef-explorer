@@ -3,7 +3,7 @@
     <div class="headline">
       <nuxt-link
         v-b-tooltip.hover
-        :to="`/blocks`"
+        :to="`/extrinsics`"
         title="Click to see last extrinsics"
       >
         Last Extrinsics
