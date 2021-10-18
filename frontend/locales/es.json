@@ -277,7 +277,7 @@
       "value": "Valor",
       "gas_limit": "Límite de gas",
       "storage_limit": "Límite de almacenamiento",
-      "bytecode": "Bytecode",
+      "bytecode": "Bytecode desplegado",
       "verified": "¿Verificado?",
       "abi": "ABI",
       "compiler_version": "Versión del compilador",
