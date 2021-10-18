@@ -6,17 +6,18 @@
     permission:
       columns:
       - account_id
+      - available_balance
+      - balances
+      - block_height
+      - evm_address
+      - evm_nonce
+      - free_balance
       - identity
       - identity_display
       - identity_display_parent
-      - balances
-      - available_balance
-      - free_balance
       - locked_balance
       - nonce
       - timestamp
-      - block_height
-      - evm_address
       filter: {}
       allow_aggregations: true
 - table:
