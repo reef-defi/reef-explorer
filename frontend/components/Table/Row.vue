@@ -14,7 +14,7 @@ export default {
 .table-row {
   border: none;
 
-  &:nth-child(odd) {
+  &:nth-child(even) {
     background: rgba(#eaedf3, 0.5);
   }
 

@@ -11,14 +11,21 @@
     </div>
 
     <Table>
+      <THead>
+        <Cell>Block</Cell>
+        <Cell>Hash</Cell>
+        <Cell>Status</Cell>
+        <Cell align="center">Extrinsics</Cell>
+        <Cell align="center">Events</Cell>
+      </THead>
       <Row v-for="(item, index) in blocks" :key="'item-' + index">
-        <Cell label="Block" :link="`/block?blockNumber=${item.block_number}`"
+        <Cell :link="`/block?blockNumber=${item.block_number}`"
           ># {{ formatNumber(item.block_number) }}</Cell
         >
 
-        <Cell label="Hash">{{ shortHash(item.block_hash) }}</Cell>
+        <Cell>{{ shortHash(item.block_hash) }}</Cell>
 
-        <Cell label="Status">
+        <Cell>
           <font-awesome-icon
             :icon="item.finalized ? 'check' : 'spinner'"
             :class="
@@ -29,11 +36,9 @@
           <span>{{ item.finalized ? 'Finalized' : 'Processing' }}</span>
         </Cell>
 
-        <Cell label="Extrinsics" align="center">{{
-          item.total_extrinsics
-        }}</Cell>
+        <Cell align="center">{{ item.total_extrinsics }}</Cell>
 
-        <Cell label="Events" align="center">{{ item.total_events }}</Cell>
+        <Cell label="" align="center">{{ item.total_events }}</Cell>
       </Row>
     </Table>
   </div>

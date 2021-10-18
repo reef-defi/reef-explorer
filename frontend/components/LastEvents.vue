@@ -11,14 +11,16 @@
     </div>
 
     <Table>
+      <THead>
+        <Cell>Id</Cell>
+        <Cell>Event</Cell>
+      </THead>
       <Row v-for="(item, index) in events" :key="'item-' + index">
-        <Cell
-          label="Id"
-          :link="`/event/${item.block_number}/${item.event_index}`"
+        <Cell :link="`/event/${item.block_number}/${item.event_index}`"
           ># {{ formatNumber(item.block_number) }}-{{ item.event_index }}</Cell
         >
 
-        <Cell label="Event">{{ item.section }} ➡ {{ item.method }}</Cell>
+        <Cell>{{ item.section }} ➡ {{ item.method }}</Cell>
       </Row>
     </Table>
   </div>
