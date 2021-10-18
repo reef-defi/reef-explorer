@@ -3,7 +3,7 @@
     <div class="headline">
       <nuxt-link
         v-b-tooltip.hover
-        :to="`/blocks`"
+        :to="`/events`"
         title="Click to see last events"
       >
         Last Events
