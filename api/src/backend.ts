@@ -113,8 +113,8 @@ const preprocessBytecode = (bytecode: string): string => {
 
 // Get not verified contracts with 100% matching bytecde (excluding metadata)
 const getOnChainContractsByBytecode = async(pool: any, bytecode: string): Promise<string[]> => {
-  // bytecode excluding metadata should never be empty / dont match dummy contracts
-  if (bytecode !== '' && bytecode !== '0x') {
+  // dont match dummy contracts
+  if (bytecode !== '0x') {
     const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
     const preprocessedBytecode = preprocessBytecode(bytecode);
     const data = [`0x${preprocessedBytecode}%`];
