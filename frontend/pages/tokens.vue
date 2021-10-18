@@ -157,18 +157,8 @@ export default {
           sortable: true,
         },
         {
-          key: 'token_symbol',
-          label: 'Symbol',
-          sortable: true,
-        },
-        {
-          key: 'token_decimals',
-          label: 'Decimals',
-          sortable: true,
-        },
-        {
           key: 'token_total_supply',
-          label: 'TotalSupply',
+          label: 'Total supply',
           sortable: true,
         },
         {
@@ -207,8 +197,6 @@ export default {
             ) {
               contract_id
               name
-              signer
-              block_height
               token_name
               token_symbol
               token_decimals
