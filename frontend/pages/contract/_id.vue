@@ -41,6 +41,23 @@
                           </td>
                         </tr>
                         <tr>
+                          <td>{{ $t('details.contract.verified') }}</td>
+                          <td class="text-right">
+                            <p v-if="contract.verified" class="mb-0">
+                              <font-awesome-icon
+                                icon="check"
+                                class="text-success"
+                              />
+                            </p>
+                            <p v-else class="mb-0">
+                              <font-awesome-icon
+                                icon="times"
+                                class="text-danger"
+                              />
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
                           <td>Created at block</td>
                           <td class="text-right">
                             <nuxt-link
@@ -89,23 +106,6 @@
                             <span class="bytecode" style="color: #aaa">{{
                               contract.bytecode
                             }}</span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.verified') }}</td>
-                          <td class="text-right">
-                            <p v-if="contract.verified" class="mb-0">
-                              <font-awesome-icon
-                                icon="check"
-                                class="text-success"
-                              />
-                            </p>
-                            <p v-else class="mb-0">
-                              <font-awesome-icon
-                                icon="times"
-                                class="text-danger"
-                              />
-                            </p>
                           </td>
                         </tr>
                       </tbody>
