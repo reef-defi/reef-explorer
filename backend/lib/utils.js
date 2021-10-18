@@ -1048,4 +1048,18 @@ module.exports = {
       tokenTotalSupply
     }
   },
+  updateReefContractTotalSupply: async (client, totalIssuance, loggerOptions) => {
+    const sql = `
+      UPDATE contract SET total_supply = S1 WHERE contract_id = $2;
+    `;
+    const data = [
+      totalIssuance.toString(),
+      '0x0000000000000000000000000000000001000000'
+    ];
+    try {
+      await client.query(sql, data);
+    } catch (error) {
+      logger.error(loggerOptions, `Error updating REEF contract total supply: ${error}`);
+    }
+  },
 }
