@@ -12,7 +12,12 @@
           <div class="card mb-4">
             <div class="card-body">
               <h4 class="text-center mb-4">
-                <eth-identicon :address="contractId" :size="32" />
+                <img
+                  v-if="contract.token_icon_url"
+                  :src="contract.token_icon_url"
+                  style="width: 32px; height: 32px"
+                />
+                <eth-identicon v-else :address="contractId" :size="32" />
                 <span v-if="contract.name">
                   {{ contract.name }}
                 </span>
@@ -60,7 +65,9 @@
                           <td>Contract address</td>
                           <td>
                             <eth-identicon :address="contractId" :size="16" />
-                            {{ contractId }}
+                            <nuxt-link :to="`/contract/${contractId}`">
+                              {{ contractId }}
+                            </nuxt-link>
                           </td>
                         </tr>
                         <tr>
@@ -73,19 +80,17 @@
                             </nuxt-link>
                           </td>
                         </tr>
-                        <tr>
+                        <tr v-if="contract.signer">
                           <td>{{ $t('details.token.created') }}</td>
                           <td>
-                            <div v-if="contract.signer">
-                              <ReefIdenticon
-                                :key="contract.signer"
-                                :address="contract.signer"
-                                :size="20"
-                              />
-                              <nuxt-link :to="`/account/${contract.signer}`">
-                                {{ shortAddress(contract.signer) }}
-                              </nuxt-link>
-                            </div>
+                            <ReefIdenticon
+                              :key="contract.signer"
+                              :address="contract.signer"
+                              :size="20"
+                            />
+                            <nuxt-link :to="`/account/${contract.signer}`">
+                              {{ shortAddress(contract.signer) }}
+                            </nuxt-link>
                           </td>
                         </tr>
                       </tbody>
@@ -241,6 +246,7 @@ export default {
               token_symbol
               token_decimals
               token_total_supply
+              token_icon_url
               timestamp
               holders {
                 holder_account_id

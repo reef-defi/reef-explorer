@@ -32,6 +32,11 @@
               <b-table striped hover :fields="fields" :items="tokens">
                 <template #cell(token_name)="data">
                   <p v-if="data.item.name" class="mb-0">
+                    <img
+                      v-if="data.item.token_icon_url"
+                      :src="data.item.token_icon_url"
+                      style="width: 20px; height: 20px"
+                    />
                     <nuxt-link :to="`/token/${data.item.contract_id}`">
                       {{ data.item.name }}
                     </nuxt-link>
@@ -48,7 +53,7 @@
                       :address="data.item.contract_id"
                       :size="16"
                     />
-                    <nuxt-link :to="`/contract/${data.item.contract_id}`">
+                    <nuxt-link :to="`/token/${data.item.contract_id}`">
                       {{ data.item.contract_id }}
                     </nuxt-link>
                   </p>
@@ -193,7 +198,7 @@ export default {
                 contract_id: { _eq: $contractId }
                 is_erc20: { _eq: true }
               }
-              order_by: { block_height: desc }
+              order_by: { token_validated: desc, block_height: desc }
             ) {
               contract_id
               name
@@ -201,6 +206,7 @@ export default {
               token_symbol
               token_decimals
               token_total_supply
+              token_icon_url
               timestamp
               holders_aggregate {
                 aggregate {
