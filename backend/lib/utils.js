@@ -1050,7 +1050,7 @@ module.exports = {
   },
   updateReefContractTotalSupply: async (client, totalIssuance, loggerOptions) => {
     const sql = `
-      UPDATE contract SET total_supply = S1 WHERE contract_id = $2;
+      UPDATE contract SET token_total_supply = S1 WHERE contract_id = $2;
     `;
     const data = [
       totalIssuance.toString(),
