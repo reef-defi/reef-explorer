@@ -1,65 +1,48 @@
 <template>
-  <b-navbar toggleable="xl">
-    <b-container class="px-sm-3">
-      <b-navbar-brand>
-        <nuxt-link to="/" class="navbar-brand" title="Reef block explorer">
-          <img class="logo" src="/img/reef-logo-new.svg" />
-          <span class="explorer">SCAN</span>
+  <div class="header__wrapper">
+    <div class="header">
+      <div class="header__content">
+        <nuxt-link to="/" class="header__logo">
+          <Logo />
         </nuxt-link>
-      </b-navbar-brand>
-      <a
-        v-if="network.coinGeckoDenom && USDConversion && USD24hChange"
-        href="https://coinmarketcap.com/currencies/reef/"
-        target="_blank"
-        class="fiat mh-2"
-      >
-        <strong>{{ network.tokenSymbol }}</strong> ${{ USDConversion }} ({{
-          USD24hChange
-        }}%)
-      </a>
-      <b-navbar-toggle target="nav-collapse" />
-      <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav class="ml-auto">
-          <b-nav-item right to="/blocks">Blocks</b-nav-item>
-          <b-nav-item right to="/transfers">Transfers</b-nav-item>
-          <b-nav-item right to="/extrinsics">Extrinsics</b-nav-item>
-          <b-nav-item right to="/events">Events</b-nav-item>
-          <b-nav-item right to="/accounts">Accounts</b-nav-item>
-          <b-nav-item right to="/contracts">Contracts</b-nav-item>
-          <b-nav-item right to="/tokens">Tokens</b-nav-item>
-        </b-navbar-nav>
-        <b-dropdown class="my-md-2 ml-md-2 network" variant="primary2">
-          <template #button-content>
-            <font-awesome-icon icon="plug" />
-            {{ network.name }}
-          </template>
-          <b-dropdown-item href="https://testnet.reefscan.com"
-            >Reef Testnet</b-dropdown-item
+
+        <div class="header__links">
+          <nuxt-link to="/blocks">Blocks</nuxt-link>
+          <nuxt-link to="/transfers">Transfers</nuxt-link>
+          <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
+          <nuxt-link to="/events">Events</nuxt-link>
+          <nuxt-link to="/accounts">Accounts</nuxt-link>
+          <nuxt-link to="/contracts">Contracts</nuxt-link>
+          <nuxt-link to="/tokens">Tokens</nuxt-link>
+
+          <a
+            v-if="network.id === 'reef-mainnet'"
+            href="https://testnet.reefscan.com"
+            >Reef Testnet</a
           >
-          <b-dropdown-item href="https://reefscan.com"
-            >Reef Mainnet</b-dropdown-item
-          >
-        </b-dropdown>
-      </b-collapse>
-    </b-container>
-  </b-navbar>
+          <a v-else href="https://reefscan.com">Reef Mainnet</a>
+        </div>
+
+        <ReefPrice />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
+import Logo from '@/assets/Logo'
+import ReefPrice from '@/components/ReefPrice'
 import { network } from '@/frontend.config.js'
+
 export default {
+  components: {
+    Logo,
+    ReefPrice,
+  },
   data() {
     return {
       network,
     }
-  },
-  computed: {
-    USDConversion() {
-      return parseFloat(this.$store.state.fiat.usd).toFixed(3)
-    },
-    USD24hChange() {
-      return parseFloat(this.$store.state.fiat.usd_24h_change).toFixed(2)
-    },
   },
   created() {
     // Refresh fiat conversion values every minute
@@ -72,3 +55,136 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+.header__wrapper {
+  width: 100%;
+  height: 60px;
+  background: white;
+
+  .header {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: inherit;
+    z-index: 10;
+    background: white;
+    box-shadow: 0 1px 3px -1px rgba(black, 0.05),
+      0 5px 10px -5px rgba(black, 0.1);
+
+    .header__content {
+      width: 100%;
+      max-width: 1140px;
+      padding: 0 15px;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+
+      .header__logo {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+        align-items: flex-end;
+
+        svg {
+          height: 44px;
+        }
+
+        &::after {
+          content: 'Scan';
+          text-transform: uppercase;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 1px;
+          transform: translate(-1px, -4px);
+          color: #a93185;
+          background: linear-gradient(225deg, #a93185, #5531a9);
+          opacity: 0.85;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        &:hover {
+          text-decoration: none;
+        }
+      }
+
+      .reef-price {
+        margin-bottom: 1px;
+      }
+
+      .header__links {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+
+        > a {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          height: 100%;
+          color: rgba(#3e3f42, 0.85);
+          font-weight: 600;
+          padding: 0 10px;
+          font-size: 14px;
+          text-decoration: none;
+
+          &:hover {
+            color: black;
+          }
+
+          &.nuxt-link-active,
+          &:active {
+            color: #a93185;
+            background: linear-gradient(225deg, #a93185, #5531a9) !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent;
+          }
+        }
+      }
+    }
+  }
+
+  @media only screen and (max-width: 1200px) {
+    .header {
+      .header__content {
+        max-width: 960px;
+      }
+    }
+  }
+
+  @media only screen and (max-width: 992px) {
+    .header {
+      .header__content {
+        max-width: 720px;
+      }
+    }
+  }
+
+  @media only screen and (max-width: 768px) {
+    .header {
+      .header__content {
+        max-width: 540px;
+      }
+    }
+  }
+
+  @media only screen and (max-width: 576px) {
+    .header {
+      .header__content {
+        padding: 0 25px;
+        max-width: 100%;
+      }
+    }
+  }
+}
+</style>
