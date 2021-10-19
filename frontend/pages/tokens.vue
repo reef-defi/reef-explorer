@@ -40,11 +40,25 @@
                     <nuxt-link :to="`/token/${data.item.contract_id}`">
                       {{ data.item.name }}
                     </nuxt-link>
+                    <font-awesome-icon
+                      v-if="data.item.token_validated"
+                      v-b-tooltip.hover
+                      icon="check"
+                      class="text-success"
+                      title="Validated token"
+                    />
                   </p>
                   <p v-else class="mb-0">
                     <nuxt-link :to="`/token/${data.item.contract_id}`">
                       {{ shortHash(data.item.contract_id) }}
                     </nuxt-link>
+                    <font-awesome-icon
+                      v-if="data.item.token_validated"
+                      v-b-tooltip.hover
+                      icon="check"
+                      class="text-success"
+                      title="Validated token"
+                    />
                   </p>
                 </template>
                 <template #cell(contract_id)="data">

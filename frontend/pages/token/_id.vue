@@ -25,6 +25,13 @@
                   {{ contractId }}
                 </span>
                 <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
+                <font-awesome-icon
+                  v-if="data.item.token_validated"
+                  v-b-tooltip.hover
+                  icon="check"
+                  class="text-success"
+                  title="Validated token"
+                />
               </h4>
               <b-tabs content-class="mt-3">
                 <b-tab title="Token info" active>

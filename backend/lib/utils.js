@@ -727,6 +727,7 @@ module.exports = {
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
+            name = EXCLUDED.name,
             is_erc20 = EXCLUDED.is_erc20,
             token_name = EXCLUDED.token_name,
             token_symbol = EXCLUDED.token_symbol,
