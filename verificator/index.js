@@ -70,7 +70,7 @@ const updateRequestError = async (client, id, errorType, errorMessage) => {
 };
 
 const getOnChainContractBytecode = async (client, contract_id) => {
-  const query = `SELECT bytecode FROM contract WHERE contract_id = $1;`;
+  const query = `SELECT deployment_bytecode FROM contract WHERE contract_id = $1;`;
   const data = [contract_id];
   const res = await parametrizedDbQuery(client, query, data);
   if (res) {
@@ -85,7 +85,7 @@ const getOnChainContractBytecode = async (client, contract_id) => {
 const getOnChainContractsByBytecode = async(client, bytecode) => {
   // dont match dummy contracts
   if (bytecode !== '0x') {
-    const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
+    const query = `SELECT contract_id FROM contract WHERE deployment_bytecode LIKE $1 AND NOT verified;`;
     const preprocessedBytecode = preprocessBytecode(bytecode);
     const data = [`0x${preprocessedBytecode}%`];
     const res = await parametrizedDbQuery(client, query, data);

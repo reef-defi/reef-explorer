@@ -115,7 +115,7 @@ const preprocessBytecode = (bytecode: string): string => {
 const getOnChainContractsByBytecode = async(pool: any, bytecode: string): Promise<string[]> => {
   // dont match dummy contracts
   if (bytecode !== '0x') {
-    const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
+    const query = `SELECT contract_id FROM contract WHERE deployment_bytecode LIKE $1 AND NOT verified;`;
     const preprocessedBytecode = preprocessBytecode(bytecode);
     const data = [`0x${preprocessedBytecode}%`];
     const res = await parametrizedDbQuery(pool, query, data);
@@ -455,7 +455,7 @@ app.post('/api/verificator/deployed-bytecode-request', async (req: any, res) => 
         license,
       } = req.body;
       const pool = await getPgPool();
-      const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode LIKE $2;";
+      const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND deployment_bytecode LIKE $2;";
       const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
       const data = [address, `0x${preprocessedRequestContractBytecode}%`];
       const dbres = await pool.query(query, data);
