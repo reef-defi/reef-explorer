@@ -361,7 +361,7 @@ module.exports = {
         const name = '';
 
         // deployment bytecode
-        const deploymentBytecode = extrinsic.args[0];
+        const deploymentBytecode = extrinsic.args[0].toString();
 
         // runtime bytecode
         const bytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
