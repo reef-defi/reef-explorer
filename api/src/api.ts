@@ -92,37 +92,14 @@ const dbQuery = async (pool: any, query: string): Promise<any> | null => {
   }
 };
 
-// Remove metadata from bytecode
-const preprocessBytecode = (bytecode: string): string => {
-  let filteredBytecode = "";
-  const start = bytecode.indexOf('6080604052');
-  //
-  // metadata separator (solc >= v0.6.0)
-  //
-  const ipfsMetadataEnd = bytecode.indexOf('a264697066735822');
-  filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
-
-  //
-  // metadata separator for 0.5.16
-  //
-  const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
-  filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
-
-  return filteredBytecode;
-};
-
-// Get not verified contracts with 100% matching bytecde (excluding metadata)
-const getOnChainContractsByBytecode = async(pool: any, bytecode: string): Promise<string[]> => {
-  // dont match dummy contracts
-  if (bytecode !== '0x') {
-    const query = `SELECT contract_id FROM contract WHERE deployment_bytecode LIKE $1 AND NOT verified;`;
-    const preprocessedBytecode = preprocessBytecode(bytecode);
-    const data = [`0x${preprocessedBytecode}%`];
-    const res = await parametrizedDbQuery(pool, query, data);
-    if (res) {
-      if (res.rows.length > 0) {
-        return res.rows.map(({ contract_id }) => contract_id);
-      }
+// Get not verified contracts with the same deployed (runtime) bytecode
+const getOnChainContractsByRuntimeBytecode = async(pool: any, bytecode: string): Promise<string[]> => {
+  const query = `SELECT contract_id FROM contract WHERE bytecode = $1 AND NOT verified;`;
+  const data = [bytecode];
+  const res = await parametrizedDbQuery(pool, query, data);
+  if (res) {
+    if (res.rows.length > 0) {
+      return res.rows.map(({ contract_id }) => contract_id);
     }
   }
   return []
@@ -411,7 +388,7 @@ app.post('/api/verificator/request', async (req: any, res) => {
 // address: contract address
 // name: contract name (of the main contract)
 // source: source code
-// bytecode: deployed bytecode
+// bytecode: deployed (runtime) bytecode
 // arguments: contract arguments (stringified json)
 // abi: contract abi (stringified json)
 // compilerVersion: i.e: v0.8.6+commit.11564f7e
@@ -455,15 +432,13 @@ app.post('/api/verificator/deployed-bytecode-request', async (req: any, res) => 
         license,
       } = req.body;
       const pool = await getPgPool();
-      const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND deployment_bytecode LIKE $2;";
-      const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
-      const data = [address, `0x${preprocessedRequestContractBytecode}%`];
+      const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode = $2;";
+      const data = [address, bytecode];
       const dbres = await pool.query(query, data);
       if (dbres) {
         if (dbres.rows.length === 1) {
           const onChainContractBytecode = dbres.rows[0].bytecode;
-          const preprocessedOnChainContractBytecode = preprocessBytecode(onChainContractBytecode);
-          if (dbres.rows[0].verified === true && preprocessedOnChainContractBytecode === preprocessedRequestContractBytecode) {
+          if (dbres.rows[0].verified === true) {
             res.send({
               status: false,
               message: 'Error, contract already verified'
@@ -509,8 +484,8 @@ app.post('/api/verificator/deployed-bytecode-request', async (req: any, res) => 
                 target = 'istanbul'
               }
             }
-            // verify all not verified contracts with the same bytecode
-            const matchedContracts = await getOnChainContractsByBytecode(pool, onChainContractBytecode);
+            // verify all not verified contracts with the same deployed (runtime) bytecode
+            const matchedContracts = await getOnChainContractsByRuntimeBytecode(pool, onChainContractBytecode);
             for (const matchedContractId of matchedContracts) {
               //
               // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
