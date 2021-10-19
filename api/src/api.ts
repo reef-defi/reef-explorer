@@ -102,7 +102,28 @@ const getOnChainContractsByRuntimeBytecode = async(pool: any, bytecode: string):
       return res.rows.map(({ contract_id }) => contract_id);
     }
   }
-  return []
+  return [];
+};
+
+
+const getAccountIdAndEvmAddress = async(pool: any, account: string): Promise<any | null> => {
+  const data = [
+    account
+  ];
+  const query = `
+    SELECT
+      account_id,
+      evm_address
+    FROM
+      account
+    WHERE
+      account_id = $1 OR evm_address = $1
+  ;`;
+  const dbres = await pool.query(query, data);
+  return (dbres.rows.length === 1) ? {
+      account_id: dbres.rows[0].account_id,
+      evm_address: dbres.rows[0].evm_address,
+    } : null
 };
 
 // Get validated tokens
@@ -775,15 +796,23 @@ app.post('/api/account/tokens', async (req: any, res) => {
           }
         });
       } else {
-        res.send({
-          status: true,
-          message: 'Success',
-          data: {
-            account_id: dbres.rows[0].holder_account_id,
-            evm_address: dbres.rows[0].holder_evm_address,
-            balances: [],
-          }
-        });
+        const accountInfo = await getAccountIdAndEvmAddress(pool, account);
+        if (!accountInfo) {
+          res.send({
+            status: false,
+            message: 'Provided account id or EVM address doesn\'t exist'
+          });
+        } else {
+          res.send({
+            status: true,
+            message: 'Success',
+            data: {
+              account_id: accountInfo.account_id,
+              evm_address: accountInfo.evm_address,
+              balances: [],
+            }
+          });
+        }
       }
       await pool.end();
     } catch (error) {
