@@ -4,10 +4,10 @@
   "description": "Reef explorer API",
   "author": "Mario Pino Uceda",
   "license": "Apache-2.0",
-  "main": "index.js",
+  "main": "dist/api.js",
   "scripts": {
     "tsc": "tsc",
-    "start": "tsc && node ./dist/backend.js",
+    "start": "tsc && node ./dist/api.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

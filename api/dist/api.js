@@ -34,7 +34,7 @@ const ensure = (condition, message) => {
 };
 // Connnect to db
 // TODO: refactor!!!
-const getPool = () => __awaiter(void 0, void 0, void 0, function* () {
+const getPgPool = () => __awaiter(void 0, void 0, void 0, function* () {
     const pool = new pg_1.Pool(config.postgresConnParams);
     yield pool.connect();
     return pool;
@@ -43,6 +43,15 @@ const getPool = () => __awaiter(void 0, void 0, void 0, function* () {
 const parametrizedDbQuery = (pool, query, data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         return yield pool.query(query, data);
+    }
+    catch (error) {
+        return null;
+    }
+});
+// database query
+const dbQuery = (pool, query) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        return yield pool.query(query);
     }
     catch (error) {
         return null;
@@ -66,13 +75,40 @@ const preprocessBytecode = (bytecode) => {
 };
 // Get not verified contracts with 100% matching bytecde (excluding metadata)
 const getOnChainContractsByBytecode = (pool, bytecode) => __awaiter(void 0, void 0, void 0, function* () {
-    const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
-    const preprocessedBytecode = preprocessBytecode(bytecode);
-    const data = [`0x${preprocessedBytecode}%`];
-    const res = yield parametrizedDbQuery(pool, query, data);
+    // dont match dummy contracts
+    if (bytecode !== '0x') {
+        const query = `SELECT contract_id FROM contract WHERE deployment_bytecode LIKE $1 AND NOT verified;`;
+        const preprocessedBytecode = preprocessBytecode(bytecode);
+        const data = [`0x${preprocessedBytecode}%`];
+        const res = yield parametrizedDbQuery(pool, query, data);
+        if (res) {
+            if (res.rows.length > 0) {
+                return res.rows.map(({ contract_id }) => contract_id);
+            }
+        }
+    }
+    return [];
+});
+// Get validated tokens
+//
+// {
+//   "name": "REEF",
+//   "address": "0x0000000000000000000000000000000001000000",
+//   "iconUrl": "https://s2.coinmarketcap.com/static/img/coins/64x64/6951.png",
+//   "coingeckoId": "reef-finance"
+// },
+//
+const getValidatedTokens = (pool) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = `SELECT contract_id, token_name, icon_url, token_coingecko_id FROM contract WHERE token_validated IS TRUE;`;
+    const res = yield dbQuery(pool, query);
     if (res) {
         if (res.rows.length > 0) {
-            return res.rows.map(({ contract_id }) => contract_id);
+            return res.rows.map((token) => ({
+                name: token.token_name,
+                address: token.contract_id,
+                iconUrl: token.icon_url,
+                coingeckoId: token.token_coingecko_id,
+            }));
         }
     }
     return [];
@@ -80,7 +116,7 @@ const getOnChainContractsByBytecode = (pool, bytecode) => __awaiter(void 0, void
 // Get Token
 const TOKEN_QUERY = 'SELECT name, icon_url, decimals FROM contract WHERE contract_id = $1';
 const getToken = (tokenAddress) => __awaiter(void 0, void 0, void 0, function* () {
-    const pool = yield getPool();
+    const pool = yield getPgPool();
     const res = yield pool.query(TOKEN_QUERY, [tokenAddress]);
     ensure(res.rows.length > 0, "Not found");
     return {
@@ -107,7 +143,7 @@ const USER_TOKEN_QUERY = `
     (th.holder_account_id = $2 OR th.holder_evm_address = $2)
 `;
 const getUserToken = (tokenAddress, userAddress) => __awaiter(void 0, void 0, void 0, function* () {
-    const pool = yield getPool();
+    const pool = yield getPgPool();
     const res = yield pool.query(USER_TOKEN_QUERY, [tokenAddress, userAddress]);
     ensure(res.rows.length > 0, "Not found");
     return {
@@ -132,46 +168,56 @@ const combinations = (values) => {
     }
     return comb;
 };
-// TODO
-// // Get User Pool
-// const POOL_QUERY = 'SELECT <Address> <Decimals> <Reserve1> <Reserve2> <User-Balance> <Total-Supply> <MinimumLiquidity> WHERE <TokenAddress1> = $1 AND <TokenAddress2> = $2';
-// const getPool = async (tokenAddress1: string, tokenAddress2: string): Promise<BasicPool> => {
-//   const query = POOL_QUERY
-//     .replace("$1", tokenAddress1)
-//     .replace("$2", tokenAddress2);
-//   const res = await pool.query(query) // TODO replace pool with appropriate table
-//   ensure(res.rows > 0, "Pool does not exist"); // TODO ensure pool exist
-//   return {
-//     userPoolBalance: 0,
-//     decimals: res.rows[0].decimals,
-//     reserve1: res.rows[0].reserve1,
-//     reserve2: res.rows[0].reserve2,
-//     poolAddress: res.rows[0].address,
-//     totalSupply: res.rows[0].totalSupply,
-//     minimumLiquidity: res.rows[0].minimumLiquidity,
-//   }
-// }
-// const USER_POOL_QUERY = `${POOL_QUERY} AND <User-Address> = $3`;
-// const getUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<BasicPool> => {
-//   const query = USER_POOL_QUERY
-//     .replace("$1", tokenAddress1)
-//     .replace("$2", tokenAddress2)
-//     .replace("$3", userAddress);
-//   const res = await pool.query(query) // TODO replace pool with appropriate table
-//   ensure(res.rows > 0, "Pool does not exist"); // TODO ensure pool exist
-//   return {
-//     decimals: res.rows[0].decimals,
-//     reserve1: res.rows[0].reserve1,
-//     reserve2: res.rows[0].reserve2,
-//     poolAddress: res.rows[0].address,
-//     totalSupply: res.rows[0].totalSupply,
-//     userPoolBalance: res.rows[0].userPoolBalance,
-//     minimumLiquidity: res.rows[0].minimumLiquidity,
-//   }
-// }
-// const resolvePoolQuery = async (tokenAddress1: string, tokenAddress2: string, userAddress?: string) => userAddress
-//   ? getUserPool(tokenAddress1, tokenAddress2, userAddress)
-//   : getPool(tokenAddress1, tokenAddress2);
+// Get User Pool
+const POOL_QUERY = 'SELECT address, decimals, reserve1, reserve2, total_supply, minimum_liquidity WHERE token1 = $1 AND token2 = $2';
+const getPool = (tokenAddress1, tokenAddress2) => __awaiter(void 0, void 0, void 0, function* () {
+    const pool = yield getPgPool();
+    const res = yield pool.query(POOL_QUERY, [tokenAddress1, tokenAddress2]);
+    ensure(res.rows.length > 0, "Pool does not exist");
+    return {
+        userPoolBalance: '0',
+        decimals: res.rows[0].decimals,
+        reserve1: res.rows[0].reserve1,
+        reserve2: res.rows[0].reserve2,
+        poolAddress: res.rows[0].address,
+        totalSupply: res.rows[0].total_supply,
+        minimumLiquidity: res.rows[0].minimum_liquidity,
+    };
+});
+const USER_POOL_QUERY = `SELECT
+    address,
+    decimals,
+    reserve1,
+    reserve2,
+    total_supply,
+    minimum_liquidity,
+    balance
+  FROM
+    pool AS p,
+    pool_user AS pu
+  WHERE
+    token1 = $1 AND
+    token2 = $2 AND
+    user_address = $3`;
+const getUserPool = (tokenAddress1, tokenAddress2, userAddress) => __awaiter(void 0, void 0, void 0, function* () {
+    const pool = yield getPgPool();
+    const res = yield pool.query(POOL_QUERY, [tokenAddress1, tokenAddress2, userAddress]);
+    ensure(res.rows.length > 0, "Pool does not exist");
+    return {
+        decimals: res.rows[0].decimals,
+        reserve1: res.rows[0].reserve1,
+        reserve2: res.rows[0].reserve2,
+        poolAddress: res.rows[0].address,
+        totalSupply: res.rows[0].total_supply,
+        userPoolBalance: res.rows[0].balance,
+        minimumLiquidity: res.rows[0].minimum_liquidity,
+    };
+});
+const resolvePoolQuery = (tokenAddress1, tokenAddress2, userAddress) => __awaiter(void 0, void 0, void 0, function* () {
+    return userAddress
+        ? getUserPool(tokenAddress1, tokenAddress2, userAddress)
+        : getPool(tokenAddress1, tokenAddress2);
+});
 //
 // Express setup
 //
@@ -221,7 +267,7 @@ app.post('/api/verificator/request', (req, res) => __awaiter(void 0, void 0, voi
                 const sourceFileContent = source.data.toString('utf8');
                 const id = crypto.randomBytes(20).toString('hex');
                 const timestamp = Date.now();
-                const pool = yield getPool();
+                const pool = yield getPgPool();
                 const sql = `INSERT INTO contract_verification_request (
           id,
           contract_id,
@@ -339,8 +385,8 @@ app.post('/api/verificator/deployed-bytecode-request', (req, res) => __awaiter(v
         }
         else {
             let { address, name, source, bytecode, arguments: args, abi, compilerVersion, optimization, runs, target, license, } = req.body;
-            const pool = yield getPool();
-            const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode LIKE $2;";
+            const pool = yield getPgPool();
+            const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND deployment_bytecode LIKE $2;";
             const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
             const data = [address, `0x${preprocessedRequestContractBytecode}%`];
             const dbres = yield pool.query(query, data);
@@ -505,7 +551,7 @@ app.post('/api/verificator/request-status', (req, res) => __awaiter(void 0, void
     else {
         try {
             const requestId = req.params.id;
-            const pool = yield getPool();
+            const pool = yield getPgPool();
             const data = [
                 requestId
             ];
@@ -564,7 +610,7 @@ app.post('/api/verificator/request-status', (req, res) => __awaiter(void 0, void
 }));
 app.get('/api/staking/rewards', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const pool = yield getPool();
+        const pool = yield getPgPool();
         const query = `
       SELECT
         block_number,
@@ -633,7 +679,7 @@ app.post('/api/account/tokens', (req, res) => __awaiter(void 0, void 0, void 0, 
     }
     else {
         try {
-            const pool = yield getPool();
+            const pool = yield getPgPool();
             const account = req.body.account;
             const data = [
                 account
@@ -701,7 +747,7 @@ const REEF_CONTRACT = '0x0000000000000000000000000000000001000000';
 app.post('/api/user-balance', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userAddress = req.body.userAddress;
-        const pool = yield getPool();
+        const pool = yield getPgPool();
         const dbres = yield pool.query(USER_BALANCE_QUERY, [userAddress, REEF_CONTRACT]);
         res.send({
             balance: dbres.rows[0].balance
@@ -725,53 +771,52 @@ app.post('/api/get-user-token', (req, res) => __awaiter(void 0, void 0, void 0, 
         res.status(400).send(e);
     }
 }));
-// TODO: Get User Pool
-// app.post('/api/get-user-pool', async (req: PoolReq, res: Promise<Pool>) => {
-//   try {
-//     ensure(req.tokenAddress1, 'tokenAddress1 does not exist');
-//     ensure(req.tokenAddress2, 'tokenAddress2 does not exist');
-//     const token1 = await resolveTokenQuery(req.tokenAddress1, req.userAddress);
-//     const token2 = await resolveTokenQuery(req.tokenAddress2, req.userAddress);
-//     const pool = await resolvePoolQuery(
-//       req.tokenAddress1,
-//       req.tokenAddress2,
-//       req.userAddress
-//     );
-//     res.send({...pool, token1, token2});
-//   } catch (e) {
-//     res.status(400).send(e);
-//   }
-// });
-// TODO: Get Reef Tokens List
-// app.post('/api/get-reef-token-list', async (req: BasicReq, res: Promise<Token[]>) => {
-//   try {
-//     const res = await Promise.all(
-//       validatedTokens
-//         .map(({address}) => await resolveTokenQuery(address, req.userAddress))
-//     );
-//     res.send(res);
-//   } catch (e) {
-//     res.status(400).send(e);
-//   }
-// });
-// TODO: Get Reef Pool List - Return all existing pools from Reef token list
-// app.post('/api/get-reef-pool-list', async (req: BasicReq, res: Promise<Pool[]>) => {
-//   const addresses = validatedTokens.map(({address}) => address);
-//   const resolvedPools = await Promise.all(
-//     combinations(addresses)
-//     .map(async ([address1, address2]) => {
-//       // Its a bit hacky to isolate non existing pools
-//       try {
-//         return await resolvePoolQuery(address1, address2, req.userAddress);
-//       } catch (e) {
-//         return undefined;
-//       }
-//     })
-//   );
-//   // Removing undefined pools
-//   const pools = resolvedPools
-//     .filter((pool) => !!pool);
-//   res.send(pools);
-// });
+// Get User Pool
+app.post('/api/get-user-pool', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        ensure(req.tokenAddress1, 'tokenAddress1 does not exist');
+        ensure(req.tokenAddress2, 'tokenAddress2 does not exist');
+        const token1 = yield resolveTokenQuery(req.tokenAddress1, req.userAddress);
+        const token2 = yield resolveTokenQuery(req.tokenAddress2, req.userAddress);
+        const pool = yield resolvePoolQuery(req.tokenAddress1, req.tokenAddress2, req.userAddress);
+        res.send(Object.assign(Object.assign({}, pool), { token1, token2 }));
+    }
+    catch (e) {
+        res.status(400).send(e);
+    }
+}));
+// Get Reef Tokens List
+app.post('/api/get-reef-token-list', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const pool = yield getPgPool();
+        const validatedTokens = yield getValidatedTokens(pool);
+        const tokenList = yield Promise.all(validatedTokens
+            .map(({ address }) => resolveTokenQuery(address, req.userAddress)));
+        res.send(tokenList);
+    }
+    catch (e) {
+        res.status(400).send(e);
+    }
+}));
+// Get Reef Pool List - Return all existing pools from Reef token list
+app.post('/api/get-reef-pool-list', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const pool = yield getPgPool();
+    const validatedTokens = yield getValidatedTokens(pool);
+    const addresses = validatedTokens.map(({ address }) => address);
+    const resolvedPools = yield Promise.all(combinations(addresses)
+        .map(([address1, address2]) => __awaiter(void 0, void 0, void 0, function* () {
+        // Its a bit hacky to isolate non existing pools
+        try {
+            return yield resolvePoolQuery(address1, address2, req.userAddress);
+        }
+        catch (e) {
+            return undefined;
+        }
+    })));
+    // Removing undefined pools
+    const pools = resolvedPools
+        .filter((pool) => !!pool);
+    res.send(pools);
+}));
 app.listen(config.httpPort, () => console.log(`Reef explorer API is listening on port ${config.httpPort}.`));
-//# sourceMappingURL=backend.js.map
+//# sourceMappingURL=api.js.map
