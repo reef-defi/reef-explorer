@@ -57,37 +57,36 @@ const dbQuery = (pool, query) => __awaiter(void 0, void 0, void 0, function* () 
         return null;
     }
 });
-// Remove metadata from bytecode
-const preprocessBytecode = (bytecode) => {
-    let filteredBytecode = "";
-    const start = bytecode.indexOf('6080604052');
-    //
-    // metadata separator (solc >= v0.6.0)
-    //
-    const ipfsMetadataEnd = bytecode.indexOf('a264697066735822');
-    filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
-    //
-    // metadata separator for 0.5.16
-    //
-    const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
-    filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
-    return filteredBytecode;
-};
-// Get not verified contracts with 100% matching bytecde (excluding metadata)
-const getOnChainContractsByBytecode = (pool, bytecode) => __awaiter(void 0, void 0, void 0, function* () {
-    // dont match dummy contracts
-    if (bytecode !== '0x') {
-        const query = `SELECT contract_id FROM contract WHERE deployment_bytecode LIKE $1 AND NOT verified;`;
-        const preprocessedBytecode = preprocessBytecode(bytecode);
-        const data = [`0x${preprocessedBytecode}%`];
-        const res = yield parametrizedDbQuery(pool, query, data);
-        if (res) {
-            if (res.rows.length > 0) {
-                return res.rows.map(({ contract_id }) => contract_id);
-            }
+// Get not verified contracts with the same deployed (runtime) bytecode
+const getOnChainContractsByRuntimeBytecode = (pool, bytecode) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = `SELECT contract_id FROM contract WHERE bytecode = $1 AND NOT verified;`;
+    const data = [bytecode];
+    const res = yield parametrizedDbQuery(pool, query, data);
+    if (res) {
+        if (res.rows.length > 0) {
+            return res.rows.map(({ contract_id }) => contract_id);
         }
     }
     return [];
+});
+const getAccountIdAndEvmAddress = (pool, account) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = [
+        account
+    ];
+    const query = `
+    SELECT
+      account_id,
+      evm_address
+    FROM
+      account
+    WHERE
+      account_id = $1 OR evm_address = $1
+  ;`;
+    const dbres = yield pool.query(query, data);
+    return (dbres.rows.length === 1) ? {
+        account_id: dbres.rows[0].account_id,
+        evm_address: dbres.rows[0].evm_address,
+    } : null;
 });
 // Get validated tokens
 //
@@ -356,7 +355,7 @@ app.post('/api/verificator/request', (req, res) => __awaiter(void 0, void 0, voi
 // address: contract address
 // name: contract name (of the main contract)
 // source: source code
-// bytecode: deployed bytecode
+// bytecode: deployed (runtime) bytecode
 // arguments: contract arguments (stringified json)
 // abi: contract abi (stringified json)
 // compilerVersion: i.e: v0.8.6+commit.11564f7e
@@ -386,15 +385,13 @@ app.post('/api/verificator/deployed-bytecode-request', (req, res) => __awaiter(v
         else {
             let { address, name, source, bytecode, arguments: args, abi, compilerVersion, optimization, runs, target, license, } = req.body;
             const pool = yield getPgPool();
-            const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND deployment_bytecode LIKE $2;";
-            const preprocessedRequestContractBytecode = preprocessBytecode(bytecode);
-            const data = [address, `0x${preprocessedRequestContractBytecode}%`];
+            const query = "SELECT contract_id, verified, bytecode FROM contract WHERE contract_id = $1 AND bytecode = $2;";
+            const data = [address, bytecode];
             const dbres = yield pool.query(query, data);
             if (dbres) {
                 if (dbres.rows.length === 1) {
                     const onChainContractBytecode = dbres.rows[0].bytecode;
-                    const preprocessedOnChainContractBytecode = preprocessBytecode(onChainContractBytecode);
-                    if (dbres.rows[0].verified === true && preprocessedOnChainContractBytecode === preprocessedRequestContractBytecode) {
+                    if (dbres.rows[0].verified === true) {
                         res.send({
                             status: false,
                             message: 'Error, contract already verified'
@@ -432,8 +429,8 @@ app.post('/api/verificator/deployed-bytecode-request', (req, res) => __awaiter(v
                                 target = 'istanbul';
                             }
                         }
-                        // verify all not verified contracts with the same bytecode
-                        const matchedContracts = yield getOnChainContractsByBytecode(pool, onChainContractBytecode);
+                        // verify all not verified contracts with the same deployed (runtime) bytecode
+                        const matchedContracts = yield getOnChainContractsByRuntimeBytecode(pool, onChainContractBytecode);
                         for (const matchedContractId of matchedContracts) {
                             //
                             // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
@@ -700,6 +697,7 @@ app.post('/api/account/tokens', (req, res) => __awaiter(void 0, void 0, void 0, 
           AND th.contract_id = c.contract_id
       ;`;
             const dbres = yield pool.query(query, data);
+            console.log('rows:', dbres.rows.length);
             if (dbres.rows.length > 0) {
                 const balances = dbres.rows.map((token) => ({
                     contract_id: token.contract_id,
@@ -718,19 +716,29 @@ app.post('/api/account/tokens', (req, res) => __awaiter(void 0, void 0, void 0, 
                 });
             }
             else {
-                res.send({
-                    status: true,
-                    message: 'Success',
-                    data: {
-                        account_id: dbres.rows[0].holder_account_id,
-                        evm_address: dbres.rows[0].holder_evm_address,
-                        balances: [],
-                    }
-                });
+                const accountInfo = yield getAccountIdAndEvmAddress(pool, account);
+                if (!accountInfo) {
+                    res.send({
+                        status: false,
+                        message: 'Provided account id or EVM address doesn\'t exist'
+                    });
+                }
+                else {
+                    res.send({
+                        status: true,
+                        message: 'Success',
+                        data: {
+                            account_id: accountInfo.account_id,
+                            evm_address: accountInfo.evm_address,
+                            balances: [],
+                        }
+                    });
+                }
             }
             yield pool.end();
         }
         catch (error) {
+            console.log(error);
             res.send({
                 status: false,
                 message: 'Error'
