@@ -290,7 +290,7 @@ const crawler = async (delayedStart) => {
   }
 
   logger.info(loggerOptions, 'Storing and processing genesis contracts...');
-  await storeGenesisContracts(api, client, loggerOptions);
+  await storeGenesisContracts(provider, client, loggerOptions);
 
   // Get gaps from block table
   // Thanks to @miguelmota: https://gist.github.com/miguelmota/6d40be2ecb083507de1d073443154610

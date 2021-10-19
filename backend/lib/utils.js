@@ -658,10 +658,10 @@ module.exports = {
       ;`;
     await module.exports.dbParamQuery(client, query, data, loggerOptions);
   },
-  async storeGenesisContracts(api, client, loggerOptions) {
+  async storeGenesisContracts(provider, client, loggerOptions) {
     // Get timestamp from block #1, genesis doesn't return timestamp
-    const blockHash = await api.rpc.chain.getBlockHash(1);
-    const timestampMs = await api.query.timestamp.now.at(blockHash);
+    const blockHash = await provider.api.rpc.chain.getBlockHash(1);
+    const timestampMs = await provider.api.query.timestamp.now.at(blockHash);
     const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
     // eslint-disable-next-line no-restricted-syntax
     for (const contract of genesisContracts) {
