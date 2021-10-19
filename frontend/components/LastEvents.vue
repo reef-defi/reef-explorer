@@ -26,8 +26,8 @@
 
 <script>
 import '@/components/Table'
+import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
-import gql from 'graphql-tag'
 
 export default {
   mixins: [commonMixin],

@@ -359,13 +359,32 @@ module.exports = {
         );
         // https://reefscan.com/block/?blockNumber=118307
         const name = '';
-        const bytecode = extrinsic.args[0];
+
+        // deployment bytecode
+        const deploymentBytecode = extrinsic.args[0].toString();
+
+        // runtime bytecode
+        const bytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+
         const value = extrinsic.args[1];
         const gasLimit = extrinsic.args[2];
         const storageLimit = extrinsic.args[3];
+        const data = [
+          contractId,
+          name,
+          deploymentBytecode,
+          bytecode,
+          value,
+          gasLimit,
+          storageLimit,
+          signer,
+          blockNumber,
+          timestamp
+        ];
         const contractSql = `INSERT INTO contract (
             contract_id,
             name,
+            deployment_bytecode,
             bytecode,
             value,
             gas_limit,
@@ -374,21 +393,23 @@ module.exports = {
             block_height,
             timestamp
           ) VALUES (
-            '${contractId}',
-            '${name}',
-            '${bytecode}',
-            '${value}',
-            '${gasLimit}',
-            '${storageLimit}',
-            '${signer}',
-            '${blockNumber}',
-            '${timestamp}'
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            $7,
+            $8,
+            $9,
+            $10
           )
           ON CONFLICT ON CONSTRAINT contract_pkey 
-          DO NOTHING;
-          ;`;
+          DO UPDATE SET
+            deployment_bytecode = EXCLUDED.deployment_bytecode,
+            bytecode = EXCLUDED.bytecode;`;
         try {
-          await client.query(contractSql);
+          await client.query(contractSql, data);
           logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
         } catch (error) {
           logger.error(loggerOptions, `Error adding contract ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
@@ -637,10 +658,10 @@ module.exports = {
       ;`;
     await module.exports.dbParamQuery(client, query, data, loggerOptions);
   },
-  async storeGenesisContracts(api, client, loggerOptions) {
+  async storeGenesisContracts(provider, client, loggerOptions) {
     // Get timestamp from block #1, genesis doesn't return timestamp
-    const blockHash = await api.rpc.chain.getBlockHash(1);
-    const timestampMs = await api.query.timestamp.now.at(blockHash);
+    const blockHash = await provider.api.rpc.chain.getBlockHash(1);
+    const timestampMs = await provider.api.query.timestamp.now.at(blockHash);
     const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
     // eslint-disable-next-line no-restricted-syntax
     for (const contract of genesisContracts) {
@@ -648,6 +669,9 @@ module.exports = {
       const signer = '';
       const name = contract[0];
       const contractId = contract[1];
+
+      const deploymentBytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+
       const bytecode = contract[2];
       const value = '';
       const gasLimit = '';
@@ -671,6 +695,7 @@ module.exports = {
         contractSql = `INSERT INTO contract (
             contract_id,
             name,
+            deployment_bytecode,
             bytecode,
             value,
             gas_limit,
@@ -697,19 +722,24 @@ module.exports = {
             $11,
             $12,
             $13,
-            $14
+            $14,
+            $15
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
+            name = EXCLUDED.name,
             is_erc20 = EXCLUDED.is_erc20,
             token_name = EXCLUDED.token_name,
             token_symbol = EXCLUDED.token_symbol,
             token_decimals = EXCLUDED.token_decimals,
-            token_total_supply = EXCLUDED.token_total_supply
+            token_total_supply = EXCLUDED.token_total_supply,
+            deployment_bytecode = EXCLUDED.deployment_bytecode,
+            bytecode = EXCLUDED.bytecode
         ;`;
         data = [
           contractId,
           name,
+          deploymentBytecode,
           bytecode,
           value,
           gasLimit,
@@ -727,6 +757,7 @@ module.exports = {
         contractSql = `INSERT INTO contract (
             contract_id,
             name,
+            deployment_bytecode,
             bytecode,
             value,
             gas_limit,
@@ -743,14 +774,18 @@ module.exports = {
             $6,
             $7,
             $8,
-            $9
+            $9,
+            $10
           )
-          ON CONFLICT ON CONSTRAINT contract_pkey 
-          DO NOTHING
+          ON CONFLICT ON CONSTRAINT contract_pkey
+          DO UPDATE SET
+            deployment_bytecode = EXCLUDED.deployment_bytecode,
+            bytecode = EXCLUDED.bytecode
         ;`;
         data = [
           contractId,
           name,
+          deploymentBytecode,
           bytecode,
           value,
           gasLimit,
@@ -835,118 +870,73 @@ module.exports = {
     }
   },
   async processNewContract(client, provider, contractId, bytecode, loggerOptions) {
-    // find verified contract with the same preprocesses bytecode
-    const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
-    const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
-    const dbres = await client.query(
-      query,
-      [
-        contractId,
-        `0x${preprocessedRequestContractBytecode}%`
-      ]
-    );
-    if (dbres) {
-      if (dbres.rows.length === 1) {
-        // verify new contract using same compilation data
-        const isVerified = true;
-        // TODO: extract contract arguments
-        const args = '';
-        const {
-          name,
-          source,
-          compilerVersion,
-          optimization,
-          runs,
-          target,
-          abi,
-          license
-        } = dbres.rows[0];
+    // dont match dummy contracts
+    if (bytecode !== '0x') {
+      // find verified contract with the same preprocesses bytecode
+      const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
+      const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
+      const dbres = await client.query(
+        query,
+        [
+          contractId,
+          `0x${preprocessedRequestContractBytecode}%`
+        ]
+      );
+      if (dbres) {
+        if (dbres.rows.length === 1) {
+          // verify new contract using same compilation data
+          const isVerified = true;
+          // TODO: extract contract arguments
+          const args = '';
+          const {
+            name,
+            source,
+            compilerVersion,
+            optimization,
+            runs,
+            target,
+            abi,
+            license
+          } = dbres.rows[0];
 
-        // check if it's an ERC-20 token
-        const {
-          isErc20,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          tokenTotalSupply
-        } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
-        
-        const query = `UPDATE contract SET
-          name = $1,
-          verified = $2,
-          source = $3,
-          compiler_version = $4,
-          arguments = $5,
-          optimization = $6,
-          runs = $7,
-          target = $8,
-          abi = $9,
-          license = $10,
-          is_erc20 = $11,
-          token_name = $12,
-          token_symbol = $13,
-          token_decimals = $14,
-          token_total_supply = $15
-          WHERE contract_id = $16;
-        `;
-        const data = [
-          name,
-          isVerified,
-          source,
-          compilerVersion,
-          args,
-          optimization,
-          runs,
-          target,
-          abi,
-          license,
-          isErc20,
-          tokenName ? tokenName.toString() : null,
-          tokenSymbol ? tokenSymbol.toString() : null,
-          tokenDecimals ? tokenDecimals.toString(): null,
-          tokenTotalSupply ? tokenTotalSupply.toString() : null,
-          contractId
-        ];
-        await module.exports.dbParamQuery(client, query, data, loggerOptions);
-        if (isErc20) {
-          // contract IS an ERC-20 token, update token holders
-          const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
-          const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
-          const [
-            { block },
-            timestampMs,
-          ] = await Promise.all([
-            provider.api.rpc.chain.getBlock(),
-            provider.api.query.timestamp.now(),
-          ]);
-          const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
-          const blockHeight = block.header.number.toString();
-          await module.exports.updateTokenHolders(client, provider, contractId, abi, accounts, blockHeight, timestamp, loggerOptions);
-        }
-      } else {
-        // contract is not verified but let's check if it's an ERC-20 token
-        const {
-          isErc20,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          tokenTotalSupply
-        } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
-        if (isErc20) {
-          // contract IS an ERC-20 token!
-          const query = `
-            UPDATE
-              contract
-            SET
-              is_erc20 = $1,
-              token_name = $2,
-              token_symbol = $3,
-              token_decimals = $4,
-              token_total_supply = $5
-            WHERE
-              contract_id = $6;
+          // check if it's an ERC-20 token
+          const {
+            isErc20,
+            tokenName,
+            tokenSymbol,
+            tokenDecimals,
+            tokenTotalSupply
+          } = await module.exports.isErc20Token(contractId, provider);
+          
+          const query = `UPDATE contract SET
+            name = $1,
+            verified = $2,
+            source = $3,
+            compiler_version = $4,
+            arguments = $5,
+            optimization = $6,
+            runs = $7,
+            target = $8,
+            abi = $9,
+            license = $10,
+            is_erc20 = $11,
+            token_name = $12,
+            token_symbol = $13,
+            token_decimals = $14,
+            token_total_supply = $15
+            WHERE contract_id = $16;
           `;
           const data = [
+            name,
+            isVerified,
+            source,
+            compilerVersion,
+            args,
+            optimization,
+            runs,
+            target,
+            abi,
+            license,
             isErc20,
             tokenName ? tokenName.toString() : null,
             tokenSymbol ? tokenSymbol.toString() : null,
@@ -955,20 +945,68 @@ module.exports = {
             contractId
           ];
           await module.exports.dbParamQuery(client, query, data, loggerOptions);
+          if (isErc20) {
+            // contract IS an ERC-20 token, update token holders
+            const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
+            const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
+            const [
+              { block },
+              timestampMs,
+            ] = await Promise.all([
+              provider.api.rpc.chain.getBlock(),
+              provider.api.query.timestamp.now(),
+            ]);
+            const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
+            const blockHeight = block.header.number.toString();
+            await module.exports.updateTokenHolders(client, provider, contractId, abi, accounts, blockHeight, timestamp, loggerOptions);
+          }
+        } else {
+          // contract is not verified but let's check if it's an ERC-20 token
+          const {
+            isErc20,
+            tokenName,
+            tokenSymbol,
+            tokenDecimals,
+            tokenTotalSupply
+          } = await module.exports.isErc20Token(contractId, provider);
+          if (isErc20) {
+            // contract IS an ERC-20 token!
+            const query = `
+              UPDATE
+                contract
+              SET
+                is_erc20 = $1,
+                token_name = $2,
+                token_symbol = $3,
+                token_decimals = $4,
+                token_total_supply = $5
+              WHERE
+                contract_id = $6;
+            `;
+            const data = [
+              isErc20,
+              tokenName ? tokenName.toString() : null,
+              tokenSymbol ? tokenSymbol.toString() : null,
+              tokenDecimals ? tokenDecimals.toString(): null,
+              tokenTotalSupply ? tokenTotalSupply.toString() : null,
+              contractId
+            ];
+            await module.exports.dbParamQuery(client, query, data, loggerOptions);
 
-          // update token holders
-          const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
-          const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
-          const [
-            { block },
-            timestampMs,
-          ] = await Promise.all([
-            provider.api.rpc.chain.getBlock(),
-            provider.api.query.timestamp.now(),
-          ]);
-          const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
-          const blockHeight = block.header.number.toString();
-          await module.exports.updateTokenHolders(client, provider, contractId, erc20Abi, accounts, blockHeight, timestamp, loggerOptions);
+            // update token holders
+            const accountsQuery = 'SELECT account_id, evm_address FROM account WHERE evm_address != \'\';';
+            const accounts = await module.exports.dbQuery(client, accountsQuery, loggerOptions);
+            const [
+              { block },
+              timestampMs,
+            ] = await Promise.all([
+              provider.api.rpc.chain.getBlock(),
+              provider.api.query.timestamp.now(),
+            ]);
+            const timestamp = Math.floor(parseInt(timestampMs.toString(), 10) / 1000);
+            const blockHeight = block.header.number.toString();
+            await module.exports.updateTokenHolders(client, provider, contractId, erc20Abi, accounts, blockHeight, timestamp, loggerOptions);
+          }
         }
       }
     }
@@ -990,7 +1028,7 @@ module.exports = {
   
     return filteredBytecode;
   },
-  async isErc20Token(contractId, provider, loggerOptions) {
+  async isErc20Token(contractId, provider) {
     //
     // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
     //
@@ -1044,5 +1082,29 @@ module.exports = {
       tokenDecimals,
       tokenTotalSupply
     }
+  },
+  updateReefContractTotalSupply: async (client, totalIssuance, loggerOptions) => {
+    const sql = `
+      UPDATE contract SET token_total_supply = $1 WHERE contract_id = $2;
+    `;
+    const data = [
+      totalIssuance.toString(),
+      '0x0000000000000000000000000000000001000000'
+    ];
+    try {
+      await client.query(sql, data);
+    } catch (error) {
+      logger.error(loggerOptions, `Error updating REEF contract total supply: ${error}`);
+    }
+  },
+  getContractRuntimeBytecode: async (provider, contractId, loggerOptions) => {
+    try {
+      const { contractInfo: { codeHash } } = await provider.api.query.evm.accounts(contractId)
+        .then((res) => res.toJSON());
+      return await provider.api.query.evm.codes(codeHash).then((res) => res.toString());
+    } catch (error) {
+      logger.error(loggerOptions, `Error retrieving contract runtime bytecode from chain: ${error}`);
+    }
+    return null;
   },
 }

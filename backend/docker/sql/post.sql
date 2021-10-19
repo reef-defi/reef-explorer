@@ -1,1 +1,0 @@
-DELETE FROM contract WHERE block_height >= 1077077 AND block_height <= 1145000

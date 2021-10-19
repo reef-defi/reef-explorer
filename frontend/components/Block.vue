@@ -102,7 +102,7 @@
                     <td>{{ shortHash(extrinsic.hash) }}</td>
                     <td>
                       <span v-if="extrinsic.signer">
-                        <Identicon
+                        <ReefIdenticon
                           :key="extrinsic.signer"
                           :address="extrinsic.signer"
                           :size="20"
@@ -164,7 +164,7 @@
                           event.method === `Transfer`
                         "
                       >
-                        <Identicon
+                        <ReefIdenticon
                           :key="JSON.parse(event.data)[0]"
                           :address="JSON.parse(event.data)[0]"
                           :size="20"
@@ -177,7 +177,7 @@
                           {{ shortAddress(JSON.parse(event.data)[0]) }}
                         </nuxt-link>
                         <font-awesome-icon icon="arrow-right" />
-                        <Identicon
+                        <ReefIdenticon
                           :key="JSON.parse(event.data)[1]"
                           :address="JSON.parse(event.data)[1]"
                           :size="20"
@@ -210,11 +210,11 @@
 </template>
 
 <script>
-import Identicon from '@/components/Identicon.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
   },
   mixins: [commonMixin],
   props: {

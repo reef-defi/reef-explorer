@@ -56,7 +56,7 @@
 import { ethers } from 'ethers'
 import { Provider, Signer } from '@reef-defi/evm-provider'
 import { WsProvider } from '@polkadot/api'
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import {
   web3Accounts,
   web3Enable,

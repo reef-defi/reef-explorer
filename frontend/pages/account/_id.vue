@@ -12,7 +12,7 @@
           <div class="card mb-4">
             <div class="card-body">
               <p class="text-center mb-2">
-                <Identicon
+                <ReefIdenticon
                   :key="parsedAccount.accountId"
                   :address="parsedAccount.accountId"
                   :size="80"
@@ -44,7 +44,7 @@
                     <tr>
                       <td>{{ $t('details.account.account_id') }}</td>
                       <td>
-                        <Identicon
+                        <ReefIdenticon
                           :key="parsedAccount.accountId"
                           :address="parsedAccount.accountId"
                           :size="20"
@@ -60,6 +60,12 @@
                           :size="20"
                         />
                         <span>{{ parsedAccount.evmAddress }}</span>
+                      </td>
+                    </tr>
+                    <tr v-if="parsedAccount.evmNonce">
+                      <td>{{ $t('details.account.evm_nonce') }}</td>
+                      <td>
+                        <span>{{ parsedAccount.evmNonce }}</span>
                       </td>
                     </tr>
                     <tr v-if="parsedAccount.identity.display">
@@ -234,8 +240,8 @@
   </div>
 </template>
 <script>
-import gql from 'graphql-tag'
-import Identicon from '@/components/Identicon.vue'
+import { gql } from 'graphql-tag'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import Activity from '@/components/Activity.vue'
 import AccountTransfers from '@/components/AccountTransfers.vue'
@@ -247,7 +253,7 @@ import AccountTokenBalances from '@/components/AccountTokenBalances.vue'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
     Loading,
     Activity,
     AccountTransfers,
@@ -302,6 +308,7 @@ export default {
             account(where: { account_id: { _eq: $account_id } }) {
               account_id
               evm_address
+              evm_nonce
               balances
               available_balance
               free_balance
@@ -323,6 +330,7 @@ export default {
             this.parsedAccount = {
               accountId: data.account[0].account_id,
               evmAddress: data.account[0].evm_address,
+              evmNonce: data.account[0].evm_nonce,
               availableBalance: data.account[0].available_balance,
               freeBalance: data.account[0].free_balance,
               lockedBalance: data.account[0].locked_balance,

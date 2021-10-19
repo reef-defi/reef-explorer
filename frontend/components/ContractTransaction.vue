@@ -41,7 +41,7 @@
           <td>Signer</td>
           <td>
             <div v-if="extrinsic.signer">
-              <Identicon
+              <ReefIdenticon
                 :key="extrinsic.signer"
                 :address="extrinsic.signer"
                 :size="20"
@@ -193,7 +193,7 @@
 <script>
 import { Promised } from 'vue-promised'
 import InputDataDecoder from 'ethereum-input-data-decoder'
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import erc20Abi from '@/assets/erc20Abi.json'
 export default {

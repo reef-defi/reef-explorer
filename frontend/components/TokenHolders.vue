@@ -8,7 +8,7 @@
               :to="`/account/${data.item.holder_account_id}`"
               :title="$t('pages.accounts.account_details')"
             >
-              <Identicon
+              <ReefIdenticon
                 :key="data.item.holder_account_id"
                 :address="data.item.holder_account_id"
                 :size="20"

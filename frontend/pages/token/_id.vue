@@ -12,7 +12,12 @@
           <div class="card mb-4">
             <div class="card-body">
               <h4 class="text-center mb-4">
-                <eth-identicon :address="contractId" :size="32" />
+                <img
+                  v-if="contract.token_icon_url"
+                  :src="contract.token_icon_url"
+                  style="width: 32px; height: 32px"
+                />
+                <eth-identicon v-else :address="contractId" :size="32" />
                 <span v-if="contract.name">
                   {{ contract.name }}
                 </span>
@@ -20,6 +25,13 @@
                   {{ contractId }}
                 </span>
                 <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
+                <font-awesome-icon
+                  v-if="contract.token_validated"
+                  v-b-tooltip.hover
+                  icon="check"
+                  class="text-success"
+                  title="Validated token"
+                />
               </h4>
               <b-tabs content-class="mt-3">
                 <b-tab title="Token info" active>
@@ -60,7 +72,9 @@
                           <td>Contract address</td>
                           <td>
                             <eth-identicon :address="contractId" :size="16" />
-                            {{ contractId }}
+                            <nuxt-link :to="`/contract/${contractId}`">
+                              {{ contractId }}
+                            </nuxt-link>
                           </td>
                         </tr>
                         <tr>
@@ -73,19 +87,17 @@
                             </nuxt-link>
                           </td>
                         </tr>
-                        <tr>
+                        <tr v-if="contract.signer">
                           <td>{{ $t('details.token.created') }}</td>
                           <td>
-                            <div v-if="contract.signer">
-                              <Identicon
-                                :key="contract.signer"
-                                :address="contract.signer"
-                                :size="20"
-                              />
-                              <nuxt-link :to="`/account/${contract.signer}`">
-                                {{ shortAddress(contract.signer) }}
-                              </nuxt-link>
-                            </div>
+                            <ReefIdenticon
+                              :key="contract.signer"
+                              :address="contract.signer"
+                              :size="20"
+                            />
+                            <nuxt-link :to="`/account/${contract.signer}`">
+                              {{ shortAddress(contract.signer) }}
+                            </nuxt-link>
                           </td>
                         </tr>
                       </tbody>
@@ -152,6 +164,16 @@
                             }}</span>
                           </td>
                         </tr>
+                        <tr v-if="contract.deployment_bytecode">
+                          <td>
+                            {{ $t('details.contract.deployment_bytecode') }}
+                          </td>
+                          <td class="text-right">
+                            <span class="bytecode" style="color: #aaa">{{
+                              contract.deployment_bytecode
+                            }}</span>
+                          </td>
+                        </tr>
                         <tr v-if="contract.abi">
                           <td>{{ $t('details.token.abi') }}</td>
                           <td>
@@ -184,18 +206,18 @@
   </div>
 </template>
 <script>
-import gql from 'graphql-tag'
-import Identicon from '@/components/Identicon.vue'
-import Loading from '@/components/Loading.vue'
-import commonMixin from '@/mixins/commonMixin.js'
-import { network } from '@/frontend.config.js'
+import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
 import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
+import Loading from '@/components/Loading.vue'
+import commonMixin from '@/mixins/commonMixin.js'
+import { network } from '@/frontend.config.js'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
     Loading,
     VueJsonPretty,
     ContractTransactions,
@@ -223,6 +245,7 @@ export default {
             contract(where: { contract_id: { _eq: $contract_id } }) {
               contract_id
               name
+              deployment_bytecode
               bytecode
               value
               gas_limit
@@ -241,6 +264,8 @@ export default {
               token_symbol
               token_decimals
               token_total_supply
+              token_icon_url
+              token_validated
               timestamp
               holders {
                 holder_account_id

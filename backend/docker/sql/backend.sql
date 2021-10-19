@@ -238,12 +238,14 @@ CREATE TABLE IF NOT EXISTS account  (
   timestamp BIGINT NOT NULL,
   block_height BIGINT NOT NULL,
   evm_address TEXT DEFAULT NULL,
+  evm_nonce INT DEFAULT NULL,
   PRIMARY KEY ( account_id )  
 );
 
 CREATE TABLE IF NOT EXISTS contract  (
   contract_id TEXT NOT NULL,
   name TEXT NOT NULL,
+  deployment_bytecode TEXT DEFAULT NULL, -- DEFAULT NULL so don't break contracts dump import
   bytecode TEXT NOT NULL,
   arguments TEXT DEFAULT NULL,
   value TEXT NOT NULL,
