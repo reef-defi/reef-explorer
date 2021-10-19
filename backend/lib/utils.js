@@ -359,13 +359,32 @@ module.exports = {
         );
         // https://reefscan.com/block/?blockNumber=118307
         const name = '';
-        const bytecode = extrinsic.args[0];
+
+        // deployment bytecode
+        const deploymentBytecode = extrinsic.args[0];
+
+        // runtime bytecode
+        const bytecode = module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+
         const value = extrinsic.args[1];
         const gasLimit = extrinsic.args[2];
         const storageLimit = extrinsic.args[3];
+        const data = [
+          contractId,
+          name,
+          deploymentBytecode,
+          bytecode,
+          value,
+          gasLimit,
+          storageLimit,
+          signer,
+          blockNumber,
+          timestamp
+        ];
         const contractSql = `INSERT INTO contract (
             contract_id,
             name,
+            deployment_bytecode,
             bytecode,
             value,
             gas_limit,
@@ -374,21 +393,23 @@ module.exports = {
             block_height,
             timestamp
           ) VALUES (
-            '${contractId}',
-            '${name}',
-            '${bytecode}',
-            '${value}',
-            '${gasLimit}',
-            '${storageLimit}',
-            '${signer}',
-            '${blockNumber}',
-            '${timestamp}'
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            $7,
+            $8,
+            $9,
+            $10
           )
           ON CONFLICT ON CONSTRAINT contract_pkey 
-          DO NOTHING;
-          ;`;
+          DO UPDATE SET
+            deployment_bytecode = EXCLUDED.deployment_bytecode,
+            bytecode = EXCLUDED.bytecode;`;
         try {
-          await client.query(contractSql);
+          await client.query(contractSql, data);
           logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
         } catch (error) {
           logger.error(loggerOptions, `Error adding contract ${contractId} at block #${blockNumber}: ${JSON.stringify(error)}`);
@@ -871,7 +892,7 @@ module.exports = {
             tokenSymbol,
             tokenDecimals,
             tokenTotalSupply
-          } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
+          } = await module.exports.isErc20Token(contractId, provider);
           
           const query = `UPDATE contract SET
             name = $1,
@@ -933,7 +954,7 @@ module.exports = {
             tokenSymbol,
             tokenDecimals,
             tokenTotalSupply
-          } = await module.exports.isErc20Token(contractId, provider, loggerOptions);
+          } = await module.exports.isErc20Token(contractId, provider);
           if (isErc20) {
             // contract IS an ERC-20 token!
             const query = `
@@ -993,7 +1014,7 @@ module.exports = {
   
     return filteredBytecode;
   },
-  async isErc20Token(contractId, provider, loggerOptions) {
+  async isErc20Token(contractId, provider) {
     //
     // check standard ERC20 interface: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
     //
@@ -1061,5 +1082,15 @@ module.exports = {
     } catch (error) {
       logger.error(loggerOptions, `Error updating REEF contract total supply: ${error}`);
     }
+  },
+  getContractRuntimeBytecode: async (provider, contractId, loggerOptions) => {
+    try {
+      const { contractInfo: { codeHash } } = await provider.api.query.evm.accounts(contractId)
+        .then((res) => res.toJSON());
+      return await provider.api.query.evm.codes(codeHash).then((res) => res.toString());
+    } catch (error) {
+      logger.error(loggerOptions, `Error retrieving contract runtime bytecode from chain: ${error}`);
+    }
+    return null;
   },
 }
