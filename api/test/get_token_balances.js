@@ -26,15 +26,15 @@ axios
     console.error('error:', error);
   })
 
-axios
-  .post(ApiEndPoint, {
-    account: "5HKFJ94TydnDLLe8Tf5pve4YybksgX1CW55i849tLNGEp7cK", // https://testnet.reefscan.com/account/5HKFJ94TydnDLLe8Tf5pve4YybksgX1CW55i849tLNGEp7cK
-  })
-  .then(res => {
-    // console.log('status:', res.status);
-    // console.log('response:', res);
-    console.log('data:', JSON.stringify(res.data, null, 2));
-  })
-  .catch(error => {
-    console.error('error:', error);
-  })
+// axios
+//   .post(ApiEndPoint, {
+//     account: "5HKFJ94TydnDLLe8Tf5pve4YybksgX1CW55i849tLNGEp7cK", // https://testnet.reefscan.com/account/5HKFJ94TydnDLLe8Tf5pve4YybksgX1CW55i849tLNGEp7cK
+//   })
+//   .then(res => {
+//     // console.log('status:', res.status);
+//     // console.log('response:', res);
+//     console.log('data:', JSON.stringify(res.data, null, 2));
+//   })
+//   .catch(error => {
+//     console.error('error:', error);
+//   })

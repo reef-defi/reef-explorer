@@ -757,6 +757,7 @@ app.post('/api/account/tokens', async (req: any, res) => {
           AND th.contract_id = c.contract_id
       ;`;
       const dbres = await pool.query(query, data);
+      console.log('rows:', dbres.rows.length);
       if (dbres.rows.length > 0) {
         const balances = dbres.rows.map((token) => ({
           contract_id: token.contract_id,
