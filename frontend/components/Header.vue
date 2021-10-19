@@ -158,6 +158,10 @@ export default {
     .header {
       .header__content {
         max-width: 960px;
+
+        .header__links {
+          display: none;
+        }
       }
     }
   }
@@ -183,6 +187,12 @@ export default {
       .header__content {
         padding: 0 25px;
         max-width: 100%;
+
+        .header__logo {
+          svg {
+            height: 40px;
+          }
+        }
       }
     }
   }
