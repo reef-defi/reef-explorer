@@ -779,6 +779,7 @@ module.exports = {
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
+            name = EXCLUDED.name,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
             bytecode = EXCLUDED.bytecode
         ;`;
