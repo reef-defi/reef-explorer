@@ -27,11 +27,11 @@
   </div>
 </template>
 <script>
+import { gql } from 'graphql-tag'
 import Loading from '@/components/Loading.vue'
 import Extrinsic from '@/components/Extrinsic.vue'
 import ExtrinsicEvents from '@/components/ExtrinsicEvents.vue'
 import commonMixin from '@/mixins/commonMixin.js'
-import gql from 'graphql-tag'
 
 export default {
   components: {

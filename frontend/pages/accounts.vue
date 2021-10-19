@@ -262,7 +262,7 @@
   </div>
 </template>
 <script>
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import JsonCSV from 'vue-json-csv'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'

@@ -51,9 +51,9 @@
 
 <script>
 import { ethers } from 'ethers'
-import commonMixin from '@/mixins/commonMixin.js'
 import ContractCallFunction from './ContractCallFunction.vue'
 import ContractCallFunctionWrite from './ContractCallFunctionWrite.vue'
+import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
   components: { ContractCallFunction, ContractCallFunctionWrite },

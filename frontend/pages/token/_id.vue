@@ -157,6 +157,16 @@
                             }}</span>
                           </td>
                         </tr>
+                        <tr v-if="contract.deployment_bytecode">
+                          <td>
+                            {{ $t('details.contract.deployment_bytecode') }}
+                          </td>
+                          <td class="text-right">
+                            <span class="bytecode" style="color: #aaa">{{
+                              contract.deployment_bytecode
+                            }}</span>
+                          </td>
+                        </tr>
                         <tr v-if="contract.abi">
                           <td>{{ $t('details.token.abi') }}</td>
                           <td>
@@ -189,7 +199,7 @@
   </div>
 </template>
 <script>
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
 import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
@@ -228,6 +238,7 @@ export default {
             contract(where: { contract_id: { _eq: $contract_id } }) {
               contract_id
               name
+              deployment_bytecode
               bytecode
               value
               gas_limit

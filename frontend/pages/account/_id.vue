@@ -240,7 +240,7 @@
   </div>
 </template>
 <script>
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import Activity from '@/components/Activity.vue'

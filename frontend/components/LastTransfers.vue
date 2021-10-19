@@ -54,7 +54,7 @@
 
 <script>
 import '@/components/Table'
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import { network } from '../frontend.config'
 import commonMixin from '@/mixins/commonMixin.js'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'

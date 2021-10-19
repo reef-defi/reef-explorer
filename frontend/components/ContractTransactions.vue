@@ -68,7 +68,7 @@
 </template>
 
 <script>
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 // eslint-disable-next-line no-unused-vars
 import moment from 'moment'
 import commonMixin from '@/mixins/commonMixin.js'
