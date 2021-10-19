@@ -669,6 +669,9 @@ module.exports = {
       const signer = '';
       const name = contract[0];
       const contractId = contract[1];
+
+      const deploymentBytecode = module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+
       const bytecode = contract[2];
       const value = '';
       const gasLimit = '';
@@ -692,6 +695,7 @@ module.exports = {
         contractSql = `INSERT INTO contract (
             contract_id,
             name,
+            deployment_bytecode,
             bytecode,
             value,
             gas_limit,
@@ -718,7 +722,8 @@ module.exports = {
             $11,
             $12,
             $13,
-            $14
+            $14,
+            $15
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
@@ -726,11 +731,14 @@ module.exports = {
             token_name = EXCLUDED.token_name,
             token_symbol = EXCLUDED.token_symbol,
             token_decimals = EXCLUDED.token_decimals,
-            token_total_supply = EXCLUDED.token_total_supply
+            token_total_supply = EXCLUDED.token_total_supply,
+            deployment_bytecode = EXCLUDED.deployment_bytecode,
+            bytecode = EXCLUDED.bytecode
         ;`;
         data = [
           contractId,
           name,
+          deploymentBytecode,
           bytecode,
           value,
           gasLimit,
@@ -748,6 +756,7 @@ module.exports = {
         contractSql = `INSERT INTO contract (
             contract_id,
             name,
+            deployment_bytecode,
             bytecode,
             value,
             gas_limit,
@@ -764,14 +773,18 @@ module.exports = {
             $6,
             $7,
             $8,
-            $9
+            $9,
+            $10
           )
-          ON CONFLICT ON CONSTRAINT contract_pkey 
-          DO NOTHING
+          ON CONFLICT ON CONSTRAINT contract_pkey
+          DO UPDATE SET
+            deployment_bytecode = EXCLUDED.deployment_bytecode,
+            bytecode = EXCLUDED.bytecode
         ;`;
         data = [
           contractId,
           name,
+          deploymentBytecode,
           bytecode,
           value,
           gasLimit,
