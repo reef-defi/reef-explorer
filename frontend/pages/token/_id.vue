@@ -26,7 +26,7 @@
                 </span>
                 <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
                 <font-awesome-icon
-                  v-if="data.item.token_validated"
+                  v-if="contract.token_validated"
                   v-b-tooltip.hover
                   icon="check"
                   class="text-success"
@@ -265,6 +265,7 @@ export default {
               token_decimals
               token_total_supply
               token_icon_url
+              token_validated
               timestamp
               holders {
                 holder_account_id
