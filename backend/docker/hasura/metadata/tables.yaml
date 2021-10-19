@@ -62,34 +62,35 @@
   - role: public
     permission:
       columns:
-      - contract_id
-      - name
-      - bytecode
+      - abi
       - arguments
-      - value
-      - gas_limit
-      - storage_limit
-      - signer
       - block_height
-      - verified
-      - source
+      - bytecode
       - compiler_version
+      - contract_id
+      - deployment_bytecode
+      - gas_limit
+      - is_erc20
+      - license
+      - name
       - optimization
       - runs
+      - signer
+      - source
+      - storage_limit
       - target
-      - abi
-      - license
-      - is_erc20
-      - token_name
-      - token_symbol
-      - token_decimals
-      - token_total_supply
-      - token_validated
-      - token_description
-      - token_icon_url
+      - timestamp
       - token_coingecko_id
       - token_coinmarketcap_id
-      - timestamp
+      - token_decimals
+      - token_description
+      - token_icon_url
+      - token_name
+      - token_symbol
+      - token_total_supply
+      - token_validated
+      - value
+      - verified
       filter: {}
       allow_aggregations: true
 - table:
