@@ -364,7 +364,7 @@ module.exports = {
         const deploymentBytecode = extrinsic.args[0];
 
         // runtime bytecode
-        const bytecode = module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+        const bytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
 
         const value = extrinsic.args[1];
         const gasLimit = extrinsic.args[2];
@@ -670,7 +670,7 @@ module.exports = {
       const name = contract[0];
       const contractId = contract[1];
 
-      const deploymentBytecode = module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+      const deploymentBytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
 
       const bytecode = contract[2];
       const value = '';
