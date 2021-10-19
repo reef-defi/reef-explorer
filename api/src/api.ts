@@ -786,6 +786,7 @@ app.post('/api/account/tokens', async (req: any, res) => {
       }
       await pool.end();
     } catch (error) {
+      console.log(error);
       res.send({
         status: false,
         message: 'Error'

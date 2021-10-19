@@ -1,6 +1,7 @@
 const axios = require('axios');
 
-const ApiEndPoint = 'https://testnet.reefscan.com/api/account/tokens';
+// const ApiEndPoint = 'https://testnet.reefscan.com/api/account/tokens';
+const ApiEndPoint = 'https://dev.reef.polkastats.io/api/account/tokens';
 
 //
 // Endpoint: /api/account/tokens
@@ -25,7 +26,7 @@ axios
     console.error('error:', error);
   })
 
-  axios
+axios
   .post(ApiEndPoint, {
     account: "5HKFJ94TydnDLLe8Tf5pve4YybksgX1CW55i849tLNGEp7cK", // https://testnet.reefscan.com/account/5HKFJ94TydnDLLe8Tf5pve4YybksgX1CW55i849tLNGEp7cK
   })
