@@ -874,7 +874,7 @@ module.exports = {
     // dont match dummy contracts
     if (bytecode !== '0x') {
       // find verified contract with the same preprocesses bytecode
-      const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND bytecode LIKE $2 LIMIT 1;";
+      const query = "SELECT name, source, compiler_version, optimization, runs, target, abi, license FROM contract WHERE verified IS TRUE AND contract_id != $1 AND deployment_bytecode LIKE $2 LIMIT 1;";
       const preprocessedRequestContractBytecode = module.exports.preprocessBytecode(bytecode);
       const dbres = await client.query(
         query,
