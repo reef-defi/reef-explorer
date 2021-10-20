@@ -152,6 +152,16 @@
                             }}</span>
                           </td>
                         </tr>
+                        <tr v-if="decodedArguments">
+                          <td>
+                            {{ $t('details.contract.decoded_arguments') }}
+                          </td>
+                          <td class="text-right">
+                            <span class="bytecode" style="color: #aaa">{{
+                              decodedArguments
+                            }}</span>
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
@@ -232,6 +242,7 @@
 <script>
 import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
+import { ethers } from 'ethers'
 import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
@@ -255,6 +266,27 @@ export default {
       contractId: this.$route.params.id,
       contract: undefined,
     }
+  },
+  computed: {
+    decodedArguments() {
+      if (this.contract.abi && this.contract.arguments) {
+        // get constructor arguments types array
+        const constructorTypes = JSON.parse(this.contract.abi)
+          .find(({ type }) => type === 'constructor')
+          .inputs.map((input) => input.type)
+
+        // decode constructor arguments
+        const abiCoder = new ethers.utils.AbiCoder()
+        const decoded = abiCoder.decode(
+          constructorTypes,
+          '0x' + this.contract.arguments
+        )
+        // eslint-disable-next-line no-console
+        console.log('decoded constructor arguments', decoded)
+        return decoded.toString()
+      }
+      return null
+    },
   },
   watch: {
     $route() {

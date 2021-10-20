@@ -282,6 +282,7 @@
       "bytecode": "Bytecode de ejecución",
       "metadata": "Metadatos",
       "arguments": "Argumentos",
+      "decoded_arguments": "Argumentos decodificados",
       "verified": "¿Verificado?",
       "abi": "ABI",
       "compiler_version": "Versión del compilador",
