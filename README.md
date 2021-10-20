@@ -1,6 +1,6 @@
 # Reef explorer
 
-Open source block explorer for [Reef Finance](https://reef.finance) hosted at [https://reefscan.com](https://reefscan.com)
+Open source block explorer for [Reef chain](https://reef.finance) hosted at [https://reefscan.com](https://reefscan.com)
 
 ## Dependencies
 
@@ -60,7 +60,7 @@ That will build and start all the required dockers:
 
 - PostgreSQL
 - Hasura GraphQL server
-- Parity Polkadot client
+- Reef chain node
 - Nodejs crawler
 - Verificator
 - API
