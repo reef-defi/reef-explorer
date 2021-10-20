@@ -52,6 +52,15 @@
                   <div class="table-responsive pb-4">
                     <table class="table table-striped">
                       <tbody>
+                        <tr>
+                          <td>Contract address</td>
+                          <td>
+                            <eth-identicon :address="contractId" :size="16" />
+                            <nuxt-link :to="`/contract/${contractId}`">
+                              {{ contractId }}
+                            </nuxt-link>
+                          </td>
+                        </tr>
                         <tr v-if="contract.token_name">
                           <td>{{ $t('details.token.token_name') }}</td>
                           <td>
@@ -80,15 +89,6 @@
                                 contract.token_symbol
                               )
                             }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Contract address</td>
-                          <td>
-                            <eth-identicon :address="contractId" :size="16" />
-                            <nuxt-link :to="`/contract/${contractId}`">
-                              {{ contractId }}
-                            </nuxt-link>
                           </td>
                         </tr>
                         <tr>
