@@ -280,6 +280,8 @@
       "storage_limit": "Storage limit",
       "deployment_bytecode": "Deployment bytecode",
       "bytecode": "Runtime bytecode",
+      "metadata": "Metadata",
+      "arguments": "Constructor arguments",
       "verified": "Verified",
       "abi": "ABI",
       "compiler_version": "Compiler version",

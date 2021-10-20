@@ -280,6 +280,8 @@
       "storage_limit": "Límite de almacenamiento",
       "deployment_bytecode": "Bytecode de despliegue",
       "bytecode": "Bytecode de ejecución",
+      "metadata": "Metadatos",
+      "arguments": "Argumentos",
       "verified": "¿Verificado?",
       "abi": "ABI",
       "compiler_version": "Versión del compilador",
