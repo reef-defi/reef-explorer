@@ -364,3 +364,18 @@ h1 {
 .page-tokens .tokens .btn {
   font-size: 0.85rem !important;
 }
+
+.contract-page .bytecode {
+  word-break: break-all;
+}
+
+.contract-page .badge,
+.token-page .badge {
+  padding: 0.5em 0.6em;
+  font-size: 60%;
+  font-weight: 100;
+}
+
+.token-page .bytecode {
+  word-break: break-all;
+}

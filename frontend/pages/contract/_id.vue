@@ -17,16 +17,30 @@
                   {{ contract.name }}
                 </span>
                 <span v-else>
-                  {{ contractId }}
+                  {{ shortHash(contractId) }}
                 </span>
-                <b-badge
-                  v-if="contract.is_erc20"
-                  :to="`/token/${contract.contract_id}`"
-                  class="ml-2"
-                  variant="info"
-                >
-                  ERC-20 token
-                </b-badge>
+                <p class="mt-3">
+                  <b-badge
+                    v-if="contract.is_erc20"
+                    :to="`/token/${contract.contract_id}`"
+                    class="ml-2"
+                    variant="info"
+                  >
+                    ERC-20 token
+                  </b-badge>
+                  <b-badge
+                    v-if="contract.verified"
+                    class="ml-2"
+                    variant="success"
+                  >
+                    Verified source
+                    <font-awesome-icon icon="check" />
+                  </b-badge>
+                  <b-badge v-else class="ml-2" variant="danger">
+                    Not verified source
+                    <font-awesome-icon icon="times" />
+                  </b-badge>
+                </p>
               </h4>
               <b-tabs content-class="mt-3">
                 <b-tab title="General" active>
@@ -271,9 +285,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.contract-page .bytecode {
-  word-break: break-all;
-}
-</style>
