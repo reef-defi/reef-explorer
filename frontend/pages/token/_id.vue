@@ -1,7 +1,7 @@
 <template>
   <div>
     <section>
-      <b-container class="contract-page main py-5">
+      <b-container class="token-page main py-5">
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
@@ -12,6 +12,13 @@
           <div class="card mb-4">
             <div class="card-body">
               <h4 class="text-center mb-4">
+                <font-awesome-icon
+                  v-if="contract.token_validated"
+                  v-b-tooltip.hover
+                  icon="check"
+                  class="text-success"
+                  title="Validated token"
+                />
                 <img
                   v-if="contract.token_icon_url"
                   :src="contract.token_icon_url"
@@ -22,16 +29,23 @@
                   {{ contract.name }}
                 </span>
                 <span v-else>
-                  {{ contractId }}
+                  {{ shortHash(contractId) }}
                 </span>
-                <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
-                <font-awesome-icon
-                  v-if="contract.token_validated"
-                  v-b-tooltip.hover
-                  icon="check"
-                  class="text-success"
-                  title="Validated token"
-                />
+                <p class="mt-3">
+                  <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
+                  <b-badge
+                    v-if="contract.verified"
+                    class="ml-2"
+                    variant="success"
+                  >
+                    Verified source
+                    <font-awesome-icon icon="check" />
+                  </b-badge>
+                  <b-badge v-else class="ml-2" variant="danger">
+                    Not verified source
+                    <font-awesome-icon icon="times" />
+                  </b-badge>
+                </p>
               </h4>
               <b-tabs content-class="mt-3">
                 <b-tab title="Token info" active>
@@ -296,9 +310,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.contract-page .bytecode {
-  word-break: break-all;
-}
-</style>
