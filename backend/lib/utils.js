@@ -158,23 +158,19 @@ module.exports = {
     loggerOptions,
   ) => {
     const startTime = new Date().getTime();
-    const chunkSize = 100;
-    const indexedExtrinsics = extrinsics.map((extrinsic, index) => ([index, extrinsic]));
-    const chunks = module.exports.chunker(indexedExtrinsics, chunkSize);
-    for (const chunk of chunks) {
-      await Promise.all(
-        chunk.map((indexedExtrinsic) => module.exports.processExtrinsic(
-          provider,
-          client,
-          blockNumber,
-          blockHash,
-          indexedExtrinsic,
-          blockEvents,
-          timestamp,
-          loggerOptions,
-        )),
-      );
-    }
+    await Promise.all(
+      extrinsics.map((extrinsic, index) => module.exports.processExtrinsic(
+        provider,
+        client,
+        blockNumber,
+        blockHash,
+        extrinsic,
+        index,
+        blockEvents,
+        timestamp,
+        loggerOptions,
+      )),
+    );
     // Log execution time
     const endTime = new Date().getTime();
     logger.debug(loggerOptions, `Added ${extrinsics.length} extrinsics in ${((endTime - startTime) / 1000).toFixed(3)}s`);
@@ -184,13 +180,12 @@ module.exports = {
     client,
     blockNumber,
     blockHash,
-    indexedExtrinsic,
+    extrinsic,
+    index,
     blockEvents,
     timestamp,
     loggerOptions,
   ) => {
-    const index = indexedExtrinsic[0];
-    const extrinsic = indexedExtrinsic[1];
     const { api } = provider;
     const { isSigned } = extrinsic;
     const signer = isSigned ? extrinsic.signer.toString() : '';
@@ -379,27 +374,29 @@ module.exports = {
         const storageLimit = extrinsic.args[3];
         const data = [
           contractId,
-          signer,
           name,
+          deploymentBytecode,
+          bytecode,
+          contractMetadata,
+          contractArguments,
           value,
           gasLimit,
           storageLimit,
-          deploymentBytecode,
-          contractMetadata,
-          contractArguments,
+          signer,
           blockNumber,
           timestamp
         ];
         const contractSql = `INSERT INTO contract (
             contract_id,
-            owner,
             name,
+            deployment_bytecode,
+            bytecode,
+            metadata,
+            arguments,
             value,
             gas_limit,
             storage_limit,
-            deployment_bytecode,
-            bytecode_metadata,
-            bytecode_arguments,
+            signer,
             block_height,
             timestamp
           ) VALUES (
@@ -413,13 +410,15 @@ module.exports = {
             $8,
             $9,
             $10,
-            $11
+            $11,
+            $12
           )
           ON CONFLICT ON CONSTRAINT contract_pkey 
           DO UPDATE SET
-            bytecode_metadata = EXCLUDED.bytecode_metadata,
+            metadata = EXCLUDED.metadata,
             arguments = EXCLUDED.arguments,
-            deployment_bytecode = EXCLUDED.deployment_bytecode;`;
+            deployment_bytecode = EXCLUDED.deployment_bytecode,
+            bytecode = EXCLUDED.bytecode;`;
         try {
           await client.query(contractSql, data);
           logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
@@ -462,25 +461,18 @@ module.exports = {
     client, blockNumber, blockEvents, timestamp, loggerOptions,
   ) => {
     const startTime = new Date().getTime();
-    const chunkSize = 100;
-    const indexedBlockEvents = blockEvents.map((event, index) => ([index, event]));
-    const chunks = module.exports.chunker(indexedBlockEvents, chunkSize);
-    for (const chunk of chunks) {
-      await Promise.all(
-        chunk.map((indexedEvent) => module.exports.processEvent(
-          client, blockNumber, indexedEvent, timestamp, loggerOptions,
-        )),
-      );
-    }
+    await Promise.all(
+      blockEvents.map((record, index) => module.exports.processEvent(
+        client, blockNumber, record, index, timestamp, loggerOptions,
+      )),
+    );
     // Log execution time
     const endTime = new Date().getTime();
     logger.debug(loggerOptions, `Added ${blockEvents.length} events in ${((endTime - startTime) / 1000).toFixed(3)}s`);
   },
   processEvent: async (
-    client, blockNumber, indexedEvent, timestamp, loggerOptions,
+    client, blockNumber, record, index, timestamp, loggerOptions,
   ) => {
-    const index = indexedEvent[0];
-    const record = indexedEvent[1];
     const { event, phase } = record;
     let sql = `INSERT INTO event (
       block_number,
@@ -511,7 +503,7 @@ module.exports = {
     }
 
     // Store staking reward
-    if (event.section === 'staking' && (event.method === 'Reward' || event.method === 'Rewarded')) {
+    if (event.section === 'staking' && event.method === 'Reward') {
       // TODO: also store validator and era index
       sql = `INSERT INTO staking_reward (
         block_number,
@@ -537,7 +529,7 @@ module.exports = {
       }
     }
     // Store staking slash
-    if (event.section === 'staking' && (event.method === 'Slash' || event.method === 'Slashed')) {
+    if (event.section === 'staking' && event.method === 'Slash') {
       // TODO: also store validator and era index
       sql = `INSERT INTO staking_slash (
         block_number,
@@ -611,17 +603,27 @@ module.exports = {
     }
   },
   getExtrinsicSuccess: (index, blockEvents) => {
-    return blockEvents
-      .find(({ event, phase }) => (
-        (phase.toJSON()?.ApplyExtrinsic === index || phase.toJSON()?.applyExtrinsic === index)
-          && event.section === 'system'
-          && event.method === 'ExtrinsicSuccess'
-      )) ? true : false;
+    // assume success if no events were extracted
+    if (blockEvents.length === 0) {
+      return true;
+    }
+    let extrinsicSuccess = false;
+    blockEvents.forEach((record) => {
+      const { event, phase } = record;
+      if (
+        parseInt(phase.toHuman().ApplyExtrinsic, 10) === index
+        && event.section === 'system'
+        && event.method === 'ExtrinsicSuccess'
+      ) {
+        extrinsicSuccess = true;
+      }
+    });
+    return extrinsicSuccess;
   },
   getExtrinsicError: (index, blockEvents) => JSON.stringify(
     blockEvents
       .find(({ event, phase }) => (
-        (phase.toJSON()?.ApplyExtrinsic === index || phase.toJSON()?.applyExtrinsic === index)
+        parseInt(phase.toHuman().ApplyExtrinsic, 10) === index
           && event.section === 'system'
           && event.method === 'ExtrinsicFailed'
       )).event.data || '',
@@ -678,12 +680,10 @@ module.exports = {
       const signer = '';
       const name = contract[0];
       const contractId = contract[1];
+
       const deploymentBytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+
       const bytecode = contract[2];
-
-      // get metadata and arguments
-      const { contractMetadata, contractArguments } = module.exports.getContractMetadataAndArguments(deploymentBytecode, bytecode);
-
       const value = '';
       const gasLimit = '';
       const storageLimit = '';
@@ -705,15 +705,19 @@ module.exports = {
         const tokenTotalSupply = null;
         contractSql = `INSERT INTO contract (
             contract_id,
-            owner,
             name,
+            deployment_bytecode,
+            bytecode,
             value,
             gas_limit,
             storage_limit,
-            deployment_bytecode,
-            bytecode_metadata,
-            bytecode_arguments,
+            signer,
             block_height,
+            is_erc20,
+            token_name,
+            token_symbol,
+            token_decimals,
+            token_total_supply,
             timestamp
           ) VALUES (
             $1,
@@ -726,39 +730,50 @@ module.exports = {
             $8,
             $9,
             $10,
-            $11
+            $11,
+            $12,
+            $13,
+            $14,
+            $15
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
             name = EXCLUDED.name,
+            is_erc20 = EXCLUDED.is_erc20,
+            token_name = EXCLUDED.token_name,
+            token_symbol = EXCLUDED.token_symbol,
+            token_decimals = EXCLUDED.token_decimals,
+            token_total_supply = EXCLUDED.token_total_supply,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
-            bytecode_metadata = EXCLUDED.bytecode_metadata,
-            bytecode_arguments = EXCLUDED.bytecode_arguments
+            bytecode = EXCLUDED.bytecode
         ;`;
         data = [
           contractId,
-          signer,
           name,
+          deploymentBytecode,
+          bytecode,
           value,
           gasLimit,
           storageLimit,
-          deploymentBytecode,
-          contractMetadata,
-          contractArguments,
+          signer,
           blockNumber,
+          isErc20,
+          tokenName,
+          tokenSymbol,
+          tokenDecimals,
+          tokenTotalSupply,
           timestamp,
         ];
       } else {
         contractSql = `INSERT INTO contract (
             contract_id,
-            owner,
             name,
+            deployment_bytecode,
+            bytecode,
             value,
             gas_limit,
             storage_limit,
-            deployment_bytecode,
-            bytecode_metadata,
-            bytecode_arguments,
+            signer,
             block_height,
             timestamp
           ) VALUES (
@@ -771,26 +786,23 @@ module.exports = {
             $7,
             $8,
             $9,
-            $10,
-            $11
+            $10
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
             name = EXCLUDED.name,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
-            bytecode_metadata = EXCLUDED.bytecode_metadata,
-            bytecode_arguments = EXCLUDED.bytecode_arguments
+            bytecode = EXCLUDED.bytecode
         ;`;
         data = [
           contractId,
-          signer,
           name,
+          deploymentBytecode,
+          bytecode,
           value,
           gasLimit,
           storageLimit,
-          deploymentBytecode,
-          contractMetadata,
-          contractArguments,
+          signer,
           blockNumber,
           timestamp,
         ];
@@ -1141,8 +1153,4 @@ module.exports = {
     }
     return null;
   },
-  chunker: (a, n) => Array.from(
-    { length: Math.ceil(a.length / n) },
-    (_, i) => a.slice(i * n, i * n + n),
-  )
 }
