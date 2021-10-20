@@ -75,7 +75,7 @@ const getOnChainContractBytecode = async (client, contract_id) => {
   const res = await parametrizedDbQuery(client, query, data);
   if (res) {
     if (res.rows.length > 0) {
-      return res.rows[0].bytecode;
+      return res.rows[0].deployment_bytecode;
     }
   }
   return '';
