@@ -19,9 +19,9 @@
 </template>
 
 <script>
+import bubbles from './BubblesAnimation.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import Chain from '@/components/Chain.vue'
-import bubbles from './BubblesAnimation.vue'
 
 export default {
   components: { bubbles, Chain },

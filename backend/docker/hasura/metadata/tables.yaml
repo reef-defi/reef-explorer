@@ -6,17 +6,18 @@
     permission:
       columns:
       - account_id
+      - available_balance
+      - balances
+      - block_height
+      - evm_address
+      - evm_nonce
+      - free_balance
       - identity
       - identity_display
       - identity_display_parent
-      - balances
-      - available_balance
-      - free_balance
       - locked_balance
       - nonce
       - timestamp
-      - block_height
-      - evm_address
       filter: {}
       allow_aggregations: true
 - table:
@@ -61,29 +62,35 @@
   - role: public
     permission:
       columns:
-      - contract_id
-      - name
-      - bytecode
+      - abi
       - arguments
-      - value
-      - gas_limit
-      - storage_limit
-      - signer
       - block_height
-      - verified
-      - source
+      - bytecode
       - compiler_version
+      - contract_id
+      - deployment_bytecode
+      - gas_limit
+      - is_erc20
+      - license
+      - name
       - optimization
       - runs
+      - signer
+      - source
+      - storage_limit
       - target
-      - abi
-      - license
-      - is_erc20
+      - timestamp
+      - token_coingecko_id
+      - token_coinmarketcap_id
+      - token_decimals
+      - token_description
+      - token_icon_url
       - token_name
       - token_symbol
-      - token_decimals
       - token_total_supply
-      - timestamp
+      - token_validated
+      - value
+      - verified
       filter: {}
       allow_aggregations: true
 - table:

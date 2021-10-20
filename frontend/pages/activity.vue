@@ -43,7 +43,7 @@
                 </template>
                 <template #cell(signer)="data">
                   <p class="mb-0">
-                    <Identicon
+                    <ReefIdenticon
                       :key="data.item.signer"
                       :address="data.item.signer"
                       :size="20"
@@ -131,7 +131,7 @@
 </template>
 
 <script>
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import Loading from '@/components/Loading.vue'
 import { paginationOptions } from '@/frontend.config.js'

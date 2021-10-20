@@ -70,12 +70,12 @@ const updateRequestError = async (client, id, errorType, errorMessage) => {
 };
 
 const getOnChainContractBytecode = async (client, contract_id) => {
-  const query = `SELECT bytecode FROM contract WHERE contract_id = $1;`;
+  const query = `SELECT deployment_bytecode FROM contract WHERE contract_id = $1;`;
   const data = [contract_id];
   const res = await parametrizedDbQuery(client, query, data);
   if (res) {
     if (res.rows.length > 0) {
-      return res.rows[0].bytecode;
+      return res.rows[0].deployment_bytecode;
     }
   }
   return '';
@@ -83,13 +83,16 @@ const getOnChainContractBytecode = async (client, contract_id) => {
 
 // get not verified contracts with 100% matching bytecde (excluding metadata)
 const getOnChainContractsByBytecode = async(client, bytecode) => {
-  const query = `SELECT contract_id FROM contract WHERE bytecode LIKE $1 AND NOT verified;`;
-  const preprocessedBytecode = preprocessBytecode(bytecode);
-  const data = [`0x${preprocessedBytecode}%`];
-  const res = await parametrizedDbQuery(client, query, data);
-  if (res) {
-    if (res.rows.length > 0) {
-      return res.rows.map(({ contract_id }) => contract_id);
+  // dont match dummy contracts
+  if (bytecode !== '0x') {
+    const query = `SELECT contract_id FROM contract WHERE deployment_bytecode LIKE $1 AND NOT verified;`;
+    const preprocessedBytecode = preprocessBytecode(bytecode);
+    const data = [`0x${preprocessedBytecode}%`];
+    const res = await parametrizedDbQuery(client, query, data);
+    if (res) {
+      if (res.rows.length > 0) {
+        return res.rows.map(({ contract_id }) => contract_id);
+      }
     }
   }
   return []
@@ -350,6 +353,7 @@ const processVerificationRequest = async (request, client, provider) => {
 
   } catch (error) {
     logger.error(loggerOptions, `Error: ${error}`);
+    logger.error(loggerOptions, `Stack: ${error.stack}`);
   }
 };
 
@@ -382,5 +386,6 @@ const main = async () => {
 
 main().catch((error) => {
   logger.error(loggerOptions, `Main error: ${error}`);
+  logger.error(loggerOptions, `Stack: ${error.stack}`);
   logger.error(loggerOptions, `Contract verificator stopped!`);
 });

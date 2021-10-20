@@ -108,8 +108,8 @@
 </template>
 
 <script>
-import gql from 'graphql-tag'
 import { BigNumber } from 'bignumber.js'
+import { gql } from 'graphql-tag'
 import commonMixin from '../mixins/commonMixin.js'
 import { network } from '../frontend.config.js'
 

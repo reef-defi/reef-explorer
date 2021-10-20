@@ -1,4 +1,4 @@
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import { toChecksumAddress } from 'web3-utils'
 export default async function ({ app, route, store, redirect }) {
   const id = route.params.id

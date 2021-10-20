@@ -46,7 +46,7 @@
           <td>From</td>
           <td>
             <div v-if="transfer.signer">
-              <Identicon
+              <ReefIdenticon
                 :key="transfer.signer"
                 :address="transfer.signer"
                 :size="20"
@@ -61,7 +61,7 @@
           <td>To</td>
           <td>
             <div v-if="JSON.parse(transfer.args)[0].id">
-              <Identicon
+              <ReefIdenticon
                 :key="JSON.parse(transfer.args)[0].id"
                 :address="JSON.parse(transfer.args)[0].id"
                 :size="20"
@@ -140,8 +140,8 @@
 
 <script>
 import { Promised } from 'vue-promised'
-import commonMixin from '@/mixins/commonMixin.js'
 import { toChecksumAddress } from 'web3-utils'
+import commonMixin from '@/mixins/commonMixin.js'
 export default {
   components: { Promised },
   mixins: [commonMixin],
