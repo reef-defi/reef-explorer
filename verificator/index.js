@@ -353,7 +353,7 @@ const processVerificationRequest = async (request, client, provider) => {
 
   } catch (error) {
     logger.error(loggerOptions, `Error: ${error}`);
-    logger.error(loggerOptions, `Error stack: ${error.stack}`);
+    logger.error(loggerOptions, `Stack: ${error.stack}`);
   }
 };
 
@@ -386,5 +386,6 @@ const main = async () => {
 
 main().catch((error) => {
   logger.error(loggerOptions, `Main error: ${error}`);
+  logger.error(loggerOptions, `Stack: ${error.stack}`);
   logger.error(loggerOptions, `Contract verificator stopped!`);
 });
