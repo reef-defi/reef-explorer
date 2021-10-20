@@ -132,6 +132,26 @@
                             }}</span>
                           </td>
                         </tr>
+                        <tr v-if="contract.metadata">
+                          <td>
+                            {{ $t('details.contract.metadata') }}
+                          </td>
+                          <td class="text-right">
+                            <span class="bytecode" style="color: #aaa">{{
+                              contract.metadata
+                            }}</span>
+                          </td>
+                        </tr>
+                        <tr v-if="contract.arguments">
+                          <td>
+                            {{ $t('details.contract.arguments') }}
+                          </td>
+                          <td class="text-right">
+                            <span class="bytecode" style="color: #aaa">{{
+                              contract.arguments
+                            }}</span>
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
@@ -251,6 +271,8 @@ export default {
               name
               deployment_bytecode
               bytecode
+              metadata
+              arguments
               value
               gas_limit
               storage_limit
