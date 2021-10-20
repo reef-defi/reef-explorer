@@ -353,6 +353,7 @@ const processVerificationRequest = async (request, client, provider) => {
 
   } catch (error) {
     logger.error(loggerOptions, `Error: ${error}`);
+    logger.error(loggerOptions, `Error stack: ${error.stack}`);
   }
 };
 
