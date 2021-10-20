@@ -248,6 +248,7 @@ CREATE TABLE IF NOT EXISTS contract  (
   deployment_bytecode TEXT DEFAULT NULL, -- DEFAULT NULL so don't break contracts dump import
   processed_bytecode TEXT DEFAULT NULL,
   bytecode TEXT NOT NULL,
+  metadata TEXT DEFAULT NULL,
   arguments TEXT DEFAULT NULL,
   value TEXT NOT NULL,
   gas_limit TEXT NOT NULL,

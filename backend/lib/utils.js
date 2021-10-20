@@ -365,6 +365,9 @@ module.exports = {
 
         // runtime bytecode
         const bytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
+        
+        // get metadata and arguments
+        const { contractMetadata, contractArguments } = module.exports.getContractMetadataAndArguments(deploymentBytecode, bytecode);
 
         const value = extrinsic.args[1];
         const gasLimit = extrinsic.args[2];
@@ -374,6 +377,8 @@ module.exports = {
           name,
           deploymentBytecode,
           bytecode,
+          contractMetadata,
+          contractArguments,
           value,
           gasLimit,
           storageLimit,
@@ -386,6 +391,8 @@ module.exports = {
             name,
             deployment_bytecode,
             bytecode,
+            metadata,
+            arguments,
             value,
             gas_limit,
             storage_limit,
@@ -402,10 +409,14 @@ module.exports = {
             $7,
             $8,
             $9,
-            $10
+            $10,
+            $11,
+            $12
           )
           ON CONFLICT ON CONSTRAINT contract_pkey 
           DO UPDATE SET
+            metadata = EXCLUDED.metadata,
+            arguments = EXCLUDED.arguments,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
             bytecode = EXCLUDED.bytecode;`;
         try {
@@ -1028,6 +1039,40 @@ module.exports = {
     filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
   
     return filteredBytecode;
+  },
+  getContractMetadataAndArguments(deploymentBytecode, runtimeBytecode) {
+
+    // remove 0x
+    const processedRuntimeBytecode = runtimeBytecode.slice(2);
+
+    // get constructor arguments
+    const argumentsStart = deploymentBytecode.indexOf(processedRuntimeBytecode) + processedRuntimeBytecode.length;
+    const contractArguments = deploymentBytecode.slice(argumentsStart);
+
+    //
+    // get metadata
+    //
+    // metadata is part of runtime bytecode
+    //
+    let contractMetadata = '';
+
+    // metadata separator for 0.5.16
+    const bzzr1MetadataStartBytes = 'a265627a7a72315820';
+    // metadata separator (solc >= v0.6.0)
+    const ipfsMetadataStartBytes =  'a264697066735822';
+
+    if (runtimeBytecode.indexOf(ipfsMetadataStartBytes) > 0) {
+      const ipfsMetadataStart = runtimeBytecode.indexOf(ipfsMetadataStartBytes);
+      contractMetadata = runtimeBytecode.slice(ipfsMetadataStart);
+    } else if (runtimeBytecode.indexOf(bzzr1MetadataStartBytes) > 0) {
+      const bzzr1MetadataStart = runtimeBytecode.indexOf(bzzr1MetadataStartBytes);
+      contractMetadata = runtimeBytecode.slice(bzzr1MetadataStart);
+    }
+
+    return {
+      contractMetadata,
+      contractArguments,
+    }
   },
   async isErc20Token(contractId, provider) {
     //
