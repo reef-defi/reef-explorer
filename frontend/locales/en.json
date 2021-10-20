@@ -282,6 +282,7 @@
       "bytecode": "Runtime bytecode",
       "metadata": "Metadata",
       "arguments": "Constructor arguments",
+      "decoded_arguments": "Decoded constructor arguments",
       "verified": "Verified",
       "abi": "ABI",
       "compiler_version": "Compiler version",
