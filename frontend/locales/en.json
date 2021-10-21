@@ -285,6 +285,7 @@
       "decoded_arguments": "Decoded constructor arguments",
       "decoded_metadata": "Decoded metadata",
       "ipfs_hash": "IPFS hash",
+      "bzzr1_hash": "bzzr1 hash",
       "deployment_solc_version": "Deployment solc version",
       "verified": "Verified",
       "abi": "ABI",
