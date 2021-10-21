@@ -175,23 +175,33 @@
                             />
                           </td>
                         </tr>
-                        <tr v-if="getIpfsHash()">
-                          <td>
-                            {{ $t('details.contract.ipfs_hash') }}
-                          </td>
-                          <td class="text-right">
-                            <Promised :promise="getIpfsHash()">
-                              <template #default="data">
+                        <Promised :promise="getIpfsHash()">
+                          <template #default="data">
+                            <tr>
+                              <td>
+                                {{ $t('details.contract.ipfs_hash') }}
+                              </td>
+                              <td class="text-right">
                                 <a
                                   :href="`https://ipfs.io/ipfs/${data}`"
                                   target="_blank"
                                 >
                                   {{ data }}
                                 </a>
-                              </template>
-                            </Promised>
-                          </td>
-                        </tr>
+                              </td>
+                            </tr>
+                          </template>
+                        </Promised>
+                        <Promised :promise="getBzzr1Hash()">
+                          <template #default="data">
+                            <tr>
+                              <td>
+                                {{ $t('details.contract.bzzr1_hash') }}
+                              </td>
+                              <td class="text-right">{{ data }}</td>
+                            </tr>
+                          </template>
+                        </Promised>
                         <tr v-if="decodedSolcVersion">
                           <td>
                             {{ $t('details.contract.deployment_solc_version') }}
@@ -331,16 +341,28 @@ export default {
     },
     decodedMetadata() {
       if (this.contract.metadata) {
-        // remove end sequence 0x00 0x33
-        const encodedMetadata = this.contract.metadata.slice(0, -4)
+        let encodedMetadata = ''
+        const endSeq1 = '0033'
+        const endSeqIndex1 = this.contract.metadata.indexOf(endSeq1)
+        const endSeq2 = '0032'
+        const endSeqIndex2 = this.contract.metadata.indexOf(endSeq2)
+        if (this.contract.metadata.includes(endSeq1)) {
+          encodedMetadata = this.contract.metadata.slice(0, endSeqIndex1)
+        }
+        if (this.contract.metadata.includes(endSeq2)) {
+          encodedMetadata = this.contract.metadata.slice(0, endSeqIndex2)
+        }
         // metadata is CBOR encoded (http://cbor.me/)
-        return cbor.decodeAllSync(encodedMetadata)
+        const decodedMetadata = cbor.decode(encodedMetadata)
+        // eslint-disable-next-line no-console
+        console.log(decodedMetadata)
+        return decodedMetadata
       }
       return null
     },
     decodedSolcVersion() {
       if (this.decodedMetadata) {
-        const solcVersionArray = this.decodedMetadata[0]?.solc || null
+        const solcVersionArray = this.decodedMetadata?.solc || null
         // eslint-disable-next-line no-console
         console.log(solcVersionArray)
         return `${solcVersionArray[0]}.${solcVersionArray[1]}.${solcVersionArray[2]}`
@@ -400,7 +422,11 @@ export default {
   methods: {
     async getIpfsHash() {
       // decode hash from uint8 array
-      return await Hash.of(this.decodedMetadata[0].ipfs)
+      return await Hash.of(this.decodedMetadata?.ipfs)
+    },
+    async getBzzr1Hash() {
+      // decode hash from uint8 array
+      return await Hash.of(this.decodedMetadata?.bzzr1)
     },
   },
 }
