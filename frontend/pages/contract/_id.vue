@@ -132,16 +132,6 @@
                             }}</span>
                           </td>
                         </tr>
-                        <tr v-if="contract.metadata">
-                          <td>
-                            {{ $t('details.contract.metadata') }}
-                          </td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.metadata
-                            }}</span>
-                          </td>
-                        </tr>
                         <tr v-if="contract.arguments">
                           <td>
                             {{ $t('details.contract.arguments') }}
@@ -160,6 +150,54 @@
                             <span class="bytecode" style="color: #aaa">{{
                               decodedArguments
                             }}</span>
+                          </td>
+                        </tr>
+                        <tr v-if="contract.metadata">
+                          <td>
+                            {{ $t('details.contract.metadata') }}
+                          </td>
+                          <td class="text-right">
+                            <span class="bytecode" style="color: #aaa">{{
+                              contract.metadata
+                            }}</span>
+                          </td>
+                        </tr>
+                        <tr v-if="decodedMetadata">
+                          <td>
+                            {{ $t('details.contract.decoded_metadata') }}
+                          </td>
+                          <td class="text-right">
+                            <vue-json-pretty
+                              :data="
+                                JSON.parse(JSON.stringify(decodedMetadata))
+                              "
+                              :deep="2"
+                            />
+                          </td>
+                        </tr>
+                        <tr v-if="getIpfsHash()">
+                          <td>
+                            {{ $t('details.contract.ipfs_hash') }}
+                          </td>
+                          <td class="text-right">
+                            <Promised :promise="getIpfsHash()">
+                              <template #default="data">
+                                <a
+                                  :href="`https://ipfs.io/ipfs/${data}`"
+                                  target="_blank"
+                                >
+                                  {{ data }}
+                                </a>
+                              </template>
+                            </Promised>
+                          </td>
+                        </tr>
+                        <tr v-if="decodedSolcVersion">
+                          <td>
+                            {{ $t('details.contract.deployment_solc_version') }}
+                          </td>
+                          <td class="text-right">
+                            {{ decodedSolcVersion }}
                           </td>
                         </tr>
                       </tbody>
@@ -243,6 +281,9 @@
 import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
 import { ethers } from 'ethers'
+import cbor from 'cbor'
+import Hash from 'ipfs-only-hash'
+import { Promised } from 'vue-promised'
 import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
@@ -257,6 +298,7 @@ export default {
     VueJsonPretty,
     ContractTransactions,
     ContractExecute,
+    Promised,
   },
   mixins: [commonMixin],
   data() {
@@ -284,6 +326,24 @@ export default {
         // eslint-disable-next-line no-console
         console.log('decoded constructor arguments', decoded)
         return decoded.toString()
+      }
+      return null
+    },
+    decodedMetadata() {
+      if (this.contract.metadata) {
+        // remove end sequence 0x00 0x33
+        const encodedMetadata = this.contract.metadata.slice(0, -4)
+        // metadata is CBOR encoded (http://cbor.me/)
+        return cbor.decodeAllSync(encodedMetadata)
+      }
+      return null
+    },
+    decodedSolcVersion() {
+      if (this.decodedMetadata) {
+        const solcVersionArray = this.decodedMetadata[0]?.solc || null
+        // eslint-disable-next-line no-console
+        console.log(solcVersionArray)
+        return `${solcVersionArray[0]}.${solcVersionArray[1]}.${solcVersionArray[2]}`
       }
       return null
     },
@@ -335,6 +395,12 @@ export default {
           this.loading = false
         },
       },
+    },
+  },
+  methods: {
+    async getIpfsHash() {
+      // decode hash from uint8 array
+      return await Hash.of(this.decodedMetadata[0].ipfs)
     },
   },
 }
