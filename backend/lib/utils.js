@@ -680,10 +680,12 @@ module.exports = {
       const signer = '';
       const name = contract[0];
       const contractId = contract[1];
-
       const deploymentBytecode = await module.exports.getContractRuntimeBytecode(provider, contractId, loggerOptions);
-
       const bytecode = contract[2];
+
+      // get metadata and arguments
+      const { contractMetadata, contractArguments } = module.exports.getContractMetadataAndArguments(deploymentBytecode, bytecode);
+
       const value = '';
       const gasLimit = '';
       const storageLimit = '';
@@ -708,6 +710,8 @@ module.exports = {
             name,
             deployment_bytecode,
             bytecode,
+            metadata,
+            arguments,
             value,
             gas_limit,
             storage_limit,
@@ -734,7 +738,9 @@ module.exports = {
             $12,
             $13,
             $14,
-            $15
+            $15,
+            $16,
+            $17
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
@@ -745,13 +751,17 @@ module.exports = {
             token_decimals = EXCLUDED.token_decimals,
             token_total_supply = EXCLUDED.token_total_supply,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
-            bytecode = EXCLUDED.bytecode
+            bytecode = EXCLUDED.bytecode,
+            metadata = EXCLUDED.metadata,
+            arguments = EXCLUDED.arguments
         ;`;
         data = [
           contractId,
           name,
           deploymentBytecode,
           bytecode,
+          contractMetadata,
+          contractArguments,
           value,
           gasLimit,
           storageLimit,
@@ -770,6 +780,8 @@ module.exports = {
             name,
             deployment_bytecode,
             bytecode,
+            metadata,
+            arguments,
             value,
             gas_limit,
             storage_limit,
@@ -786,19 +798,25 @@ module.exports = {
             $7,
             $8,
             $9,
-            $10
+            $10,
+            $11,
+            $12
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
             name = EXCLUDED.name,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
-            bytecode = EXCLUDED.bytecode
+            bytecode = EXCLUDED.bytecode,
+            metadata = EXCLUDED.metadata,
+            arguments = EXCLUDED.arguments
         ;`;
         data = [
           contractId,
           name,
           deploymentBytecode,
           bytecode,
+          contractMetadata,
+          contractArguments,
           value,
           gasLimit,
           storageLimit,
