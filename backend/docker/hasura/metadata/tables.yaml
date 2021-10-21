@@ -72,6 +72,7 @@
       - gas_limit
       - is_erc20
       - license
+      - metadata
       - name
       - optimization
       - runs
