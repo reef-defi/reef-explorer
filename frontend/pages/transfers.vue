@@ -55,7 +55,7 @@
                 </template>
                 <template #cell(from)="data">
                   <p class="mb-0">
-                    <Identicon
+                    <ReefIdenticon
                       :key="data.item.from"
                       :address="data.item.from"
                       :size="20"
@@ -68,7 +68,7 @@
                 <template #cell(to)="data">
                   <div v-if="isValidAddressPolkadotAddress(data.item.to)">
                     <p class="mb-0">
-                      <Identicon
+                      <ReefIdenticon
                         :key="data.item.to"
                         :address="data.item.to"
                         :size="20"
@@ -161,15 +161,15 @@
 </template>
 
 <script>
-import gql from 'graphql-tag'
+import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import Loading from '@/components/Loading.vue'
-import Identicon from '@/components/Identicon.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { paginationOptions } from '@/frontend.config.js'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
     Loading,
   },
   mixins: [commonMixin],

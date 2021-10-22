@@ -3,7 +3,7 @@
     <div class="headline">
       <nuxt-link
         v-b-tooltip.hover
-        :to="`/blocks`"
+        :to="`/transfers`"
         title="Click to see last transfers"
       >
         Last Transfers
@@ -24,7 +24,7 @@
           :link="{ url: `/account/${item.from}`, fill: false }"
           :title="$t('pages.accounts.account_details')"
         >
-          <Identicon :key="item.from" :address="item.from" :size="20" />
+          <ReefIdenticon :key="item.from" :address="item.from" :size="20" />
           <span>{{ shortAddress(item.from) }}</span>
         </Cell>
 
@@ -32,7 +32,7 @@
           :link="{ url: `/account/${item.to}`, fill: false }"
           :title="$t('pages.accounts.account_details')"
         >
-          <Identicon
+          <ReefIdenticon
             v-if="isValidAddressPolkadotAddress(item.to)"
             :key="item.to"
             :address="item.to"
@@ -56,14 +56,14 @@
 
 <script>
 import '@/components/Table'
-import gql from 'graphql-tag'
-import commonMixin from '@/mixins/commonMixin.js'
-import Identicon from '@/components/Identicon.vue'
+import { gql } from 'graphql-tag'
 import { network } from '../frontend.config'
+import commonMixin from '@/mixins/commonMixin.js'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
   },
   mixins: [commonMixin],
   data() {

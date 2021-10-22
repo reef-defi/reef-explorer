@@ -209,12 +209,12 @@
 </template>
 
 <script>
-import gql from 'graphql-tag'
-import commonMixin from '@/mixins/commonMixin.js'
+import { gql } from 'graphql-tag'
 import { validationMixin } from 'vuelidate'
 import { checkAddressChecksum, toChecksumAddress } from 'web3-utils'
 // eslint-disable-next-line no-unused-vars
 import { required, integer, minValue } from 'vuelidate/lib/validators'
+import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
 
 export default {
@@ -4230,7 +4230,7 @@ export default {
           }
         }
 
-        // call verificator-api
+        // call verificator api
         const formData = new FormData()
         formData.append('source', vm.source)
         formData.append('address', toChecksumAddress(vm.address)) // save address checksum

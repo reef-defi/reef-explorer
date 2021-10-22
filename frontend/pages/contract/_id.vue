@@ -17,16 +17,30 @@
                   {{ contract.name }}
                 </span>
                 <span v-else>
-                  {{ contractId }}
+                  {{ shortHash(contractId) }}
                 </span>
-                <b-badge
-                  v-if="contract.is_erc20"
-                  :to="`/token/${contract.contract_id}`"
-                  class="ml-2"
-                  variant="info"
-                >
-                  ERC-20 token
-                </b-badge>
+                <p class="mt-3">
+                  <b-badge
+                    v-if="contract.is_erc20"
+                    :to="`/token/${contract.contract_id}`"
+                    class="ml-2"
+                    variant="info"
+                  >
+                    ERC-20 token
+                  </b-badge>
+                  <b-badge
+                    v-if="contract.verified"
+                    class="ml-2"
+                    variant="success"
+                  >
+                    Verified source
+                    <font-awesome-icon icon="check" />
+                  </b-badge>
+                  <b-badge v-else class="ml-2" variant="danger">
+                    Not verified source
+                    <font-awesome-icon icon="times" />
+                  </b-badge>
+                </p>
               </h4>
               <b-tabs content-class="mt-3">
                 <b-tab title="General" active>
@@ -38,6 +52,23 @@
                           <td class="text-right">
                             <eth-identicon :address="contractId" :size="16" />
                             {{ contractId }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>{{ $t('details.contract.verified') }}</td>
+                          <td class="text-right">
+                            <p v-if="contract.verified" class="mb-0">
+                              <font-awesome-icon
+                                icon="check"
+                                class="text-success"
+                              />
+                            </p>
+                            <p v-else class="mb-0">
+                              <font-awesome-icon
+                                icon="times"
+                                class="text-danger"
+                              />
+                            </p>
                           </td>
                         </tr>
                         <tr>
@@ -54,7 +85,7 @@
                           <td>{{ $t('details.contract.signer') }}</td>
                           <td class="text-right">
                             <div v-if="contract.signer">
-                              <Identicon
+                              <ReefIdenticon
                                 :key="contract.signer"
                                 :address="contract.signer"
                                 :size="20"
@@ -91,21 +122,14 @@
                             }}</span>
                           </td>
                         </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.verified') }}</td>
+                        <tr v-if="contract.deployment_bytecode">
+                          <td>
+                            {{ $t('details.contract.deployment_bytecode') }}
+                          </td>
                           <td class="text-right">
-                            <p v-if="contract.verified" class="mb-0">
-                              <font-awesome-icon
-                                icon="check"
-                                class="text-success"
-                              />
-                            </p>
-                            <p v-else class="mb-0">
-                              <font-awesome-icon
-                                icon="times"
-                                class="text-danger"
-                              />
-                            </p>
+                            <span class="bytecode" style="color: #aaa">{{
+                              contract.deployment_bytecode
+                            }}</span>
                           </td>
                         </tr>
                       </tbody>
@@ -186,18 +210,18 @@
   </div>
 </template>
 <script>
-import gql from 'graphql-tag'
-import Identicon from '@/components/Identicon.vue'
-import Loading from '@/components/Loading.vue'
-import commonMixin from '@/mixins/commonMixin.js'
-import { network } from '@/frontend.config.js'
+import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
 import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
+import Loading from '@/components/Loading.vue'
+import commonMixin from '@/mixins/commonMixin.js'
+import { network } from '@/frontend.config.js'
 
 export default {
   components: {
-    Identicon,
+    ReefIdenticon,
     Loading,
     VueJsonPretty,
     ContractTransactions,
@@ -225,6 +249,7 @@ export default {
             contract(where: { contract_id: { _eq: $contract_id } }) {
               contract_id
               name
+              deployment_bytecode
               bytecode
               value
               gas_limit
@@ -260,9 +285,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.contract-page .bytecode {
-  word-break: break-all;
-}
-</style>

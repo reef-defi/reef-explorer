@@ -1,8 +1,8 @@
 FROM node:fermium
 
-WORKDIR /usr/app/verificator-api
+WORKDIR /usr/app/api
 
-COPY . /usr/app/verificator-api
+COPY . /usr/app/api
 
 EXPOSE 8000
 

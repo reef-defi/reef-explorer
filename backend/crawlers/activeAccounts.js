@@ -36,7 +36,7 @@ const chunker = (a, n) => Array.from(
 
 const processChunk = async (api, client, accountId) => {
   const timestamp = Math.floor(parseInt(Date.now().toString(), 10) / 1000);
-  const [block, identity, balances, evmAddress] = await Promise.all([
+  const [block, identity, balances, chainEvmAddress] = await Promise.all([
     api.rpc.chain.getBlock().then((result) => result.block.header.number.toNumber()),
     api.derive.accounts.identity(accountId),
     api.derive.balances.all(accountId),
@@ -50,6 +50,9 @@ const processChunk = async (api, client, accountId) => {
   const JSONIdentity = identity.display ? JSON.stringify(identity) : '';
   const JSONbalances = JSON.stringify(balances);
   const nonce = balances.accountNonce.toString();
+  const evmAddress = chainEvmAddress.toString() !== '' ? toChecksumAddress(chainEvmAddress.toString()) : null;
+  const evmNonce = evmAddress ? await api.query.evm.accounts(evmAddress).then((res) => res.toJSON()?.nonce || 0) : null;
+
   const data = [
     accountId,
     JSONIdentity,
@@ -62,7 +65,8 @@ const processChunk = async (api, client, accountId) => {
     nonce,
     timestamp,
     block,
-    evmAddress.toString() !== '' ? toChecksumAddress(evmAddress.toString()) : '',
+    evmAddress,
+    evmNonce
   ];
   const query = `
     INSERT INTO account (
@@ -77,7 +81,8 @@ const processChunk = async (api, client, accountId) => {
       nonce,
       timestamp,
       block_height,
-      evm_address
+      evm_address,
+      evm_nonce
     ) VALUES (
       $1,
       $2,
@@ -90,7 +95,8 @@ const processChunk = async (api, client, accountId) => {
       $9,
       $10,
       $11,
-      $12
+      $12,
+      $13
     )
     ON CONFLICT (account_id)
     DO UPDATE SET
@@ -104,7 +110,8 @@ const processChunk = async (api, client, accountId) => {
       nonce = EXCLUDED.nonce,
       timestamp = EXCLUDED.timestamp,
       block_height = EXCLUDED.block_height,
-      evm_address = EXCLUDED.evm_address
+      evm_address = EXCLUDED.evm_address,
+      evm_nonce = EXCLUDED.evm_nonce
     WHERE EXCLUDED.block_height > account.block_height
   ;`;
   // eslint-disable-next-line no-await-in-loop

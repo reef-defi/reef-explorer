@@ -29,9 +29,9 @@
 </template>
 <script>
 import { toChecksumAddress } from 'web3-utils'
+import { gql } from 'graphql-tag'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
-import gql from 'graphql-tag'
 import ContractTransaction from '@/components/ContractTransaction.vue'
 
 export default {
