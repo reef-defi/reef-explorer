@@ -75,7 +75,7 @@ const loadCompiler = async (version: string): Promise<any> => (
 )
 
 type Bytecode = string;
-const compileSources = async (contractName: string, contractFilename: string, contracts: Contracts, version: string, optimizer?: boolean, runs=200): Promise<Bytecode> => {
+export const compileSources = async (contractName: string, contractFilename: string, contracts: Contracts, version: string, optimizer?: boolean, runs=200): Promise<Bytecode> => {
   const compiler = await loadCompiler(version);
   const solcData = optimizer 
     ? prepareOptimizedSolcContracts(contracts, runs)
