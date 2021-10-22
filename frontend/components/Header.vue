@@ -8,19 +8,31 @@
 
         <div class="header__links">
           <nuxt-link to="/blocks">Blocks</nuxt-link>
+          <nuxt-link to="/accounts">Accounts</nuxt-link>
           <nuxt-link to="/transfers">Transfers</nuxt-link>
           <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
           <nuxt-link to="/events">Events</nuxt-link>
-          <nuxt-link to="/accounts">Accounts</nuxt-link>
-          <nuxt-link to="/contracts">Contracts</nuxt-link>
-          <nuxt-link to="/tokens">Tokens</nuxt-link>
 
-          <a
-            v-if="network.id === 'reef-mainnet'"
-            href="https://testnet.reefscan.com"
-            >Reef Testnet</a
-          >
-          <a v-else href="https://reefscan.com">Reef Mainnet</a>
+          <div class="header__links-group">
+            <span class="header__links-group-label">Other</span>
+
+            <div class="header__links-group-links">
+              <nuxt-link to="/contracts">Contracts</nuxt-link>
+              <nuxt-link to="/tokens">Tokens</nuxt-link>
+            </div>
+          </div>
+
+          <b-dropdown class="header__network">
+            <template #button-content>
+              {{ network.name }}
+            </template>
+            <b-dropdown-item href="https://reefscan.com"
+              >Reef Mainnet</b-dropdown-item
+            >
+            <b-dropdown-item href="https://testnet.reefscan.com"
+              >Reef Testnet</b-dropdown-item
+            >
+          </b-dropdown>
         </div>
 
         <ReefPrice />
@@ -148,6 +160,99 @@ export default {
             background: linear-gradient(225deg, #a93185, #5531a9) !important;
             background-clip: text !important;
             -webkit-text-fill-color: transparent;
+          }
+        }
+
+        .header__links-group-links {
+          display: none;
+          position: absolute;
+          left: 0;
+          top: calc(100% - 20px);
+          padding: 8px 0;
+          margin-top: 2px;
+          border-radius: 5px;
+          background: white;
+          box-shadow: 0 1px 3px -1px rgba(black, 0.05),
+            0 5px 10px -5px rgba(black, 0.1);
+          z-index: 1;
+          border: 1px solid rgba(black, 0.15);
+
+          a {
+            display: block;
+            width: 100%;
+            padding: 0.25rem 1.5rem;
+            font-weight: 400;
+            font-size: 16px;
+            color: #212529;
+            text-align: left;
+
+            &:hover {
+              text-decoration: none;
+              background: #e9ecef;
+              color: #16181b;
+            }
+          }
+        }
+
+        .header__links-group {
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          height: 100%;
+          color: rgba(#3e3f42, 0.85);
+          font-weight: 600;
+          padding: 0 20px;
+          font-size: 14px;
+          text-decoration: none;
+
+          .header__links-group-label {
+            cursor: pointer;
+          }
+
+          .nuxt-link-active {
+            color: #a93185;
+            background: linear-gradient(225deg, #a93185, #5531a9) !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent;
+          }
+
+          &:hover,
+          &:active {
+            color: black;
+
+            .header__links-group-links {
+              display: block;
+            }
+          }
+        }
+
+        .header__network {
+          margin-bottom: 0;
+          margin-left: 10px;
+
+          > .btn {
+            background: rgba(#eaedf3, 1);
+            padding: 5px 14px;
+            font-weight: 600;
+            color: rgba(#3e3f42, 0.85);
+            font-size: 14px;
+            border: none;
+
+            svg {
+              margin-right: 4px;
+            }
+
+            &::after {
+              vertical-align: 0.12em;
+            }
+
+            &:hover,
+            &.show {
+              color: rgba(#3e3f42, 1);
+              background: darken(#eaedf3, 5%);
+            }
           }
         }
       }
