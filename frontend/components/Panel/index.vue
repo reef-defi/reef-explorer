@@ -11,6 +11,19 @@
         <button class="panel-more__close-btn" @click="closeMore">
           <font-awesome-icon icon="times" />
         </button>
+
+        <b-dropdown class="panel-more__network">
+          <template #button-content>
+            {{ network.name }}
+          </template>
+          <b-dropdown-item href="https://reefscan.com"
+            >Reef Mainnet</b-dropdown-item
+          >
+          <b-dropdown-item href="https://testnet.reefscan.com"
+            >Reef Testnet</b-dropdown-item
+          >
+        </b-dropdown>
+
         <div class="panel-more__content">
           <div
             v-for="(item, index) in items"
@@ -26,6 +39,7 @@
 </template>
 
 <script>
+import { network } from '@/frontend.config.js'
 import Item from './Item'
 
 export default {
@@ -36,6 +50,7 @@ export default {
   data() {
     return {
       moreOpen: false,
+      network,
     }
   },
   computed: {
@@ -134,14 +149,15 @@ export default {
       right: 0;
       font-size: 23px;
       color: #797689;
+      z-index: 2;
     }
 
     .panel-more__content {
       padding: 30px;
       width: 100%;
-      min-height: 100vh;
-      height: 100vh;
-      max-height: 100vh;
+      min-height: calc(100vh - 90px);
+      height: calc(100vh - 90px);
+      max-height: calc(100vh - 90px);
       overflow: auto;
       display: flex;
       flex-flow: row wrap;
@@ -168,6 +184,35 @@ export default {
             margin-top: 10px;
           }
         }
+      }
+    }
+
+    .panel-more__network {
+      padding: 40px;
+      padding-bottom: 10px;
+      margin-bottom: 0;
+      width: 100%;
+
+      & + .panel-more__content {
+        padding-top: 0;
+      }
+
+      > .btn {
+        height: 40px;
+        background: transparent;
+        border: solid 1px #d8dce6;
+        color: #3e3f42;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+
+        &::after {
+          vertical-align: 0.2em;
+        }
+      }
+
+      .dropdown-menu {
+        width: calc(100% - 80px);
       }
     }
   }

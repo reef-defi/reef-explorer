@@ -8,9 +8,9 @@
 
         <div class="header__links">
           <nuxt-link to="/blocks">Blocks</nuxt-link>
-          <nuxt-link to="/accounts">Accounts</nuxt-link>
           <nuxt-link to="/transfers">Transfers</nuxt-link>
           <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
+          <nuxt-link to="/accounts">Accounts</nuxt-link>
           <nuxt-link to="/events">Events</nuxt-link>
 
           <div class="header__links-group">
