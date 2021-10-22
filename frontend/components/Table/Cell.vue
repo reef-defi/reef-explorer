@@ -12,7 +12,6 @@
       >
         <slot />
       </component>
-      <div v-if="label" class="table-cell__label">{{ label }}</div>
     </div>
   </td>
 </template>
@@ -22,7 +21,6 @@ export default {
   name: 'Cell',
   props: {
     link: { type: [String, Object], default: '' },
-    label: { type: String, default: '' },
     align: {
       type: String,
       default: 'left',
@@ -42,13 +40,13 @@ export default {
 
 <style lang="scss">
 .table-cell {
-  $height: 50px;
+  $height: 40px;
 
   padding: 5px !important;
   border-top: none !important;
 
   .table-cell__content-wrapper {
-    padding: 0 4px;
+    padding: 0 7px;
     width: 100%;
     display: flex;
     flex-flow: column-reverse nowrap;
@@ -57,20 +55,11 @@ export default {
     min-height: $height;
     max-height: $height;
 
-    .table-cell__label {
-      white-space: nowrap;
-      font-size: 12px;
-      line-height: 1;
-      margin-bottom: 4px;
-      font-weight: 500;
-      color: #6b6c6f;
-    }
-
     .table-cell__content {
       white-space: nowrap;
       font-size: 13px;
       line-height: 15px;
-      font-weight: 600;
+      font-weight: 500;
       color: #3e3f42;
       display: flex;
       flex-flow: row nowrap;
@@ -113,7 +102,6 @@ export default {
           }
 
           &:hover {
-            font-weight: 500;
             box-shadow: none;
             background: linear-gradient(130deg, #b01f6c, #3c127b);
             color: white;
@@ -121,14 +109,9 @@ export default {
         }
 
         &.table-cell__content--fill {
-          font-weight: 500;
           box-shadow: none;
           background: linear-gradient(130deg, #b01f6c, #3c127b);
           color: white;
-        }
-
-        & + .table-cell__label {
-          margin-left: 4px;
         }
       }
     }

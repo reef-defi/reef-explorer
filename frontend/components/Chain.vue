@@ -30,7 +30,7 @@
     </div>
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">Total Extrinsics</h4>
+        <h4 class="mb-3">Total extrinsics</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/extrinsics"
@@ -44,7 +44,7 @@
     </div>
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">Total Events</h4>
+        <h4 class="mb-3">Total events</h4>
         <nuxt-link v-b-tooltip.hover to="/events" title="Click to see events!">
           <h6 class="d-inline-block">{{ formatNumber(totalEvents) }}</h6>
         </nuxt-link>
@@ -108,6 +108,7 @@
 </template>
 
 <script>
+import { BigNumber } from 'bignumber.js'
 import { gql } from 'graphql-tag'
 import commonMixin from '../mixins/commonMixin.js'
 import { network } from '../frontend.config.js'
@@ -195,6 +196,14 @@ export default {
       },
     },
   },
+  methods: {
+    formatAmount(amount) {
+      return `${new BigNumber(amount)
+        .div(new BigNumber(10).pow(network.tokenDecimals))
+        .toFixed(0)
+        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${network.tokenSymbol}`
+    },
+  },
 }
 </script>
 
@@ -223,6 +232,10 @@ export default {
       color: #ff51ca;
       margin-bottom: 5px !important;
       text-shadow: 1px 1px 1px rgba(black, 0.25);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     h6 {
