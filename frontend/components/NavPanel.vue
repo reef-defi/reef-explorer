@@ -16,8 +16,8 @@ export default {
         blocks: 'Blocks',
         transfers: 'Transfers',
         extrinsics: 'Extrinsics',
-        events: 'Events',
         accounts: 'Accounts',
+        events: 'Events',
         contracts: 'Contracts',
         tokens: 'Tokens',
       }
