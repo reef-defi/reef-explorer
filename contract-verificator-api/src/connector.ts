@@ -18,3 +18,10 @@ export const connect = async (): Promise<Pool> => {
   await connection.connect()
   return connection;
 }
+
+export const query = async <Res>(statement: string, args: any[]): Promise<Res[]> => {
+  const db = await connect();
+  const result = await db.query(statement, [...args]);
+  await db.release();
+  return result.rows;
+}
