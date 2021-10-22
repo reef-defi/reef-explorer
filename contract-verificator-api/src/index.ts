@@ -2,7 +2,7 @@ import express, {Response} from 'express';
 import { compileSources } from './compiler';
 import { authenticationToken, getReefPrice } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findStakingRewards, findUserTokens, updateContractsVerificationStatus } from './queries';
-import { AppRequest, License, Target } from './types';
+import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq } from './types';
 import { ensure } from './utils';
 
 const app = express();
@@ -17,31 +17,6 @@ app.use('/', (err, req, res, next) => {
   res.status(404).send(err.message);
 })
 
-interface ContractVerificationID {
-  id: string;
-}
-
-interface AutomaticContractVerificationReq {
-  abi: string;
-  args: string;
-  runs: number;
-  source: string;
-  target: Target;
-  address: string;
-  bytecode: string;
-  filename: string;
-  license: License;
-  optimization: boolean;
-  compilerVersion: string;
-}
-
-interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
-  token: string;
-}
-
-interface AccountAddress {
-  address: string;
-}
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   const bytecode = await compileSources(
