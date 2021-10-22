@@ -27,3 +27,30 @@ export type License =
   | "OSL-3.0"
   | "Apache-2.0"
   | "GNU AGPLv3";
+
+
+export interface ContractVerificationID {
+  id: string;
+}
+
+export interface AutomaticContractVerificationReq {
+  abi: string;
+  args: string;
+  runs: number;
+  source: string;
+  target: Target;
+  address: string;
+  bytecode: string;
+  filename: string;
+  license: License;
+  optimization: boolean;
+  compilerVersion: string;
+}
+
+export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
+  token: string;
+}
+
+export interface AccountAddress {
+  address: string;
+}
