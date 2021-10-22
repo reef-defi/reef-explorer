@@ -8,17 +8,24 @@
 
         <div class="header__links">
           <nuxt-link to="/blocks">Blocks</nuxt-link>
-          <nuxt-link to="/transfers">Transfers</nuxt-link>
-          <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
           <nuxt-link to="/accounts">Accounts</nuxt-link>
-          <nuxt-link to="/events">Events</nuxt-link>
+          <nuxt-link to="/transfers">Transfers</nuxt-link>
+          <nuxt-link to="/contracts">Contracts</nuxt-link>
+
+          <div class="header__links-group">
+            <span class="header__links-group-label">Tokens</span>
+
+            <div class="header__links-group-links">
+              <nuxt-link to="/tokens">REEF-20</nuxt-link>
+            </div>
+          </div>
 
           <div class="header__links-group">
             <span class="header__links-group-label">Other</span>
 
             <div class="header__links-group-links">
-              <nuxt-link to="/contracts">Contracts</nuxt-link>
-              <nuxt-link to="/tokens">Tokens</nuxt-link>
+              <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
+              <nuxt-link to="/events">Events</nuxt-link>
             </div>
           </div>
 
@@ -27,10 +34,10 @@
               {{ network.name }}
             </template>
             <b-dropdown-item href="https://reefscan.com"
-              >Reef Mainnet</b-dropdown-item
+              >Mainnet</b-dropdown-item
             >
             <b-dropdown-item href="https://testnet.reefscan.com"
-              >Reef Testnet</b-dropdown-item
+              >Testnet</b-dropdown-item
             >
           </b-dropdown>
         </div>
