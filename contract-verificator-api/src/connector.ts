@@ -1,4 +1,5 @@
 import {Pool} from "pq";
+import axios from "axios";
 
 const configuration = {
   recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
@@ -25,3 +26,33 @@ export const query = async <Res>(statement: string, args: any[]): Promise<Res[]>
   await db.release();
   return result.rows;
 }
+
+
+interface Price {
+  usd: number;
+  usd_24h_change: number;
+}
+
+interface PriceWrapper {
+  [coin: string]: Price;
+}
+
+const REEF_DENOM = "reef-finance";
+export const getReefPrice = async (): Promise<Price> => axios
+  .get<PriceWrapper>(`https://api.coingecko.com/api/v3/simple/price?ids=${REEF_DENOM}&vs_currencies=usd&include_24hr_change=true`)
+  .then((res) => res.data[REEF_DENOM])
+  .then((res) => ({...res}));
+
+
+const googleAuthenticatorApi = axios.create({
+  baseURL: "`https://www.google.com/recaptcha/",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
+  },
+})
+export const authenticationToken = async (token: string): Promise<boolean> =>
+  await googleAuthenticatorApi
+    .post(`api/siteverify?secret=${configuration.recaptchaSecret}&response=${token}`, {})
+    .then((res) => res.data)
+    .then((res: any) => res.text()) // TODO any is a hack!
+    .then((res) => JSON.parse(res).success);
