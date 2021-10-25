@@ -1,4 +1,4 @@
-import solc from "solc";
+const solc = require('solc');
 
 export interface Contracts {
   [contractFilename: string]: string
