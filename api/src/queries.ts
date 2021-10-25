@@ -1,9 +1,8 @@
 
 import { query } from "./connector";
-import { Bytecode, ContracVerificationInsert, License, Pool, PoolDB, StakingRewardDB, Status, Target, Token, TokenDB, TokenInfo, TokenInfoDB, UserTokenDB } from "./types";
+import { ContracVerificationInsert, Pool, PoolDB, StakingRewardDB, Status, Token, UserTokenDB } from "./types";
 import { ensure } from "./utils";
 import crypto from "crypto";
-import { ContractInterface } from 'ethers';
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO contract_verification_request
 (id, contract_id, source, filename, compiler_version, arguments, optimization, runs, target, license, status, timestamp)
@@ -39,32 +38,16 @@ export const checkIfContractIsVerified = async (bytecode: string): Promise<boole
 const CONTRACT_VERIFICATION_STATUS = `SELECT status FROM contract_verification_request WHERE id = $1`;
 export const contractVerificationStatus = async (id: string): Promise<string> => {
   const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [id]);
-  ensure(result.length > 0, "Contract does not exist...", 404);
+  ensure(result.length > 0, "Contract does not exist...");
   return result[0].status;
 }
 
-interface UpdateContract {
-  address: string;
-  verified: boolean;
-  bytecode: string;
-  name: string;
-  abi: ContractInterface;
-  source: string;
-  compilerVersion: string;
-  optimization: string;
-  target: Target;
-  license: License;
-}
-const UPDATE_CONTRACT_STATUS = `UPDATE contract
-SET verified = $2, processed_bytecode = $3, name = $4, abi = $5, source = $6, compiler_version = $7, optimization = $8, target = $9, license = $10
-WHERE contract_id = $1`;
-export const updateContractStatus = async ({address, bytecode, verified, name, abi, source, compilerVersion, optimization, target, license}: UpdateContract): Promise<void> => {
-  await query(
-    UPDATE_CONTRACT_STATUS,
-    [address, verified, bytecode, name, JSON.stringify(abi), source, compilerVersion, optimization, target, license]
-  );
+const UPDATE_CONTRACT_STATUS = `UPDATE contract SET verified = TRUE, processed_bytecode = $1 WHERE contract_id = $2`;
+export const updateContractStatus = async (address: string, bytecode: string): Promise<void> => {
+  await query(UPDATE_CONTRACT_STATUS, [bytecode, address]);
 };
 
+// TODO does this work?
 const FIND_USER_TOKENS = `SELECT
   th.contract_id,
   holder_account_id,
@@ -98,23 +81,16 @@ export const findStakingRewards = async (): Promise<StakingRewardDB[]> =>
 interface Balance {
   balance: number;
 }
-const FIND_USER_BALANCE = `SELECT balance
-FROM token_holder
-WHERE (holder_account_id = $1 OR holder_evm_address = $1) AND contract_id = $2`;
+const FIND_USER_BALANCE = `SELECT balance FROM token_holder WHERE (holder_account_id = $1 OR holder_evm_address = $1) AND contract_id = $2`;
 const REEF_CONTRACT = '0x0000000000000000000000000000000001000000';
-export const userBalance = async (address: string): Promise<number> => {
-  const balances = await query<Balance>(FIND_USER_BALANCE, [address, REEF_CONTRACT]);
-  ensure(balances.length > 0, "User does not have token", 404);
-  return balances[0].balance;
-}
+export const userBalance = async (address: string): Promise<number> => 
+  query<Balance>(FIND_USER_BALANCE, [address, REEF_CONTRACT])[0]; // TODO maybe this wont work!
 
 const FIND_TOKEN = `SELECT name, icon_url, decimals FROM contract WHERE contract_id = $1`;
 export const findToken = async (tokenAddress: string): Promise<Token> => {
-  const res = await query<TokenDB>(FIND_TOKEN, [tokenAddress]);
-  ensure(res.length > 0, 'Token does not exist', 404);
-  return {...res[0],
-    iconUrl: res[0].icon_url
-  }
+  const res = await query<Token>(FIND_TOKEN, [tokenAddress]);
+  ensure(res.length > 0, 'Token does not exist');
+  return res[0];
 }
 
 const FIND_USER_TOKEN = `SELECT
@@ -130,17 +106,15 @@ WHERE
   th.contract_id = c.contract_id AND
   (th.holder_account_id = $2 OR th.holder_evm_address = $2)`;
 export const findUsersToken = async (userAddress: string, tokenAddress: string): Promise<Token> => {
-  const tokens = await query<TokenDB>(FIND_USER_TOKEN, [tokenAddress, userAddress]);
-  ensure(tokens.length > 0, "User does not have desired token", 404);
-  return {...tokens[0],
-    iconUrl: tokens[0].icon_url
-  };
+  const tokens = await query<Token>(FIND_USER_TOKEN, [tokenAddress, userAddress]);
+  ensure(tokens.length > 0, "User does not have desired token");
+  return tokens[0];
 }
 
 const FIND_USER_POOL_BALANCE = 'SELECT balance FROM pool_user WHERE pool_address = $1 AND user_address = $2';
 export const findUserPoolBalance = async (poolAddress: string, userAddress: string): Promise<Balance> => {
   const balance = await query<Balance>(FIND_USER_POOL_BALANCE, [poolAddress, userAddress]);
-  ensure(balance.length > 0, "User is not in pool", 404);
+  ensure(balance.length > 0, "User is not in pool");
   return balance[0];
 }
 
@@ -156,9 +130,17 @@ FROM pool
 WHERE token1 = $1 AND token2 = $2`;
 export const findPool = async (tokenAddress1: string, tokenAddress2: string): Promise<Pool> => {
   const pools = await query<PoolDB>(FIND_POOL, [tokenAddress1, tokenAddress2]);
-  ensure(pools.length > 0, 'Pool does not exist', 404);
+  ensure(pools.length > 0, 'Pool does not exist');
+  const token1 = await findToken(tokenAddress1);
+  const token2 = await findToken(tokenAddress2);
 
-  return {...pools[0],
+  return {
+    token1,
+    token2,
+    address: pools[0].address,
+    decimals: pools[0].decimals,
+    reserve1: pools[0].reserve1,
+    reserve2: pools[0].reserve2,
     totalSupply: pools[0].total_supply,
     minimumLiquidity: pools[0].minimum_liquidity,
     userPoolBalance: "0",
@@ -184,9 +166,12 @@ WHERE
   p.pool_address = pu.pool_address`;
 export const findUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<Pool> => {
   const pools = await query<PoolDB>(FIND_USER_POOL, [tokenAddress1, tokenAddress2, userAddress]);
-  ensure(pools.length > 0, "User is not in pool...", 404);
-
+  ensure(pools.length > 0, "User is not in pool...");
+  const token1 = await findToken(tokenAddress1);
+  const token2 = await findToken(tokenAddress2);
   return {
+    token1,
+    token2,
     address: pools[0].address,
     decimals: pools[0].decimals,
     reserve1: pools[0].reserve1,
@@ -195,34 +180,4 @@ export const findUserPool = async (tokenAddress1: string, tokenAddress2: string,
     userPoolBalance: pools[0].balance,
     minimumLiquidity: pools[0].minimum_liquidity,
   };
-}
-
-const FIND_CONTRACT_BYTECODE = `SELECT deployment_bytecode
-FROM contract
-WHERE contract_id = $1`;
-export const findContractBytecode = async (address: string): Promise<string> => {
-  const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
-  ensure(bytecodes.length > 0, "Contract does not exist", 404);
-  return bytecodes[0].deployment_bytecode;
-}
-
-const UPDATE_ERC20_CONTRACT = `UPDATE contract
-SET token_name = $2, token_symbol = $3, token_decimals = $4, token_total_supply = $5
-WHERE contract_id = $1`;
-export const updateContractERC20 = async (address: string, name: string, symbol: string, decimals: string, supply: string): Promise<void> => {
-  await query(UPDATE_ERC20_CONTRACT, [address, name, symbol, decimals, supply]);
-}
-
-const FIND_TOKEN_INFO = `SELECT name, verified, bytecode, abi, source, compiler_version, optimization, runs, target, license
-FROM contract
-WHERE contract_id = $1`;
-export const findTokenInfo = async (address: string): Promise<TokenInfo[]> => {
-  const results = await query<TokenInfoDB>(
-    FIND_TOKEN_INFO,
-    [address]
-  );
-  ensure(results.length > 0, `Contract with address: ${address}, does not exist`);
-  return results
-    .map((token) =>
-      ({...token, compilerVersion: token.compiler_version}));
-}
+} 
