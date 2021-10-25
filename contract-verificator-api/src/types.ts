@@ -41,15 +41,14 @@ export interface ContractVerificationID {
  
 // Request types
 export interface AutomaticContractVerificationReq {
-  abi: string;
   args: string;
+  name: string;
   runs: number;
   source: string;
   target: Target;
   address: string;
   bytecode: string;
   filename: string;
-  license: License;
   optimization: boolean;
   compilerVersion: string;
 }
