@@ -25,10 +25,6 @@
 
 <script>
 import { ethers } from 'ethers'
-import { options } from '@reef-defi/api'
-import { Provider } from '@reef-defi/evm-provider'
-import { WsProvider } from '@polkadot/api'
-import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
@@ -54,12 +50,15 @@ export default {
       type: Array,
       default: () => [],
     },
+    provider: {
+      type: Object,
+      default: () => undefined,
+    },
   },
   data() {
     return {
       arguments: [],
       result: null,
-      provider: null,
     }
   },
   computed: {
@@ -77,28 +76,14 @@ export default {
     async onSubmit(event) {
       event.preventDefault()
       //
-      // connect to provider
-      //
-      const provider = new Provider(
-        options({
-          provider: new WsProvider(network.nodeWs),
-        })
-      )
-      await provider.api.isReady
-      //
       // Call contract read only function
       //
       const contract = new ethers.Contract(
         this.contractId,
         this.contractAbi,
-        provider
+        this.provider
       )
       this.result = await contract[this.functionName](...this.arguments)
-
-      //
-      // disconnect provider
-      //
-      await provider.api.disconnect()
     },
     onReset() {
       // reset form
