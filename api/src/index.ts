@@ -1,138 +1,65 @@
-import express, {Response} from 'express';
-import morgan from 'morgan';
+import express, {Response, Request} from 'express';
 import { compileContracts } from './compiler';
-import { authenticationToken, config, getReefPrice, query } from './connector';
-import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
-import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
-import { ensure, ensureObjectKeys, errorStatus } from './utils';
+import { authenticationToken, config, connect, getReefPrice } from './connector';
+import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findStakingRewards, findUserTokens, updateContractsVerificationStatus } from './queries';
+import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq } from './types';
+import { ensure, ensureObjectKeys } from './utils';
 
-const cors = require('cors');
 const app = express();
 
 app.listen(config.httpPort, () => {
-  console.log(`Reef explorer API is running on port ${config.httpPort}.`);
+  console.log(`Timezones by location application is running on port ${config.httpPort}.`);
 });
 
 // Parse incoming requests with JSON payloads
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
-app.use(cors());
-app.use(morgan('dev'));
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
-    const optimization = req.body.optimization === "true";
-
-    const {bytecode, abi} = await compileContracts(
+    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization", "args", "address"]);
+    const {abi, bytecode} = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
       req.body.compilerVersion,
-      req.body.target,
-      optimization,
+      req.body.optimization,
       req.body.runs
     );
-    const verified = await checkIfContractIsVerified(bytecode);
-    const status = verified ? "VERIFIED" : "NOT VERIFIED";
-    const license: License = req.body.license ? req.body.license : "unlicense";
-    await contractVerificationInsert({...req.body, optimization, license, status});
-    ensure(verified, "Contract sources does not match!", 404); 
-    await updateContractStatus({
-      abi,
-      license,
-      bytecode,
-      verified,
-      name: req.body.name,
-      source: req.body.source,
-      target: req.body.target,
-      address: req.body.address,
-      compilerVersion: req.body.compilerVersion,
-      optimization: req.body.optimization,
-    });
+    // const verified = await checkIfContractIsVerified(bytecode);
+    const verified = "VERIFIED";
+    const status = verified ? "VERIFIED" : "NOT VERIFIED"; // TODO
+    // await contractVerificationInsert({...req.body, status});
     res.send(status);
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    console.error(err);
+    res.status(400).send(err.message);
   }
 });
 
 app.post('/api/verificator/manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
+    ensureObjectKeys(req.body, ["runs", "filename", "source", "compilerVersion", "optimization", 'token', "args", "address"]);
     const isAuthenticated = await authenticationToken(req.body.token);
-    ensure(isAuthenticated, "Google Token Authentication failed!", 404);
-    const optimization = req.body.optimization === "true";
-    const license: License = req.body.license ? req.body.license : "unlicense";
-    const {bytecode, abi} = await compileContracts(
+    ensure(isAuthenticated, "Google Token Authentication failed!");
+  
+    const {bytecode} = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
       req.body.compilerVersion,
-      req.body.target,
-      optimization,
+      req.body.optimization,
       req.body.runs
     );
-    ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
-    const deployedBytecode = await findContractBytecode(req.body.address);
-    const verified = deployedBytecode.includes(bytecode);
-    const status = verified ? "VERIFIED" : "NOT VERIFIED";
-    await contractVerificationInsert({...req.body, status, optimization, license});
-    ensure(verified, "Contract sources does not match!", 404);
-    await updateContractStatus({
-      abi,
-      license,
-      bytecode,
-      verified,
-      name: req.body.name,
-      source: req.body.source,
-      target: req.body.target,
-      address: req.body.address,
-      compilerVersion: req.body.compilerVersion,
-      optimization: req.body.optimization,
-    });
+    // TODO license
+    await contractVerificationInsert({...req.body, status: 'VERIFIED', license: "MIT"});
+    await updateContractsVerificationStatus(bytecode);
     res.send("Verified");
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    console.error(err);
+    res.status(400).send(err.message);
   }
 })
-// app.post('/api/verificator/local-manual-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
-//   try {
-//     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
-//     const optimization = req.body.optimization === "true";
-//     const license: License = req.body.license ? req.body.license : "unlicense";
-//     const {bytecode, abi} = await compileContracts(
-//       req.body.name,
-//       req.body.filename,
-//       req.body.source,
-//       req.body.compilerVersion,
-//       req.body.target,
-//       optimization,
-//       req.body.runs
-//     );
-//     ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
-//     const deployedBytecode = await findContractBytecode(req.body.address);
-//     const verified = deployedBytecode.includes(bytecode);
-//     const status = verified ? "VERIFIED" : "NOT VERIFIED";
-//     await contractVerificationInsert({...req.body, status, optimization, license});
-//     ensure(verified, "Contract sources does not match!", 404);
-//     await updateContractStatus({
-//       abi,
-//       license,
-//       bytecode,
-//       verified,
-//       name: req.body.name,
-//       source: req.body.source,
-//       target: req.body.target,
-//       address: req.body.address,
-//       compilerVersion: req.body.compilerVersion,
-//       optimization: req.body.optimization,
-//     });
-//     res.send("Verified");
-//   } catch (err) {
-//     console.log("ERROR: ", err);
-//     res.status(errorStatus(err)).send(err.message);
-//   }
-// })
 
 app.post('/api/verificator/status', async (req: AppRequest<ContractVerificationID>, res: Response) => {
   try {
@@ -140,77 +67,48 @@ app.post('/api/verificator/status', async (req: AppRequest<ContractVerificationI
     const status = await contractVerificationStatus(req.body.id);
     res.send(status);
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    res.status(400).send(err.message);
   }
 })
 
 app.post('/api/account/tokens', async (req: AppRequest<AccountAddress>, res: Response) => {
   try {
-    ensure(!!req.body.address, "Parameter address is missing");
+    ensure(!!req.body.address, "Parameter id is missing");
     const tokens = await findUserTokens(req.body.address);
     res.send({tokens: [...tokens]});
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    res.status(400).send(err.message);
   }
 });
 
-app.post('/api/pool', async (req: AppRequest<PoolReq>, res: Response) => {
-  try {
-    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress1 is missing");
-    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress2 is missing");
-    const pool = await findPool(req.body.tokenAddress1, req.body.tokenAddress2);
-    res.send(pool);
-  } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
-  }
-});
-
-app.post('/api/user/pool', async (req: AppRequest<UserPoolReq>, res: Response) => {
-  try { 
-    ensure(!!req.body.userAddress, 'Parameter userAddress is missing');
-    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress1 is missing");
-    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress2 is missing");
-    const pool = await findUserPool(req.body.tokenAddress1, req.body.tokenAddress2, req.body.userAddress);
-    res.send(pool);
-  } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
-  }
-});
-
-app.get('/api/price/reef', async (_, res: Response) => {
+app.get('/api/price/reef', async (_, res) => {
   try {
     const price = await getReefPrice();
     res.send(price);    
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    res.status(400).send(err.message);
   }
 });
 
-app.get('/api/staking/rewards', async (_, res: Response) => {
+app.get('/api/staking/rewards', async (_, res) => {
   try {
+    console.log("Hello");
     const rewards = await findStakingRewards();
+    console.log("rewards: ", rewards);
     res.send({rewards: [...rewards]});
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    res.status(400).send(err.message);
   }
 });
 
-app.get('/api/token/:address', async (req: AppRequest<{}>, res: Response) => {
+app.get('/api/test', async (_, res) => {
   try {
-    ensure(!!req.params.address, "Url paramter address is missing");
-    const token = await findTokenInfo(req.params.address);
-    res.send({...token});
+    console.log("Connecting")
+    const db = await connect();
+    console.log(db)
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    console.error(err);
+    res.status(400).send(err.message);
   }
 });
 
-// TODO db testing
-// app.get('/api/test', async (_, res) => {
-//   try {
-//     const result = await query("SELECT * FROM contract WHERE contract_id = $1", ["0x49251e3df078cAAfC803F92cD2F50441eF378868"]);
-//     res.send(result)
-//   } catch (err) {
-//     res.status(errorStatus(err)).send(err.message);
-//   }
-// })
