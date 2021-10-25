@@ -1,18 +1,6 @@
 import { query } from "./connector";
-import { License, Pool, StakingReward, Target, Token } from "./types";
+import { ContracVerificationInsert, Pool, PoolDB, StakingRewardDB, Status, Token, UserTokenDB } from "./types";
 import { ensure } from "./utils";
-
-interface ContracVerificationInsert {
-  runs: number;
-  source: string;
-  status: string;
-  target: Target;
-  address: string;
-  filename: string;
-  license: License;
-  optimization: boolean;
-  compilerVersion: string;
-}
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO contract_verification_request
 (contract_id, source, filename, compiler_version, optimization, runs, target, license, status, timestamp)
@@ -43,9 +31,6 @@ export const checkIfContractIsVerified = async (bytecode: string): Promise<boole
   return result.length > 0;
 }
 
-interface Status {
-  status: string;
-}
 const CONTRACT_VERIFICATION_STATUS = `SELECT status FROM contract_verification_request WHERE id = $1`;
 export const contractVerificationStatus = async (id: string): Promise<string> => {
   const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [id]);
@@ -58,15 +43,6 @@ export const updateContractStatus = async (address: string, status: string): Pro
   await query(UPDATE_CONTRACT_STATUS, [status, address]);
 };
 
-// TODO maybe some types will need to be changed if for some reason code crashes
-interface UserToken {
-  contract_id: string;
-  holder_account_id: string;
-  holder_evm_address: string;
-  balance: string;
-  token_decimals: string;
-  token_symbol: string;
-}
 // TODO does this work?
 const FIND_USER_TOKENS = `SELECT
   th.contract_id,
@@ -81,8 +57,8 @@ FROM
 WHERE
   (holder_account_id = $1 OR holder_evm_address = $1)
   AND th.contract_id = c.contract_id`;
-export const findUserTokens = async (address: string): Promise<UserToken[]> =>
-  query<UserToken>(FIND_USER_TOKENS, [address]);
+export const findUserTokens = async (address: string): Promise<UserTokenDB[]> =>
+  query<UserTokenDB>(FIND_USER_TOKENS, [address]);
 
 
 const FIND_STAKING_REWARDS = `SELECT
@@ -95,8 +71,8 @@ const FIND_STAKING_REWARDS = `SELECT
   timestamp
 FROM event
 WHERE section = 'staking' AND method = 'Reward'`;
-export const findStakingRewards = async (): Promise<StakingReward[]> => 
-  query<StakingReward>(FIND_STAKING_REWARDS, []);
+export const findStakingRewards = async (): Promise<StakingRewardDB[]> => 
+  query<StakingRewardDB>(FIND_STAKING_REWARDS, []);
 
 const UPDATE_CONTRACTS_VERIFICATION_STATUS = `UPDATE contract SET verified = 'VERIFIED' WHERE processed_bytecode = $1`;
 export const updateContractsVerificationStatus = async (bytecode: string): Promise<void> => {
@@ -137,20 +113,12 @@ export const findUsersToken = async (userAddress: string, tokenAddress: string):
 }
 
 const FIND_USER_POOL_BALANCE = 'SELECT balance FROM pool_user WHERE pool_address = $1 AND user_address = $2';
-const findUserPoolBalance = async (poolAddress: string, userAddress: string): Promise<Balance> => {
+export const findUserPoolBalance = async (poolAddress: string, userAddress: string): Promise<Balance> => {
   const balance = await query<Balance>(FIND_USER_POOL_BALANCE, [poolAddress, userAddress]);
   ensure(balance.length > 0, "User is not in pool");
   return balance[0];
 }
 
-interface PoolDB {
-  address: string;
-  decimals: number;
-  reserve1: string;
-  reserve2: string;
-  total_supply: string;
-  minimum_liquidity: string;  // TODO change this to liquidity
-}
 const FIND_POOL = `
 SELECT 
   address, 
@@ -161,7 +129,7 @@ SELECT
   minimum_liquidity 
 FROM pool
 WHERE token1 = $1 AND token2 = $2`;
-const findPool = async (tokenAddress1: string, tokenAddress2: string): Promise<Pool> => {
+export const findPool = async (tokenAddress1: string, tokenAddress2: string): Promise<Pool> => {
   const pools = await query<PoolDB>(FIND_POOL, [tokenAddress1, tokenAddress2]);
   ensure(pools.length > 0, 'Pool does not exist');
   const token1 = await findToken(tokenAddress1);
@@ -170,12 +138,12 @@ const findPool = async (tokenAddress1: string, tokenAddress2: string): Promise<P
   return {
     token1,
     token2,
+    address: pools[0].address,
     decimals: pools[0].decimals,
-    minimumLiquidity: pools[0].minimum_liquidity,
     reserve1: pools[0].reserve1,
     reserve2: pools[0].reserve2,
-    poolAddress: pools[0].address,
     totalSupply: pools[0].total_supply,
+    minimumLiquidity: pools[0].minimum_liquidity,
     userPoolBalance: "0",
   }
 }
@@ -187,7 +155,8 @@ SELECT
   reserve1,
   reserve2,
   total_supply,
-  minimum_liquidity 
+  minimum_liquidity,
+  pu.balance
 FROM 
   pool as p,
   pool_user as pu
@@ -196,3 +165,20 @@ WHERE
   p.token2 = $2 AND
   pu.user_address = $3 AND
   p.pool_address = pu.pool_address`;
+export const findUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<Pool> => {
+  const pools = await query<PoolDB>(FIND_USER_POOL, [tokenAddress1, tokenAddress2, userAddress]);
+  ensure(pools.length > 0, "User is not in pool...");
+  const token1 = await findToken(tokenAddress1);
+  const token2 = await findToken(tokenAddress2);
+  return {
+    token1,
+    token2,
+    address: pools[0].address,
+    decimals: pools[0].decimals,
+    reserve1: pools[0].reserve1,
+    reserve2: pools[0].reserve2,
+    totalSupply: pools[0].total_supply,
+    userPoolBalance: pools[0].balance,
+    minimumLiquidity: pools[0].minimum_liquidity,
+  };
+} 
