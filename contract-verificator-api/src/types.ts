@@ -4,6 +4,7 @@ export interface AppRequest <T> extends Request {
   body: T
 };
 
+// Basic types
 export type Target = 
   | "default"
   | "homestead"
@@ -28,11 +29,17 @@ export type License =
   | "Apache-2.0"
   | "GNU AGPLv3";
 
-
+export interface Status {
+  status: string;
+}
+export interface AccountAddress {
+  address: string;
+}
 export interface ContractVerificationID {
   id: string;
 }
-
+ 
+// Request types
 export interface AutomaticContractVerificationReq {
   abi: string;
   args: string;
@@ -51,34 +58,65 @@ export interface ManualContractVerificationReq extends AutomaticContractVerifica
   token: string;
 }
 
-export interface AccountAddress {
-  address: string;
-}
-
-export interface Token {
+interface DefaultToken {
   name: string;
   address: string;
-  iconUrl: string;
-  userBalance: string;
+  balance: string;
   decimals: number;
 }
 
-interface BasicPool {
-  decimals: number
+export interface Token extends DefaultToken {
+  iconUrl: string;
+}
+export interface TokenDB extends DefaultToken {
+  icon_url: string;
+}
+
+interface DefaultPool {
+  address: string;
+  decimals: number;
   reserve1: string;
   reserve2: string;
-  totalSupply: string;
-  poolAddress: string;
-  minimumLiquidity: string;
-  userPoolBalance: string;
 }
 
-export interface Pool extends BasicPool {
+export interface PoolDB extends DefaultPool {
+  balance: string;
+  total_supply: string;
+  minimum_liquidity: string;  // TODO change to liquidity!
+}
+
+export interface Pool extends DefaultPool {
   token1: Token;
   token2: Token;
+  totalSupply: string;
+  userPoolBalance: string;
+  minimumLiquidity: string;
 }
 
-export interface StakingReward {
+export interface ContracVerificationInsert {
+  runs: number;
+  source: string;
+  status: string;
+  target: Target;
+  address: string;
+  filename: string;
+  license: License;
+  optimization: boolean;
+  compilerVersion: string;
+}
+
+
+// TODO maybe some types will need to be changed if for some reason code crashes
+export interface UserTokenDB {
+  contract_id: string;
+  holder_account_id: string;
+  holder_evm_address: string;
+  balance: string;
+  token_decimals: string;
+  token_symbol: string;
+}
+
+export interface StakingRewardDB {
   data: string;
   phase: string;
   method: string;
@@ -86,4 +124,9 @@ export interface StakingReward {
   timestamp: string;
   event_index: number;
   block_number: number;
+}
+
+
+export interface TokenDB {
+
 }
