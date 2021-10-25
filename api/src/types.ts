@@ -49,7 +49,8 @@ export interface AutomaticContractVerificationReq {
   address: string;
   bytecode: string;
   filename: string;
-  optimization: boolean;
+  license: License;
+  optimization: string;
   compilerVersion: string;
 }
 
