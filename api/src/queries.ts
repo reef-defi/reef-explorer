@@ -1,6 +1,6 @@
 
 import { query } from "./connector";
-import { ContracVerificationInsert, Pool, PoolDB, StakingRewardDB, Status, Token, UserTokenDB } from "./types";
+import { ContracVerificationInsert, Pool, PoolDB, StakingRewardDB, Status, Token, TokenDB, UserTokenDB } from "./types";
 import { ensure } from "./utils";
 import crypto from "crypto";
 
@@ -106,9 +106,11 @@ WHERE
   th.contract_id = c.contract_id AND
   (th.holder_account_id = $2 OR th.holder_evm_address = $2)`;
 export const findUsersToken = async (userAddress: string, tokenAddress: string): Promise<Token> => {
-  const tokens = await query<Token>(FIND_USER_TOKEN, [tokenAddress, userAddress]);
+  const tokens = await query<TokenDB>(FIND_USER_TOKEN, [tokenAddress, userAddress]);
   ensure(tokens.length > 0, "User does not have desired token");
-  return tokens[0];
+  return {...tokens[0],
+    iconUrl: tokens[0].icon_url
+  };
 }
 
 const FIND_USER_POOL_BALANCE = 'SELECT balance FROM pool_user WHERE pool_address = $1 AND user_address = $2';
@@ -131,16 +133,8 @@ WHERE token1 = $1 AND token2 = $2`;
 export const findPool = async (tokenAddress1: string, tokenAddress2: string): Promise<Pool> => {
   const pools = await query<PoolDB>(FIND_POOL, [tokenAddress1, tokenAddress2]);
   ensure(pools.length > 0, 'Pool does not exist');
-  const token1 = await findToken(tokenAddress1);
-  const token2 = await findToken(tokenAddress2);
 
-  return {
-    token1,
-    token2,
-    address: pools[0].address,
-    decimals: pools[0].decimals,
-    reserve1: pools[0].reserve1,
-    reserve2: pools[0].reserve2,
+  return {...pools[0],
     totalSupply: pools[0].total_supply,
     minimumLiquidity: pools[0].minimum_liquidity,
     userPoolBalance: "0",
@@ -167,11 +161,8 @@ WHERE
 export const findUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<Pool> => {
   const pools = await query<PoolDB>(FIND_USER_POOL, [tokenAddress1, tokenAddress2, userAddress]);
   ensure(pools.length > 0, "User is not in pool...");
-  const token1 = await findToken(tokenAddress1);
-  const token2 = await findToken(tokenAddress2);
+
   return {
-    token1,
-    token2,
     address: pools[0].address,
     decimals: pools[0].decimals,
     reserve1: pools[0].reserve1,
