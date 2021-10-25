@@ -54,8 +54,7 @@
 
 <script>
 import { ethers } from 'ethers'
-import { Provider, Signer } from '@reef-defi/evm-provider'
-import { WsProvider } from '@polkadot/api'
+import { Signer } from '@reef-defi/evm-provider'
 import { gql } from 'graphql-tag'
 import {
   web3Accounts,
@@ -89,12 +88,15 @@ export default {
       type: Array,
       default: () => [],
     },
+    provider: {
+      type: Object,
+      default: () => undefined,
+    },
   },
   data() {
     return {
       arguments: [],
       result: null,
-      provider: null,
       noAccountsFound: true,
       extensionAddresses: [],
       selectedAddress: null,
@@ -154,15 +156,9 @@ export default {
       await web3FromAddress(this.selectedAddress)
         .then(async (injector) => {
           try {
-            // connect to provider
-            const provider = new Provider({
-              provider: new WsProvider(network.nodeWs),
-            })
-            await provider.api.isReady
-
             // create signer
             const wallet = new Signer(
-              provider,
+              this.provider,
               this.selectedAddress,
               injector.signer
             )
@@ -184,8 +180,6 @@ export default {
             )
 
             this.result = await contract[this.functionName](...this.arguments)
-
-            await provider.api.disconnect()
 
             // hide success alert after 20s
             setTimeout(() => {
