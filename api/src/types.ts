@@ -57,6 +57,14 @@ export interface AutomaticContractVerificationReq {
 export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
   token: string;
 }
+export interface PoolReq {
+  tokenAddress1: string;
+  tokenAddress2: string;
+}
+
+export interface UserPoolReq extends PoolReq {
+  userAddress: string;
+}
 
 interface DefaultToken {
   name: string;
@@ -86,8 +94,6 @@ export interface PoolDB extends DefaultPool {
 }
 
 export interface Pool extends DefaultPool {
-  token1: Token;
-  token2: Token;
   totalSupply: string;
   userPoolBalance: string;
   minimumLiquidity: string;
