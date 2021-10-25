@@ -6,27 +6,20 @@ export const config = {
   httpPort: process.env.PORT || 8000,
   nodeWs: 'ws://substrate-node:9944',
   postgresConfig: {
-    host: '0.0.0.0',
+    // port: 54321,
+    // host: '0.0.0.0',
     user: process.env.POSTGRES_USER || 'reefexplorer',
-    // host: process.env.POSTGRES_HOST || 'postgres',
+    host: process.env.POSTGRES_HOST || 'postgres',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
     password: process.env.POSTGRES_PASSWORD || 'reefexplorer',
-    port: 54321,
-    // port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
+    port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
   }
-}
-
-export const connect = async (): Promise<Pool> => {
-  const connection = new Pool({...config.postgresConfig});
-  await connection.connect()
-  return connection;
 }
 
 export const query = async <Res>(statement: string, args: any[]): Promise<Res[]> => {
   const db = new Pool({...config.postgresConfig});
   await db.connect();
   const result = await db.query(statement, [...args]);
-  await db.end();
   return result.rows;
 }
 
