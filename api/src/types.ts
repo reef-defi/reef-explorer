@@ -29,9 +29,6 @@ export type License =
   | "Apache-2.0"
   | "GNU AGPLv3";
 
-export interface Bytecode {
-  bytecode: string;
-}
 export interface Status {
   status: string;
 }
@@ -44,6 +41,7 @@ export interface ContractVerificationID {
  
 // Request types
 export interface AutomaticContractVerificationReq {
+  args: string;
   name: string;
   runs: number;
   source: string;
@@ -51,22 +49,12 @@ export interface AutomaticContractVerificationReq {
   address: string;
   bytecode: string;
   filename: string;
-  license: License;
-  arguments: string;
-  optimization: string;
+  optimization: boolean;
   compilerVersion: string;
 }
 
 export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
   token: string;
-}
-export interface PoolReq {
-  tokenAddress1: string;
-  tokenAddress2: string;
-}
-
-export interface UserPoolReq extends PoolReq {
-  userAddress: string;
 }
 
 interface DefaultToken {
@@ -97,6 +85,8 @@ export interface PoolDB extends DefaultPool {
 }
 
 export interface Pool extends DefaultPool {
+  token1: Token;
+  token2: Token;
   totalSupply: string;
   userPoolBalance: string;
   minimumLiquidity: string;
@@ -110,7 +100,6 @@ export interface ContracVerificationInsert {
   address: string;
   filename: string;
   license: License;
-  arguments: string;
   optimization: boolean;
   compilerVersion: string;
 }
