@@ -41,7 +41,6 @@ export interface ContractVerificationID {
  
 // Request types
 export interface AutomaticContractVerificationReq {
-  args: string;
   name: string;
   runs: number;
   source: string;
@@ -50,6 +49,7 @@ export interface AutomaticContractVerificationReq {
   bytecode: string;
   filename: string;
   license: License;
+  arguments: string;
   optimization: string;
   compilerVersion: string;
 }
@@ -101,6 +101,7 @@ export interface ContracVerificationInsert {
   address: string;
   filename: string;
   license: License;
+  arguments: string;
   optimization: boolean;
   compilerVersion: string;
 }
