@@ -17,10 +17,10 @@
             {{ network.name }}
           </template>
           <b-dropdown-item href="https://reefscan.com"
-            >Reef Mainnet</b-dropdown-item
+            >Mainnet</b-dropdown-item
           >
           <b-dropdown-item href="https://testnet.reefscan.com"
-            >Reef Testnet</b-dropdown-item
+            >Testnet</b-dropdown-item
           >
         </b-dropdown>
 
