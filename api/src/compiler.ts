@@ -1,5 +1,3 @@
-import { ensure } from "./utils";
-
 const solc = require('solc');
 
 export interface Contracts {
@@ -63,26 +61,9 @@ const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number): Solc
   }
 });
 
-// TODO i do not know if this code works! test it out!
-export const preprocessBytecode = (bytecode: string): string => {
-  let filteredBytecode = "";
-  const start = bytecode.indexOf('6080604052');
-  //
-  // metadata separator (solc >= v0.6.0)
-  //
-  const ipfsMetadataEnd = bytecode.indexOf('a264697066735822');
-  filteredBytecode = bytecode.slice(start, ipfsMetadataEnd);
-
-  //
-  // metadata separator for 0.5.16
-  //
-  const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
-  filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
-
-  // debug
-  // logger.info(loggerOptions, `processed bytecode: ${bytecode}`);
-
-  return filteredBytecode;
+const preprocessBytecode = (bytecode: string): string => {
+  // TODO preprocess bytecode
+  return bytecode;
 }
   
 const loadCompiler = async (version: string): Promise<any> => (
@@ -93,25 +74,22 @@ const loadCompiler = async (version: string): Promise<any> => (
   })
 )
 
-type Bytecode = string;
-// interface CompilerResult {
-//   abi: string;
-//   bytecode: string;
-// }
-export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<Bytecode> => {
+interface CompilerResult {
+  abi: any;
+  bytecode: string;
+}
+export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<CompilerResult> => {
   const compiler = await loadCompiler(version);
   const contracts = JSON.parse(source);
   const solcData = optimizer 
     ? prepareOptimizedSolcContracts(contracts, runs)
     : prepareSolcContracts(contracts);
 
-  const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
-  ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
-  ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
-  const result = compilerResult.contracts[contractFilename][contractName];
-  return preprocessBytecode(result.evm.bytecode.object);
-  // return {
-  //   abi: JSON.stringify(result.abi),
-  //   bytecode: preprocessBytecode(result.evm.bytecode.object)
-  // }
+  const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)))
+  const result = compilerResult.contracts[contractFilename][contractName].evm;
+  console.log(result);
+  return {
+    abi: result.abi.object,
+    bytecode: preprocessBytecode(result.bytecode.object)
+  }
 }
