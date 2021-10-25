@@ -1,15 +1,14 @@
 import express, {Response, Request} from 'express';
-import { compileSources } from './compiler';
-import { authenticationToken, connect, getReefPrice } from './connector';
+import { compileContracts } from './compiler';
+import { authenticationToken, config, connect, getReefPrice } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findStakingRewards, findUserTokens, updateContractsVerificationStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq } from './types';
 import { ensure, ensureObjectKeys } from './utils';
 
 const app = express();
-const port = 3000;
 
-app.listen(port, () => {
-  console.log(`Timezones by location application is running on port ${port}.`);
+app.listen(config.httpPort, () => {
+  console.log(`Timezones by location application is running on port ${config.httpPort}.`);
 });
 
 // Parse incoming requests with JSON payloads
@@ -18,8 +17,8 @@ app.use(express.json());
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization"]);
-    const bytecode = await compileSources(
+    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization", "args", "address"]);
+    const {abi, bytecode} = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
@@ -40,11 +39,11 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
 
 app.post('/api/verificator/manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["runs", "filename", "source", "compilerVersion", "optimization", 'token']);
+    ensureObjectKeys(req.body, ["runs", "filename", "source", "compilerVersion", "optimization", 'token', "args", "address"]);
     const isAuthenticated = await authenticationToken(req.body.token);
     ensure(isAuthenticated, "Google Token Authentication failed!");
   
-    const bytecode = await compileSources(
+    const {bytecode} = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
@@ -93,7 +92,9 @@ app.get('/api/price/reef', async (_, res) => {
 
 app.get('/api/staking/rewards', async (_, res) => {
   try {
+    console.log("Hello");
     const rewards = await findStakingRewards();
+    console.log("rewards: ", rewards);
     res.send({rewards: [...rewards]});
   } catch (err) {
     res.status(400).send(err.message);
