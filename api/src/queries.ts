@@ -1,20 +1,24 @@
+
 import { query } from "./connector";
 import { ContracVerificationInsert, Pool, PoolDB, StakingRewardDB, Status, Token, UserTokenDB } from "./types";
 import { ensure } from "./utils";
+import crypto from "crypto";
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO contract_verification_request
-(contract_id, source, filename, compiler_version, optimization, runs, target, license, status, timestamp)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`;
+(id, contract_id, source, filename, compiler_version, arguments, optimization, runs, target, license, status, timestamp)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`;
 
 export const contractVerificationInsert = async (contract: ContracVerificationInsert): Promise<void> => {
   const timestamp = Date.now();
   await query(
     INSERT_CONTRACT_VERIFICATION,
     [
+      crypto.randomBytes(20).toString('hex'),
       contract.address,
       contract.source,
       contract.filename,
       contract.compilerVersion,
+      contract.arguments,
       contract.optimization,
       contract.runs,
       contract.target,
@@ -25,7 +29,7 @@ export const contractVerificationInsert = async (contract: ContracVerificationIn
   );
 };
 
-const FIND_VERIFIED_CONTRACT = `SELECT * FROM contract_verification_req WHERE processed_bytecode = $1`;
+const FIND_VERIFIED_CONTRACT = `SELECT * FROM contract WHERE processed_bytecode = $1 AND verified = TRUE`;
 export const checkIfContractIsVerified = async (bytecode: string): Promise<boolean> => {
   const result = await query(FIND_VERIFIED_CONTRACT, [bytecode]);
   return result.length > 0;
@@ -38,9 +42,9 @@ export const contractVerificationStatus = async (id: string): Promise<string> =>
   return result[0].status;
 }
 
-const UPDATE_CONTRACT_STATUS = `UPDATE contract SET verified = $1 WHERE contract_id = $2`;
-export const updateContractStatus = async (address: string, status: string): Promise<void> => {
-  await query(UPDATE_CONTRACT_STATUS, [status, address]);
+const UPDATE_CONTRACT_STATUS = `UPDATE contract SET verified = TRUE, processed_bytecode = $1 WHERE contract_id = $2`;
+export const updateContractStatus = async (address: string, bytecode: string): Promise<void> => {
+  await query(UPDATE_CONTRACT_STATUS, [bytecode, address]);
 };
 
 // TODO does this work?
@@ -73,11 +77,6 @@ FROM event
 WHERE section = 'staking' AND method = 'Reward'`;
 export const findStakingRewards = async (): Promise<StakingRewardDB[]> => 
   query<StakingRewardDB>(FIND_STAKING_REWARDS, []);
-
-const UPDATE_CONTRACTS_VERIFICATION_STATUS = `UPDATE contract SET verified = 'VERIFIED' WHERE processed_bytecode = $1`;
-export const updateContractsVerificationStatus = async (bytecode: string): Promise<void> => {
-  await query(UPDATE_CONTRACTS_VERIFICATION_STATUS, [bytecode]);
-}
 
 interface Balance {
   balance: number;
