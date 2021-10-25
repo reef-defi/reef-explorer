@@ -1,7 +1,7 @@
 import express, {Response} from 'express';
 import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
-import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findStakingRewards, findUserTokens, updateContractsVerificationStatus } from './queries';
+import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findStakingRewards, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq } from './types';
 import { ensure, ensureObjectKeys } from './utils';
 
@@ -17,18 +17,19 @@ app.use(express.json());
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization", "args", "address", "license"]);
-    const {abi, bytecode} = await compileContracts(
+    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "license", "target"]);
+    const optimization = req.body.optimization === "true";
+    const bytecode = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
       req.body.compilerVersion,
-      req.body.optimization === "true",
+      optimization,
       req.body.runs
     );
     const verified = await checkIfContractIsVerified(bytecode);
     const status = verified ? "VERIFIED" : "NOT VERIFIED"; // TODO
-    // await contractVerificationInsert({...req.body, status});
+    await contractVerificationInsert({...req.body, optimization, status});
     res.send(status);
   } catch (err) {
     console.error(err);
@@ -38,11 +39,11 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
 
 app.post('/api/verificator/manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["runs", "filename", "source", "compilerVersion", "optimization", 'token', "args", "address"]);
+    ensureObjectKeys(req.body, ["runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "license", "target"]);
     const isAuthenticated = await authenticationToken(req.body.token);
     ensure(isAuthenticated, "Google Token Authentication failed!");
     const optimization = req.body.optimization === "true";
-    const {bytecode} = await compileContracts(
+    const bytecode = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
@@ -50,9 +51,8 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
       optimization,
       req.body.runs
     );
-    // TODO license
-    await contractVerificationInsert({...req.body, status: 'VERIFIED', license: "MIT", optimization});
-    await updateContractsVerificationStatus(bytecode);
+    await contractVerificationInsert({...req.body, status: 'VERIFIED', optimization});
+    await updateContractStatus(req.body.address, bytecode);
     res.send("Verified");
   } catch (err) {
     console.error(err);
@@ -98,13 +98,14 @@ app.get('/api/staking/rewards', async (_, res) => {
   }
 });
 
-app.get('/api/test', async (_, res) => {
-  try {
-    const result = await query("SELECT name FROM contract LIMIT 1", []);
-    console.log(result);
-    res.send(result)
-  } catch (err) {
-    console.log(err);
-    res.status(400).send(err.message);
-  }
-})
+// TODO db testing
+// app.get('/api/test', async (_, res) => {
+//   try {
+//     const result = await query("SELECT name FROM contract LIMIT 1", []);
+//     console.log(result);
+//     res.send(result)
+//   } catch (err) {
+//     console.log(err);
+//     res.status(400).send(err.message);
+//   }
+// })
