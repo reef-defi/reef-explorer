@@ -7,7 +7,6 @@
         in mind and use at your own risk!
       </p>
     </b-alert>
-    <!-- <pre>{{ JSON.stringify(contractInterface, null, 2) }}</pre> -->
     <div
       v-for="(message, index) in contractAbi.filter(
         (item) => item.type === 'function'
@@ -45,7 +44,6 @@
             :function-name-with-args="getFunctionNameWithArgs(message)"
           />
         </template>
-        <!-- <pre>{{ JSON.stringify(message, null, 2) }}</pre> -->
       </b-card>
     </div>
   </div>
@@ -97,7 +95,7 @@ export default {
     this.provider = provider
   },
   async beforeDestroy() {
-    await this.provider.disconnect()
+    await this.provider.api.disconnect()
   },
   methods: {
     // getInterface(contractAbi) {

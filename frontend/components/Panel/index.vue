@@ -16,9 +16,7 @@
           <template #button-content>
             {{ network.name }}
           </template>
-          <b-dropdown-item href="https://reefscan.com"
-            >Mainnet</b-dropdown-item
-          >
+          <b-dropdown-item href="https://reefscan.com">Mainnet</b-dropdown-item>
           <b-dropdown-item href="https://testnet.reefscan.com"
             >Testnet</b-dropdown-item
           >
@@ -39,8 +37,8 @@
 </template>
 
 <script>
-import { network } from '@/frontend.config.js'
 import Item from './Item'
+import { network } from '@/frontend.config.js'
 
 export default {
   components: { Item },
