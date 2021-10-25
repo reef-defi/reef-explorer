@@ -176,7 +176,7 @@ export default {
           left: 0;
           top: calc(100% - 20px);
           padding: 8px 0;
-          margin-top: 2px;
+          margin-top: 8px;
           border-radius: 5px;
           background: white;
           box-shadow: 0 1px 3px -1px rgba(black, 0.05),
@@ -192,6 +192,7 @@ export default {
             font-size: 16px;
             color: #212529;
             text-align: left;
+            white-space: nowrap;
 
             &:hover {
               text-decoration: none;
@@ -210,7 +211,7 @@ export default {
           height: 100%;
           color: rgba(#3e3f42, 0.85);
           font-weight: 600;
-          padding: 0 20px;
+          padding: 0 10px;
           font-size: 14px;
           text-decoration: none;
 
@@ -237,7 +238,7 @@ export default {
 
         .header__network {
           margin-bottom: 0;
-          margin-left: 10px;
+          margin-left: 15px;
 
           > .btn {
             background: rgba(#eaedf3, 1);
