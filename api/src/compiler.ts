@@ -74,11 +74,12 @@ const loadCompiler = async (version: string): Promise<any> => (
   })
 )
 
-interface CompilerResult {
-  abi: string;
-  bytecode: string;
-}
-export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<CompilerResult> => {
+type Bytecode = string;
+// interface CompilerResult {
+//   abi: string;
+//   bytecode: string;
+// }
+export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<Bytecode> => {
   const compiler = await loadCompiler(version);
   const contracts = JSON.parse(source);
   const solcData = optimizer 
@@ -87,9 +88,9 @@ export const compileContracts = async (contractName: string, contractFilename: s
 
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)))
   const result = compilerResult.contracts[contractFilename][contractName];
-
-  return {
-    abi: JSON.stringify(result.abi),
-    bytecode: preprocessBytecode(result.evm.bytecode.object)
-  }
+  return preprocessBytecode(result.evm.bytecode.object);
+  // return {
+  //   abi: JSON.stringify(result.abi),
+  //   bytecode: preprocessBytecode(result.evm.bytecode.object)
+  // }
 }
