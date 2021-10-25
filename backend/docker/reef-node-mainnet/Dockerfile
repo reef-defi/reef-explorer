@@ -1,6 +1,6 @@
 FROM phusion/baseimage:master-amd64
 
-ARG REEF_NODE=mainnet-1
+ARG REEF_NODE=v8
 
 RUN apt-get update && apt-get install wget -y
 
