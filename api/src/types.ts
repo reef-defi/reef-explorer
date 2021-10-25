@@ -6,15 +6,14 @@ export interface AppRequest <T> extends Request {
 
 // Basic types
 export type Target = 
-  | "london"
-  | "berlin"
-  | "istanbul"
-  | "petersburg"
-  | "constantinople"
-  | "byzantium"
-  | "spuriousDragon"
+  | "default"
   | "homestead"
-  | "tangerineWhistle";
+  | "tangerineWhistle"
+  | "spuriousDragon"
+  | "byzantium"
+  | "constantinople"
+  | "petersburg"
+  | "istanbul";
 
 export type License = 
   | "unlicense"
@@ -30,9 +29,6 @@ export type License =
   | "Apache-2.0"
   | "GNU AGPLv3";
 
-export interface Bytecode {
-  deployment_bytecode: string;
-}
 export interface Status {
   status: string;
 }
@@ -45,6 +41,7 @@ export interface ContractVerificationID {
  
 // Request types
 export interface AutomaticContractVerificationReq {
+  args: string;
   name: string;
   runs: number;
   source: string;
@@ -53,21 +50,12 @@ export interface AutomaticContractVerificationReq {
   bytecode: string;
   filename: string;
   license: License;
-  arguments: string;
   optimization: string;
   compilerVersion: string;
 }
 
 export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
   token: string;
-}
-export interface PoolReq {
-  tokenAddress1: string;
-  tokenAddress2: string;
-}
-
-export interface UserPoolReq extends PoolReq {
-  userAddress: string;
 }
 
 interface DefaultToken {
@@ -84,26 +72,6 @@ export interface TokenDB extends DefaultToken {
   icon_url: string;
 }
 
-interface TokenInfoDefault {
-  abi: string; 
-  name: string;
-  runs: number;
-  signer: string;
-  source: string;
-  target: Target;
-  bytecode: string;
-  license: License;
-  verified: string;
-  optimization: boolean;
-}
-
-export interface TokenInfo extends TokenInfoDefault {
-  compilerVersion: string;
-}
-export interface TokenInfoDB extends TokenInfoDefault {
-  compiler_version: string;
-}
-
 interface DefaultPool {
   address: string;
   decimals: number;
@@ -118,6 +86,8 @@ export interface PoolDB extends DefaultPool {
 }
 
 export interface Pool extends DefaultPool {
+  token1: Token;
+  token2: Token;
   totalSupply: string;
   userPoolBalance: string;
   minimumLiquidity: string;
@@ -131,7 +101,6 @@ export interface ContracVerificationInsert {
   address: string;
   filename: string;
   license: License;
-  arguments: string;
   optimization: boolean;
   compilerVersion: string;
 }
@@ -157,3 +126,7 @@ export interface StakingRewardDB {
   block_number: number;
 }
 
+
+export interface TokenDB {
+
+}
