@@ -333,8 +333,6 @@ export default {
           constructorTypes,
           '0x' + this.contract.arguments
         )
-        // eslint-disable-next-line no-console
-        console.log('decoded constructor arguments', decoded)
         return decoded.toString()
       }
       return null
@@ -354,8 +352,6 @@ export default {
         }
         // metadata is CBOR encoded (http://cbor.me/)
         const decodedMetadata = cbor.decode(encodedMetadata)
-        // eslint-disable-next-line no-console
-        console.log(decodedMetadata)
         return decodedMetadata
       }
       return null
@@ -363,8 +359,6 @@ export default {
     decodedSolcVersion() {
       if (this.decodedMetadata) {
         const solcVersionArray = this.decodedMetadata?.solc || null
-        // eslint-disable-next-line no-console
-        console.log(solcVersionArray)
         return `${solcVersionArray[0]}.${solcVersionArray[1]}.${solcVersionArray[2]}`
       }
       return null
