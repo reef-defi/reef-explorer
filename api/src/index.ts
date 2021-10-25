@@ -1,8 +1,8 @@
 import express, {Response} from 'express';
 import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
-import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findStakingRewards, findUserTokens, updateContractStatus } from './queries';
-import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq } from './types';
+import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
+import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys } from './utils';
 
 const app = express();
@@ -80,6 +80,29 @@ app.post('/api/account/tokens', async (req: AppRequest<AccountAddress>, res: Res
   }
 });
 
+app.post('/api/pool', async (req: AppRequest<PoolReq>, res: Response) => {
+  try {
+    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress1 is missing");
+    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress2 is missing");
+    const pool = await findPool(req.body.tokenAddress1, req.body.tokenAddress2);
+    res.send(pool);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
+app.post('/api/user/pool', async (req: AppRequest<UserPoolReq>, res: Response) => {
+  try { 
+    ensure(!!req.body.userAddress, 'Parameter userAddress is missing');
+    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress1 is missing");
+    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress2 is missing");
+    const pool = await findUserPool(req.body.tokenAddress1, req.body.tokenAddress2, req.body.userAddress);
+    res.send(pool);
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+});
+
 app.get('/api/price/reef', async (_, res) => {
   try {
     const price = await getReefPrice();
@@ -101,7 +124,7 @@ app.get('/api/staking/rewards', async (_, res) => {
 // TODO db testing
 // app.get('/api/test', async (_, res) => {
 //   try {
-//     const result = await query("SELECT name FROM contract LIMIT 1", []);
+//     const result = await query("SELECT DISTINCT status FROM contract_verification_request", []);
 //     console.log(result);
 //     res.send(result)
 //   } catch (err) {
