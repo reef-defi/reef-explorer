@@ -1,11 +1,11 @@
-import {Pool} from "pq";
 import axios from "axios";
+import {Pool} from "pg";
 
 const configuration = {
   recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
   httpPort: process.env.PORT || 8000,
   nodeWs: 'ws://substrate-node:9944',
-  postgresConnParams: {
+  postgresConfig: {
     user: process.env.POSTGRES_USER || 'reefexplorer',
     host: process.env.POSTGRES_HOST || 'postgres',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
@@ -15,15 +15,16 @@ const configuration = {
 }
 
 export const connect = async (): Promise<Pool> => {
-  const connection = new Pool({...configuration});
+  const connection = new Pool({...configuration.postgresConfig});
   await connection.connect()
   return connection;
 }
 
 export const query = async <Res>(statement: string, args: any[]): Promise<Res[]> => {
-  const db = await connect();
+  const db = new Pool({...configuration.postgresConfig});
+  await db.connect();
   const result = await db.query(statement, [...args]);
-  await db.release();
+  await db.end();
   return result.rows;
 }
 
@@ -54,13 +55,12 @@ export const getReefPrice = async (): Promise<Price> => axios
       "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
     },
   })
-  export const authenticationToken = async (token: string): Promise<boolean> =>
-  await googleAuthenticatorApi
-  .post(`api/siteverify?secret=${configuration.recaptchaSecret}&response=${token}`, {})
-  .then((res) => res.data)
-  .then((res: any) => res.text()) // TODO any is a hack!
-  .then((res) => JSON.parse(res).success)
-  .catch((err) => {
-    console.log(err);
-    throw new Error("Can not extract recaptcha token...")
-  });
+  export const authenticationToken = async (token: string): Promise<boolean> => await googleAuthenticatorApi
+    .post(`api/siteverify?secret=${configuration.recaptchaSecret}&response=${token}`, {})
+    .then((res) => res.data)
+    .then((res: any) => res.text()) // TODO any is a hack!
+    .then((res) => JSON.parse(res).success)
+    .catch((err) => {
+      console.log(err);
+      throw new Error("Can not extract recaptcha token...")
+    });
