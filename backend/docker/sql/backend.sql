@@ -246,6 +246,7 @@ CREATE TABLE IF NOT EXISTS contract  (
   contract_id TEXT NOT NULL,
   name TEXT NOT NULL,
   deployment_bytecode TEXT DEFAULT NULL, -- DEFAULT NULL so don't break contracts dump import
+  processed_bytecode TEXT DEFAULT NULL,
   bytecode TEXT NOT NULL,
   metadata TEXT DEFAULT NULL,
   arguments TEXT DEFAULT NULL,
