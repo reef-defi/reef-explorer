@@ -1,6 +1,6 @@
 FROM phusion/baseimage:master-amd64
 
-ARG REEF_NODE=v7
+ARG REEF_NODE=v8
 ARG CHAIN_SPEC=testnet-5
 
 RUN apt-get update && apt-get install wget -y
