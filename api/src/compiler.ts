@@ -75,7 +75,7 @@ const loadCompiler = async (version: string): Promise<any> => (
 )
 
 interface CompilerResult {
-  abi: any;
+  abi: string;
   bytecode: string;
 }
 export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<CompilerResult> => {
@@ -86,10 +86,10 @@ export const compileContracts = async (contractName: string, contractFilename: s
     : prepareSolcContracts(contracts);
 
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)))
-  const result = compilerResult.contracts[contractFilename][contractName].evm;
-  console.log(result);
+  const result = compilerResult.contracts[contractFilename][contractName];
+
   return {
-    abi: result.abi.object,
-    bytecode: preprocessBytecode(result.bytecode.object)
+    abi: JSON.stringify(result.abi),
+    bytecode: preprocessBytecode(result.evm.bytecode.object)
   }
 }
