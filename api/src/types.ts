@@ -1,5 +1,4 @@
 import { Request } from "express";
-import { Fragment, JsonFragment } from "@ethersproject/abi";
 
 export interface AppRequest <T> extends Request {
   body: T
@@ -7,15 +6,14 @@ export interface AppRequest <T> extends Request {
 
 // Basic types
 export type Target = 
-  | "london"
-  | "berlin"
-  | "istanbul"
-  | "petersburg"
-  | "constantinople"
-  | "byzantium"
-  | "spuriousDragon"
+  | "default"
   | "homestead"
-  | "tangerineWhistle";
+  | "tangerineWhistle"
+  | "spuriousDragon"
+  | "byzantium"
+  | "constantinople"
+  | "petersburg"
+  | "istanbul";
 
 export type License = 
   | "unlicense"
@@ -31,9 +29,6 @@ export type License =
   | "Apache-2.0"
   | "GNU AGPLv3";
 
-export interface Bytecode {
-  deployment_bytecode: string;
-}
 export interface Status {
   status: string;
 }
@@ -43,21 +38,10 @@ export interface AccountAddress {
 export interface ContractVerificationID {
   id: string;
 }
-
-export interface ParamererInput {
-  type: string;
-  value: string;
-  name?: string;
-}
-export interface Parameters {
-  type: string;
-  funcName: string;
-  inputs: ParamererInput[];
-};
-export type ABIFragment = Fragment | JsonFragment;
-export type ABI = ReadonlyArray<ABIFragment>;
+ 
 // Request types
 export interface AutomaticContractVerificationReq {
+  args: string;
   name: string;
   runs: number;
   source: string;
@@ -65,22 +49,12 @@ export interface AutomaticContractVerificationReq {
   address: string;
   bytecode: string;
   filename: string;
-  license: License;
-  arguments: string;
   optimization: boolean;
   compilerVersion: string;
 }
 
 export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
   token: string;
-}
-export interface PoolReq {
-  tokenAddress1: string;
-  tokenAddress2: string;
-}
-
-export interface UserPoolReq extends PoolReq {
-  userAddress: string;
 }
 
 interface DefaultToken {
@@ -97,26 +71,6 @@ export interface TokenDB extends DefaultToken {
   icon_url: string;
 }
 
-interface TokenInfoDefault {
-  abi: string; 
-  name: string;
-  runs: number;
-  signer: string;
-  source: string;
-  target: Target;
-  bytecode: string;
-  license: License;
-  verified: string;
-  optimization: boolean;
-}
-
-export interface TokenInfo extends TokenInfoDefault {
-  compilerVersion: string;
-}
-export interface TokenInfoDB extends TokenInfoDefault {
-  compiler_version: string;
-}
-
 interface DefaultPool {
   address: string;
   decimals: number;
@@ -131,6 +85,8 @@ export interface PoolDB extends DefaultPool {
 }
 
 export interface Pool extends DefaultPool {
+  token1: Token;
+  token2: Token;
   totalSupply: string;
   userPoolBalance: string;
   minimumLiquidity: string;
@@ -138,14 +94,12 @@ export interface Pool extends DefaultPool {
 
 export interface ContracVerificationInsert {
   runs: number;
-  name: string;
   source: string;
   status: string;
   target: Target;
   address: string;
   filename: string;
   license: License;
-  arguments: string;
   optimization: boolean;
   compilerVersion: string;
 }
@@ -172,57 +126,6 @@ export interface StakingRewardDB {
 }
 
 
-export interface Contracts {
-  [contractFilename: string]: string
-}
+export interface TokenDB {
 
-export interface CompilerContracts {
-  [filename: string]: {
-    content: string;
-  }
-}
-
-export interface SolcContracts {
-  language: 'Solidity';
-  sources: CompilerContracts;
-  settings: {
-    optimizer: {
-      runs: number;
-      enabled: boolean;
-    };
-    evmVersion?: Target;
-    outputSelection: {
-      "*": {
-        '*': string[];
-      };
-    };
-  };
-}
-
-export interface CompilerResult {
-  errors?: {
-    type: string;
-    formattedMessage: string;
-  }[];
-  contracts?: {
-    [filename: string]: {
-      [name: string]: any;
-    };
-  };
-  sources: {
-    [filename: string]: {
-      id: number;
-    };
-  };
-}
-
-export interface Compile {
-  abi: ABI;
-  fullAbi: ABI;
-  fullBytecode: string;
-}
-
-export interface VerifyContract {
-  abi: ABI;
-  fullAbi: ABI;
 }
