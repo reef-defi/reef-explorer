@@ -39,8 +39,8 @@ module.exports = {
         parseInt(process.env.RANKING_POLLING_TIME_MS, 10)
         || 5 * 60 * 1000,
       historySize: 84,
-      erasPerDay: 4,
-      tokenDecimals: 12,
+      erasPerDay: 1,
+      tokenDecimals: 18,
     },
     {
       name: 'activeAccounts',
@@ -59,7 +59,7 @@ module.exports = {
       startDelay: parseInt(process.env.TOKEN_HOLDERS_START_DELAY_MS, 10) || 2 * 60 * 1000,
       pollingTime:
         parseInt(process.env.TOKEN_HOLDERS_POLLING_TIME_MS, 10)
-        || 1 * 60 * 1000, // 1 min
+        || 10 * 60 * 1000, // 10 min
     },
   ],
 };
