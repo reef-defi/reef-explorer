@@ -242,49 +242,41 @@ CREATE TABLE IF NOT EXISTS account  (
   PRIMARY KEY ( account_id )  
 );
 
-CREATE TABLE IF NOT EXISTS contract (
-  contract_id TEXT,
-  owner TEXT,
+CREATE TABLE IF NOT EXISTS contract  (
+  contract_id TEXT NOT NULL,
   name TEXT NOT NULL,
+  deployment_bytecode TEXT DEFAULT NULL, -- DEFAULT NULL so don't break contracts dump import
+  processed_bytecode TEXT DEFAULT NULL,
+  bytecode TEXT NOT NULL,
+  metadata TEXT DEFAULT NULL,
+  arguments TEXT DEFAULT NULL,
   value TEXT NOT NULL,
   gas_limit TEXT NOT NULL,
   storage_limit TEXT NOT NULL,
+  signer TEXT NOT NULL,
+  block_height BIGINT NOT NULL,
   verified BOOLEAN DEFAULT FALSE,
-  target TEXT DEFAULT NULL,
-  runs INT DEFAULT NULL,
-  source JSON DEFAULT NULL,
-  icon_url TEXT DEFAULT NULL,
-  arguments JSON DEFAULT NULL,
+  source TEXT DEFAULT NULL,
   compiler_version TEXT DEFAULT NULL,
   optimization BOOLEAN DEFAULT NULL,
-  deployment_bytecode TEXT DEFAULT NULL, -- DEFAULT NULL so don't break contracts dump import
-  bytecode_metadata TEXT DEFAULT NULL,
-  bytecode_arguments TEXT DEFAULT NULL,
-
-  --// TODO flatten all the abis with constructors and events 
-  --// TODO store everything in db
-  compiler_data JSON DEFAULT NULL,
-  
-  block_height BIGINT NOT NULL,
+  runs INT DEFAULT NULL,
+  target TEXT DEFAULT NULL,
+  abi TEXT DEFAULT NULL,
+  license TEXT DEFAULT NULL,
+  -- token tracker
+  is_erc20 BOOLEAN DEFAULT FALSE,
+  token_name TEXT DEFAULT NULL,
+  token_symbol TEXT DEFAULT NULL,
+  token_decimals INT DEFAULT NULL,
+  token_total_supply NUMERIC(80,0) DEFAULT NULL,
+  token_validated BOOLEAN DEFAULT FALSE,
+  token_description TEXT DEFAULT NULL,
+  token_icon_url TEXT DEFAULT NULL,
+  token_coingecko_id TEXT DEFAULT NULL,
+  token_coinmarketcap_id TEXT DEFAULT NULL,
+  -- token tracker
   timestamp BIGINT NOT NULL,
-  PRIMARY KEY ( contract_id ),
-  CONSTRAINT fk_owner
-    FOREIGN KEY (owner)
-      REFERENCES account(account_id)
-);
-
-CREATE TABLE IF NOT EXISTS erc20 (
-  id SERIAL,
-  contract_id TEXT,
-  name TEXT,
-  symbol TEXT,
-  decimals INT,
-  description TEXT DEFAULT NULL,
-  
-  PRIMARY KEY ( id ),
-  CONSTRAINT fk_contract_id
-    FOREIGN KEY (contract_id)
-      REFERENCES contract(contract_id)
+  PRIMARY KEY ( contract_id )  
 );
 
 CREATE TABLE IF NOT EXISTS token_holder  (
@@ -297,39 +289,22 @@ CREATE TABLE IF NOT EXISTS token_holder  (
   PRIMARY KEY ( contract_id, holder_evm_address )  
 );
 
--- TODO replace token_holder table
--- CREATE TABLE IF NOT EXISTS token_holder {
---   contract_id TEXT,
---   owner TEXT,
---   block_height BIGINT NOT NULL,
---   balance NUMERIC(80, 0) DEFAULT NULL,
---   CONSTRAINT fk_owner
---     FOREIGN KEY (owner)
---       REFERENCES account(account_id)
---   CONSTRAINT fk_contract
---     FOREIGN KEY (contract_id)
---       REFERENCES contract(contract_id)
--- }
-
 CREATE TABLE IF NOT EXISTS contract_verification_request  (
-  id SERIAL,
-  contract_id TEXT,
-  runs INT NOT NULL,
-  name TEXT NOT NULL,
-  source JSON NOT NULL,
-  status TEXT NOT NULL,
-  target TEXT NOT NULL,
+  id TEXT NOT NULL,
+  contract_id TEXT NOT NULL,
+  source TEXT NOT NULL,
   filename TEXT NOT NULL,
-  timestamp BIGINT NOT NULL,
-  arguments TEXT DEFAULT NULL,
-  error_type TEXT DEFAULT NULL, -- TODO remove
-  optimization BOOLEAN NOT NULL,
   compiler_version TEXT NOT NULL,
+  arguments TEXT DEFAULT NULL,
+  optimization BOOLEAN NOT NULL,
+  runs INT NOT NULL,
+  target TEXT NOT NULL,
+  license TEXT NOT NULL,
+  status TEXT NOT NULL,
+  error_type TEXT DEFAULT NULL,
   error_message TEXT DEFAULT NULL,
-  PRIMARY KEY ( id ),
-  CONSTRAINT fk_contract_id
-    FOREIGN KEY (contract_id)
-      REFERENCES contract(contract_id)
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( id )  
 );
 
 CREATE TABLE IF NOT EXISTS pool (
