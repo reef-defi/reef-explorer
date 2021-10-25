@@ -18,11 +18,11 @@ app.use(express.json());
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["runs", "filename", "source", "compilerVersion", "optimization"]);
+    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization"]);
     const bytecode = await compileSources(
-      req.body.filename, // TODO get contract name!
+      req.body.name,
       req.body.filename,
-      JSON.parse(req.body.source),
+      req.body.source,
       req.body.compilerVersion,
       req.body.optimization,
       req.body.runs
@@ -45,15 +45,15 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     ensure(isAuthenticated, "Google Token Authentication failed!");
   
     const bytecode = await compileSources(
-      req.body.filename, // TODO get contract name!
+      req.body.name,
       req.body.filename,
-      JSON.parse(req.body.source),
+      req.body.source,
       req.body.compilerVersion,
       req.body.optimization,
       req.body.runs
     );
-  
-    await contractVerificationInsert({...req.body, status: 'VERIFIED'});
+    // TODO license
+    await contractVerificationInsert({...req.body, status: 'VERIFIED', license: "MIT"});
     await updateContractsVerificationStatus(bytecode);
     res.send("Verified");
   } catch (err) {
