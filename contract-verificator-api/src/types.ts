@@ -54,3 +54,36 @@ export interface ManualContractVerificationReq extends AutomaticContractVerifica
 export interface AccountAddress {
   address: string;
 }
+
+export interface Token {
+  name: string;
+  address: string;
+  iconUrl: string;
+  userBalance: string;
+  decimals: number;
+}
+
+interface BasicPool {
+  decimals: number
+  reserve1: string;
+  reserve2: string;
+  totalSupply: string;
+  poolAddress: string;
+  minimumLiquidity: string;
+  userPoolBalance: string;
+}
+
+export interface Pool extends BasicPool {
+  token1: Token;
+  token2: Token;
+}
+
+export interface StakingReward {
+  data: string;
+  phase: string;
+  method: string;
+  section: string;
+  timestamp: string;
+  event_index: number;
+  block_number: number;
+}
