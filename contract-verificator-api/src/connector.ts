@@ -41,18 +41,26 @@ const REEF_DENOM = "reef-finance";
 export const getReefPrice = async (): Promise<Price> => axios
   .get<PriceWrapper>(`https://api.coingecko.com/api/v3/simple/price?ids=${REEF_DENOM}&vs_currencies=usd&include_24hr_change=true`)
   .then((res) => res.data[REEF_DENOM])
-  .then((res) => ({...res}));
-
-
-const googleAuthenticatorApi = axios.create({
-  baseURL: "`https://www.google.com/recaptcha/",
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
-  },
-})
-export const authenticationToken = async (token: string): Promise<boolean> =>
+  .then((res) => ({...res}))
+  .catch((err) => {
+    console.log(err);
+    throw new Error("Can not extract reef price from coingecko...")
+  });
+  
+  
+  const googleAuthenticatorApi = axios.create({
+    baseURL: "`https://www.google.com/recaptcha/",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
+    },
+  })
+  export const authenticationToken = async (token: string): Promise<boolean> =>
   await googleAuthenticatorApi
-    .post(`api/siteverify?secret=${configuration.recaptchaSecret}&response=${token}`, {})
-    .then((res) => res.data)
-    .then((res: any) => res.text()) // TODO any is a hack!
-    .then((res) => JSON.parse(res).success);
+  .post(`api/siteverify?secret=${configuration.recaptchaSecret}&response=${token}`, {})
+  .then((res) => res.data)
+  .then((res: any) => res.text()) // TODO any is a hack!
+  .then((res) => JSON.parse(res).success)
+  .catch((err) => {
+    console.log(err);
+    throw new Error("Can not extract recaptcha token...")
+  });
