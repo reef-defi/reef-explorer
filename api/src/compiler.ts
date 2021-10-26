@@ -1,3 +1,5 @@
+import { ensure } from "./utils";
+
 const solc = require('solc');
 
 export interface Contracts {
@@ -62,7 +64,7 @@ const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number): Solc
 });
 
 // TODO i do not know if this code works! test it out!
-const preprocessBytecode = (bytecode: string): string => {
+export const preprocessBytecode = (bytecode: string): string => {
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
@@ -104,6 +106,8 @@ export const compileContracts = async (contractName: string, contractFilename: s
     : prepareSolcContracts(contracts);
 
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)))
+  ensure(contractFilename in compilerResult, "Filename does not exist in compiled results");
+  ensure(contractName in compilerResult[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
   return preprocessBytecode(result.evm.bytecode.object);
   // return {
