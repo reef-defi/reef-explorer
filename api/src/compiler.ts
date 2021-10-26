@@ -105,9 +105,9 @@ export const compileContracts = async (contractName: string, contractFilename: s
     ? prepareOptimizedSolcContracts(contracts, runs)
     : prepareSolcContracts(contracts);
 
-  const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)))
-  ensure(contractFilename in compilerResult, "Filename does not exist in compiled results");
-  ensure(contractName in compilerResult[contractFilename], "Name does not exist in compiled results");
+  const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
+  ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
+  ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
   return preprocessBytecode(result.evm.bytecode.object);
   // return {
