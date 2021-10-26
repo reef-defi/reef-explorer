@@ -1803,7 +1803,9 @@ export default {
             source: JSON.stringify(sourceObject),
             address: toChecksumAddress(vm.address),
             compilerVersion: vm.compilerVersion,
-            arguments: vm.arguments,
+            arguments: vm.arguments
+              ? JSON.stringify(vm.arguments)
+              : JSON.stringify([]),
             optimization: vm.optimization,
             runs: vm.runs,
             target,
