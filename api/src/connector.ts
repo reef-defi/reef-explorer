@@ -46,8 +46,7 @@ export const getReefPrice = async (): Promise<Price> => axios
   
 export const authenticationToken = async (token: string): Promise<boolean> => await axios
   .get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.recaptchaSecret}&response=${token}`)
-  .then((res) => res.data)
-  .then((res) => res.success)
+  .then((res) => res.data.success)
   .catch((err) => {
     console.log(err);
     throw new Error("Can not extract recaptcha token...")
