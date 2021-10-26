@@ -1800,6 +1800,7 @@ export default {
         this.$axios
           .post(network.verificatorApi + '/manual-contract-verification', {
             filename: vm.source.name,
+            name: vm.source.name.split('.')[0],
             source: JSON.stringify(sourceObject),
             address: toChecksumAddress(vm.address),
             compilerVersion: vm.compilerVersion,
@@ -1809,7 +1810,7 @@ export default {
             optimization: vm.optimization,
             runs: vm.runs,
             target,
-            license: vm.license,
+            license: undefined,
             token,
           })
           .then((resp) => {
