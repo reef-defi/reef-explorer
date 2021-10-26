@@ -1796,7 +1796,7 @@ export default {
 
         // call manual verification api
         const sourceObject = {}
-        sourceObject[vm.source.name] = vm.sourceContent
+        sourceObject[`contracts/${vm.source.name}`] = vm.sourceContent
         this.$axios
           .post(network.verificatorApi + '/manual-contract-verification', {
             filename: vm.source.name,
