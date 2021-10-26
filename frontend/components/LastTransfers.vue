@@ -15,7 +15,7 @@
         <Cell>Hash</Cell>
         <Cell>From</Cell>
         <Cell>To</Cell>
-        <Cell>Amount</Cell>
+        <Cell align="right">Amount</Cell>
       </THead>
       <Row v-for="(item, index) in transfers" :key="'item-' + index">
         <Cell :link="`/transfer/${item.hash}`">{{ shortHash(item.hash) }}</Cell>
@@ -46,7 +46,7 @@
           }}</span>
         </Cell>
 
-        <Cell>
+        <Cell align="right">
           {{ formatAmount(item.amount) }}
         </Cell>
       </Row>
@@ -137,30 +137,5 @@ export default {
 
 * + .last-transfers {
   margin-top: 50px;
-}
-
-.last-transfers {
-  .table-cell {
-    .identicon,
-    .eth-identicon {
-      $size: 17px;
-
-      width: $size;
-      height: $size;
-      min-width: $size;
-      min-height: $size;
-      max-width: $size;
-      max-height: $size;
-      border-radius: 50%;
-      margin-right: 4px;
-      margin-left: -5px;
-      overflow: hidden;
-
-      svg {
-        width: $size;
-        height: $size;
-      }
-    }
-  }
 }
 </style>
