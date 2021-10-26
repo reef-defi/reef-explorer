@@ -44,18 +44,12 @@ export const getReefPrice = async (): Promise<Price> => axios
   });
   
   
-  const googleAuthenticatorApi = axios.create({
-    baseURL: "`https://www.google.com/recaptcha/",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
-    },
-  })
-  export const authenticationToken = async (token: string): Promise<boolean> => await googleAuthenticatorApi
-    .post(`api/siteverify?secret=${config.recaptchaSecret}&response=${token}`, {})
-    .then((res) => res.data)
-    .then((res: any) => res.text()) // TODO any is a hack!
-    .then((res) => JSON.parse(res).success)
-    .catch((err) => {
-      console.log(err);
-      throw new Error("Can not extract recaptcha token...")
-    });
+export const authenticationToken = async (token: string): Promise<boolean> => await axios
+  .get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.recaptchaSecret}&response=${token}`)
+  .then((res) => res.data)
+  .then((res: any) => res.text()) // TODO any is a hack!
+  .then((res) => JSON.parse(res).success)
+  .catch((err) => {
+    console.log(err);
+    throw new Error("Can not extract recaptcha token...")
+  });
