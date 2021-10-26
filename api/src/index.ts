@@ -5,6 +5,7 @@ import { checkIfContractIsVerified, contractVerificationInsert, contractVerifica
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys } from './utils';
 
+const cors = require('cors');
 const app = express();
 
 app.listen(config.httpPort, () => {
@@ -14,6 +15,7 @@ app.listen(config.httpPort, () => {
 // Parse incoming requests with JSON payloads
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
+app.use(cors());
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
