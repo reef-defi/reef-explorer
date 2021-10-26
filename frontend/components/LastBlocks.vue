@@ -38,7 +38,7 @@
 
         <Cell align="center">{{ item.total_extrinsics }}</Cell>
 
-        <Cell label="" align="center">{{ item.total_events }}</Cell>
+        <Cell align="center">{{ item.total_events }}</Cell>
       </Row>
     </Table>
   </div>

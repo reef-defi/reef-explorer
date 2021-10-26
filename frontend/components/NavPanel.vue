@@ -42,7 +42,7 @@ export default {
           type: 'link',
           icon: getIcon(key),
           text: links[key],
-          class: key === '' ? 'home' : key,
+          class: key === '' ? 'explore' : key,
           route: `/${key}`,
         })
       }
@@ -56,10 +56,10 @@ export default {
 <style lang="scss">
 .nav-panel {
   .panel-item {
-    &--home {
+    &--explore {
       .panel-item__icon {
-        width: 20px;
-        transform: translateY(1px);
+        width: 18px;
+        transform: translate(-1px, 1px);
       }
     }
   }
@@ -68,9 +68,9 @@ export default {
     .panel-more__content {
       .panel-more__item {
         .panel-item {
-          &--home {
+          &--explore {
             .panel-item__icon {
-              width: 32px;
+              transform: translate(-2px, 2px);
             }
           }
         }

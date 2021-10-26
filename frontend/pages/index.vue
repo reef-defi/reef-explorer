@@ -1,11 +1,17 @@
 <template>
   <div>
     <section>
-      <Search />
+      <Search
+        v-model="search"
+        label="Reef Blockchain Explorer"
+        placeholder="Search by block number, block hash, extrinsic hash or account address"
+        show-stats
+        @keydown="doSearch"
+      />
       <b-container class="main py-5 dashboard">
         <LastBlocks />
         <LastTransfers />
-        <div class="row" style="margin-top: 35px">
+        <div class="row" style="margin-top: 50px">
           <div class="col-md-6 mb-4">
             <LastExtrinsics />
           </div>
@@ -24,6 +30,7 @@ import LastExtrinsics from '@/components/LastExtrinsics.vue'
 import LastEvents from '@/components/LastEvents.vue'
 import Search from '@/components/Search.vue'
 import { network } from '@/frontend.config.js'
+import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
   components: {
@@ -33,9 +40,11 @@ export default {
     LastEvents,
     Search,
   },
+  mixins: [commonMixin],
   data: () => {
     return {
       network,
+      search: '',
     }
   },
   head() {
@@ -49,6 +58,29 @@ export default {
         },
       ],
     }
+  },
+  methods: {
+    async doSearch(event) {
+      if (event.keyCode === 13) {
+        if (await this.isExtrinsicHash(this.search)) {
+          this.$router.push({
+            path: `/extrinsic/${this.search}`,
+          })
+        } else if (await this.isBlockHash(this.search)) {
+          this.$router.push({
+            path: `/block/${this.search}`,
+          })
+        } else if (this.isAddress(this.search)) {
+          this.$router.push({
+            path: `/account/${this.search}`,
+          })
+        } else if (this.isBlockNumber(this.search)) {
+          this.$router.push({
+            path: `/block?blockNumber=${this.search}`,
+          })
+        }
+      }
+    },
   },
 }
 </script>
