@@ -46,6 +46,8 @@ export const getReefPrice = async (): Promise<Price> => axios
   
 export const authenticationToken = async (token: string): Promise<boolean> => await axios
   .get(`https://www.google.com/recaptcha/api/siteverify?secret=${config.recaptchaSecret}&response=${token}`)
+  .then((res) => res.data)
+  .then((res) => console.log(res))
   .then((res: any) => res.text()) // TODO any is a hack!
   .then((res) => JSON.parse(res).success)
   .catch((err) => {
