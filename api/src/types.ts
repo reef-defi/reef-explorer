@@ -29,6 +29,9 @@ export type License =
   | "Apache-2.0"
   | "GNU AGPLv3";
 
+export interface Bytecode {
+  bytecode: string;
+}
 export interface Status {
   status: string;
 }
