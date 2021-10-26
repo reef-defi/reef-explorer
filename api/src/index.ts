@@ -1,6 +1,6 @@
 import express, {Response} from 'express';
 import { compileContracts, preprocessBytecode } from './compiler';
-import { authenticationToken, config, getReefPrice } from './connector';
+import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys, errorStatus, StatusError } from './utils';
@@ -60,7 +60,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
     await contractVerificationInsert({...req.body, status: 'VERIFIED', optimization, license});
     const deployedBytecode = await findContractBytecode(req.body.address);
-    ensure(preprocessBytecode(deployedBytecode) === bytecode, "Contract sources does not match!", 404);
+    ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
     await updateContractStatus(req.body.address, bytecode);
     res.send("Verified");
   } catch (err) {
@@ -130,13 +130,13 @@ app.get('/api/staking/rewards', async (_, res) => {
 });
 
 // TODO db testing
-// app.get('/api/test', async (_, res) => {
-//   try {
-//     const result = await query("SELECT DISTINCT status FROM contract_verification_request", []);
-//     console.log(result);
-//     res.send(result)
-//   } catch (err) {
-//     console.log(err);
-//     res.status(errorStatus(err)).send(err.message);
-//   }
-// })
+app.get('/api/test', async (_, res) => {
+  try {
+    const result = await query("SELECT * FROM contract WHERE contract_id = $1", ["0x1622839cd7165B734C845dB6B4BEb8B90DC95197"]);
+    console.log(result);
+    res.send(result)
+  } catch (err) {
+    console.log(err);
+    res.status(errorStatus(err)).send(err.message);
+  }
+})
