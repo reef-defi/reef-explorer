@@ -1743,18 +1743,6 @@ export default {
       required,
     },
   },
-  watch: {
-    source(newFile) {
-      if (newFile) {
-        const fileExtension = newFile.name.split('.').pop()
-        if (fileExtension !== 'sol') {
-          this.$nextTick(() => {
-            this.source = null
-          })
-        }
-      }
-    },
-  },
   methods: {
     validateState(name) {
       const { $dirty, $error } = this.$v[name]
@@ -1807,32 +1795,21 @@ export default {
         }
 
         // call manual verification api
-        const formData = new FormData()
         const sourceObject = {}
         sourceObject[vm.source.name] = vm.sourceContent
-
-        formData.append('filename', vm.source.name)
-        formData.append('source', JSON.stringify(sourceObject))
-        formData.append('address', toChecksumAddress(vm.address)) // save checksummed address
-        formData.append('compilerVersion', vm.compilerVersion)
-        formData.append('arguments', vm.arguments)
-        formData.append('optimization', vm.optimization)
-        formData.append('runs', vm.runs)
-        formData.append('target', target)
-        formData.append('license', vm.license)
-        formData.append('token', token)
         this.$axios
-          .post(
-            network.verificatorApi + '/manual-contract-verification',
-            formData,
-            {
-              onUploadProgress(progressEvent) {
-                vm.uploadPercentage = Math.round(
-                  (progressEvent.loaded * 100) / progressEvent.total
-                )
-              },
-            }
-          )
+          .post(network.verificatorApi + '/manual-contract-verification', {
+            filename: vm.source.name,
+            source: JSON.stringify(sourceObject),
+            address: toChecksumAddress(vm.address),
+            compilerVersion: vm.compilerVersion,
+            arguments: vm.arguments,
+            optimization: vm.optimization,
+            runs: vm.runs,
+            target,
+            license: vm.license,
+            token,
+          })
           .then((resp) => {
             // eslint-disable-next-line no-console
             // console.log('verification request data uploaded:', resp.data)
