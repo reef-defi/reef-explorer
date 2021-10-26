@@ -42,7 +42,7 @@
                 <span>({{ formatTimestamp(item.timestamp) }})</span>
               </Cell>
 
-              <Cell> {{ item.section }} ➡ {{ item.method }} </Cell>
+              <Cell>{{ item.section }} ➡ {{ item.method }}</Cell>
 
               <Cell align="center">
                 <font-awesome-icon
