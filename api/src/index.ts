@@ -39,6 +39,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
 
 app.post('/api/verificator/manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
+    console.log('request:', req.body)
     ensureObjectKeys(req.body, ["runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "license", "target"]);
     const isAuthenticated = await authenticationToken(req.body.token);
     ensure(isAuthenticated, "Google Token Authentication failed!");
