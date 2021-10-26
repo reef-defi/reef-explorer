@@ -80,7 +80,7 @@ export default {
   }
 
   @media only screen and (max-width: 576px) {
-    padding: 40px 10px 5px 10px;
+    padding: 35px 10px 5px 10px;
 
     .search-section__input {
       font-size: 14px;

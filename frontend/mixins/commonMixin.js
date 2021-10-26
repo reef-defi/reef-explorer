@@ -166,5 +166,29 @@ export default {
     formatTimestamp: (timestamp) => {
       return moment.unix(timestamp).format('YYYY/MM/DD HH:mm:ss')
     },
+    getAge(timestamp) {
+      const date = moment.unix(timestamp)
+      let diff = moment().diff(date, 'seconds')
+
+      if (diff === 0) diff = 1
+      let text
+
+      if (diff >= 86400) {
+        diff = Math.floor(diff / 60 / 60 / 24)
+        if (diff === 1) text = 'day'
+        else text = 'days'
+      } else if (diff >= 3600) {
+        diff = Math.floor(diff / 60 / 60)
+        if (diff === 1) text = 'hour'
+        else text = 'hours'
+      } else if (diff >= 60) {
+        diff = Math.floor(diff / 60)
+        if (diff === 1) text = 'minute'
+        else text = 'minutes'
+      } else if (diff === 1) text = 'second'
+      else text = 'seconds'
+
+      return `${diff} ${text}`
+    },
   },
 }
