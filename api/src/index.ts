@@ -1,9 +1,9 @@
 import express, {Response} from 'express';
-import { compileContracts } from './compiler';
+import { compileContracts, preprocessBytecode } from './compiler';
 import { authenticationToken, config, getReefPrice } from './connector';
-import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
+import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
-import { ensure, ensureObjectKeys } from './utils';
+import { ensure, ensureObjectKeys, errorStatus, StatusError } from './utils';
 
 const cors = require('cors');
 const app = express();
@@ -19,7 +19,7 @@ app.use(cors());
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
+    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
     const optimization = req.body.optimization === "true";
     const bytecode = await compileContracts(
       req.body.name,
@@ -30,9 +30,11 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
       req.body.runs
     );
     const verified = await checkIfContractIsVerified(bytecode);
-    const status = verified ? "VERIFIED" : "NOT VERIFIED"; // TODO
+    const status = verified ? "VERIFIED" : "NOT VERIFIED";
     const license: License = req.body.license ? req.body.license : "unlicense";
     await contractVerificationInsert({...req.body, optimization, license, status});
+    const deployedBytecode = await findContractBytecode(req.body.address);
+    ensure(preprocessBytecode(deployedBytecode) === bytecode, "Contract sources does not match!", 404);
     res.send(status);
   } catch (err) {
     console.error(err);
@@ -42,9 +44,9 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
 
 app.post('/api/verificator/manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
+    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
     const isAuthenticated = await authenticationToken(req.body.token);
-    ensure(isAuthenticated, "Google Token Authentication failed!");
+    ensure(isAuthenticated, "Google Token Authentication failed!", 404);
     const optimization = req.body.optimization === "true";
     const license: License = req.body.license ? req.body.license : "unlicense";
     const bytecode = await compileContracts(
@@ -55,12 +57,14 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
       optimization,
       req.body.runs
     );
+    ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
     await contractVerificationInsert({...req.body, status: 'VERIFIED', optimization, license});
+    const deployedBytecode = await findContractBytecode(req.body.address);
+    ensure(preprocessBytecode(deployedBytecode) === bytecode, "Contract sources does not match!", 404);
     await updateContractStatus(req.body.address, bytecode);
     res.send("Verified");
   } catch (err) {
-    console.error(err);
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 })
 
@@ -70,7 +74,7 @@ app.post('/api/verificator/status', async (req: AppRequest<ContractVerificationI
     const status = await contractVerificationStatus(req.body.id);
     res.send(status);
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 })
 
@@ -80,7 +84,7 @@ app.post('/api/account/tokens', async (req: AppRequest<AccountAddress>, res: Res
     const tokens = await findUserTokens(req.body.address);
     res.send({tokens: [...tokens]});
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 });
 
@@ -91,7 +95,7 @@ app.post('/api/pool', async (req: AppRequest<PoolReq>, res: Response) => {
     const pool = await findPool(req.body.tokenAddress1, req.body.tokenAddress2);
     res.send(pool);
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 });
 
@@ -103,7 +107,7 @@ app.post('/api/user/pool', async (req: AppRequest<UserPoolReq>, res: Response) =
     const pool = await findUserPool(req.body.tokenAddress1, req.body.tokenAddress2, req.body.userAddress);
     res.send(pool);
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 });
 
@@ -112,7 +116,7 @@ app.get('/api/price/reef', async (_, res) => {
     const price = await getReefPrice();
     res.send(price);    
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 });
 
@@ -121,7 +125,7 @@ app.get('/api/staking/rewards', async (_, res) => {
     const rewards = await findStakingRewards();
     res.send({rewards: [...rewards]});
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 });
 
@@ -133,6 +137,6 @@ app.get('/api/staking/rewards', async (_, res) => {
 //     res.send(result)
 //   } catch (err) {
 //     console.log(err);
-//     res.status(400).send(err.message);
+//     res.status(errorStatus(err)).send(err.message);
 //   }
 // })
