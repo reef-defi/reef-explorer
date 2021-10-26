@@ -19,6 +19,7 @@ export default {
 
   .table {
     width: 100%;
+    margin-bottom: 0;
   }
 }
 </style>

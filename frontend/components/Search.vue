@@ -2,16 +2,17 @@
   <!-- Filter -->
   <b-row class="mb-4 search-section">
     <div class="container">
-      <label class="search-section__label">Reef Blockchain Explorer</label>
+      <label v-if="label" class="search-section__label" v-html="label" />
       <b-form-input
         id="searchInput"
-        v-model="searchInput"
+        :value="value"
         class="search-section__input"
         type="search"
-        placeholder="Search by block number, block hash, extrinsic hash or account address"
-        @keydown.native="doSearch"
+        :placeholder="placeholder"
+        @keydown.native="$emit('keydown', $event)"
+        @input="$emit('input', $event)"
       />
-      <Chain />
+      <Chain v-if="showStats" />
     </div>
 
     <bubbles :amount="20" />
@@ -19,40 +20,19 @@
 </template>
 
 <script>
-import bubbles from './BubblesAnimation.vue'
-import commonMixin from '@/mixins/commonMixin.js'
 import Chain from '@/components/Chain.vue'
+import bubbles from '@/components/BubblesAnimation.vue'
 
 export default {
   components: { bubbles, Chain },
-  mixins: [commonMixin],
-  data() {
-    return {
-      searchInput: '',
-    }
+  model: {
+    prop: 'value',
   },
-  methods: {
-    async doSearch(event) {
-      if (event.keyCode === 13) {
-        if (await this.isExtrinsicHash(this.searchInput)) {
-          this.$router.push({
-            path: `/extrinsic/${this.searchInput}`,
-          })
-        } else if (await this.isBlockHash(this.searchInput)) {
-          this.$router.push({
-            path: `/block/${this.searchInput}`,
-          })
-        } else if (this.isAddress(this.searchInput)) {
-          this.$router.push({
-            path: `/account/${this.searchInput}`,
-          })
-        } else if (this.isBlockNumber(this.searchInput)) {
-          this.$router.push({
-            path: `/block?blockNumber=${this.searchInput}`,
-          })
-        }
-      }
-    },
+  props: {
+    value: { default: '' },
+    label: { type: String, default: '' },
+    placeholder: { type: String, default: '' },
+    showStats: { type: Boolean, default: false },
   },
 }
 </script>
@@ -73,12 +53,13 @@ export default {
   }
 
   .search-section__input {
-    padding: 25px;
+    padding: 25px 21px;
     border: none;
     transition: all 0.2s;
     position: relative;
     z-index: 2;
     margin-bottom: 70px;
+    border-radius: 10px;
 
     &::placeholder {
       color: rgba(black, 0.75);

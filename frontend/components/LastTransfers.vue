@@ -57,9 +57,9 @@
 <script>
 import '@/components/Table'
 import { gql } from 'graphql-tag'
-import { network } from '../frontend.config'
 import commonMixin from '@/mixins/commonMixin.js'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
+import { network } from '@/frontend.config'
 
 export default {
   components: {
@@ -136,7 +136,7 @@ export default {
 }
 
 * + .last-transfers {
-  margin-top: 35px;
+  margin-top: 50px;
 }
 
 .last-transfers {

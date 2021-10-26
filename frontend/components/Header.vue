@@ -7,6 +7,7 @@
         </nuxt-link>
 
         <div class="header__links">
+          <nuxt-link to="/" exact>Explore</nuxt-link>
           <nuxt-link to="/blocks">Blocks</nuxt-link>
           <nuxt-link to="/transfers">Transfers</nuxt-link>
           <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
