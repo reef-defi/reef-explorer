@@ -1,9 +1,9 @@
 import express, {Response} from 'express';
-import { compileContracts, preprocessBytecode } from './compiler';
+import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
-import { ensure, ensureObjectKeys, errorStatus, StatusError } from './utils';
+import { ensure, ensureObjectKeys, errorStatus } from './utils';
 
 const cors = require('cors');
 const app = express();
@@ -37,8 +37,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
     ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
     res.send(status);
   } catch (err) {
-    console.error(err);
-    res.status(400).send(err.message);
+    res.status(errorStatus(err)).send(err.message);
   }
 });
 
