@@ -1,141 +1,64 @@
 <template>
-  <div>
+  <div class="list-view tokens">
+    <Search
+      v-model="filter"
+      :placeholder="$t('pages.tokens.search_placeholder')"
+      :label="`${$t('pages.tokens.title')}<span>${formatNumber(
+        totalRows
+      )}</span>`"
+    />
+
     <section>
-      <b-container class="page-tokens main py-5">
-        <b-row class="mb-2">
-          <b-col cols="12">
-            <h1>
-              {{ $t('pages.tokens.title') }}
-              <small v-if="totalRows !== 1" class="ml-1" style="font-size: 1rem"
-                >[{{ formatNumber(totalRows) }}]</small
-              >
-            </h1>
-          </b-col>
-        </b-row>
-        <div class="tokens">
+      <b-container>
+        <div class="list-view__table">
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
-          <template v-else>
-            <!-- Filter -->
-            <b-row style="margin-bottom: 1rem">
-              <b-col cols="12">
-                <b-form-input
-                  id="filterInput"
-                  v-model="filter"
-                  type="search"
-                  :placeholder="$t('pages.tokens.search_placeholder')"
+          <Table v-else>
+            <THead>
+              <Cell>Name</Cell>
+              <Cell>Contact Address</Cell>
+              <Cell align="right">Total supply</Cell>
+              <Cell align="right">Holders</Cell>
+            </THead>
+
+            <Row v-for="(item, index) in tokens" :key="index">
+              <Cell :link="`/token/${item.contract_id}`">
+                <img
+                  v-if="item.token_icon_url"
+                  :src="item.token_icon_url"
+                  class="identicon"
                 />
-              </b-col>
-            </b-row>
-            <div class="table-responsive">
-              <b-table striped hover :fields="fields" :items="tokens">
-                <template #cell(token_name)="data">
-                  <p v-if="data.item.name" class="mb-0">
-                    <img
-                      v-if="data.item.token_icon_url"
-                      :src="data.item.token_icon_url"
-                      style="width: 20px; height: 20px"
-                    />
-                    <nuxt-link :to="`/token/${data.item.contract_id}`">
-                      {{ data.item.name }}
-                    </nuxt-link>
-                    <font-awesome-icon
-                      v-if="data.item.token_validated"
-                      v-b-tooltip.hover
-                      icon="check"
-                      class="text-success"
-                      title="Validated token"
-                    />
-                  </p>
-                  <p v-else class="mb-0">
-                    <nuxt-link :to="`/token/${data.item.contract_id}`">
-                      {{ shortHash(data.item.contract_id) }}
-                    </nuxt-link>
-                    <font-awesome-icon
-                      v-if="data.item.token_validated"
-                      v-b-tooltip.hover
-                      icon="check"
-                      class="text-success"
-                      title="Validated token"
-                    />
-                  </p>
-                </template>
-                <template #cell(contract_id)="data">
-                  <p class="mb-0">
-                    <eth-identicon
-                      :address="data.item.contract_id"
-                      :size="16"
-                    />
-                    <nuxt-link :to="`/token/${data.item.contract_id}`">
-                      {{ data.item.contract_id }}
-                    </nuxt-link>
-                  </p>
-                </template>
-                <template #cell(token_total_supply)="data">
-                  <p class="mb-0">
-                    {{
-                      formatTokenAmount(
-                        data.item.token_total_supply,
-                        data.item.token_decimals,
-                        data.item.token_symbol
-                      )
-                    }}
-                  </p>
-                </template>
-                <template #cell(holders_aggregate)="data">
-                  <p class="mb-0">
-                    {{ data.item.holders_aggregate.aggregate.count }}
-                  </p>
-                </template>
-              </b-table>
-            </div>
-            <!-- pagination -->
-            <div class="row">
-              <div class="col-6">
-                <!-- desktop -->
-                <div class="d-none d-sm-none d-md-none d-lg-block d-xl-block">
-                  <b-button-group>
-                    <b-button
-                      v-for="(option, index) in paginationOptions"
-                      :key="index"
-                      variant="outline-secondary"
-                      :class="{ 'selected-per-page': perPage === option }"
-                      @click="setPageSize(option)"
-                    >
-                      {{ option }}
-                    </b-button>
-                  </b-button-group>
-                </div>
-                <!-- mobile -->
-                <div class="d-block d-sm-block d-md-block d-lg-none d-xl-none">
-                  <b-dropdown
-                    class="m-md-2"
-                    text="Page size"
-                    variant="outline-secondary"
-                  >
-                    <b-dropdown-item
-                      v-for="(option, index) in paginationOptions"
-                      :key="index"
-                      @click="setPageSize(10)"
-                    >
-                      {{ option }}
-                    </b-dropdown-item>
-                  </b-dropdown>
-                </div>
-              </div>
-              <div class="col-6">
-                <b-pagination
-                  v-model="currentPage"
-                  :total-rows="totalRows"
-                  :per-page="perPage"
-                  aria-controls="my-table"
-                  variant="dark"
-                  align="right"
-                ></b-pagination>
-              </div>
-            </div>
-          </template>
+                <span>{{ item.name || shortHash(item.contract_id) }}</span>
+                <font-awesome-icon
+                  v-if="item.token_validated"
+                  v-b-tooltip.hover
+                  icon="check"
+                  class="validated"
+                  title="Validated Token"
+                />
+              </Cell>
+
+              <Cell :link="{ url: `/token/${item.contract_id}`, fill: false }">
+                <eth-identicon :address="item.contract_id" :size="20" />
+                <span>{{ shortHash(item.contract_id) }}</span>
+              </Cell>
+
+              <Cell align="right">{{ getItemSupply(item) }}</Cell>
+
+              <Cell align="right">
+                {{ item.holders_aggregate.aggregate.count }}
+              </Cell>
+            </Row>
+          </Table>
+
+          <div class="list-view__pagination">
+            <b-pagination
+              v-model="currentPage"
+              :total-rows="totalRows"
+              :per-page="perPage"
+            />
+          </div>
         </div>
       </b-container>
     </section>
@@ -146,11 +69,13 @@
 import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import Loading from '@/components/Loading.vue'
+import Search from '@/components/Search'
 import { paginationOptions } from '@/frontend.config.js'
 
 export default {
   components: {
     Loading,
+    Search,
   },
   mixins: [commonMixin],
   data() {
@@ -159,40 +84,10 @@ export default {
       filter: '',
       tokens: [],
       paginationOptions,
-      perPage: localStorage.paginationOptions
-        ? parseInt(localStorage.paginationOptions)
-        : 10,
+      perPage: 20,
       currentPage: 1,
       totalRows: 1,
-      fields: [
-        {
-          key: 'token_name',
-          label: 'Name',
-          sortable: true,
-        },
-        {
-          key: 'contract_id',
-          label: 'Contract address',
-          sortable: true,
-        },
-        {
-          key: 'token_total_supply',
-          label: 'Total supply',
-          sortable: true,
-        },
-        {
-          key: 'holders_aggregate',
-          label: 'Holders',
-          sortable: true,
-        },
-      ],
     }
-  },
-  methods: {
-    setPageSize(num) {
-      localStorage.paginationOptions = num
-      this.perPage = parseInt(num)
-    },
   },
   apollo: {
     $subscribe: {
@@ -268,5 +163,30 @@ export default {
       },
     },
   },
+  methods: {
+    getItemSupply(item) {
+      const supply = this.formatTokenAmount(
+        item.token_total_supply || 0,
+        item.token_decimals || 0,
+        item.token_symbol || ''
+      ).trim()
+
+      if (supply === '0.00') return ''
+
+      return supply
+    },
+  },
 }
 </script>
+
+<style lang="scss">
+.tokens {
+  * + .validated {
+    margin-left: 6px;
+  }
+
+  .validated {
+    color: lightgreen;
+  }
+}
+</style>
