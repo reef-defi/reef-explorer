@@ -241,7 +241,6 @@ export default {
 .accounts {
   .accounts__download-csv-btn {
     margin: 0;
-    padding: 5px;
     color: white;
     display: flex;
     flex-flow: row nowrap;
@@ -265,7 +264,7 @@ export default {
 
   @media only screen and (max-width: 576px) {
     .accounts__download-csv-btn {
-      margin: 5px 0 0 -5px;
+      margin-top: 10px;
     }
   }
 }
