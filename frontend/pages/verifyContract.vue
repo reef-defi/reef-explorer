@@ -1807,7 +1807,7 @@ export default {
             arguments: vm.arguments
               ? JSON.stringify(vm.arguments)
               : JSON.stringify([]),
-            optimization: vm.optimization,
+            optimization: JSON.stringify(vm.optimization),
             runs: vm.runs,
             target,
             license: undefined,
