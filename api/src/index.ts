@@ -1,4 +1,5 @@
 import express, {Response} from 'express';
+import morgan = require('morgan');
 import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
@@ -16,6 +17,9 @@ app.listen(config.httpPort, () => {
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cors());
+
+// Logger
+app.use(morgan('dev'));
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
