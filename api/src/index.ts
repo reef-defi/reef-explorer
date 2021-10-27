@@ -9,7 +9,7 @@ const cors = require('cors');
 const app = express();
 
 app.listen(config.httpPort, () => {
-  console.log(`Timezones by location application is running on port ${config.httpPort}.`);
+  console.log(`Reef Explorer API is running on port ${config.httpPort}.`);
 });
 
 // Parse incoming requests with JSON payloads
