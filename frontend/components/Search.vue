@@ -16,6 +16,7 @@
         @input="$emit('input', $event)"
       />
       <Chain v-if="showStats" />
+      <slot name="bottom" />
     </div>
 
     <bubbles :amount="20" />

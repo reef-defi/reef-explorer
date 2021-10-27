@@ -17,7 +17,7 @@
           <Table v-else>
             <THead>
               <Cell>Name</Cell>
-              <Cell>Contact Address</Cell>
+              <Cell>Contract Address</Cell>
               <Cell align="right">Total supply</Cell>
               <Cell align="right">Holders</Cell>
             </THead>
