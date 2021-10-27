@@ -19,14 +19,17 @@
     padding-top: 50px;
     padding-bottom: 125px;
 
-    .search-section__label {
-      font-size: 23px;
+    .search-section__label-section {
       margin-bottom: 15px;
-
-      span {
-        margin-left: 15px;
-        font-size: 15px;
-        opacity: 0.75;
+      
+      .search-section__label {
+        font-size: 23px;
+  
+        span {
+          margin-left: 15px;
+          font-size: 15px;
+          opacity: 0.75;
+        }
       }
     }
 
