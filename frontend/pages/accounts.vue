@@ -25,7 +25,7 @@
           <div v-if="loading" class="text-center py-4">
             <Loading />
           </div>
-          <Table v-else>
+          <Table v-else class="accounts__table">
             <THead>
               <Cell align="center">Rank</Cell>
               <Cell>Account</Cell>
@@ -87,6 +87,42 @@
               </Cell>
             </Row>
           </Table>
+
+          <div class="accounts__list">
+            <nuxt-link
+              v-for="(item, index) in paginatedAccounts"
+              :key="'item-' + index"
+              :to="`/account/${item.account_id}`"
+              class="accounts__list-item"
+            >
+              <div class="accounts__list-item-rank">Rank #{{ item.rank }}</div>
+              <div class="accounts__list-item-identicon">
+                <ReefIdenticon
+                  :key="item.account_id"
+                  :address="item.account_id"
+                  :size="40"
+                />
+              </div>
+              <div class="accounts__list-item-account">
+                {{ shortAddress(item.account_id) }}
+              </div>
+
+              <div class="accounts__list-item-info">
+                <div class="accounts__list-item-info-item">
+                  <label>Free Balance</label>
+                  <div>{{ formatAmount(item.free_balance) }}</div>
+                </div>
+                <div class="accounts__list-item-info-item">
+                  <label>Available Balance</label>
+                  <div>{{ formatAmount(item.available_balance) }}</div>
+                </div>
+                <div class="accounts__list-item-info-item">
+                  <label>Locked Balance</label>
+                  <div>{{ formatAmount(item.locked_balance) }}</div>
+                </div>
+              </div>
+            </nuxt-link>
+          </div>
 
           <div class="list-view__pagination">
             <b-pagination
@@ -259,6 +295,94 @@ export default {
 
     &:active {
       opacity: 0.75;
+    }
+  }
+
+  .accounts__list {
+    display: none;
+
+    .accounts__list-item {
+      padding: 22px 10px 25px 10px;
+      text-decoration: none;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+      align-items: center;
+
+      .accounts__list-item-rank {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        color: rgba(#4c4f58, 0.8);
+      }
+
+      .accounts__list-item-identicon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 0 10px -10px rgba(#0f233f, 0.5),
+          0 5px 15px -5px rgba(#0f233f, 0.25);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 8px 0 13px 0;
+      }
+
+      .accounts__list-item-account {
+        text-align: center;
+        font-size: 17px;
+        font-weight: 600;
+        background: linear-gradient(90deg, #a93185, #5531a9);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .accounts__list-item-info {
+        width: 100%;
+        margin-top: 20px;
+
+        .accounts__list-item-info-item {
+          width: 100%;
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 13px;
+          line-height: 15px;
+          font-weight: 500;
+          color: #3e3f42;
+          text-align: right;
+
+          label {
+            margin: 0;
+            text-align: left;
+            font-weight: 600;
+          }
+
+          & + .accounts__list-item-info-item {
+            margin-top: 8px;
+          }
+        }
+      }
+
+      &:first-child {
+        padding-top: 17px;
+      }
+
+      & + .accounts__list-item {
+        border-top: solid 1px #eaedf3;
+      }
+    }
+  }
+
+  @media only screen and (max-width: 768px) {
+    .accounts__table {
+      display: none;
+    }
+
+    .accounts__list {
+      display: block;
     }
   }
 

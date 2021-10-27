@@ -33,6 +33,10 @@
 
 <style lang="scss">
 .footer {
+  padding-top: 1rem;
+  margin-top: 2rem !important;
+  padding-bottom: 1rem;
+
   a {
     font-weight: 600;
     color: rgba(#4c4f58, 0.8);
