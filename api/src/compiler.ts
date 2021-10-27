@@ -63,8 +63,7 @@ const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number): Solc
   }
 });
 
-// TODO i do not know if this code works! test it out!
-export const preprocessBytecode = (bytecode: string): string => {
+const preprocessBytecode = (bytecode: string): string => {
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
