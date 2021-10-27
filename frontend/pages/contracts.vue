@@ -179,8 +179,17 @@ export default {
 .contracts {
   .contracts__alert {
     margin-top: 20px;
-    background: rgba(#d1ecf1, 0.9);
+    background: rgba(#d1ecf1, 0.85);
     border: none;
+
+    .close {
+      padding: 0;
+      height: 45px;
+      width: 55px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
 }
 </style>
