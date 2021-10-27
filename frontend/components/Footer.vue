@@ -30,6 +30,18 @@
     </footer>
   </div>
 </template>
-<script>
-export default {}
-</script>
+
+<style lang="scss">
+.footer {
+  a {
+    font-weight: 600;
+    color: rgba(#4c4f58, 0.8);
+
+    &:hover {
+      background: linear-gradient(90deg, #a93185, #5531a9);
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+}
+</style>
