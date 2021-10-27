@@ -2,7 +2,10 @@
   <!-- Filter -->
   <b-row class="mb-4 search-section">
     <div class="container">
-      <label v-if="label" class="search-section__label" v-html="label" />
+      <div v-if="label || $slots.label" class="search-section__label-section">
+        <label v-if="label" class="search-section__label" v-html="label" />
+        <slot name="label" />
+      </div>
       <b-form-input
         id="searchInput"
         :value="value"
@@ -44,12 +47,21 @@ export default {
   background: linear-gradient(130deg, #a51863, #3c127b);
   margin: 0 !important;
 
-  .search-section__label {
-    font-size: 15px;
-    font-weight: 500;
-    color: white;
-    line-height: 1;
+  .search-section__label-section {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 12px;
+
+    .search-section__label {
+      font-size: 15px;
+      font-weight: 500;
+      color: white;
+      line-height: 1;
+      margin-bottom: 0;
+    }
   }
 
   .search-section__input {
@@ -81,6 +93,12 @@ export default {
 
   @media only screen and (max-width: 576px) {
     padding: 35px 10px 5px 10px;
+
+    .search-section__label-section {
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
 
     .search-section__input {
       font-size: 14px;
