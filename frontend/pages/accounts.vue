@@ -135,7 +135,17 @@ export default {
   },
   computed: {
     searchResults() {
-      const list = this.parsedAccounts || []
+      let list = this.parsedAccounts || []
+
+      list = list.sort((a, b) => {
+        const keyA = this.isFavorite(a.account_id)
+        const keyB = this.isFavorite(b.account_id)
+
+        if (keyA < keyB) return 1
+        if (keyA > keyB) return -1
+
+        return 0
+      })
 
       if (!this.filter) return list
 
