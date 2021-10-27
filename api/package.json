@@ -2,9 +2,9 @@
   "name": "api",
   "version": "1.0.0",
   "description": "Reef explorer API",
-  "author": "Mario Pino Uceda",
+  "author": "Žiga Franko Gorišek",
   "license": "Apache-2.0",
-  "main": "dist/api.js",
+  "main": "dist/index.js",
   "scripts": {
     "tsc": "tsc",
     "start": "tsc && node ./dist/index.js",
