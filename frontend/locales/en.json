@@ -237,7 +237,7 @@
       "voting_balance": "Voting Balance"
     },
     "block": {
-      "block": "block",
+      "block": "Block",
       "block_author": "Block author",
       "block_hash": "Block hash",
       "finalized": "Finalized",

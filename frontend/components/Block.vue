@@ -1,217 +1,174 @@
 <template>
-  <div class="card mt-4 mb-3">
-    <div class="card-body">
-      <h4 class="text-center mb-4">
-        {{ $t('details.block.block') }} #{{
-          formatNumber(parsedBlock.block_number)
-        }}
-      </h4>
-      <div class="table-responsive pb-4">
-        <table class="table table-striped block-table">
-          <tbody>
-            <tr>
-              <td>{{ $t('details.block.timestamp') }}</td>
-              <td>
-                <p class="mb-0">
-                  <font-awesome-icon :icon="['far', 'clock']" />
-                  {{ fromNow(parsedBlock.timestamp) }}
-                  ({{ formatTimestamp(parsedBlock.timestamp) }})
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td>{{ $t('details.block.finalized') }}</td>
-              <td>
-                <p v-if="parsedBlock.finalized" class="mb-0">
-                  <font-awesome-icon icon="check" class="text-success" />
-                </p>
-                <p v-else class="mb-0">
-                  <font-awesome-icon icon="clock" class="text-light" />
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td>{{ $t('details.block.block_hash') }}</td>
-              <td>
-                <p class="mb-0">{{ parsedBlock.block_hash }}</p>
-              </td>
-            </tr>
-            <tr>
-              <td>{{ $t('details.block.extrinsic_root') }}</td>
-              <td>
-                <p class="mb-0">{{ parsedBlock.extrinsics_root }}</p>
-              </td>
-            </tr>
-            <tr>
-              <td>{{ $t('details.block.parent_hash') }}</td>
-              <td>
-                <span v-if="parsedBlock.block_number === 0"> -- </span>
-                <span v-else>
-                  <nuxt-link
-                    :to="`/block?blockNumber=${parsedBlock.block_number - 1}`"
-                  >
-                    {{ parsedBlock.parent_hash }}
-                  </nuxt-link>
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <td>{{ $t('details.block.state_root') }}</td>
-              <td>
-                <p class="mb-0">{{ parsedBlock.state_root }}</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <b-tabs class="mt-4" content-class="mt-4" fill>
-        <b-tab active>
-          <template #title>
-            <h5>{{ $t('details.block.extrinsics') }}</h5>
+  <Card class="list-view block-details">
+    <Headline>
+      {{ $t('details.block.block') }} #
+      {{ formatNumber(parsedBlock.block_number) }}
+    </Headline>
+
+    <Data>
+      <Row>
+        <Cell>{{ $t('details.block.timestamp') }}</Cell>
+        <Cell class="list-view__age">
+          <font-awesome-icon :icon="['far', 'clock']" />
+          <span>{{ getAge(parsedBlock.timestamp) }}</span>
+          <span>({{ formatTimestamp(parsedBlock.timestamp) }})</span>
+        </Cell>
+      </Row>
+
+      <Row>
+        <Cell>Status</Cell>
+        <Cell>
+          <font-awesome-icon
+            :icon="parsedBlock.finalized ? 'check' : 'spinner'"
+            :class="
+              parsedBlock.finalized
+                ? 'text-success'
+                : 'list-view__processing-icon'
+            "
+            style="margin-right: 5px"
+          />
+          <span>{{ parsedBlock.finalized ? 'Finalized' : 'Processing' }}</span>
+        </Cell>
+      </Row>
+
+      <Row>
+        <Cell>{{ $t('details.block.block_hash') }}</Cell>
+        <Cell>{{ parsedBlock.block_hash }}</Cell>
+      </Row>
+
+      <Row>
+        <Cell>{{ $t('details.block.extrinsic_root') }}</Cell>
+        <Cell>{{ parsedBlock.extrinsics_root }}</Cell>
+      </Row>
+
+      <Row>
+        <Cell>{{ $t('details.block.parent_hash') }}</Cell>
+        <Cell>
+          <span v-if="parsedBlock.block_number === 0"> -- </span>
+          <nuxt-link
+            v-else
+            :to="`/block?blockNumber=${parsedBlock.block_number - 1}`"
+          >
+            {{ parsedBlock.parent_hash }}
+          </nuxt-link>
+        </Cell>
+      </Row>
+
+      <Row>
+        <Cell>{{ $t('details.block.state_root') }}</Cell>
+        <Cell>{{ parsedBlock.state_root }}</Cell>
+      </Row>
+    </Data>
+
+    <Tabs v-model="tab" :options="tabs" />
+
+    <Table v-if="tab === 'extrinsics'">
+      <THead>
+        <Cell>ID</Cell>
+        <Cell>{{ $t('details.block.hash') }}</Cell>
+        <Cell>{{ $t('details.block.signer') }}</Cell>
+        <Cell>{{ $t('details.block.section') }}</Cell>
+        <Cell>{{ $t('details.block.method') }}</Cell>
+        <Cell>{{ $t('details.block.args') }}</Cell>
+        <Cell align="center">{{ $t('details.block.success') }}</Cell>
+      </THead>
+
+      <Row
+        v-for="(extrinsic, index) in parsedExtrinsics"
+        :key="'extrinsic-' + index"
+      >
+        <Cell
+          :link="`/extrinsic/${extrinsic.block_number}/${extrinsic.extrinsic_index}`"
+          >{{ extrinsic.block_number }}-{{ extrinsic.extrinsic_index }}</Cell
+        >
+        <Cell>{{ shortHash(extrinsic.hash) }}</Cell>
+        <Cell
+          v-if="extrinsic.signer"
+          :link="{ url: `/account/${extrinsic.signer}`, fill: false }"
+          :title="$t('details.block.account_details')"
+        >
+          <ReefIdenticon
+            :key="extrinsic.signer"
+            :address="extrinsic.signer"
+            :size="20"
+          />
+          <span>{{ shortAddress(extrinsic.signer) }}</span>
+        </Cell>
+        <Cell v-else />
+        <Cell>{{ extrinsic.section }}</Cell>
+        <Cell>{{ extrinsic.method }}</Cell>
+        <Cell>{{ extrinsic.args }}</Cell>
+        <Cell align="center">
+          <font-awesome-icon
+            v-if="extrinsic.success"
+            icon="check"
+            class="text-success"
+          />
+          <font-awesome-icon v-else icon="times" class="text-danger" />
+        </Cell>
+      </Row>
+    </Table>
+
+    <Table v-if="tab === 'events'">
+      <THead>
+        <Cell>{{ $t('details.block.section') }}</Cell>
+        <Cell>{{ $t('details.block.method') }}</Cell>
+        <Cell>{{ $t('details.block.phase') }}</Cell>
+        <Cell>{{ $t('details.block.data') }}</Cell>
+      </THead>
+
+      <Row v-for="(event, index) in parsedEvents" :key="'event-' + index">
+        <Cell>{{ event.section }}</Cell>
+        <Cell>{{ event.method }}</Cell>
+        <Cell>{{ event.phase }}</Cell>
+        <Cell>
+          <template
+            v-if="event.section === `balances` && event.method === `Transfer`"
+          >
+            <ReefIdenticon
+              :key="JSON.parse(event.data)[0]"
+              :address="JSON.parse(event.data)[0]"
+              :size="20"
+            />
+            <nuxt-link
+              v-b-tooltip.hover
+              :to="`/account/${JSON.parse(event.data)[0]}`"
+              :title="$t('details.block.account_details')"
+            >
+              {{ shortAddress(JSON.parse(event.data)[0]) }}
+            </nuxt-link>
+            <font-awesome-icon icon="arrow-right" />
+            <ReefIdenticon
+              :key="JSON.parse(event.data)[1]"
+              :address="JSON.parse(event.data)[1]"
+              :size="20"
+            />
+            <nuxt-link
+              v-b-tooltip.hover
+              :to="`/account/${JSON.parse(event.data)[1]}`"
+              :title="$t('details.block.account_details')"
+            >
+              {{ shortAddress(JSON.parse(event.data)[1]) }}
+            </nuxt-link>
+            <font-awesome-icon icon="arrow-right" />
+            <span class="amount">
+              {{ formatAmount(JSON.parse(event.data)[2]) }}
+            </span>
           </template>
-          <template v-if="parsedExtrinsics.length > 0">
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>{{ $t('details.block.hash') }}</th>
-                    <th>{{ $t('details.block.signer') }}</th>
-                    <th>{{ $t('details.block.section') }}</th>
-                    <th>{{ $t('details.block.method') }}</th>
-                    <th>{{ $t('details.block.args') }}</th>
-                    <th>{{ $t('details.block.success') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="extrinsic in parsedExtrinsics"
-                    :key="extrinsic.hash"
-                  >
-                    <td>
-                      <nuxt-link
-                        v-b-tooltip.hover
-                        :to="`/extrinsic/${extrinsic.block_number}/${extrinsic.extrinsic_index}`"
-                        :title="$t('details.extrinsic.extrinsic_details')"
-                      >
-                        {{ extrinsic.block_number }}-{{
-                          extrinsic.extrinsic_index
-                        }}
-                      </nuxt-link>
-                    </td>
-                    <td>{{ shortHash(extrinsic.hash) }}</td>
-                    <td>
-                      <span v-if="extrinsic.signer">
-                        <ReefIdenticon
-                          :key="extrinsic.signer"
-                          :address="extrinsic.signer"
-                          :size="20"
-                        />
-                        <nuxt-link
-                          v-b-tooltip.hover
-                          :to="`/account/${extrinsic.signer}`"
-                          :title="$t('details.block.account_details')"
-                        >
-                          {{ shortAddress(extrinsic.signer) }}
-                        </nuxt-link>
-                      </span>
-                    </td>
-                    <td>{{ extrinsic.section }}</td>
-                    <td>{{ extrinsic.method }}</td>
-                    <td>{{ extrinsic.args }}</td>
-                    <td>
-                      <font-awesome-icon
-                        v-if="extrinsic.success"
-                        icon="check"
-                        class="text-success"
-                      />
-                      <font-awesome-icon
-                        v-else
-                        icon="times"
-                        class="text-danger"
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <template v-else>
+            {{ event.data }}
           </template>
-        </b-tab>
-        <b-tab>
-          <template #title>
-            <h5>{{ $t('details.block.system_events') }}</h5>
-          </template>
-          <template v-if="parsedEvents.length > 0">
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>{{ $t('details.block.section') }}</th>
-                    <th>{{ $t('details.block.method') }}</th>
-                    <th>{{ $t('details.block.phase') }}</th>
-                    <th>{{ $t('details.block.data') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="event in parsedEvents" :key="event.event_index">
-                    <td>{{ event.section }}</td>
-                    <td>{{ event.method }}</td>
-                    <td>{{ event.phase }}</td>
-                    <td>
-                      <template
-                        v-if="
-                          event.section === `balances` &&
-                          event.method === `Transfer`
-                        "
-                      >
-                        <ReefIdenticon
-                          :key="JSON.parse(event.data)[0]"
-                          :address="JSON.parse(event.data)[0]"
-                          :size="20"
-                        />
-                        <nuxt-link
-                          v-b-tooltip.hover
-                          :to="`/account/${JSON.parse(event.data)[0]}`"
-                          :title="$t('details.block.account_details')"
-                        >
-                          {{ shortAddress(JSON.parse(event.data)[0]) }}
-                        </nuxt-link>
-                        <font-awesome-icon icon="arrow-right" />
-                        <ReefIdenticon
-                          :key="JSON.parse(event.data)[1]"
-                          :address="JSON.parse(event.data)[1]"
-                          :size="20"
-                        />
-                        <nuxt-link
-                          v-b-tooltip.hover
-                          :to="`/account/${JSON.parse(event.data)[1]}`"
-                          :title="$t('details.block.account_details')"
-                        >
-                          {{ shortAddress(JSON.parse(event.data)[1]) }}
-                        </nuxt-link>
-                        <font-awesome-icon icon="arrow-right" />
-                        <span class="amount">
-                          {{ formatAmount(JSON.parse(event.data)[2]) }}
-                        </span>
-                      </template>
-                      <template v-else>
-                        {{ event.data }}
-                      </template>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </template>
-        </b-tab>
-      </b-tabs>
-    </div>
-  </div>
+        </Cell>
+      </Row>
+    </Table>
+  </Card>
 </template>
 
 <script>
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import commonMixin from '@/mixins/commonMixin.js'
+import '@/components/Details'
+
 export default {
   components: {
     ReefIdenticon,
@@ -231,5 +188,27 @@ export default {
       default: () => [],
     },
   },
+  data() {
+    return {
+      tab: 'extrinsics',
+    }
+  },
+  computed: {
+    tabs() {
+      return {
+        extrinsics: this.$t('details.block.extrinsics'),
+        events: this.$t('details.block.system_events'),
+      }
+    },
+  },
 }
 </script>
+
+<style lang="scss">
+.block-details {
+  .tabs {
+    margin: 25px 0 15px 0;
+    justify-content: flex-start;
+  }
+}
+</style>
