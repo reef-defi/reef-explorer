@@ -8,16 +8,7 @@
         <template v-else-if="!parsedEvent">
           <h1 class="text-center">Event not found!</h1>
         </template>
-        <template v-else>
-          <div class="card mt-4 mb-3">
-            <div class="card-body">
-              <h4 class="text-center mb-4">
-                Event {{ blockNumber }}-{{ eventIndex }}
-              </h4>
-              <Event :event="parsedEvent" />
-            </div>
-          </div>
-        </template>
+        <Event v-else :event="parsedEvent" />
       </b-container>
     </section>
   </div>
