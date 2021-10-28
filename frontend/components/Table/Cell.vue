@@ -114,6 +114,35 @@ export default {
           color: white;
         }
       }
+
+      > a {
+        background: linear-gradient(90deg, #a93185, #5531a9);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          width: 100%;
+          height: 1px;
+          left: 0;
+          right: 0;
+          margin: 0 auto;
+          opacity: 0;
+          transform: translateY(3px);
+          background: linear-gradient(90deg, #a93185, #5531a9);
+          transition: all 0.15s;
+        }
+
+        &:hover {
+          &::after {
+            opacity: 1;
+            transform: none;
+          }
+        }
+      }
     }
   }
 
