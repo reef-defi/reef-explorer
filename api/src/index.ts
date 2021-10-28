@@ -71,6 +71,32 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
   }
 })
 
+app.post('/api/verificator/test-manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
+  try {
+    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
+    // const isAuthenticated = await authenticationToken(req.body.token);
+    // ensure(isAuthenticated, "Google Token Authentication failed!", 404);
+    const optimization = req.body.optimization === "true";
+    const license: License = req.body.license ? req.body.license : "unlicense";
+    const bytecode = await compileContracts(
+      req.body.name,
+      req.body.filename,
+      req.body.source,
+      req.body.compilerVersion,
+      optimization,
+      req.body.runs
+    );
+    ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
+    const deployedBytecode = await findContractBytecode(req.body.address);
+    ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
+    await updateContractStatus(req.body.address, bytecode);
+    await contractVerificationInsert({...req.body, status: 'VERIFIED', optimization, license});
+    res.send("Verified");
+  } catch (err) {
+    res.status(errorStatus(err)).send(err.message);
+  }
+})
+
 app.post('/api/verificator/status', async (req: AppRequest<ContractVerificationID>, res: Response) => {
   try {
     ensure(!!req.body.id, "Parameter id is missing");
