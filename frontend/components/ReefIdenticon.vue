@@ -1,13 +1,7 @@
 <template>
-  <div
-    v-b-tooltip.hover
-    title="Click to copy address to clipboard"
-    class="d-inline-block"
-    @click="showToast"
-  >
+  <div class="d-inline-block">
     <Identicon
       :key="address"
-      v-clipboard:copy="address"
       :size="size"
       :theme="'substrate'"
       :value="address"
