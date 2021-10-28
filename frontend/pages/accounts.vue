@@ -237,8 +237,28 @@ export default {
     toggleFavorite(accountId) {
       if (this.favorites.includes(accountId)) {
         this.favorites.splice(this.favorites.indexOf(accountId), 1)
+
+        this.$bvToast.toast(
+          `Account ${accountId} has been removed from your favorites.`,
+          {
+            title: 'Removed from Favorites',
+            variant: 'danger',
+            autoHideDelay: 5000,
+            appendToast: false,
+          }
+        )
       } else {
         this.favorites.push(accountId)
+
+        this.$bvToast.toast(
+          `Account ${accountId} has been added to your favorites.`,
+          {
+            title: 'Added to Favorites',
+            variant: 'success',
+            autoHideDelay: 5000,
+            appendToast: false,
+          }
+        )
       }
       return true
     },
@@ -295,6 +315,12 @@ export default {
 
     &:active {
       opacity: 0.75;
+    }
+  }
+
+  .favorite {
+    &::after {
+      display: none;
     }
   }
 
