@@ -8,22 +8,7 @@
         <template v-else-if="!parsedExtrinsic">
           <h1 class="text-center">Extrinsic not found!</h1>
         </template>
-        <template v-else>
-          <div class="card mt-4 mb-3">
-            <div class="card-body">
-              <h4 class="text-center mb-4">
-                Extrinsic {{ parsedExtrinsic.block_number }}-{{
-                  parsedExtrinsic.extrinsic_index
-                }}
-              </h4>
-              <Extrinsic :extrinsic="parsedExtrinsic" />
-            </div>
-          </div>
-          <extrinsic-events
-            :block-number="parseInt(parsedExtrinsic.block_number)"
-            :extrinsic-index="parseInt(parsedExtrinsic.extrinsic_index)"
-          />
-        </template>
+        <Extrinsic v-else :extrinsic="parsedExtrinsic" />
       </b-container>
     </section>
   </div>

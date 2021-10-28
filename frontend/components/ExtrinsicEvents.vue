@@ -1,32 +1,22 @@
 <template>
   <div class="extrinsic-events">
-    <h4 class="my-4">Triggered events</h4>
-    <div class="table-responsive">
-      <b-table striped hover :fields="fields" :items="events">
-        <template #cell(block_number)="data">
-          <p class="mb-0">
-            <nuxt-link
-              :to="`/event/${data.item.block_number}/${data.item.event_index}`"
-            >
-              #{{ formatNumber(data.item.block_number) }}-{{
-                data.item.event_index
-              }}
-            </nuxt-link>
-          </p>
-        </template>
-        <template #cell(section)="data">
-          <p class="mb-0">
-            {{ data.item.section }} ➡
-            {{ data.item.method }}
-          </p>
-        </template>
-        <template #cell(data)="data">
-          <p class="mb-0">
-            {{ data.item.data }}
-          </p>
-        </template>
-      </b-table>
-    </div>
+    <Headline small>Triggered Events</Headline>
+
+    <Table>
+      <THead>
+        <Cell>Event</Cell>
+        <Cell>Section &amp; Method</Cell>
+        <Cell>Data</Cell>
+      </THead>
+
+      <Row v-for="(item, index) in events" :key="index">
+        <Cell :link="`/event/${item.block_number}/${item.event_index}`">
+          # {{ formatNumber(item.block_number) }}-{{ item.event_index }}
+        </Cell>
+        <Cell>{{ item.section }} ➡ {{ item.method }}</Cell>
+        <Cell>{{ item.data }}</Cell>
+      </Row>
+    </Table>
   </div>
 </template>
 
@@ -49,23 +39,6 @@ export default {
   data: () => {
     return {
       events: [],
-      fields: [
-        {
-          key: 'block_number',
-          label: 'Event',
-          sortable: true,
-        },
-        {
-          key: 'section',
-          label: 'Section & method',
-          sortable: true,
-        },
-        {
-          key: 'data',
-          label: 'Data',
-          sortable: true,
-        },
-      ],
     }
   },
   apollo: {
@@ -104,24 +77,8 @@ export default {
 }
 </script>
 
-<style>
-.extrinsic-events .table th,
-.extrinsic-events .table td {
-  padding: 0.45rem;
-  word-break: break-all;
-}
-.extrinsic-events .table thead th {
-  border-bottom: 0;
-}
-.extrinsic-events .identicon {
-  display: inline-block;
-  margin: 0 0.2rem 0 0;
-  cursor: copy;
-}
-.extrinsic-events .table td:first-child {
-  width: 10%;
-}
-.extrinsic-events .table td:nth-child(2) {
-  width: 20%;
+<style lang="scss">
+.extrinsic-events {
+  margin-top: 30px;
 }
 </style>

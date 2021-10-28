@@ -1,5 +1,5 @@
 <template>
-  <div class="details-headline">
+  <div class="details-headline" :class="{ 'details-headline--small': small }">
     <span>
       <slot />
     </span>
@@ -9,6 +9,9 @@
 <script>
 export default {
   name: 'Headline',
+  props: {
+    small: { type: Boolean, default: false },
+  },
 }
 </script>
 
@@ -27,7 +30,19 @@ export default {
     -webkit-text-fill-color: transparent;
   }
 
+  &--small {
+    font-size: 20px;
+    text-align: left;
+    justify-content: flex-start;
+  }
+
   & + * {
+    margin-top: 25px;
+  }
+}
+
+* + .details-headline {
+  &--small {
     margin-top: 25px;
   }
 }
