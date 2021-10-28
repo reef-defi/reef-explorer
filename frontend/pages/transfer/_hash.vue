@@ -8,14 +8,7 @@
         <template v-else-if="!transfer">
           <h1 class="text-center">Transfer not found!</h1>
         </template>
-        <template v-else>
-          <div class="card mt-4 mb-3">
-            <div class="card-body">
-              <h4 class="text-center mb-4">Transfer {{ shortHash(hash) }}</h4>
-              <Transfer :transfer="transfer" />
-            </div>
-          </div>
-        </template>
+        <Transfer v-else :transfer="transfer" />
       </b-container>
     </section>
   </div>
