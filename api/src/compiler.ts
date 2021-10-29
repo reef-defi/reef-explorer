@@ -107,9 +107,9 @@ export const compileContracts = async (contractName: string, contractFilename: s
   ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
   ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
-  const preprocessedBytecode = preprocessBytecode(result.evm.bytecode.object);
-  console.log('compiled bytecode:', result.evm.bytecode.object);
-  console.log('preprocessed compiled bytecode:', preprocessedBytecode);
+  const preprocessedBytecode = preprocessBytecode(result.evm.deployedBytecode.object);
+  console.log('compiled runtime bytecode:', result.evm.deployedBytecode.object);
+  console.log('preprocessed compiled runtime bytecode:', preprocessedBytecode);
   return preprocessedBytecode;
 }
 
@@ -132,7 +132,7 @@ export const verifyContracts = async (address: string, contractName: string, fil
   console.log('deployed bytecode:', deployedBytecode);
   console.log('preprocessed deployed bytecode:', preprocessedDeployedBytecode);
   const status =
-    preprocessedDeployedBytecode === bytecode
+    preprocessedDeployedBytecode.includes(bytecode)
       ? "VERIFIED"
       : "NOT VERIFIED";
   await contractVerificationInsert({
