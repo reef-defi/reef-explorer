@@ -83,9 +83,6 @@ const preprocessBytecode = (bytecode: string): string => {
   const bzzr1MetadataEnd = filteredBytecode.indexOf('a265627a7a72315820');
   filteredBytecode = filteredBytecode.slice(0, bzzr1MetadataEnd);
 
-  // debug
-  // logger.info(loggerOptions, `processed bytecode: ${bytecode}`);
-
   return filteredBytecode;
 }
   
@@ -106,6 +103,7 @@ export const compileContracts = async (contractName: string, contractFilename: s
     : prepareSolcContracts(contracts);
 
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
+  ensure(compilerResult.contracts, "Compiler was not able to compile provided source/s");
   ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
   ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
