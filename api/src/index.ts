@@ -1,6 +1,6 @@
 import express, {Response} from 'express';
 import morgan from 'morgan';
-import { compileContracts, preprocessBytecode } from './compiler';
+import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
