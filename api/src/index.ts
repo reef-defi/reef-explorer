@@ -26,7 +26,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
     const optimization = req.body.optimization === "true";
     const license: License = req.body.license ? req.body.license : "unlicense";
-    const verified =  await verifyContracts(
+    const status =  await verifyContracts(
         req.body.address,
         req.body.name,
         req.body.filename,
@@ -38,7 +38,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
         req.body.runs,
         license
       );
-    res.send(verified ? "VERIFIED" : "NOT VERIFIED");
+    res.send(status);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
@@ -51,7 +51,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     ensure(isAuthenticated, "Google Token Authentication failed!", 404);
     const optimization = req.body.optimization === "true";
     const license: License = req.body.license ? req.body.license : "unlicense";
-    const verified =  await verifyContracts(
+    const status =  await verifyContracts(
         req.body.address,
         req.body.name,
         req.body.filename,
@@ -63,7 +63,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
         req.body.runs,
         license
       );
-    res.send(verified ? "VERIFIED" : "NOT VERIFIED");
+    res.send(status);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
@@ -74,7 +74,7 @@ app.post('/api/verificator/test-manual-contract-verification', async (req: AppRe
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
     const optimization = req.body.optimization === "true";
     const license: License = req.body.license ? req.body.license : "unlicense";
-    const verified =  await verifyContracts(
+    const status =  await verifyContracts(
         req.body.address,
         req.body.name,
         req.body.filename,
@@ -86,7 +86,7 @@ app.post('/api/verificator/test-manual-contract-verification', async (req: AppRe
         req.body.runs,
         license
       );
-    res.send(verified ? "VERIFIED" : "NOT VERIFIED");
+    res.send(status);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
