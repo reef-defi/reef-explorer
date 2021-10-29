@@ -2,6 +2,7 @@ import express, {Response} from 'express';
 import morgan from 'morgan';
 import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
+import { checkIfContractIsERC20 } from './erc20Checker';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys, errorStatus } from './utils';
@@ -10,7 +11,7 @@ const cors = require('cors');
 const app = express();
 
 app.listen(config.httpPort, () => {
-  console.log(`Timezones by location application is running on port ${config.httpPort}.`);
+  console.log(`Reef explorer API is running on port ${config.httpPort}.`);
 });
 
 // Parse incoming requests with JSON payloads
@@ -23,7 +24,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
     const optimization = req.body.optimization === "true";
-    const bytecode = await compileContracts(
+    const {bytecode, abi} = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
@@ -36,9 +37,8 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
     const status = verified ? "VERIFIED" : "NOT VERIFIED";
     const license: License = req.body.license ? req.body.license : "unlicense";
     await contractVerificationInsert({...req.body, optimization, license, status});
-    const deployedBytecode = await findContractBytecode(req.body.address);
-    ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
-    await updateContractStatus(req.body.address, bytecode);
+    ensure(verified, "Contract sources does not match!", 404);
+    await updateContractStatus(req.body.address, verified, bytecode, req.body.name, abi);
     res.send(status);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
@@ -52,7 +52,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     ensure(isAuthenticated, "Google Token Authentication failed!", 404);
     const optimization = req.body.optimization === "true";
     const license: License = req.body.license ? req.body.license : "unlicense";
-    const bytecode = await compileContracts(
+    const {bytecode, abi} = await compileContracts(
       req.body.name,
       req.body.filename,
       req.body.source,
@@ -67,7 +67,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     const status = verified ? "VERIFIED" : "NOT VERIFIED";
     await contractVerificationInsert({...req.body, status, optimization, license});
     ensure(verified, "Contract sources does not match!", 404);
-    await updateContractStatus(req.body.address, bytecode);
+    await updateContractStatus(req.body.address, verified, bytecode, req.body.name, abi);
     res.send("Verified");
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
@@ -78,7 +78,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
 //     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
 //     const optimization = req.body.optimization === "true";
 //     const license: License = req.body.license ? req.body.license : "unlicense";
-//     const bytecode = await compileContracts(
+//     const {bytecode, abi} = await compileContracts(
 //       req.body.name,
 //       req.body.filename,
 //       req.body.source,
@@ -93,7 +93,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
 //     const status = verified ? "VERIFIED" : "NOT VERIFIED";
 //     await contractVerificationInsert({...req.body, status, optimization, license});
 //     ensure(verified, "Contract sources does not match!", 404);
-//     await updateContractStatus(req.body.address, bytecode);
+//     await updateContractStatus(req.body.address, verified, bytecode, req.body.name, abi);
 //     res.send("Verified");
 //   } catch (err) {
 //     console.log("ERROR: ", err);
