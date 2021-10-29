@@ -132,7 +132,7 @@ export const verifyContracts = async (address: string, contractName: string, fil
   console.log('deployed bytecode:', deployedBytecode);
   console.log('preprocessed deployed bytecode:', preprocessedDeployedBytecode);
   const status =
-    preprocessedDeployedBytecode.includes(bytecode)
+    preprocessedDeployedBytecode === bytecode
       ? "VERIFIED"
       : "NOT VERIFIED";
   await contractVerificationInsert({
