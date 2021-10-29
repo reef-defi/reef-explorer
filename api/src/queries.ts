@@ -177,7 +177,7 @@ export const findUserPool = async (tokenAddress1: string, tokenAddress2: string,
 }
 
 const FIND_CONTRACT_BYTECODE = `
-SELECT bytecode
+SELECT deployment_bytecode
 FROM contract
 WHERE contract_id = $1`;
 export const findContractBytecode = async (address: string): Promise<string> => {
