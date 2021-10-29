@@ -1,3 +1,4 @@
+import { Target } from "./types";
 import { ensure } from "./utils";
 
 const solc = require('solc');
@@ -20,6 +21,7 @@ interface SolcContracts {
       enabled: true;
       runs: number;
     };
+    evmVersion: Target;
     outputSelection: {
       "*": {
         '*': string[];
@@ -35,10 +37,11 @@ const toCompilerContracts = (contracts: Contracts): CompilerContracts =>
     {} as CompilerContracts
   );
 
-const prepareSolcContracts = (contracts: Contracts): SolcContracts => ({
+const prepareSolcContracts = (contracts: Contracts, evmVersion: Target): SolcContracts => ({
   language: 'Solidity',
   sources: toCompilerContracts(contracts),
   settings: {
+    evmVersion: evmVersion,
     outputSelection: {
       '*': {
         '*': ['*']
@@ -47,13 +50,14 @@ const prepareSolcContracts = (contracts: Contracts): SolcContracts => ({
   }
 });
 
-const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number): SolcContracts => ({
+const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number, evmVersion: Target): SolcContracts => ({
   language: 'Solidity',
   sources: toCompilerContracts(contracts),
   settings: {
+    evmVersion: evmVersion,
     optimizer: {
+      runs: runs,
       enabled: true,
-      runs: runs
     },
     outputSelection: {
       '*': {
@@ -63,7 +67,7 @@ const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number): Solc
   }
 });
 
-const preprocessBytecode = (bytecode: string): string => {
+export const preprocessBytecode = (bytecode: string): string => {
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
@@ -97,14 +101,15 @@ type Bytecode = string;
 //   abi: string;
 //   bytecode: string;
 // }
-export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<Bytecode> => {
+export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, target: Target, optimizer?: boolean, runs=200): Promise<Bytecode> => {
   const compiler = await loadCompiler(version);
   const contracts = JSON.parse(source);
   const solcData = optimizer 
-    ? prepareOptimizedSolcContracts(contracts, runs)
-    : prepareSolcContracts(contracts);
+    ? prepareOptimizedSolcContracts(contracts, runs, target)
+    : prepareSolcContracts(contracts, target);
 
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
+  console.log("compile results: ", compilerResult)
   ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
   ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
