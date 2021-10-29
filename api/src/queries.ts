@@ -18,7 +18,7 @@ export const contractVerificationInsert = async (contract: ContracVerificationIn
       contract.source,
       contract.filename,
       contract.compilerVersion,
-      contract.constructorArguments,
+      contract.arguments,
       contract.optimization,
       contract.runs,
       contract.target,
@@ -176,7 +176,6 @@ export const findUserPool = async (tokenAddress1: string, tokenAddress2: string,
   };
 }
 
-// runtime bytecode
 const FIND_CONTRACT_BYTECODE = `
 SELECT bytecode
 FROM contract
