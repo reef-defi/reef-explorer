@@ -1,4 +1,6 @@
 import { ensure } from "./utils";
+import { License, Target } from './types';
+import { checkIfContractIsVerified, contractVerificationInsert, findContractBytecode } from './queries';
 
 const solc = require('solc');
 
@@ -113,4 +115,33 @@ export const compileContracts = async (contractName: string, contractFilename: s
   //   abi: JSON.stringify(result.abi),
   //   bytecode: preprocessBytecode(result.evm.bytecode.object)
   // }
+}
+
+
+export const verifyContracts = async (address: string, contractName: string, filename: string, constructorArguments: string, source: string, compilerVersion: string, target: Target, optimization: boolean, runs: number, license: License): Promise<Boolean> => {
+  const bytecode = await compileContracts(
+    contractName,
+    filename,
+    source,
+    compilerVersion,
+    optimization,
+    runs
+  );
+  ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
+  const deployedBytecode = await findContractBytecode(address);
+  const verified = deployedBytecode.includes(bytecode);
+  const status = verified ? "VERIFIED" : "NOT VERIFIED";
+  await contractVerificationInsert({
+    runs,
+    source,
+    status,
+    target,
+    address,
+    filename,
+    license,
+    constructorArguments,
+    optimization,
+    compilerVersion
+  });
+  return verified;
 }
