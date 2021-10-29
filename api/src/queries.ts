@@ -18,7 +18,7 @@ export const contractVerificationInsert = async (contract: ContracVerificationIn
       contract.source,
       contract.filename,
       contract.compilerVersion,
-      contract.arguments,
+      contract.constructorArguments,
       contract.optimization,
       contract.runs,
       contract.target,
