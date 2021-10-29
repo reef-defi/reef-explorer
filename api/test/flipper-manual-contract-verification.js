@@ -1,6 +1,8 @@
 const axios = require('axios');
 
 const source = `
+pragma solidity >=0.7.0 <0.9.0;
+
 contract Flipper {
   bool private value;
   /// Constructor that initializes the bool value to the given init_value.
@@ -27,9 +29,9 @@ const sourceObj = {"Flipper.sol": source};
 const test = {
   filename: 'Flipper.sol',
   source: JSON.stringify(s1),
-  address: '0xb27BD90bf65bC752A6801Bac99F95fa8514c01a9',
+  address: '0x49251e3df078cAAfC803F92cD2F50441eF378868',
   compilerVersion: 'v0.8.4+commit.c7e474f2',
-  arguments: '[true]',
+  arguments: '[false]',
   optimization: "false",
   runs: 200,
   name: "Flipper",
@@ -39,7 +41,7 @@ const test = {
 }
 
 
-const ApiEndPoint = 'http://localhost:3000/api/verificator/manual-contract-verification';
+const ApiEndPoint = 'http://localhost:3000/api/verificator/local-manual-contract-verification';
 axios
   .post(ApiEndPoint, test)
   .then((res) => res.data)

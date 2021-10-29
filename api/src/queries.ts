@@ -177,11 +177,11 @@ export const findUserPool = async (tokenAddress1: string, tokenAddress2: string,
 }
 
 const FIND_CONTRACT_BYTECODE = `
-SELECT bytecode
+SELECT deployment_bytecode
 FROM contract
 WHERE contract_id = $1`;
 export const findContractBytecode = async (address: string): Promise<string> => {
   const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
   ensure(bytecodes.length > 0, "Contract does not exist", 404);
-  return bytecodes[0].bytecode;
+  return bytecodes[0].deployment_bytecode;
 }

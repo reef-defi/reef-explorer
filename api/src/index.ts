@@ -1,5 +1,6 @@
 import express, {Response} from 'express';
-import { compileContracts } from './compiler';
+import morgan from 'morgan';
+import { compileContracts, preprocessBytecode } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
@@ -16,6 +17,7 @@ app.listen(config.httpPort, () => {
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cors());
+app.use(morgan('dev'));
 
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
@@ -26,6 +28,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
       req.body.filename,
       req.body.source,
       req.body.compilerVersion,
+      req.body.target,
       optimization,
       req.body.runs
     );
@@ -53,16 +56,46 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
       req.body.filename,
       req.body.source,
       req.body.compilerVersion,
+      req.body.target,
       optimization,
       req.body.runs
     );
     ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
     const deployedBytecode = await findContractBytecode(req.body.address);
-    ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
+    const verified = deployedBytecode === bytecode;
+    const status = verified ? "VERIFIED" : "NOT VERIFIED";
+    await contractVerificationInsert({...req.body, status, optimization, license});
+    ensure(verified, "Contract sources does not match!", 404);
     await updateContractStatus(req.body.address, bytecode);
-    await contractVerificationInsert({...req.body, status: 'VERIFIED', optimization, license});
     res.send("Verified");
   } catch (err) {
+    res.status(errorStatus(err)).send(err.message);
+  }
+})
+app.post('/api/verificator/local-manual-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
+  try {
+    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
+    const optimization = req.body.optimization === "true";
+    const license: License = req.body.license ? req.body.license : "unlicense";
+    const bytecode = await compileContracts(
+      req.body.name,
+      req.body.filename,
+      req.body.source,
+      req.body.compilerVersion,
+      req.body.target,
+      optimization,
+      req.body.runs
+    );
+    ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
+    const deployedBytecode = await findContractBytecode(req.body.address);
+    const verified = deployedBytecode.includes(bytecode);
+    const status = verified ? "VERIFIED" : "NOT VERIFIED";
+    await contractVerificationInsert({...req.body, status, optimization, license});
+    ensure(verified, "Contract sources does not match!", 404);
+    await updateContractStatus(req.body.address, bytecode);
+    res.send("Verified");
+  } catch (err) {
+    console.log("ERROR: ", err);
     res.status(errorStatus(err)).send(err.message);
   }
 })
@@ -131,11 +164,9 @@ app.get('/api/staking/rewards', async (_, res) => {
 // TODO db testing
 app.get('/api/test', async (_, res) => {
   try {
-    const result = await query("SELECT * FROM contract WHERE contract_id = $1", ["0x1622839cd7165B734C845dB6B4BEb8B90DC95197"]);
-    console.log(result);
+    const result = await query("SELECT * FROM contract WHERE contract_id = $1", ["0x49251e3df078cAAfC803F92cD2F50441eF378868"]);
     res.send(result)
   } catch (err) {
-    console.log(err);
     res.status(errorStatus(err)).send(err.message);
   }
 })
