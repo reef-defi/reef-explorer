@@ -62,7 +62,7 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     );
     ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
     const deployedBytecode = await findContractBytecode(req.body.address);
-    const verified = deployedBytecode === bytecode;
+    const verified = deployedBytecode.includes(bytecode);
     const status = verified ? "VERIFIED" : "NOT VERIFIED";
     await contractVerificationInsert({...req.body, status, optimization, license});
     ensure(verified, "Contract sources does not match!", 404);
