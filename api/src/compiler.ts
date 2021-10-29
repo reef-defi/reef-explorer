@@ -127,8 +127,8 @@ export const verifyContracts = async (address: string, contractName: string, fil
   ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
   const deployedBytecode = await findContractBytecode(address);
   const preprocessedDeployedBytecode = preprocessBytecode(deployedBytecode);
-  console.log('db:', deployedBytecode);
-  console.log('request:', preprocessedDeployedBytecode);
+  console.log('db:', preprocessedDeployedBytecode);
+  console.log('request:', bytecode);
   const status =
     preprocessedDeployedBytecode === bytecode
       ? "VERIFIED"
