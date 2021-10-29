@@ -108,8 +108,6 @@ export const compileContracts = async (contractName: string, contractFilename: s
   ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
   const preprocessedBytecode = preprocessBytecode(result.evm.deployedBytecode.object);
-  console.log('compiled runtime bytecode:', result.evm.deployedBytecode.object);
-  console.log('preprocessed compiled runtime bytecode:', preprocessedBytecode);
   return preprocessedBytecode;
 }
 
@@ -129,8 +127,8 @@ export const verifyContracts = async (address: string, contractName: string, fil
   ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
   const deployedBytecode = await findContractBytecode(address);
   const preprocessedDeployedBytecode = preprocessBytecode(deployedBytecode);
-  console.log('deployed bytecode:', deployedBytecode);
-  console.log('preprocessed deployed bytecode:', preprocessedDeployedBytecode);
+  console.log('db:', deployedBytecode);
+  console.log('request:', preprocessedDeployedBytecode);
   const status =
     preprocessedDeployedBytecode === bytecode
       ? "VERIFIED"
