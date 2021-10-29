@@ -38,11 +38,11 @@ const toCompilerContracts = (contracts: Contracts): CompilerContracts =>
     {} as CompilerContracts
   );
 
-const prepareSolcContracts = (contracts: Contracts): SolcContracts => ({
+const prepareSolcContracts = (contracts: Contracts, target: Target): SolcContracts => ({
   language: 'Solidity',
   sources: toCompilerContracts(contracts),
   settings: {
-    evmVersion: "petersburg",
+    evmVersion: target,
     outputSelection: {
       '*': {
         '*': ['*']
@@ -51,11 +51,11 @@ const prepareSolcContracts = (contracts: Contracts): SolcContracts => ({
   }
 });
 
-const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number): SolcContracts => ({
+const prepareOptimizedSolcContracts = (contracts: Contracts, target: Target, runs: number): SolcContracts => ({
   language: 'Solidity',
   sources: toCompilerContracts(contracts),
   settings: {
-    evmVersion: "petersburg",
+    evmVersion: target,
     optimizer: {
       enabled: true,
       runs: runs
@@ -95,12 +95,12 @@ const loadCompiler = async (version: string): Promise<any> => (
 )
 
 type Bytecode = string;
-export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<Bytecode> => {
+export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, target: Target, optimizer?: boolean, runs=200): Promise<Bytecode> => {
   const compiler = await loadCompiler(version);
   const contracts = JSON.parse(source);
   const solcData = optimizer 
-    ? prepareOptimizedSolcContracts(contracts, runs)
-    : prepareSolcContracts(contracts);
+    ? prepareOptimizedSolcContracts(contracts, target, runs)
+    : prepareSolcContracts(contracts, target);
 
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
   ensure(compilerResult.contracts, "Compiler was not able to compile provided source/s");
@@ -115,12 +115,14 @@ export const compileContracts = async (contractName: string, contractFilename: s
 
 
 export const verifyContracts = async (address: string, contractName: string, filename: string, constructorArguments: string, source: string, compilerVersion: string, target: Target, optimization: boolean, runs: number, license: License): Promise<Boolean> => {
-  console.log('verifyContract:',)
+  const verified = await checkIfContractIsVerified(address);
+  ensure(!verified, "Contract was already verified");
   const bytecode = await compileContracts(
     contractName,
     filename,
     source,
     compilerVersion,
+    target,
     optimization,
     runs
   );
@@ -129,8 +131,10 @@ export const verifyContracts = async (address: string, contractName: string, fil
   const preprocessedDeployedBytecode = preprocessBytecode(deployedBytecode);
   console.log('deployed bytecode:', deployedBytecode);
   console.log('preprocessed deployed bytecode:', preprocessedDeployedBytecode);
-  const verified = preprocessedDeployedBytecode.includes(bytecode);
-  const status = verified ? "VERIFIED" : "NOT VERIFIED";
+  const status =
+    preprocessedDeployedBytecode === bytecode
+      ? "VERIFIED"
+      : "NOT VERIFIED";
   await contractVerificationInsert({
     runs,
     source,
