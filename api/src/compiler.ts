@@ -95,10 +95,6 @@ const loadCompiler = async (version: string): Promise<any> => (
 )
 
 type Bytecode = string;
-// interface CompilerResult {
-//   abi: string;
-//   bytecode: string;
-// }
 export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, optimizer?: boolean, runs=200): Promise<Bytecode> => {
   const compiler = await loadCompiler(version);
   const contracts = JSON.parse(source);
@@ -110,15 +106,15 @@ export const compileContracts = async (contractName: string, contractFilename: s
   ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
   ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
-  return preprocessBytecode(result.evm.bytecode.object);
-  // return {
-  //   abi: JSON.stringify(result.abi),
-  //   bytecode: preprocessBytecode(result.evm.bytecode.object)
-  // }
+  const preprocessedBytecode = preprocessBytecode(result.evm.bytecode.object);
+  console.log('compiled bytecode:', result.evm.bytecode.object);
+  console.log('preprocessed compiled bytecode:', preprocessedBytecode);
+  return preprocessedBytecode;
 }
 
 
 export const verifyContracts = async (address: string, contractName: string, filename: string, constructorArguments: string, source: string, compilerVersion: string, target: Target, optimization: boolean, runs: number, license: License): Promise<Boolean> => {
+  console.log('verifyContract:',)
   const bytecode = await compileContracts(
     contractName,
     filename,
