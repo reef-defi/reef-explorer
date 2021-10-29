@@ -1,6 +1,5 @@
 import express, {Response} from 'express';
-import morgan = require('morgan');
-import { verifyContracts } from './compiler';
+import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
@@ -10,7 +9,7 @@ const cors = require('cors');
 const app = express();
 
 app.listen(config.httpPort, () => {
-  console.log(`Reef Explorer API is running on port ${config.httpPort}.`);
+  console.log(`Timezones by location application is running on port ${config.httpPort}.`);
 });
 
 // Parse incoming requests with JSON payloads
@@ -18,26 +17,24 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 app.use(cors());
 
-// Logger
-app.use(morgan('dev'));
-
 app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
     const optimization = req.body.optimization === "true";
+    const bytecode = await compileContracts(
+      req.body.name,
+      req.body.filename,
+      req.body.source,
+      req.body.compilerVersion,
+      optimization,
+      req.body.runs
+    );
+    const verified = await checkIfContractIsVerified(bytecode);
+    const status = verified ? "VERIFIED" : "NOT VERIFIED";
     const license: License = req.body.license ? req.body.license : "unlicense";
-    const status =  await verifyContracts(
-        req.body.address,
-        req.body.name,
-        req.body.filename,
-        req.body.arguments,
-        req.body.source,
-        req.body.compilerVersion,
-        req.body.target,
-        optimization,
-        req.body.runs,
-        license
-      );
+    await contractVerificationInsert({...req.body, optimization, license, status});
+    const deployedBytecode = await findContractBytecode(req.body.address);
+    ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
     res.send(status);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
@@ -51,42 +48,20 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     ensure(isAuthenticated, "Google Token Authentication failed!", 404);
     const optimization = req.body.optimization === "true";
     const license: License = req.body.license ? req.body.license : "unlicense";
-    const status =  await verifyContracts(
-        req.body.address,
-        req.body.name,
-        req.body.filename,
-        req.body.arguments,
-        req.body.source,
-        req.body.compilerVersion,
-        req.body.target,
-        optimization,
-        req.body.runs,
-        license
-      );
-    res.send(status);
-  } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
-  }
-})
-
-app.post('/api/verificator/test-manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
-  try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
-    const optimization = req.body.optimization === "true";
-    const license: License = req.body.license ? req.body.license : "unlicense";
-    const status =  await verifyContracts(
-        req.body.address,
-        req.body.name,
-        req.body.filename,
-        req.body.arguments,
-        req.body.source,
-        req.body.compilerVersion,
-        req.body.target,
-        optimization,
-        req.body.runs,
-        license
-      );
-    res.send(status);
+    const bytecode = await compileContracts(
+      req.body.name,
+      req.body.filename,
+      req.body.source,
+      req.body.compilerVersion,
+      optimization,
+      req.body.runs
+    );
+    ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
+    const deployedBytecode = await findContractBytecode(req.body.address);
+    ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
+    await updateContractStatus(req.body.address, bytecode);
+    await contractVerificationInsert({...req.body, status: 'VERIFIED', optimization, license});
+    res.send("Verified");
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
