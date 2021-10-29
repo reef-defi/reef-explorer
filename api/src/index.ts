@@ -38,6 +38,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
     await contractVerificationInsert({...req.body, optimization, license, status});
     const deployedBytecode = await findContractBytecode(req.body.address);
     ensure(deployedBytecode.includes(bytecode), "Contract sources does not match!", 404);
+    await updateContractStatus(req.body.address, bytecode);
     res.send(status);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
