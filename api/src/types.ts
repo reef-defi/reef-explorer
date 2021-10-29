@@ -6,14 +6,15 @@ export interface AppRequest <T> extends Request {
 
 // Basic types
 export type Target = 
-  | "default"
-  | "homestead"
-  | "tangerineWhistle"
-  | "spuriousDragon"
-  | "byzantium"
-  | "constantinople"
+  | "london"
+  | "berlin"
+  | "istanbul"
   | "petersburg"
-  | "istanbul";
+  | "constantinople"
+  | "byzantium"
+  | "spuriousDragon"
+  | "homestead"
+  | "tangerineWhistle";
 
 export type License = 
   | "unlicense"
@@ -30,7 +31,7 @@ export type License =
   | "GNU AGPLv3";
 
 export interface Bytecode {
-  bytecode: string;
+  deployment_bytecode: string;
 }
 export interface Status {
   status: string;
