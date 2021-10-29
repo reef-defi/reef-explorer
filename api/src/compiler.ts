@@ -112,7 +112,7 @@ export const compileContracts = async (contractName: string, contractFilename: s
 }
 
 
-export const verifyContracts = async (address: string, contractName: string, filename: string, constructorArguments: string, source: string, compilerVersion: string, target: Target, optimization: boolean, runs: number, license: License): Promise<Boolean> => {
+export const verifyContracts = async (address: string, contractName: string, filename: string, constructorArguments: string, source: string, compilerVersion: string, target: Target, optimization: boolean, runs: number, license: License): Promise<string> => {
   const verified = await checkIfContractIsVerified(address);
   ensure(!verified, "Contract was already verified");
   const bytecode = await compileContracts(
@@ -145,5 +145,5 @@ export const verifyContracts = async (address: string, contractName: string, fil
     optimization,
     compilerVersion
   });
-  return verified;
+  return status;
 }
