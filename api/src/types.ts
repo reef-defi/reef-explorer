@@ -30,7 +30,7 @@ export type License =
   | "GNU AGPLv3";
 
 export interface Bytecode {
-  bytecode: string;
+  deployment_bytecode: string;
 }
 export interface Status {
   status: string;
