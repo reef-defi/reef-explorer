@@ -20,13 +20,27 @@ contract Flipper {
 
 	/// Simply returns the current value of our \`bool\`.
 	function get() public view returns (bool) {
-		return value;
+		return value;sdsd
 	}
 }
 `;
 const sourceObj = {
   "Flipper.sol": source
 }
+// const test = {
+//   filename: 'Flipper.sol',
+//   source: JSON.stringify(sourceObj),
+//   address: '0x15982dC4DDf3eED54C9D749a5b3108064E98C35b', // https://dev.reef.polkastats.io/contract/0x15982dC4DDf3eED54C9D749a5b3108064E98C35b
+//   compilerVersion: 'v0.7.3+commit.9bfce1f6',
+//   arguments: '[true]',
+//   optimization: "false",
+//   runs: 200,
+//   name: "Flipper",
+//   target: 'petersburg',
+//   license: 'none',
+//   token: '1234' // any value will autenticate
+// }
+
 const test = {
   filename: 'Flipper.sol',
   source: JSON.stringify(sourceObj),
