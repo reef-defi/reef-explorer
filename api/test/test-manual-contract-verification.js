@@ -20,7 +20,7 @@ contract Flipper {
 
 	/// Simply returns the current value of our \`bool\`.
 	function get() public view returns (bool) {
-		return value;sdsd
+		return value;
 	}
 }
 `;
