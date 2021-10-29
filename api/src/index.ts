@@ -72,33 +72,33 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     res.status(errorStatus(err)).send(err.message);
   }
 })
-app.post('/api/verificator/local-manual-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
-  try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
-    const optimization = req.body.optimization === "true";
-    const license: License = req.body.license ? req.body.license : "unlicense";
-    const bytecode = await compileContracts(
-      req.body.name,
-      req.body.filename,
-      req.body.source,
-      req.body.compilerVersion,
-      req.body.target,
-      optimization,
-      req.body.runs
-    );
-    ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
-    const deployedBytecode = await findContractBytecode(req.body.address);
-    const verified = deployedBytecode.includes(bytecode);
-    const status = verified ? "VERIFIED" : "NOT VERIFIED";
-    await contractVerificationInsert({...req.body, status, optimization, license});
-    ensure(verified, "Contract sources does not match!", 404);
-    await updateContractStatus(req.body.address, bytecode);
-    res.send("Verified");
-  } catch (err) {
-    console.log("ERROR: ", err);
-    res.status(errorStatus(err)).send(err.message);
-  }
-})
+// app.post('/api/verificator/local-manual-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
+//   try {
+//     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
+//     const optimization = req.body.optimization === "true";
+//     const license: License = req.body.license ? req.body.license : "unlicense";
+//     const bytecode = await compileContracts(
+//       req.body.name,
+//       req.body.filename,
+//       req.body.source,
+//       req.body.compilerVersion,
+//       req.body.target,
+//       optimization,
+//       req.body.runs
+//     );
+//     ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
+//     const deployedBytecode = await findContractBytecode(req.body.address);
+//     const verified = deployedBytecode.includes(bytecode);
+//     const status = verified ? "VERIFIED" : "NOT VERIFIED";
+//     await contractVerificationInsert({...req.body, status, optimization, license});
+//     ensure(verified, "Contract sources does not match!", 404);
+//     await updateContractStatus(req.body.address, bytecode);
+//     res.send("Verified");
+//   } catch (err) {
+//     console.log("ERROR: ", err);
+//     res.status(errorStatus(err)).send(err.message);
+//   }
+// })
 
 app.post('/api/verificator/status', async (req: AppRequest<ContractVerificationID>, res: Response) => {
   try {
