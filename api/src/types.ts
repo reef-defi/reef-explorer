@@ -110,7 +110,7 @@ export interface ContracVerificationInsert {
   address: string;
   filename: string;
   license: License;
-  arguments: string;
+  constructorArguments: string;
   optimization: boolean;
   compilerVersion: string;
 }
