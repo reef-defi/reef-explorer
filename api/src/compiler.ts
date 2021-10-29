@@ -67,7 +67,7 @@ const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number, evmVe
   }
 });
 
-export const preprocessBytecode = (bytecode: string): string => {
+const preprocessBytecode = (bytecode: string): string => {
   let filteredBytecode = "";
   const start = bytecode.indexOf('6080604052');
   //
@@ -96,6 +96,29 @@ const loadCompiler = async (version: string): Promise<any> => (
   })
 )
 
+interface CompilerResult {
+  errors: {
+    type: string;
+    formattedMessage: string;
+  }[];
+  contracts?: {
+    [filename: string]: {
+      [name: string]: any;
+    };
+  };
+  sources: {
+    [filename: string]: {
+      id: number;
+    };
+  };
+}
+
+const compressErrors = ({errors}: CompilerResult): string => errors
+  .reduce((prev, error) => (error.type.toLowerCase().includes("error")
+    ? `${prev}\n${error.formattedMessage}`
+    : prev
+  ), "");
+
 type Bytecode = string;
 // interface CompilerResult {
 //   abi: string;
@@ -109,7 +132,8 @@ export const compileContracts = async (contractName: string, contractFilename: s
     : prepareSolcContracts(contracts, target);
 
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
-  console.log("compile results: ", compilerResult)
+  const error = compressErrors(compilerResult);
+  ensure(error === "", error);
   ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
   ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
