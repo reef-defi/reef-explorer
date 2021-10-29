@@ -3,6 +3,7 @@ import { query } from "./connector";
 import { Bytecode, ContracVerificationInsert, Pool, PoolDB, StakingRewardDB, Status, Token, TokenDB, UserTokenDB } from "./types";
 import { ensure } from "./utils";
 import crypto from "crypto";
+import { ContractInterface } from 'ethers';
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO contract_verification_request
 (id, contract_id, source, filename, compiler_version, arguments, optimization, runs, target, license, status, timestamp)
@@ -42,9 +43,9 @@ export const contractVerificationStatus = async (id: string): Promise<string> =>
   return result[0].status;
 }
 
-const UPDATE_CONTRACT_STATUS = `UPDATE contract SET verified = TRUE, processed_bytecode = $1 WHERE contract_id = $2`;
-export const updateContractStatus = async (address: string, bytecode: string): Promise<void> => {
-  await query(UPDATE_CONTRACT_STATUS, [bytecode, address]);
+const UPDATE_CONTRACT_STATUS = `UPDATE contract SET verified = $2, processed_bytecode = $3, name = $4, abi = $5  WHERE contract_id = $1`;
+export const updateContractStatus = async (address: string, verified: boolean, bytecode: string, name: string, abi: ContractInterface): Promise<void> => {
+  await query(UPDATE_CONTRACT_STATUS, [address, verified, bytecode, name, JSON.stringify(abi)]);
 };
 
 // TODO does this work?
@@ -184,4 +185,12 @@ export const findContractBytecode = async (address: string): Promise<string> => 
   const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
   ensure(bytecodes.length > 0, "Contract does not exist", 404);
   return bytecodes[0].deployment_bytecode;
+}
+
+const UPDATE_ERC20_CONTRACT = `
+UPDATE contract
+SET token_name = $2, token_symbol = $3, token_decimals = $4, token_total_supply = $5
+WHERE contract_id = $1`;
+export const updateContractERC20 = async (address: string, name: string, symbol: string, decimals: string, supply: string): Promise<void> => {
+  await query(UPDATE_ERC20_CONTRACT, [address, name, symbol, decimals, supply]);
 }

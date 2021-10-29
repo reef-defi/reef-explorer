@@ -119,12 +119,12 @@ const compressErrors = ({errors=[]}: CompilerResult): string => errors
     : prev
   ), "");
 
-type Bytecode = string;
-// interface CompilerResult {
-//   abi: string;
-//   bytecode: string;
-// }
-export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, target: Target, optimizer?: boolean, runs=200): Promise<Bytecode> => {
+// type Bytecode = string;
+interface Compile {
+  abi: any;
+  bytecode: string;
+}
+export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, target: Target, optimizer?: boolean, runs=200): Promise<Compile> => {
   const compiler = await loadCompiler(version);
   const contracts = JSON.parse(source);
   
@@ -138,9 +138,9 @@ export const compileContracts = async (contractName: string, contractFilename: s
   ensure(contractFilename in compilerResult.contracts, "Filename does not exist in compiled results");
   ensure(contractName in compilerResult.contracts[contractFilename], "Name does not exist in compiled results");
   const result = compilerResult.contracts[contractFilename][contractName];
-  return preprocessBytecode(result.evm.bytecode.object);
-  // return {
-  //   abi: JSON.stringify(result.abi),
-  //   bytecode: preprocessBytecode(result.evm.bytecode.object)
-  // }
+  // return preprocessBytecode(result.evm.bytecode.object);
+  return {
+    abi: result.abi,
+    bytecode: preprocessBytecode(result.evm.bytecode.object)
+  }
 }
