@@ -97,7 +97,7 @@ const loadCompiler = async (version: string): Promise<any> => (
 )
 
 interface CompilerResult {
-  errors: {
+  errors?: {
     type: string;
     formattedMessage: string;
   }[];
@@ -113,7 +113,7 @@ interface CompilerResult {
   };
 }
 
-const compressErrors = ({errors}: CompilerResult): string => errors
+const compressErrors = ({errors=[]}: CompilerResult): string => errors
   .reduce((prev, error) => (error.type.toLowerCase().includes("error")
     ? `${prev}\n${error.formattedMessage}`
     : prev
@@ -127,6 +127,7 @@ type Bytecode = string;
 export const compileContracts = async (contractName: string, contractFilename: string, source: string, version: string, target: Target, optimizer?: boolean, runs=200): Promise<Bytecode> => {
   const compiler = await loadCompiler(version);
   const contracts = JSON.parse(source);
+  
   const solcData = optimizer 
     ? prepareOptimizedSolcContracts(contracts, runs, target)
     : prepareSolcContracts(contracts, target);
