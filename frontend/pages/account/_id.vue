@@ -6,7 +6,7 @@
           <Loading />
         </div>
         <template v-else-if="!parsedAccount">
-          <h1 class="text-center">Account not found!</h1>
+          <h1 class="text-center">Account not valid!</h1>
         </template>
         <template v-else>
           <div class="card mb-4">
