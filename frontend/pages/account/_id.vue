@@ -342,6 +342,38 @@ export default {
                   : {},
               timestamp: data.account[0].timestamp,
             }
+          } else if (this.isAddress(this.accountId)) {
+            this.parsedAccount = {
+              accountId: this.accountId,
+              evmAddress: null,
+              evmNonce: null,
+              availableBalance: '0',
+              freeBalance: '0',
+              lockedBalance: '0',
+              balances: {
+                accountId: this.accountId,
+                accountNonce: '0x00000000',
+                additional: [],
+                freeBalance: '0x00000000000000000000000000000000',
+                frozenFee: '0x00000000000000000000000000000000',
+                frozenMisc: '0x00000000000000000000000000000000',
+                reservedBalance: '0x00000000000000000000000000000000',
+                votingBalance: '0x00000000000000000000000000000000',
+                availableBalance: '0x00000000000000000000000000000000',
+                lockedBalance: '0x00000000000000000000000000000000',
+                lockedBreakdown: [],
+                vestingLocked: '0x00000000000000000000000000000000',
+                isVesting: false,
+                vestedBalance: '0x00000000000000000000000000000000',
+                vestedClaimable: '0x00000000000000000000000000000000',
+                vestingEndBlock: '0x00000000',
+                vestingPerBlock: '0x00000000000000000000000000000000',
+                vestingTotal: '0x00000000000000000000000000000000',
+              },
+              nonce: 0,
+              identity: {},
+              timestamp: null,
+            }
           }
           this.loading = false
         },
