@@ -123,7 +123,7 @@
     .list-view__download-btn {
       display: flex;
       flex-flow: row nowrap;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
       user-select: none;
       white-space: nowrap;
@@ -173,6 +173,23 @@
 
     .list-view__pagination {
       margin-top: 15px;
+    }
+  }
+
+  @media only screen and (max-width: 576px) {
+    .list-view__table-head {
+      flex-flow: column nowrap;
+      justify-content: center;
+      align-items: center;
+
+      > * {
+        width: 100% !important;
+        margin: 0 !important;
+        
+        & + * {
+          margin-top: 10px !important;
+        }
+      }
     }
   }
 }
