@@ -2,8 +2,7 @@ import express, {Response} from 'express';
 import morgan from 'morgan';
 import { compileContracts } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
-import { checkIfContractIsERC20 } from './erc20Checker';
-import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findUserPool, findUserTokens, updateContractStatus } from './queries';
+import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys, errorStatus } from './utils';
 
@@ -24,6 +23,7 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
     const optimization = req.body.optimization === "true";
+
     const {bytecode, abi} = await compileContracts(
       req.body.name,
       req.body.filename,
@@ -37,8 +37,19 @@ app.post('/api/verificator/automatic-contract-verification', async (req: AppRequ
     const status = verified ? "VERIFIED" : "NOT VERIFIED";
     const license: License = req.body.license ? req.body.license : "unlicense";
     await contractVerificationInsert({...req.body, optimization, license, status});
-    ensure(verified, "Contract sources does not match!", 404);
-    await updateContractStatus(req.body.address, verified, bytecode, req.body.name, abi);
+    ensure(verified, "Contract sources does not match!", 404); 
+    await updateContractStatus({
+      abi,
+      license,
+      bytecode,
+      verified,
+      name: req.body.name,
+      source: req.body.source,
+      target: req.body.target,
+      address: req.body.address,
+      compilerVersion: req.body.compilerVersion,
+      optimization: req.body.optimization,
+    });
     res.send(status);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
@@ -67,7 +78,18 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
     const status = verified ? "VERIFIED" : "NOT VERIFIED";
     await contractVerificationInsert({...req.body, status, optimization, license});
     ensure(verified, "Contract sources does not match!", 404);
-    await updateContractStatus(req.body.address, verified, bytecode, req.body.name, abi);
+    await updateContractStatus({
+      abi,
+      license,
+      bytecode,
+      verified,
+      name: req.body.name,
+      source: req.body.source,
+      target: req.body.target,
+      address: req.body.address,
+      compilerVersion: req.body.compilerVersion,
+      optimization: req.body.optimization,
+    });
     res.send("Verified");
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
@@ -93,7 +115,18 @@ app.post('/api/verificator/manual-contract-verification', async (req: AppRequest
 //     const status = verified ? "VERIFIED" : "NOT VERIFIED";
 //     await contractVerificationInsert({...req.body, status, optimization, license});
 //     ensure(verified, "Contract sources does not match!", 404);
-//     await updateContractStatus(req.body.address, verified, bytecode, req.body.name, abi);
+//     await updateContractStatus({
+//       abi,
+//       license,
+//       bytecode,
+//       verified,
+//       name: req.body.name,
+//       source: req.body.source,
+//       target: req.body.target,
+//       address: req.body.address,
+//       compilerVersion: req.body.compilerVersion,
+//       optimization: req.body.optimization,
+//     });
 //     res.send("Verified");
 //   } catch (err) {
 //     console.log("ERROR: ", err);
@@ -144,7 +177,7 @@ app.post('/api/user/pool', async (req: AppRequest<UserPoolReq>, res: Response) =
   }
 });
 
-app.get('/api/price/reef', async (_, res) => {
+app.get('/api/price/reef', async (_, res: Response) => {
   try {
     const price = await getReefPrice();
     res.send(price);    
@@ -153,7 +186,7 @@ app.get('/api/price/reef', async (_, res) => {
   }
 });
 
-app.get('/api/staking/rewards', async (_, res) => {
+app.get('/api/staking/rewards', async (_, res: Response) => {
   try {
     const rewards = await findStakingRewards();
     res.send({rewards: [...rewards]});
@@ -162,12 +195,22 @@ app.get('/api/staking/rewards', async (_, res) => {
   }
 });
 
-// TODO db testing
-app.get('/api/test', async (_, res) => {
+app.get('/api/token/:address', async (req: AppRequest<{}>, res: Response) => {
   try {
-    const result = await query("SELECT * FROM contract WHERE contract_id = $1", ["0x49251e3df078cAAfC803F92cD2F50441eF378868"]);
-    res.send(result)
+    ensure(!!req.params.address, "Url paramter address is missing");
+    const token = await findTokenInfo(req.params.address);
+    res.send({...token});
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
-})
+});
+
+// TODO db testing
+// app.get('/api/test', async (_, res) => {
+//   try {
+//     const result = await query("SELECT * FROM contract WHERE contract_id = $1", ["0x49251e3df078cAAfC803F92cD2F50441eF378868"]);
+//     res.send(result)
+//   } catch (err) {
+//     res.status(errorStatus(err)).send(err.message);
+//   }
+// })
