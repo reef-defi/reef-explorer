@@ -1,7 +1,7 @@
 <template>
   <div class="tabs">
     <div class="tabs__wrapper">
-      <div class="tabs__container">
+      <div ref="container" class="tabs__container">
         <button
           v-for="(title, key) in options"
           :key="key"
@@ -16,7 +16,7 @@
         <div
           v-if="indicator"
           class="tabs__indicator"
-          :style="`left: ${indicator.offset}px; width: ${indicator.width}px;`"
+          :style="`left: ${indicator.left}px; top: ${indicator.top}px; width: ${indicator.width}px;`"
           aria-hidden="true"
         />
       </div>
@@ -44,8 +44,14 @@ export default {
       this.setIndicator()
     },
   },
+  created() {
+    this.setResizeListener()
+  },
   mounted() {
     this.setIndicator()
+  },
+  beforeDestroy() {
+    this.removeResizeListener()
   },
   methods: {
     select(key) {
@@ -63,24 +69,16 @@ export default {
 
       const width = el.getBoundingClientRect().width
 
-      const offset = (() => {
-        const tabs = Object.keys(this.options)
-        const index = tabs.indexOf(this.value)
-        let offset = 0
+      const left = el.offsetLeft
+      const top = el.offsetTop
 
-        for (let i = 0; i < index; i++) {
-          const el = this.$refs['tab-' + tabs[i]][0]
-          let width = el.getBoundingClientRect().width
-          const margin = 10
-          width += margin
-
-          offset += width
-        }
-
-        return offset
-      })()
-
-      this.indicator = { width, offset }
+      this.indicator = { width, top, left }
+    },
+    setResizeListener() {
+      window.addEventListener('resize', this.setIndicator)
+    },
+    removeResizeListener() {
+      window.removeEventListener('resize', this.setIndicator)
     },
   },
 }
@@ -96,16 +94,17 @@ export default {
   .tabs__wrapper {
     background: rgba(#eaedf3, 0.5);
     border-radius: 8px;
-    padding: 8px;
+    padding: 8px 3px;
 
     .tabs__container {
       display: flex;
-      flex-flow: row nowrap;
+      flex-flow: row wrap;
       justify-content: center;
       align-items: center;
       position: relative;
 
       .tabs__tab {
+        margin: 0 5px;
         background: transparent;
         border-radius: 6px;
         display: flex;
@@ -131,10 +130,6 @@ export default {
         &--selected {
           color: #3e3f42;
         }
-
-        & + .tabs__tab {
-          margin-left: 10px;
-        }
       }
 
       .tabs__indicator {
@@ -142,7 +137,7 @@ export default {
         background: white;
         box-shadow: 0 0 10px -10px rgba(#0f233f, 0.5),
           0 5px 10px -5px rgba(#0f233f, 0.25);
-        height: 100%;
+        height: 35px;
         z-index: 0;
         border-radius: 6px;
         transition: all 0.2s;
