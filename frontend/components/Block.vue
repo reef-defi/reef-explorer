@@ -207,8 +207,7 @@ export default {
 <style lang="scss">
 .block-details {
   .tabs {
-    margin: 25px 0 15px 0;
-    justify-content: flex-start;
+    margin: 25px 0;
   }
 }
 </style>

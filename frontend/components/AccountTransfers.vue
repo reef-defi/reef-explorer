@@ -136,9 +136,7 @@ export default {
       filter: null,
       filterOn: [],
       tableOptions: paginationOptions,
-      perPage: localStorage.paginationOptions
-        ? parseInt(localStorage.paginationOptions)
-        : 10,
+      perPage: 20,
       currentPage: 1,
       totalRows: 1,
     }
