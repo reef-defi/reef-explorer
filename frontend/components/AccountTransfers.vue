@@ -1,5 +1,5 @@
 <template>
-  <div class="account-transfers">
+  <div class="account-transfers list-view">
     <div v-if="loading" class="text-center py-4">
       <Loading />
     </div>
@@ -7,131 +7,100 @@
       <h5>{{ $t('components.transfers.no_transfer_found') }}</h5>
     </div>
     <div v-else>
-      <!-- Filter -->
-      <b-row style="margin-bottom: 1rem">
-        <b-col cols="12">
-          <b-form-input
-            id="filterInput"
-            v-model="filter"
-            type="search"
-            :placeholder="$t('components.transfers.search')"
-          />
-        </b-col>
-      </b-row>
-      <JsonCSV
-        :data="transfers"
-        class="download-csv mb-2"
-        :name="`reef_transfers_${accountId}.csv`"
-      >
-        <font-awesome-icon icon="file-csv" />
-        {{ $t('pages.accounts.download_csv') }}
-      </JsonCSV>
-      <div class="table-responsive">
-        <b-table
-          striped
-          hover
-          :fields="fields"
-          :per-page="perPage"
-          :current-page="currentPage"
-          :items="transfers"
-          :filter="filter"
-          @filtered="onFiltered"
+      <div class="list-view__table-head">
+        <Input
+          v-model="filter"
+          :placeholder="$t('components.transfers.search')"
+        />
+        <JsonCSV
+          :data="transfers"
+          class="list-view__download-btn"
+          :name="`reef_transfers_${accountId}.csv`"
         >
-          <template #cell(extrinsic_index)="data">
+          <font-awesome-icon icon="file-csv" />
+          <span>{{ $t('pages.accounts.download_csv') }}</span>
+        </JsonCSV>
+      </div>
+      <Table>
+        <THead>
+          <Cell width="10" />
+          <Cell>Hash</Cell>
+          <Cell>Block</Cell>
+          <Cell>Date</Cell>
+          <Cell>From</Cell>
+          <Cell>To</Cell>
+          <Cell align="right">Amount</Cell>
+          <Cell align="right">Fee</Cell>
+          <Cell align="center" width="10">Success</Cell>
+        </THead>
+
+        <Row v-for="(item, index) in paginated" :key="index">
+          <Cell align="center">
             <font-awesome-icon
-              v-if="data.item.source === accountId"
+              v-if="item.source === accountId"
               :icon="['fas', 'arrow-up']"
             />
             <font-awesome-icon v-else :icon="['fas', 'arrow-down']" />
-          </template>
-          <template #cell(timestamp)="data">
-            <p class="mb-0">
-              <font-awesome-icon :icon="['far', 'clock']" />
-              {{ fromNow(data.item.timestamp) }}
-            </p>
-          </template>
-          <template #cell(block_number)="data">
-            <p class="mb-0">
-              <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
-                #{{ formatNumber(data.item.block_number) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(hash)="data">
-            <p class="mb-0">
-              <nuxt-link :to="`/transfer/${data.item.hash}`">
-                {{ shortHash(data.item.hash) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(source)="data">
-            <p class="mb-0">
-              <ReefIdenticon
-                :key="data.item.source"
-                :address="data.item.source"
-                :size="20"
-              />
-              <nuxt-link
-                :to="`/account/${data.item.source}`"
-                :title="$t('pages.accounts.account_details')"
-              >
-                {{ shortAddress(data.item.source) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(destination)="data">
-            <p class="mb-0">
-              <ReefIdenticon
-                :key="data.item.destination"
-                :address="data.item.destination"
-                :size="20"
-              />
-              <nuxt-link
-                :to="`/account/${data.item.destination}`"
-                :title="$t('pages.accounts.account_details')"
-              >
-                {{ shortAddress(data.item.destination) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(amount)="data">
-            <p class="mb-0">
-              {{ formatAmount(data.item.amount) }}
-            </p>
-          </template>
-          <template #cell(fee_amount)="data">
-            <p class="mb-0">
-              {{ formatAmount(data.item.fee_amount) }}
-            </p>
-          </template>
-          <template #cell(success)="data">
-            <p class="mb-0">
-              <font-awesome-icon
-                v-if="data.item.success"
-                icon="check"
-                class="text-success"
-              />
-              <font-awesome-icon v-else icon="times" class="text-danger" />
-            </p>
-          </template>
-        </b-table>
-        <div class="mt-4 d-flex">
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="totalRows"
-            :per-page="perPage"
-            aria-controls="validators-table"
-          />
-          <b-button-group class="ml-2">
-            <b-button
-              v-for="(item, index) in tableOptions"
-              :key="index"
-              @click="handleNumFields(item)"
-            >
-              {{ item }}
-            </b-button>
-          </b-button-group>
-        </div>
+          </Cell>
+
+          <Cell :link="`/transfer/${item.hash}`">{{
+            shortHash(item.hash)
+          }}</Cell>
+
+          <Cell :link="`/block?blockNumber=${item.block_number}`"
+            ># {{ formatNumber(item.block_number) }}</Cell
+          >
+
+          <Cell class="list-view__age">
+            <font-awesome-icon :icon="['far', 'clock']" />
+            <span>{{ fromNow(item.timestamp) }}</span>
+          </Cell>
+
+          <Cell
+            :link="{ url: `/account/${item.source}`, fill: false }"
+            :title="$t('pages.accounts.account_details')"
+          >
+            <ReefIdenticon
+              :key="item.source"
+              :address="item.source"
+              :size="20"
+            />
+            <span>{{ shortAddress(item.source) }}</span>
+          </Cell>
+
+          <Cell
+            :link="{ url: `/account/${item.destination}`, fill: false }"
+            :title="$t('pages.accounts.account_details')"
+          >
+            <ReefIdenticon
+              :key="item.destination"
+              :address="item.destination"
+              :size="20"
+            />
+            <span>{{ shortAddress(item.destination) }}</span>
+          </Cell>
+
+          <Cell align="right">{{ formatAmount(item.amount) }}</Cell>
+
+          <Cell align="right">{{ formatAmount(item.fee_amount) }}</Cell>
+
+          <Cell align="center">
+            <font-awesome-icon
+              v-if="item.success"
+              icon="check"
+              class="text-success"
+            />
+            <font-awesome-icon v-else icon="times" class="text-danger" />
+          </Cell>
+        </Row>
+      </Table>
+
+      <div class="list-view__pagination">
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="searchResults.length"
+          :per-page="perPage"
+        />
       </div>
     </div>
   </div>
@@ -144,12 +113,14 @@ import commonMixin from '@/mixins/commonMixin.js'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import { paginationOptions } from '@/frontend.config.js'
+import Input from '@/components/Input'
 
 export default {
   components: {
     ReefIdenticon,
     JsonCSV,
     Loading,
+    Input,
   },
   mixins: [commonMixin],
   props: {
@@ -170,64 +141,42 @@ export default {
         : 10,
       currentPage: 1,
       totalRows: 1,
-      fields: [
-        {
-          key: 'extrinsic_index',
-          label: '',
-          sortable: false,
-        },
-        {
-          key: 'hash',
-          label: 'Hash',
-          sortable: true,
-        },
-        {
-          key: 'block_number',
-          label: 'Block',
-          sortable: true,
-        },
-        {
-          key: 'timestamp',
-          label: 'Date',
-          sortable: true,
-        },
-        {
-          key: 'source',
-          label: 'From',
-          sortable: true,
-        },
-        {
-          key: 'destination',
-          label: 'To',
-          sortable: true,
-        },
-        {
-          key: 'amount',
-          label: 'Amount',
-          sortable: true,
-        },
-        {
-          key: 'fee_amount',
-          label: 'Fee',
-          sortable: true,
-        },
-        {
-          key: 'success',
-          label: 'Success',
-          sortable: true,
-        },
-      ],
     }
+  },
+  computed: {
+    searchResults() {
+      const list = this.transfers || []
+
+      if (!this.filter) return list
+
+      return list.filter((item) => {
+        const filter = this.filter.toLowerCase()
+        const hash = item.hash?.toLowerCase() || ''
+        const block = item.block_numbeer?.toLowerCase() || ''
+        const from = item.source?.toLowerCase() || ''
+        const to = item.destination?.toLowerCase() || ''
+        return (
+          hash.includes(filter) ||
+          block.includes(filter) ||
+          from.includes(filter) ||
+          to.includes(filter)
+        )
+      })
+    },
+    paginated() {
+      const paginate = (list) => {
+        const start = this.perPage * (this.currentPage - 1)
+        const end = start + this.perPage
+        return list.slice(start, end)
+      }
+
+      return paginate(this.searchResults)
+    },
   },
   methods: {
     handleNumFields(num) {
       localStorage.paginationOptions = num
       this.perPage = parseInt(num)
-    },
-    onFiltered(filteredItems) {
-      // Trigger pagination to update the number of buttons/pages due to filtering
-      this.totalRows = filteredItems.length
-      this.currentPage = 1
     },
   },
   apollo: {
