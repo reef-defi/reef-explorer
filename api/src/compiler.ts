@@ -21,7 +21,7 @@ interface SolcContracts {
       enabled: true;
       runs: number;
     };
-    evmVersion: Target;
+    evmVersion?: Target;
     outputSelection: {
       "*": {
         '*': string[];
@@ -37,11 +37,13 @@ const toCompilerContracts = (contracts: Contracts): CompilerContracts =>
     {} as CompilerContracts
   );
 
-const prepareSolcContracts = (contracts: Contracts, evmVersion: Target): SolcContracts => ({
+const evmVersion = (version: Target) => version === "london" ? {} : {evmVersion: version};
+
+const prepareSolcContracts = (contracts: Contracts, target: Target): SolcContracts => ({
   language: 'Solidity',
   sources: toCompilerContracts(contracts),
   settings: {
-    evmVersion: evmVersion,
+    ...evmVersion(target),
     outputSelection: {
       '*': {
         '*': ['*']
@@ -50,13 +52,13 @@ const prepareSolcContracts = (contracts: Contracts, evmVersion: Target): SolcCon
   }
 });
 
-const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number, evmVersion: Target): SolcContracts => ({
+const prepareOptimizedSolcContracts = (contracts: Contracts, runs: number, target: Target): SolcContracts => ({
   language: 'Solidity',
   sources: toCompilerContracts(contracts),
   settings: {
-    evmVersion: evmVersion,
+    ...evmVersion(target),
     optimizer: {
-      runs: runs,
+      runs,
       enabled: true,
     },
     outputSelection: {
