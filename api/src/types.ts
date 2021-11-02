@@ -84,6 +84,26 @@ export interface TokenDB extends DefaultToken {
   icon_url: string;
 }
 
+interface TokenInfoDefault {
+  abi: string; 
+  name: string;
+  runs: number;
+  signer: string;
+  source: string;
+  target: Target;
+  bytecode: string;
+  license: License;
+  verified: string;
+  optimization: boolean;
+}
+
+export interface TokenInfo extends TokenInfoDefault {
+  compilerVersion: string;
+}
+export interface TokenInfoDB extends TokenInfoDefault {
+  compiler_version: string;
+}
+
 interface DefaultPool {
   address: string;
   decimals: number;
@@ -137,7 +157,3 @@ export interface StakingRewardDB {
   block_number: number;
 }
 
-
-export interface TokenDB {
-
-}
