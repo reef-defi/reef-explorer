@@ -1,5 +1,5 @@
 <template>
-  <div class="activity">
+  <div class="activity list-view">
     <div v-if="loading" class="text-center py-4">
       <Loading />
     </div>
@@ -7,94 +7,80 @@
       <h5>{{ $t('components.activity.no_activity_found') }}</h5>
     </div>
     <div v-else>
-      <JsonCSV
-        :data="activities"
-        class="download-csv mb-2"
-        :name="`reef_${accountId}_activity.csv`"
-      >
-        <font-awesome-icon icon="file-csv" />
-        {{ $t('pages.accounts.download_csv') }}
-      </JsonCSV>
-      <div class="table-responsive">
-        <b-table
-          striped
-          hover
-          :fields="fields"
-          :per-page="perPage"
-          :current-page="currentPage"
-          :items="activities"
-          :filter="filter"
-          @filtered="onFiltered"
+      <div class="list-view__table-head">
+        <JsonCSV
+          :data="activities"
+          class="list-view__download-btn"
+          :name="`reef_${accountId}_activity.csv`"
         >
-          <template #cell(hash)="data">
-            <p class="mb-0">
-              <nuxt-link :to="`/extrinsic/${data.item.hash}`">
-                {{ shortHash(data.item.hash) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(block_number)="data">
-            <p class="mb-0">
-              <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
-                #{{ formatNumber(data.item.block_number) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(timestamp)="data">
-            <p class="mb-0">
-              <font-awesome-icon :icon="['far', 'clock']" />
-              {{ fromNow(data.item.timestamp) }}
-            </p>
-          </template>
-          <template #cell(signer)="data">
-            <p class="mb-0">
-              <nuxt-link
-                :to="`/account/${data.item.signer}`"
-                :title="$t('pages.accounts.account_details')"
-              >
-                <ReefIdenticon
-                  :key="data.item.signer"
-                  :address="data.item.signer"
-                  :size="20"
-                />
-                {{ shortAddress(data.item.signer) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(section)="data">
-            <p class="mb-0">
-              {{ data.item.section }} ➡
-              {{ data.item.method }}
-            </p>
-          </template>
-          <template #cell(success)="data">
-            <p class="mb-0">
-              <font-awesome-icon
-                v-if="data.item.success"
-                icon="check"
-                class="text-success"
-              />
-              <font-awesome-icon v-else icon="times" class="text-danger" />
-            </p>
-          </template>
-        </b-table>
-        <div class="mt-4 d-flex">
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="totalRows"
-            :per-page="perPage"
-            aria-controls="validators-table"
-          />
-          <b-button-group class="ml-2">
-            <b-button
-              v-for="(item, index) in tableOptions"
-              :key="index"
-              @click="handleNumFields(item)"
-            >
-              {{ item }}
-            </b-button>
-          </b-button-group>
-        </div>
+          <font-awesome-icon icon="file-csv" />
+          <span>{{ $t('pages.accounts.download_csv') }}</span>
+        </JsonCSV>
+      </div>
+
+      <Table>
+        <THead>
+          <Cell>Hash</Cell>
+          <Cell>Block</Cell>
+          <Cell>Date</Cell>
+          <Cell>Signer</Cell>
+          <Cell>Extrinsic</Cell>
+          <Cell align="center">Success</Cell>
+        </THead>
+
+        <Row v-for="(item, index) in paginated" :key="index">
+          <Cell :link="`/extrinsic/${item.hash}`">
+            {{ shortHash(item.hash) }}
+          </Cell>
+
+          <Cell
+            :link="{
+              url: `/block?blockNumber=${item.block_number}`,
+              fill: false,
+            }"
+          >
+            # {{ formatNumber(item.block_number) }}
+          </Cell>
+
+          <Cell class="list-view__age">
+            <font-awesome-icon :icon="['far', 'clock']" />
+            <span>{{ fromNow(item.timestamp) }}</span>
+          </Cell>
+
+          <Cell
+            :link="{ url: `/account/${item.signer}`, fill: false }"
+            :title="$t('pages.accounts.account_details')"
+          >
+            <ReefIdenticon
+              :key="item.signer"
+              :address="item.signer"
+              :size="20"
+            />
+            <span>{{ shortAddress(item.signer) }}</span>
+          </Cell>
+
+          <Cell>
+            {{ item.section }} ➡
+            {{ item.method }}
+          </Cell>
+
+          <Cell align="center">
+            <font-awesome-icon
+              v-if="item.success"
+              icon="check"
+              class="text-success"
+            />
+            <font-awesome-icon v-else icon="times" class="text-danger" />
+          </Cell>
+        </Row>
+      </Table>
+
+      <div class="list-view__pagination">
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="totalRows"
+          :per-page="perPage"
+        />
       </div>
     </div>
   </div>
@@ -128,45 +114,21 @@ export default {
       filter: null,
       filterOn: [],
       tableOptions: paginationOptions,
-      perPage: localStorage.paginationOptions
-        ? parseInt(localStorage.paginationOptions)
-        : 10,
+      perPage: 20,
       currentPage: 1,
       totalRows: 1,
-      fields: [
-        {
-          key: 'hash',
-          label: 'Hash',
-          sortable: true,
-        },
-        {
-          key: 'block_number',
-          label: 'Block',
-          class: 'd-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell',
-          sortable: true,
-        },
-        {
-          key: 'timestamp',
-          label: 'Date',
-          sortable: true,
-        },
-        {
-          key: 'signer',
-          label: 'Signer',
-          sortable: true,
-        },
-        {
-          key: 'section',
-          label: 'Extrinsic',
-          sortable: true,
-        },
-        {
-          key: 'success',
-          label: 'Success',
-          sortable: true,
-        },
-      ],
     }
+  },
+  computed: {
+    paginated() {
+      const paginate = (list) => {
+        const start = this.perPage * (this.currentPage - 1)
+        const end = start + this.perPage
+        return list.slice(start, end)
+      }
+
+      return paginate(this.activities)
+    },
   },
   methods: {
     handleNumFields(num) {
