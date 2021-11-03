@@ -1,4 +1,5 @@
 import { Request } from "express";
+import { Fragment, JsonFragment } from "@ethersproject/abi";
 
 export interface AppRequest <T> extends Request {
   body: T
@@ -42,7 +43,16 @@ export interface AccountAddress {
 export interface ContractVerificationID {
   id: string;
 }
- 
+export interface Parameters {
+  type: string;
+  funcName: string;
+  inputs: {
+    type: string;
+    value: string;
+    name?: string;
+  }[];
+};
+export type ABI = ReadonlyArray<Fragment>;
 // Request types
 export interface AutomaticContractVerificationReq {
   name: string;
