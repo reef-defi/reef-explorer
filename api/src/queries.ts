@@ -3,18 +3,17 @@ import { query } from "./connector";
 import { Bytecode, ContracVerificationInsert, License, Pool, PoolDB, StakingRewardDB, Status, Target, Token, TokenDB, TokenInfo, TokenInfoDB, UserTokenDB } from "./types";
 import { ensure } from "./utils";
 import crypto from "crypto";
-import { ContractInterface } from 'ethers';
+import { ContractInterface } from "@ethersproject/contracts";
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO contract_verification_request
-(id, contract_id, source, filename, compiler_version, arguments, optimization, runs, target, license, status, timestamp)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`;
+(contract_id, source, filename, compiler_version, arguments, optimization, runs, target, license, status, timestamp)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`;
 
 export const contractVerificationInsert = async (contract: ContracVerificationInsert): Promise<void> => {
   const timestamp = Date.now();
   await query(
     INSERT_CONTRACT_VERIFICATION,
     [
-      crypto.randomBytes(20).toString('hex'),
       contract.address,
       contract.source,
       contract.filename,
@@ -44,24 +43,22 @@ export const contractVerificationStatus = async (id: string): Promise<string> =>
 }
 
 interface UpdateContract {
-  address: string;
-  verified: boolean;
-  bytecode: string;
   name: string;
-  abi: ContractInterface;
-  source: string;
-  compilerVersion: string;
-  optimization: string;
   target: Target;
-  license: License;
+  source: string;
+  address: string;
+  license?: License;
+  optimization: string;
+  abi: ContractInterface;
+  compilerVersion: string;
 }
 const UPDATE_CONTRACT_STATUS = `UPDATE contract
-SET verified = $2, processed_bytecode = $3, name = $4, abi = $5, source = $6, compiler_version = $7, optimization = $8, target = $9, license = $10
+SET verified = VERIFIED, name = $2, abi = $3, source = $4, compiler_version = $5, optimization = $6, target = $7, license = $8
 WHERE contract_id = $1`;
-export const updateContractStatus = async ({address, bytecode, verified, name, abi, source, compilerVersion, optimization, target, license}: UpdateContract): Promise<void> => {
+export const updateContractStatus = async ({address, name, abi, source, compilerVersion, optimization, target, license}: UpdateContract): Promise<void> => {
   await query(
     UPDATE_CONTRACT_STATUS,
-    [address, verified, bytecode, name, JSON.stringify(abi), source, compilerVersion, optimization, target, license]
+    [address, name, JSON.stringify(abi), source, compilerVersion, optimization, target, license ? license : "unlicense"]
   );
 };
 
