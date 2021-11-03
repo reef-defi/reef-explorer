@@ -1,6 +1,7 @@
 import express, {Response} from 'express';
 import morgan from 'morgan';
-import { compileContracts } from './compiler';
+import { verifyContractArguments } from './argumentEncoder';
+import { Compile, verifyContract } from './compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
@@ -19,77 +20,45 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'));
 
-app.post('/api/verificator/automatic-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
+
+// const deployedBytecode = await findContractBytecode(address);
+
+// TODO 
+// TODO decompile constructorBytecode and check if the user arguments are the same 
+// TODO extract all compiled core bytecodes and try to remove them from deployed bytecode
+// TODO stich all the metadata parts
+// TODO check what is left (only metadata should stay) if nothing is there contract is verified 100%
+// const deployedBytecode = await findContractBytecode(address);
+
+
+// TODO 
+app.post('/api/verificator/submit-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
-    const optimization = req.body.optimization === "true";
-
-    const {bytecode, abi} = await compileContracts(
-      req.body.name,
-      req.body.filename,
-      req.body.source,
-      req.body.compilerVersion,
-      req.body.target,
-      optimization,
-      req.body.runs
-    );
-    const verified = await checkIfContractIsVerified(bytecode);
-    const status = verified ? "VERIFIED" : "NOT VERIFIED";
-    const license: License = req.body.license ? req.body.license : "unlicense";
-    await contractVerificationInsert({...req.body, optimization, license, status});
-    ensure(verified, "Contract sources does not match!", 404); 
-    await updateContractStatus({
-      abi,
-      license,
-      bytecode,
-      verified,
-      name: req.body.name,
-      source: req.body.source,
-      target: req.body.target,
-      address: req.body.address,
-      compilerVersion: req.body.compilerVersion,
-      optimization: req.body.optimization,
-    });
-    res.send(status);
+    
+    const deployedBytecode = await findContractBytecode(req.body.address);
+    const {abi, fullAbi} = await verifyContract(deployedBytecode, req.body);
+    await verifyContractArguments(deployedBytecode, abi, req.body.arguments);
+    
+    await updateContractStatus({...req.body, abi: fullAbi});
+    res.send("Verified");
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    console.log(err);
+    res.status(errorStatus(err)).send(err);
   }
 });
 
-app.post('/api/verificator/manual-contract-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
+app.post('/api/verificator/form-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
     const isAuthenticated = await authenticationToken(req.body.token);
     ensure(isAuthenticated, "Google Token Authentication failed!", 404);
-    const optimization = req.body.optimization === "true";
-    const license: License = req.body.license ? req.body.license : "unlicense";
-    const {bytecode, abi} = await compileContracts(
-      req.body.name,
-      req.body.filename,
-      req.body.source,
-      req.body.compilerVersion,
-      req.body.target,
-      optimization,
-      req.body.runs
-    );
-    ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
+
     const deployedBytecode = await findContractBytecode(req.body.address);
-    const verified = deployedBytecode.includes(bytecode);
-    const status = verified ? "VERIFIED" : "NOT VERIFIED";
-    await contractVerificationInsert({...req.body, status, optimization, license});
-    ensure(verified, "Contract sources does not match!", 404);
-    await updateContractStatus({
-      abi,
-      license,
-      bytecode,
-      verified,
-      name: req.body.name,
-      source: req.body.source,
-      target: req.body.target,
-      address: req.body.address,
-      compilerVersion: req.body.compilerVersion,
-      optimization: req.body.optimization,
-    });
+    const {abi, fullAbi} = await verifyContract(deployedBytecode, req.body);
+    await verifyContractArguments(deployedBytecode, abi, req.body.arguments);
+
+    await updateContractStatus({...req.body, abi: fullAbi});
     res.send("Verified");
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
@@ -198,8 +167,10 @@ app.get('/api/staking/rewards', async (_, res: Response) => {
 app.get('/api/token/:address', async (req: AppRequest<{}>, res: Response) => {
   try {
     ensure(!!req.params.address, "Url paramter address is missing");
-    const token = await findTokenInfo(req.params.address);
-    res.send({...token});
+    const deployedBytecode = await findContractBytecode(req.params.address);
+    // const token = await findTokenInfo(req.params.address);
+
+    res.send(deployedBytecode);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
