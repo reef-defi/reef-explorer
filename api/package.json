@@ -12,11 +12,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@reef-defi/evm-provider": "^1.0.2",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^10.0.0",
+    "ethers": "^5.5.1",
     "express": "^4.17.1",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
