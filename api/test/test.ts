@@ -64,7 +64,7 @@ describe('Testing valid argument verification', () => {
     expect(argumentTester(flipperBytecode, flipper, "true")).to.true
   )
   it('should verify ERC20Contract arguments', () => 
-    expect(argumentTester(erc20bytecode, erc20contract, "78946514859455498494984465132")).to.true
+    expect(argumentTester(erc20bytecode, erc20contract, "987624216598465165189198984984321861981")).to.true
   )
 });
 
@@ -93,9 +93,9 @@ describe('Testing valid contract sources', () => {
   it('should verify Storage contract source', async () => 
     expect(await sourceTester(storageBytecode, storageSource, "Storage.sol", "Storage")).to.true
   )
-  // it('should verify ERC20 contract source', async () => 
-  //   expect(await sourceTester(erc20bytecode, erc20Source, "contracts/4_ERC20Contract.sol", "ERC20Contract")).to.true
-  // )
+  it('should verify ERC20 contract source', async () => 
+    expect(await sourceTester(erc20bytecode, erc20Source, "contracts/4_ERC20Contract.sol", "ERC20Contract")).to.true
+  )
 })
 
 describe('Testing invalid contract sources', () => {
