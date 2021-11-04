@@ -33,15 +33,15 @@ const source = {
 axios
   .post(ApiEndPoint, {
     name: "ERC20Contract",
-    runs: "200",
+    runs: 200,
     filename: "contracts/4_ERC20Contract.sol",
     source: JSON.stringify(source),
-    compilerVersion: "v0.8.4+commit.c7e474f2",
-    optimization: "false",
+    compilerVersion: "v0.8.7+commit.e28d00a7",
+    optimization: "true",
     arguments: JSON.stringify([90000]),
-    address: "0x6532D1b77709b88D97b604bFf50B8312E466D031",
+    address: "0x6EDE6a11AfCC9FdEfE503EEf0f06e59cA8d05338",
     license: "MIT",
-    target: "petersburg",
+    target: "london",
   })
   .then((res) => res.data)
   .then(res => {
