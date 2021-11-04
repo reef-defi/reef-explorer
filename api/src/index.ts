@@ -1,10 +1,10 @@
 import express, {Response} from 'express';
 import morgan from 'morgan';
 import { verifyContractArguments } from './compiler/argumentEncoder';
-import { Compile, verifyContract } from './compiler/compiler';
-import { authenticationToken, config, getReefPrice, query } from './connector';
-import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
-import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
+import { verifyContract } from './compiler/compiler';
+import { authenticationToken, config, getReefPrice } from './connector';
+import { contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
+import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys, errorStatus } from './utils';
 
 const cors = require('cors');

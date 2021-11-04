@@ -171,3 +171,58 @@ export interface StakingRewardDB {
   block_number: number;
 }
 
+
+export interface Contracts {
+  [contractFilename: string]: string
+}
+
+export interface CompilerContracts {
+  [filename: string]: {
+    content: string;
+  }
+}
+
+export interface SolcContracts {
+  language: 'Solidity';
+  sources: CompilerContracts;
+  settings: {
+    optimizer: {
+      runs: number;
+      enabled: boolean;
+    };
+    evmVersion?: Target;
+    outputSelection: {
+      "*": {
+        '*': string[];
+      };
+    };
+  };
+}
+
+export interface CompilerResult {
+  errors?: {
+    type: string;
+    formattedMessage: string;
+  }[];
+  contracts?: {
+    [filename: string]: {
+      [name: string]: any;
+    };
+  };
+  sources: {
+    [filename: string]: {
+      id: number;
+    };
+  };
+}
+
+export interface Compile {
+  abi: ABI;
+  fullAbi: ABI;
+  fullBytecode: string;
+}
+
+export interface VerifyContract {
+  abi: ABI;
+  fullAbi: ABI;
+}
