@@ -131,17 +131,23 @@ describe('Testing valid contract sources', () => {
   )
 })
 
-// describe('Testing invalid contract sources', () => {
-//   it('should verify Flipper contract source', async () => 
-//     expect(await sourceTester(flipperBytecode, greeteSource, "Greete.sol", "Greete")).to.false
-//   )
-//   it('should verify Greete contract source', async () => 
-//     expect(await sourceTester(greeteBytecode, flipperSource, "Flipper.sol", "Flipper")).to.false
-//   )
-//   it('should verify Storage contract source', async () => 
-//     expect(await sourceTester(storageBytecode, erc20Source, "contracts/4_ERC20Contract.sol", "ERC20Contract")).to.false
-//   )
-//   it('should verify ERC20 contract source', async () => 
-//     expect(await sourceTester(erc20bytecode, storageSource, "Storage.sol", "Storega")).to.false
-//   )
-// })
+describe('Testing invalid contract sources', () => {
+  it('should not verify Greete contract source with Flipper-bytecode', async () => 
+    expect(await sourceTester(flipperBytecode, greeteSource, "Greete.sol", "Greete")).to.false
+  )
+  it('should not verify Flipper contract source with Greeter-bytecode', async () => 
+    expect(await sourceTester(greeteBytecode, flipperSource, "Flipper.sol", "Flipper")).to.false
+  )
+  it('should not verify ERC20 contract source with Storage-bytecode', async () => 
+    expect(await sourceTester(storageBytecode, erc20Source, "contracts/4_ERC20Contract.sol", "ERC20Contract")).to.false
+  )
+  it('should not verify Storage contract source with ERC20-bytecode', async () => 
+    expect(await sourceTester(erc20bytecode, storageSource, "Storage.sol", "Storega")).to.false
+  )
+  it('should not verify ERC20 contract source with SWVE-bytecode', async () => 
+    expect(await sourceTester(swveBytecode, erc20Source, "contracts/4_ERC20Contract.sol", "ERC20Contract")).to.false
+  )
+  it('should not verify SWVEERC20 contract source with ERC20-bytecode', async () => 
+    expect(await sourceTester(erc20bytecode, swveSource, "contracts/SWVEERC20.sol", "StarWarsVoterErc20")).to.false
+  )
+})
