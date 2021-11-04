@@ -143,7 +143,7 @@ export const verifyContract = async (deployedBytecode: string, {name, filename, 
   const {abi, fullAbi, fullBytecode} = await compileContracts(name, filename, source, compilerVersion, target, optimization, runs);
   const parsedBytecode = preprocess(fullBytecode);
   const rpcBytecode = preprocess(deployedBytecode);
-  ensure(parsedBytecode === rpcBytecode, "Compiled bytecode is not the same as deployed one", 404);
+  ensure(parsedBytecode === rpcBytecode, "Compiled bytecode is not the same as deployed one");
   // return compiledItems.reduce((prev, item) => [...prev, ...item.abi], [])
   return {
     abi,

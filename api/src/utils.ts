@@ -8,7 +8,7 @@ export class StatusError extends Error {
   }
 }
 
-export const ensure = (condition: boolean, message: string, status=400): void => {
+export const ensure = (condition: boolean, message: string, status=404): void => {
   if (!condition) {
     throw new StatusError(message, status);
   }
