@@ -86,18 +86,13 @@ const prepareSolcData = (contracts: Contracts, target: Target, enabled: boolean,
   }
 })
 
-const preprocess = (fullBytecode: string): Bytecode => {
+
+const preprocess = (fullBytecode: string): string => {
   const start = fullBytecode.indexOf('6080604052');
   const end = fullBytecode.indexOf('a265627a7a72315820') !== -1
     ? fullBytecode.indexOf('a265627a7a72315820')
     : fullBytecode.indexOf('a264697066735822')
-
-  const context = fullBytecode.slice(start, end);
-  return {
-    startMetadata: fullBytecode.slice(0, start),
-    core: context,
-    endMetadata: fullBytecode.slice(end, fullBytecode.length)
-  };
+  return fullBytecode.slice(start, end);;
 }
 
 const loadCompiler = async (version: string): Promise<any> => (
@@ -148,8 +143,8 @@ interface VerifyContract {
 }
 export const verifyContract = async (deployedBytecode: string, {name, filename, source, compilerVersion, target, optimization, runs}: AutomaticContractVerificationReq): Promise<VerifyContract> => {
   const {abi, fullAbi, fullBytecode} = await compileContracts(name, filename, source, compilerVersion, target, optimization === "true", runs);
-  const {core: parsedBytecode} = preprocess(fullBytecode);
-  const {core: rpcBytecode} = preprocess(deployedBytecode);
+  const parsedBytecode = preprocess(fullBytecode);
+  const rpcBytecode = preprocess(deployedBytecode);
   ensure(parsedBytecode === rpcBytecode, "Compiled bytecode is not the same as deployed one", 404);
 
   // return compiledItems.reduce((prev, item) => [...prev, ...item.abi], [])
