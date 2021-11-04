@@ -47,12 +47,11 @@ interface CompilerResult {
   };
 }
 
-
-interface Bytecode {
-  core: string;
-  endMetadata: string;
-  startMetadata: string;
-}
+// interface Bytecode {
+//   core: string;
+//   endMetadata: string;
+//   startMetadata: string;
+// }
 
 export interface Compile {
   abi: ABI;
@@ -85,7 +84,6 @@ const prepareSolcData = (contracts: Contracts, target: Target, enabled: boolean,
     }
   }
 })
-
 
 const preprocess = (fullBytecode: string): string => {
   const start = fullBytecode.indexOf('6080604052');
@@ -146,7 +144,6 @@ export const verifyContract = async (deployedBytecode: string, {name, filename, 
   const parsedBytecode = preprocess(fullBytecode);
   const rpcBytecode = preprocess(deployedBytecode);
   ensure(parsedBytecode === rpcBytecode, "Compiled bytecode is not the same as deployed one", 404);
-
   // return compiledItems.reduce((prev, item) => [...prev, ...item.abi], [])
   return {
     abi,
