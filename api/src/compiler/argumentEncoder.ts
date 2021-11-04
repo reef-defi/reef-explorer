@@ -114,26 +114,42 @@ const encode = (parameters: Parameters): EncoderOutput => {
   }
 }
 
-const encodeParameters = (parameters: Parameters) => {
+const encodeParameters = ({funcName, inputs}: Parameters): string => {
+  const types = inputs.map((param) => param.type);
+  const preparedInputs = inputs.map(({value}) => JSON.parse(value))
+
+  const encodedStart = utils.hexDataSlice(
+    utils.id(`${funcName}(${types.join(",")})`), 0, 4
+  ).slice(2);
   
+  const encodedParams = abiCoder
+    .encode(types, preparedInputs)
+    .slice(2);
+
+  return encodedStart + encodedParams;
 }
 
-const prepareForEncode = (args: string[], constructor: ABIFragment): Parameters => ({
-  funcName: constructor.name,
-  type: constructor.type,
-  inputs: constructor.inputs.map((inp, index) => ({
-    type: inp.type,
-    value: args[index],
-    name: inp.name
-  }))
-})
+const prepareForEncode = (args: string[], constructor: ABIFragment): Parameters => {
+  ensure(constructor.inputs.length === args.length, "Constructor input does not match the length of given arguments");
+  return {
+    funcName: constructor.name,
+    type: constructor.type,
+    inputs: constructor.inputs.map((inp, index) => ({
+      type: inp.type,
+      value: args[index],
+      name: inp.name
+    }))
+  }
+};
 
 export const verifyContractArguments = (deployedBytecode: string, abi: ABI, stringArgs: string): void => {
   const args = JSON.parse(stringArgs);
   const filteredAbi = abi.filter((module) => module.type === "constructor")
-  if (filteredAbi.length === 0) { return; }
+  if (filteredAbi.length === 0) { 
+    ensure(args.length === 0, "Contract does not have any arguments");
+    return; 
+  }
   const constructor = filteredAbi[0];
-  ensure(constructor.inputs.length === args.length, "Constructor input does not match with given arguments");
   const encoderData = prepareForEncode(args, constructor);
   const {errors, encoded} = encode(encoderData);
   const filteredErrors = errors.filter((err) => err !== "");

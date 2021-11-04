@@ -43,14 +43,16 @@ export interface AccountAddress {
 export interface ContractVerificationID {
   id: string;
 }
+
+export interface ParamererInput {
+  type: string;
+  value: string;
+  name?: string;
+}
 export interface Parameters {
   type: string;
   funcName: string;
-  inputs: {
-    type: string;
-    value: string;
-    name?: string;
-  }[];
+  inputs: ParamererInput[];
 };
 export type ABIFragment = Fragment | JsonFragment;
 export type ABI = ReadonlyArray<ABIFragment>;
