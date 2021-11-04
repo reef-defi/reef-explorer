@@ -30,20 +30,24 @@ app.use(morgan('dev'));
 // TODO check what is left (only metadata should stay) if nothing is there contract is verified 100%
 // const deployedBytecode = await findContractBytecode(address);
 
+const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
+  const deployedBytecode = await findContractBytecode(verification.address);
+  const {abi, fullAbi} = await verifyContract(deployedBytecode, verification);
+  verifyContractArguments(deployedBytecode, abi, verification.arguments);
+  
+  await updateContractStatus({...verification, abi: fullAbi});
+  await contractVerificationInsert({...verification, status: "VERIFIED"})
+}
 
-// TODO 
 app.post('/api/verificator/submit-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
     
-    const deployedBytecode = await findContractBytecode(req.body.address);
-    const {abi, fullAbi} = await verifyContract(deployedBytecode, req.body);
-    verifyContractArguments(deployedBytecode, abi, req.body.arguments);
-    
-    await updateContractStatus({...req.body, abi: fullAbi});
+    await verify(req.body);
     res.send("Verified");
   } catch (err) {
     console.log(err);
+    await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
     res.status(errorStatus(err)).send(err);
   }
 });
@@ -51,16 +55,14 @@ app.post('/api/verificator/submit-verification', async (req: AppRequest<Automati
 app.post('/api/verificator/form-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
+    
     const isAuthenticated = await authenticationToken(req.body.token);
     ensure(isAuthenticated, "Google Token Authentication failed!", 404);
 
-    const deployedBytecode = await findContractBytecode(req.body.address);
-    const {abi, fullAbi} = await verifyContract(deployedBytecode, req.body);
-    verifyContractArguments(deployedBytecode, abi, req.body.arguments);
-
-    await updateContractStatus({...req.body, abi: fullAbi});
+    await verify(req.body);
     res.send("Verified");
   } catch (err) {
+    await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
     res.status(errorStatus(err)).send(err.message);
   }
 })
