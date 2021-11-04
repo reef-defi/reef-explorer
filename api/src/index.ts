@@ -46,8 +46,9 @@ app.post('/api/verificator/submit-verification', async (req: AppRequest<Automati
     await verify(req.body);
     res.send("Verified");
   } catch (err) {
-    console.log(err);
-    await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
+    if (err.status === 404) {
+      await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
+    }
     res.status(errorStatus(err)).send(err);
   }
 });
@@ -58,11 +59,13 @@ app.post('/api/verificator/form-verification', async (req: AppRequest<ManualCont
     
     const isAuthenticated = await authenticationToken(req.body.token);
     ensure(isAuthenticated, "Google Token Authentication failed!", 404);
-
+    
     await verify(req.body);
     res.send("Verified");
   } catch (err) {
-    await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
+    if (err.status === 404) {
+      await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
+    }
     res.status(errorStatus(err)).send(err.message);
   }
 })
