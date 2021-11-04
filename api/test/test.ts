@@ -55,7 +55,7 @@ const sourceTester = async (bytecode: string, source: string, filename: string, 
       source,
       compilerVersion: "v0.8.4+commit.c7e474f2",
       target: "london",
-      optimization: "true",
+      optimization: true,
       runs: 200,
 
       address: "",
