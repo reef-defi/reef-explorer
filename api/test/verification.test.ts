@@ -109,10 +109,6 @@ describe('Testing invalid argument verification', () => {
   )
 });
 
-// describe('Testing argument error handler', () => {
-//   it('')
-// });
-
 describe('Testing valid contract sources', () => {
   it('should verify Flipper contract source', async () => 
     expect(await sourceTester(flipperBytecode, flipperSource, "Flipper.sol", "Flipper")).to.true
