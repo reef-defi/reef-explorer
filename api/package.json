@@ -9,7 +9,7 @@
     "tsc": "tsc",
     "start": "tsc && node ./dist/index.js",
     "dev": "nodemon src/index.ts",
-    "test": "mocha --check-leaks -r ts-node/register --timeout 10000 \"test/test.ts\""
+    "test": "mocha --check-leaks -r ts-node/register --timeout 10000 \"test/**/*.test.ts\""
   },
   "dependencies": {
     "@reef-defi/evm-provider": "^1.0.2",
