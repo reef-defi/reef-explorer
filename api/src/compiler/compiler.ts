@@ -140,7 +140,7 @@ interface VerifyContract {
   fullAbi: ABI;
 }
 export const verifyContract = async (deployedBytecode: string, {name, filename, source, compilerVersion, target, optimization, runs}: AutomaticContractVerificationReq): Promise<VerifyContract> => {
-  const {abi, fullAbi, fullBytecode} = await compileContracts(name, filename, source, compilerVersion, target, optimization === "true", runs);
+  const {abi, fullAbi, fullBytecode} = await compileContracts(name, filename, source, compilerVersion, target, optimization, runs);
   const parsedBytecode = preprocess(fullBytecode);
   const rpcBytecode = preprocess(deployedBytecode);
   ensure(parsedBytecode === rpcBytecode, "Compiled bytecode is not the same as deployed one", 404);
