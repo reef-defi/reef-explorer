@@ -1,5 +1,5 @@
 export default JSON.stringify({
-  "flipper.sol": `
+  "Flipper.sol": `
 pragma solidity >=0.7.0 <0.9.0;
 
 contract Flipper {
