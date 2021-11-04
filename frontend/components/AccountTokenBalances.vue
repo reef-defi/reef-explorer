@@ -103,8 +103,8 @@ export default {
 
       return list.filter((item) => {
         const filter = this.filter.toLowerCase()
-        const name = item.token_name?.toLowerCase() || ''
-        const address = item.contract_id?.toLowerCase() || ''
+        const name = item.token_name ? item.token_name.toLowerCase() : ''
+        const address = item.contract_id ? item.contract_id.toLowerCase() : ''
 
         return name.includes(filter) || address.includes(filter)
       })

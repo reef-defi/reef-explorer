@@ -95,8 +95,10 @@ export default {
 
       return list.filter((item) => {
         const filter = this.filter.toLowerCase()
-        const block = item.block_number?.toLowerCase() || ''
-        const amount = item.amount?.toLowerCase() || ''
+        const block = item.block_number
+          ? String(item.block_number).toLowerCase()
+          : ''
+        const amount = this.formatAmount(item.amount, 6)
         return block.includes(filter) || amount.includes(filter)
       })
     },
