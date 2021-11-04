@@ -261,33 +261,31 @@ CREATE TABLE IF NOT EXISTS contract (
   bytecode_metadata TEXT DEFAULT NULL,
   bytecode_arguments TEXT DEFAULT NULL,
 
-  -- TODO remove below
-  name TEXT DEFAULT NULL,
-  filename TEXT DEFAULT NULL.
-  abi JSON DEFAULT NULL,
-  -- TODO remove till here
-
-  compiler_data JSON DEFAULT NULL,
   --// TODO flatten all the abis with constructors and events 
   --// TODO store everything in db
-  timestamp BIGINT NOT NULL
-  PRIMARY KEY (contract_id)
+  compiler_data JSON DEFAULT NULL,
+  
+  block_height BIGINT NOT NULL,
+  timestamp BIGINT NOT NULL,
+  PRIMARY KEY ( contract_id ),
   CONSTRAINT fk_owner
     FOREIGN KEY (owner)
       REFERENCES account(account_id)
 );
 
-CREATE TABLE IF NOT EXISTS erc20 {
+CREATE TABLE IF NOT EXISTS erc20 (
+  id SERIAL,
   contract_id TEXT,
   name TEXT,
   symbol TEXT,
   decimals INT,
   description TEXT DEFAULT NULL,
-
-  CONSTRAINT fk_contract
+  
+  PRIMARY KEY ( id ),
+  CONSTRAINT fk_contract_id
     FOREIGN KEY (contract_id)
       REFERENCES contract(contract_id)
-}
+);
 
 CREATE TABLE IF NOT EXISTS token_holder  (
   contract_id TEXT NOT NULL,
@@ -314,7 +312,7 @@ CREATE TABLE IF NOT EXISTS token_holder  (
 -- }
 
 CREATE TABLE IF NOT EXISTS contract_verification_request  (
-  id SERIAL PRIMARY KEY,
+  id SERIAL,
   contract_id TEXT,
   runs INT NOT NULL,
   name TEXT NOT NULL,
@@ -328,6 +326,7 @@ CREATE TABLE IF NOT EXISTS contract_verification_request  (
   optimization BOOLEAN NOT NULL,
   compiler_version TEXT NOT NULL,
   error_message TEXT DEFAULT NULL,
+  PRIMARY KEY ( id ),
   CONSTRAINT fk_contract_id
     FOREIGN KEY (contract_id)
       REFERENCES contract(contract_id)
