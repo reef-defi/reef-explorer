@@ -67,7 +67,7 @@ export interface AutomaticContractVerificationReq {
   filename: string;
   license: License;
   arguments: string;
-  optimization: string;
+  optimization: boolean;
   compilerVersion: string;
 }
 
@@ -138,6 +138,7 @@ export interface Pool extends DefaultPool {
 
 export interface ContracVerificationInsert {
   runs: number;
+  name: string;
   source: string;
   status: string;
   target: Target;

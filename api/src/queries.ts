@@ -2,11 +2,10 @@
 import { query } from "./connector";
 import { Bytecode, ContracVerificationInsert, License, Pool, PoolDB, StakingRewardDB, Status, Target, Token, TokenDB, TokenInfo, TokenInfoDB, UserTokenDB } from "./types";
 import { ensure } from "./utils";
-import crypto from "crypto";
 import { ContractInterface } from "@ethersproject/contracts";
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO contract_verification_request
-(contract_id, source, filename, compiler_version, arguments, optimization, runs, target, license, status, timestamp)
+(contract_id, source, name, filename, compiler_version, arguments, optimization, runs, target, status, timestamp)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`;
 
 export const contractVerificationInsert = async (contract: ContracVerificationInsert): Promise<void> => {
@@ -16,13 +15,13 @@ export const contractVerificationInsert = async (contract: ContracVerificationIn
     [
       contract.address,
       contract.source,
+      contract.name,
       contract.filename,
       contract.compilerVersion,
       contract.arguments,
       contract.optimization,
       contract.runs,
       contract.target,
-      contract.license,
       contract.status,
       timestamp,
     ]
@@ -48,7 +47,7 @@ interface UpdateContract {
   source: string;
   address: string;
   license?: License;
-  optimization: string;
+  optimization: boolean;
   abi: ContractInterface;
   compilerVersion: string;
 }
@@ -203,12 +202,12 @@ export const findContractBytecode = async (address: string): Promise<string> => 
   return bytecodes[0].deployment_bytecode;
 }
 
-const UPDATE_ERC20_CONTRACT = `UPDATE contract
-SET token_name = $2, token_symbol = $3, token_decimals = $4, token_total_supply = $5
-WHERE contract_id = $1`;
-export const updateContractERC20 = async (address: string, name: string, symbol: string, decimals: string, supply: string): Promise<void> => {
-  await query(UPDATE_ERC20_CONTRACT, [address, name, symbol, decimals, supply]);
-}
+// const UPDATE_ERC20_CONTRACT = `UPDATE contract
+// SET token_name = $2, token_symbol = $3, token_decimals = $4, token_total_supply = $5
+// WHERE contract_id = $1`;
+// export const updateContractERC20 = async (address: string, name: string, symbol: string, decimals: string, supply: string): Promise<void> => {
+//   await query(UPDATE_ERC20_CONTRACT, [address, name, symbol, decimals, supply]);
+// }
 
 const FIND_TOKEN_INFO = `SELECT name, verified, bytecode, abi, source, compiler_version, optimization, runs, target, license
 FROM contract
