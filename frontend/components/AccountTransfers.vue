@@ -149,10 +149,12 @@ export default {
 
       return list.filter((item) => {
         const filter = this.filter.toLowerCase()
-        const hash = item.hash?.toLowerCase() || ''
-        const block = item.block_numbeer?.toLowerCase() || ''
-        const from = item.source?.toLowerCase() || ''
-        const to = item.destination?.toLowerCase() || ''
+        const hash = item.hash ? item.hash.toLowerCase() : ''
+        const block = item.block_number
+          ? String(item.block_number).toLowerCase()
+          : ''
+        const from = item.source ? item.source.toLowerCase() : ''
+        const to = item.destination ? item.destination.toLowerCase() : ''
         return (
           hash.includes(filter) ||
           block.includes(filter) ||
