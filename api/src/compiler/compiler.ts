@@ -1,63 +1,7 @@
-import { ABI, AutomaticContractVerificationReq, Target } from "../types";
+import { ABI, AutomaticContractVerificationReq, Compile, CompilerContracts, CompilerResult, Contracts, SolcContracts, Target, VerifyContract } from "../types";
 import { ensure } from "../utils";
 
 const solc = require('solc');
-
-export interface Contracts {
-  [contractFilename: string]: string
-}
-
-interface CompilerContracts {
-  [filename: string]: {
-    content: string;
-  }
-}
-
-interface SolcContracts {
-  language: 'Solidity';
-  sources: CompilerContracts;
-  settings: {
-    optimizer: {
-      runs: number;
-      enabled: boolean;
-    };
-    evmVersion?: Target;
-    outputSelection: {
-      "*": {
-        '*': string[];
-      };
-    };
-  };
-}
-
-interface CompilerResult {
-  errors?: {
-    type: string;
-    formattedMessage: string;
-  }[];
-  contracts?: {
-    [filename: string]: {
-      [name: string]: any;
-    };
-  };
-  sources: {
-    [filename: string]: {
-      id: number;
-    };
-  };
-}
-
-// interface Bytecode {
-//   core: string;
-//   endMetadata: string;
-//   startMetadata: string;
-// }
-
-export interface Compile {
-  abi: ABI;
-  fullAbi: ABI;
-  fullBytecode: string;
-}
 
 const toCompilerContracts = (contracts: Contracts): CompilerContracts => 
   Object.keys(contracts)
@@ -135,16 +79,11 @@ const compileContracts = async (name: string, filename: string, source: string, 
   }
 }
 
-interface VerifyContract {
-  abi: ABI;
-  fullAbi: ABI;
-}
 export const verifyContract = async (deployedBytecode: string, {name, filename, source, compilerVersion, target, optimization, runs}: AutomaticContractVerificationReq): Promise<VerifyContract> => {
   const {abi, fullAbi, fullBytecode} = await compileContracts(name, filename, source, compilerVersion, target, optimization, runs);
   const parsedBytecode = preprocess(fullBytecode);
   const rpcBytecode = preprocess(deployedBytecode);
   ensure(parsedBytecode === rpcBytecode, "Compiled bytecode is not the same as deployed one");
-  // return compiledItems.reduce((prev, item) => [...prev, ...item.abi], [])
   return {
     abi,
     fullAbi
