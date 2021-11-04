@@ -1,7 +1,6 @@
 import { utils } from 'ethers';
-import {ABI, Parameters} from "./types"
-import { Fragment, JsonFragment } from "@ethersproject/abi";
-import { ensure } from './utils';
+import {ABI, ABIFragment, Parameters} from "../types"
+import { ensure } from '../utils';
 
 
 export const isArrayType = (type: string) => {
@@ -101,7 +100,7 @@ const encode = (parameters: Parameters): EncoderOutput => {
         errors[index] = `Invalid input: ${err.message}`;
       }
     })
-    
+  
   if (valid) {
     if (parameters.type !== 'constructor') {
       const sig = parameters.funcName + "(" + types.join(",") + ")";
@@ -115,7 +114,11 @@ const encode = (parameters: Parameters): EncoderOutput => {
   }
 }
 
-const prepareForEncode = (args: string[], constructor: utils.Fragment): Parameters => ({
+const encodeParameters = (parameters: Parameters) => {
+  
+}
+
+const prepareForEncode = (args: string[], constructor: ABIFragment): Parameters => ({
   funcName: constructor.name,
   type: constructor.type,
   inputs: constructor.inputs.map((inp, index) => ({
@@ -125,11 +128,12 @@ const prepareForEncode = (args: string[], constructor: utils.Fragment): Paramete
   }))
 })
 
-export const verifyContractArguments = async (deployedBytecode: string, abi: ABI, stringArgs: string): Promise<void> => {
+export const verifyContractArguments = (deployedBytecode: string, abi: ABI, stringArgs: string): void => {
   const args = JSON.parse(stringArgs);
   const filteredAbi = abi.filter((module) => module.type === "constructor")
   if (filteredAbi.length === 0) { return; }
   const constructor = filteredAbi[0];
+  ensure(constructor.inputs.length === args.length, "Constructor input does not match with given arguments");
   const encoderData = prepareForEncode(args, constructor);
   const {errors, encoded} = encode(encoderData);
   const filteredErrors = errors.filter((err) => err !== "");

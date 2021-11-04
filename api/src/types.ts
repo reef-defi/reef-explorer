@@ -52,7 +52,8 @@ export interface Parameters {
     name?: string;
   }[];
 };
-export type ABI = ReadonlyArray<Fragment>;
+export type ABIFragment = Fragment | JsonFragment;
+export type ABI = ReadonlyArray<ABIFragment>;
 // Request types
 export interface AutomaticContractVerificationReq {
   name: string;
