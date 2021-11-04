@@ -1,8 +1,7 @@
-import { ABI, AutomaticContractVerificationReq, Target } from "./types";
-import { ensure } from "./utils";
+import { ABI, AutomaticContractVerificationReq, Target } from "../types";
+import { ensure } from "../utils";
 
 const solc = require('solc');
-const { decodeConstructorArgs } = require('canoe-solidity');
 
 export interface Contracts {
   [contractFilename: string]: string
