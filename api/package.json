@@ -11,7 +11,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@polkadot/api": "^6.3.1",
     "@reef-defi/evm-provider": "^1.0.2",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
@@ -31,10 +30,5 @@
     "@types/express-fileupload": "^1.1.7",
     "@types/morgan": "^1.9.3",
     "@types/pg": "^8.6.1"
-  },
-  "resolutions": {
-    "@polkadot/api": "^6.3.1",
-    "@polkadot/types": "^6.3.1",
-    "@polkadot/types-known": "^6.3.1"
   }
 }
