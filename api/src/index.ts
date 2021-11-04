@@ -1,7 +1,7 @@
 import express, {Response} from 'express';
 import morgan from 'morgan';
-import { verifyContractArguments } from './argumentEncoder';
-import { Compile, verifyContract } from './compiler';
+import { verifyContractArguments } from './compiler/argumentEncoder';
+import { Compile, verifyContract } from './compiler/compiler';
 import { authenticationToken, config, getReefPrice, query } from './connector';
 import { checkIfContractIsVerified, contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, License, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
@@ -38,7 +38,7 @@ app.post('/api/verificator/submit-verification', async (req: AppRequest<Automati
     
     const deployedBytecode = await findContractBytecode(req.body.address);
     const {abi, fullAbi} = await verifyContract(deployedBytecode, req.body);
-    await verifyContractArguments(deployedBytecode, abi, req.body.arguments);
+    verifyContractArguments(deployedBytecode, abi, req.body.arguments);
     
     await updateContractStatus({...req.body, abi: fullAbi});
     res.send("Verified");
@@ -56,7 +56,7 @@ app.post('/api/verificator/form-verification', async (req: AppRequest<ManualCont
 
     const deployedBytecode = await findContractBytecode(req.body.address);
     const {abi, fullAbi} = await verifyContract(deployedBytecode, req.body);
-    await verifyContractArguments(deployedBytecode, abi, req.body.arguments);
+    verifyContractArguments(deployedBytecode, abi, req.body.arguments);
 
     await updateContractStatus({...req.body, abi: fullAbi});
     res.send("Verified");
@@ -64,44 +64,6 @@ app.post('/api/verificator/form-verification', async (req: AppRequest<ManualCont
     res.status(errorStatus(err)).send(err.message);
   }
 })
-// app.post('/api/verificator/local-manual-contract-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
-//   try {
-//     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
-//     const optimization = req.body.optimization === "true";
-//     const license: License = req.body.license ? req.body.license : "unlicense";
-//     const {bytecode, abi} = await compileContracts(
-//       req.body.name,
-//       req.body.filename,
-//       req.body.source,
-//       req.body.compilerVersion,
-//       req.body.target,
-//       optimization,
-//       req.body.runs
-//     );
-//     ensure(bytecode.length > 0, "Compiler produced wrong output. Please contact reef team!", 404);
-//     const deployedBytecode = await findContractBytecode(req.body.address);
-//     const verified = deployedBytecode.includes(bytecode);
-//     const status = verified ? "VERIFIED" : "NOT VERIFIED";
-//     await contractVerificationInsert({...req.body, status, optimization, license});
-//     ensure(verified, "Contract sources does not match!", 404);
-//     await updateContractStatus({
-//       abi,
-//       license,
-//       bytecode,
-//       verified,
-//       name: req.body.name,
-//       source: req.body.source,
-//       target: req.body.target,
-//       address: req.body.address,
-//       compilerVersion: req.body.compilerVersion,
-//       optimization: req.body.optimization,
-//     });
-//     res.send("Verified");
-//   } catch (err) {
-//     console.log("ERROR: ", err);
-//     res.status(errorStatus(err)).send(err.message);
-//   }
-// })
 
 app.post('/api/verificator/status', async (req: AppRequest<ContractVerificationID>, res: Response) => {
   try {
@@ -167,10 +129,10 @@ app.get('/api/staking/rewards', async (_, res: Response) => {
 app.get('/api/token/:address', async (req: AppRequest<{}>, res: Response) => {
   try {
     ensure(!!req.params.address, "Url paramter address is missing");
-    const deployedBytecode = await findContractBytecode(req.params.address);
-    // const token = await findTokenInfo(req.params.address);
+    // const deployedBytecode = await findContractBytecode(req.params.address);
+    const token = await findTokenInfo(req.params.address);
 
-    res.send(deployedBytecode);
+    res.send(token);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
