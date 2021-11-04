@@ -374,29 +374,27 @@ module.exports = {
         const storageLimit = extrinsic.args[3];
         const data = [
           contractId,
+          signer,
           name,
-          deploymentBytecode,
-          bytecode,
-          contractMetadata,
-          contractArguments,
           value,
           gasLimit,
           storageLimit,
-          signer,
+          deploymentBytecode,
+          contractMetadata,
+          contractArguments,
           blockNumber,
           timestamp
         ];
         const contractSql = `INSERT INTO contract (
             contract_id,
+            owner,
             name,
-            deployment_bytecode,
-            bytecode,
-            metadata,
-            arguments,
             value,
             gas_limit,
             storage_limit,
-            signer,
+            deployment_bytecode,
+            bytecode_metadata,
+            bytecode_arguments,
             block_height,
             timestamp
           ) VALUES (
@@ -410,15 +408,13 @@ module.exports = {
             $8,
             $9,
             $10,
-            $11,
-            $12
+            $11
           )
           ON CONFLICT ON CONSTRAINT contract_pkey 
           DO UPDATE SET
-            metadata = EXCLUDED.metadata,
+            bytecode_metadata = EXCLUDED.bytecode_metadata,
             arguments = EXCLUDED.arguments,
-            deployment_bytecode = EXCLUDED.deployment_bytecode,
-            bytecode = EXCLUDED.bytecode;`;
+            deployment_bytecode = EXCLUDED.deployment_bytecode;`;
         try {
           await client.query(contractSql, data);
           logger.info(loggerOptions, `Added contract ${contractId} at block #${blockNumber}`);
@@ -707,21 +703,15 @@ module.exports = {
         const tokenTotalSupply = null;
         contractSql = `INSERT INTO contract (
             contract_id,
+            owner,
             name,
-            deployment_bytecode,
-            bytecode,
-            metadata,
-            arguments,
             value,
             gas_limit,
             storage_limit,
-            signer,
+            deployment_bytecode,
+            bytecode_metadata,
+            bytecode_arguments,
             block_height,
-            is_erc20,
-            token_name,
-            token_symbol,
-            token_decimals,
-            token_total_supply,
             timestamp
           ) VALUES (
             $1,
@@ -734,58 +724,39 @@ module.exports = {
             $8,
             $9,
             $10,
-            $11,
-            $12,
-            $13,
-            $14,
-            $15,
-            $16,
-            $17
+            $11
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
             name = EXCLUDED.name,
-            is_erc20 = EXCLUDED.is_erc20,
-            token_name = EXCLUDED.token_name,
-            token_symbol = EXCLUDED.token_symbol,
-            token_decimals = EXCLUDED.token_decimals,
-            token_total_supply = EXCLUDED.token_total_supply,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
-            bytecode = EXCLUDED.bytecode,
-            metadata = EXCLUDED.metadata,
-            arguments = EXCLUDED.arguments
+            bytecode_metadata = EXCLUDED.bytecode_metadata,
+            bytecode_arguments = EXCLUDED.bytecode_arguments
         ;`;
         data = [
           contractId,
+          signer,
           name,
-          deploymentBytecode,
-          bytecode,
-          contractMetadata,
-          contractArguments,
           value,
           gasLimit,
           storageLimit,
-          signer,
+          deploymentBytecode,
+          contractMetadata,
+          contractArguments,
           blockNumber,
-          isErc20,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals,
-          tokenTotalSupply,
           timestamp,
         ];
       } else {
         contractSql = `INSERT INTO contract (
             contract_id,
+            owner,
             name,
-            deployment_bytecode,
-            bytecode,
-            metadata,
-            arguments,
             value,
             gas_limit,
             storage_limit,
-            signer,
+            deployment_bytecode,
+            bytecode_metadata,
+            bytecode_arguments,
             block_height,
             timestamp
           ) VALUES (
@@ -799,28 +770,25 @@ module.exports = {
             $8,
             $9,
             $10,
-            $11,
-            $12
+            $11
           )
           ON CONFLICT ON CONSTRAINT contract_pkey
           DO UPDATE SET
             name = EXCLUDED.name,
             deployment_bytecode = EXCLUDED.deployment_bytecode,
-            bytecode = EXCLUDED.bytecode,
-            metadata = EXCLUDED.metadata,
-            arguments = EXCLUDED.arguments
+            bytecode_metadata = EXCLUDED.bytecode_metadata,
+            bytecode_arguments = EXCLUDED.bytecode_arguments
         ;`;
         data = [
           contractId,
+          signer,
           name,
-          deploymentBytecode,
-          bytecode,
-          contractMetadata,
-          contractArguments,
           value,
           gasLimit,
           storageLimit,
-          signer,
+          deploymentBytecode,
+          contractMetadata,
+          contractArguments,
           blockNumber,
           timestamp,
         ];
