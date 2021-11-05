@@ -4,19 +4,18 @@ import { ensure } from '../utils';
 
 const abiCoder = new utils.AbiCoder();
 
-type Validator = (value: string) => void;
+type Validator = (value: string|string[]) => void;
 const defaultValidator: Validator = (_) => {};
 
 const addressValidator: Validator = (value) => 
-  ensure(utils.isAddress(value), "Input element is not address");
+  ensure(utils.isAddress(value as string), "Input element is not address");
 
 const boolValidator: Validator = (value) => 
   ensure(value === "true" || value === "false", "Input element is not boolean");
 
 const arrayValidator = (validator: Validator): Validator => (value) => {
-  const array = JSON.parse(value);
-  ensure(Array.isArray(array), "Input element is not array");
-  array.foreach((inp) => validator(inp));
+  ensure(Array.isArray(value), "Input element is not array");
+  (value as string[]).forEach((inp) => validator(inp));
 }
 
 const validateParameter = (type: string): Validator => {
@@ -69,8 +68,10 @@ export const verifyContractArguments = (deployedBytecode: string, abi: ABI, stri
     ensure(args.length === 0, "Contract does not have any arguments");
     return; 
   }
+
   const constructor = filteredAbi[0];
   const encoderData = prepareForEncode(args, constructor);
   const encoded = encodeParameters(encoderData);
+
   ensure(deployedBytecode.endsWith(encoded), "Contract arguments are not the same");
 }
