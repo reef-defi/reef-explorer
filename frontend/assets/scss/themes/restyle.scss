@@ -13,6 +13,13 @@
   }
 }
 
+.dropdown-item {
+  &:active {
+    background: darken(#eaedf3, 2%);
+    color: #5531A9;
+  }
+}
+
 .headline {
   font-size: 23px;
   font-weight: 600;

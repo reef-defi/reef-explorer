@@ -125,6 +125,7 @@
           </div>
 
           <div class="list-view__pagination">
+            <PerPage v-model="perPage" />
             <b-pagination
               v-model="currentPage"
               :total-rows="searchResults.length"
@@ -157,7 +158,7 @@ export default {
     return {
       loading: true,
       paginationOptions,
-      perPage: 20,
+      perPage: null,
       currentPage: 1,
       sortBy: `favorite`,
       sortDesc: true,

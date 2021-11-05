@@ -67,7 +67,7 @@
   .list-view__pagination {
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     margin-top: 20px;
 
@@ -173,6 +173,9 @@
 
     .list-view__pagination {
       margin-top: 15px;
+      flex-flow: column-reverse nowrap;
+      justify-content: center;
+      align-items: center;
     }
   }
 

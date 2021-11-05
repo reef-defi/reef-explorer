@@ -44,6 +44,7 @@
       </Table>
 
       <div class="list-view__pagination">
+        <PerPage v-model="perPage" />
         <b-pagination
           v-model="currentPage"
           :total-rows="searchResults.length"
@@ -82,7 +83,7 @@ export default {
       filter: null,
       filterOn: [],
       tableOptions: paginationOptions,
-      perPage: 20,
+      perPage: null,
       currentPage: 1,
       totalRows: 1,
     }
