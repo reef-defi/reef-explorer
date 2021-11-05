@@ -35,12 +35,15 @@
         </THead>
 
         <Row v-for="(item, index) in paginated" :key="index">
-          <Cell align="center">
-            <font-awesome-icon
-              v-if="item.source === accountId"
-              :icon="['fas', 'arrow-up']"
-            />
-            <font-awesome-icon v-else :icon="['fas', 'arrow-down']" />
+          <Cell
+            align="center"
+            class="account-transfers__indicator"
+            :class="{
+              'account-transfers__indicator--reverse':
+                item.source !== accountId,
+            }"
+          >
+            <font-awesome-icon :icon="['fas', 'arrow-up']" />
           </Cell>
 
           <Cell :link="`/transfer/${item.hash}`">{{
@@ -228,11 +231,25 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 .account-transfers {
-  background-color: white;
-}
-.spinner {
-  color: #d3d2d2;
+  .account-transfers__indicator {
+    .table-cell__content-wrapper {
+      padding-left: 14px;
+    }
+
+    svg {
+      font-size: 16px;
+      transform: rotate(45deg);
+      color: #8792a8;
+    }
+
+    &--reverse {
+      svg {
+        transform: rotate(-135deg);
+        color: #14be7d;
+      }
+    }
+  }
 }
 </style>
