@@ -62,6 +62,7 @@ import commonMixin from '@/mixins/commonMixin.js'
 import Loading from '@/components/Loading.vue'
 import { paginationOptions } from '@/frontend.config.js'
 import Input from '@/components/Input'
+import tableUtils from '@/mixins/tableUtils'
 
 export default {
   components: {
@@ -69,7 +70,7 @@ export default {
     JsonCSV,
     Input,
   },
-  mixins: [commonMixin],
+  mixins: [commonMixin, tableUtils],
   props: {
     accountId: {
       type: String,
@@ -104,13 +105,7 @@ export default {
       })
     },
     paginated() {
-      const paginate = (list) => {
-        const start = this.perPage * (this.currentPage - 1)
-        const end = start + this.perPage
-        return list.slice(start, end)
-      }
-
-      return paginate(this.searchResults)
+      return this.paginate(this.searchResults, this.perPage, this.currentPage)
     },
   },
   methods: {
