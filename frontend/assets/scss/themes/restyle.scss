@@ -7,6 +7,12 @@
   }
 }
 
+.identicon {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
 .headline {
   font-size: 23px;
   font-weight: 600;
