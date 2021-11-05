@@ -29,7 +29,7 @@
                   :src="item.token_icon_url"
                   class="identicon"
                 />
-                <span>{{ item.name || shortHash(item.contract_id) }}</span>
+                <span>{{ item.name }}</span>
                 <font-awesome-icon
                   v-if="item.token_validated"
                   v-b-tooltip.hover
