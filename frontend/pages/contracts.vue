@@ -38,9 +38,10 @@
             </THead>
 
             <Row v-for="(item, index) in contracts" :key="index">
-              <Cell :link="`/contract/${item.contract_id}`">{{
-                item.name || shortHash(item.contract_id)
+              <Cell v-if="item.name" :link="`/contract/${item.contract_id}`">{{
+                item.name
               }}</Cell>
+              <Cell v-else />
 
               <Cell :link="{ url: `/token/${item.contract_id}`, fill: false }">
                 <eth-identicon :address="item.contract_id" :size="20" />
