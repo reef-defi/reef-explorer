@@ -19,10 +19,7 @@
     "lint": "eslint --ext \".js\" --ignore-path .gitignore ."
   },
   "dependencies": {
-    "@polkadot/api": "^4.9.2",
-    "@polkadot/keyring": "^6.4.1",
-    "@polkadot/util": "^6.4.1",
-    "@reef-defi/evm-provider": "^0.1.10",
+    "@reef-defi/evm-provider": "^1.0.2",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "dotenv": "^8.2.0",
@@ -37,14 +34,5 @@
     "eslint": "^7.18.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1"
-  },
-  "resolutions": {
-    "@reef-defi/type-definitions": "0.1.9-0",
-    "@ethersproject/abstract-signer": "5.0.9",
-    "@ethersproject/abstract-provider": "5.0.9",
-    "@ethersproject/bignumber": "5.0.9",
-    "@ethersproject/bytes": "5.0.9",
-    "@ethersproject/logger": "5.0.9",
-    "@ethersproject/properties": "5.0.9"
   }
 }

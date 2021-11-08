@@ -9,17 +9,17 @@
         <div class="header__links">
           <nuxt-link to="/" exact>Explore</nuxt-link>
           <nuxt-link to="/blocks">Blocks</nuxt-link>
-          <nuxt-link to="/transfers">Transfers</nuxt-link>
-          <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
           <nuxt-link to="/accounts">Accounts</nuxt-link>
-          <nuxt-link to="/events">Events</nuxt-link>
+          <nuxt-link to="/transfers">Transfers</nuxt-link>
+          <nuxt-link to="/contracts">Contracts</nuxt-link>
+          <nuxt-link to="/tokens">Tokens</nuxt-link>
 
           <div class="header__links-group">
             <span class="header__links-group-label">Other</span>
 
             <div class="header__links-group-links">
-              <nuxt-link to="/contracts">Contracts</nuxt-link>
-              <nuxt-link to="/tokens">Tokens</nuxt-link>
+              <nuxt-link to="/extrinsics">Extrinsics</nuxt-link>
+              <nuxt-link to="/events">Events</nuxt-link>
             </div>
           </div>
 
@@ -28,10 +28,10 @@
               {{ network.name }}
             </template>
             <b-dropdown-item href="https://reefscan.com"
-              >Reef Mainnet</b-dropdown-item
+              >Mainnet</b-dropdown-item
             >
             <b-dropdown-item href="https://testnet.reefscan.com"
-              >Reef Testnet</b-dropdown-item
+              >Testnet</b-dropdown-item
             >
           </b-dropdown>
         </div>
@@ -170,7 +170,7 @@ export default {
           left: 0;
           top: calc(100% - 20px);
           padding: 8px 0;
-          margin-top: 2px;
+          margin-top: 8px;
           border-radius: 5px;
           background: white;
           box-shadow: 0 1px 3px -1px rgba(black, 0.05),
@@ -186,6 +186,7 @@ export default {
             font-size: 16px;
             color: #212529;
             text-align: left;
+            white-space: nowrap;
 
             &:hover {
               text-decoration: none;
@@ -204,7 +205,7 @@ export default {
           height: 100%;
           color: rgba(#3e3f42, 0.85);
           font-weight: 600;
-          padding: 0 20px;
+          padding: 0 10px;
           font-size: 14px;
           text-decoration: none;
 
@@ -231,7 +232,7 @@ export default {
 
         .header__network {
           margin-bottom: 0;
-          margin-left: 10px;
+          margin-left: 15px;
 
           > .btn {
             background: rgba(#eaedf3, 1);

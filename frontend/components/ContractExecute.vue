@@ -7,7 +7,6 @@
         in mind and use at your own risk!
       </p>
     </b-alert>
-    <!-- <pre>{{ JSON.stringify(contractInterface, null, 2) }}</pre> -->
     <div
       v-for="(message, index) in contractAbi.filter(
         (item) => item.type === 'function'
@@ -27,6 +26,7 @@
         </b-card-title>
         <template v-if="message.stateMutability === 'view'">
           <contract-call-function
+            :provider="provider"
             :contract-id="contractId"
             :contract-interface="contractInterface"
             :contract-abi="contractAbi"
@@ -36,6 +36,7 @@
         </template>
         <template v-else>
           <contract-call-function-write
+            :provider="provider"
             :contract-id="contractId"
             :contract-interface="contractInterface"
             :contract-abi="contractAbi"
@@ -43,7 +44,6 @@
             :function-name-with-args="getFunctionNameWithArgs(message)"
           />
         </template>
-        <!-- <pre>{{ JSON.stringify(message, null, 2) }}</pre> -->
       </b-card>
     </div>
   </div>
@@ -51,9 +51,12 @@
 
 <script>
 import { ethers } from 'ethers'
+import { Provider } from '@reef-defi/evm-provider'
+import { WsProvider } from '@polkadot/api'
 import ContractCallFunction from './ContractCallFunction.vue'
 import ContractCallFunctionWrite from './ContractCallFunctionWrite.vue'
 import commonMixin from '@/mixins/commonMixin.js'
+import { network } from '@/frontend.config.js'
 
 export default {
   components: { ContractCallFunction, ContractCallFunctionWrite },
@@ -74,7 +77,7 @@ export default {
   },
   data() {
     return {
-      provider: null,
+      provider: undefined,
     }
   },
   computed: {
@@ -82,6 +85,17 @@ export default {
       const iface = new ethers.utils.Interface(this.contractAbi)
       return iface.functions
     },
+  },
+  async created() {
+    // connect to provider
+    const provider = new Provider({
+      provider: new WsProvider(network.nodeWs),
+    })
+    await provider.api.isReady
+    this.provider = provider
+  },
+  async beforeDestroy() {
+    await this.provider.api.disconnect()
   },
   methods: {
     // getInterface(contractAbi) {

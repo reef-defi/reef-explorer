@@ -192,7 +192,7 @@
 
 <script>
 import { Promised } from 'vue-promised'
-import InputDataDecoder from 'ethereum-input-data-decoder'
+import { ethers } from 'ethers'
 import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import erc20Abi from '@/assets/erc20Abi.json'
@@ -225,11 +225,12 @@ export default {
       // ERC-20 interface method call
       let decoded = ''
       try {
-        const decoder = new InputDataDecoder(abi)
-        decoded = decoder.decodeData(message)
+        const iface = new ethers.utils.Interface(abi)
+        const value = ethers.utils.parseEther('1.0')
+        decoded = iface.parseTransaction({ data: message, value })
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.log('decoding error:', error)
+        console.log('tx data decoding error:', error)
       }
       return decoded
     },

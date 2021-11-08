@@ -13,25 +13,25 @@ export default {
 
       const links = {
         '': 'Explore',
-        blocks: 'Blocks',
-        transfers: 'Transfers',
-        extrinsics: 'Extrinsics',
         accounts: 'Accounts',
-        events: 'Events',
-        contracts: 'Contracts',
         tokens: 'Tokens',
+        transfers: 'Transfers',
+        contracts: 'Contracts',
+        blocks: 'Blocks',
+        extrinsics: 'Extrinsics',
+        events: 'Events',
       }
 
       const getIcon = (route) => {
         const icons = {
           '': 'search',
-          blocks: 'cube',
+          accounts: 'wallet',
+          tokens: 'coins',
           transfers: 'exchange-alt',
+          contracts: 'link',
+          blocks: 'cube',
           extrinsics: 'atom',
           events: 'comment',
-          accounts: 'wallet',
-          contracts: 'link',
-          tokens: 'coins',
         }
 
         return icons[route] || ''
