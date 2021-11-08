@@ -7,6 +7,7 @@
   >
     <Identicon
       :key="address"
+      v-clipboard:copy="address"
       :size="size"
       :theme="'substrate'"
       :value="address"
@@ -15,7 +16,7 @@
   </div>
 </template>
 <script>
-import { Identicon } from '@polkadot/vue-identicon'
+import Identicon from '@polkadot/vue-identicon'
 export default {
   components: {
     Identicon,
