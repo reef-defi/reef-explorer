@@ -158,19 +158,23 @@ module.exports = {
     loggerOptions,
   ) => {
     const startTime = new Date().getTime();
-    await Promise.all(
-      extrinsics.map((extrinsic, index) => module.exports.processExtrinsic(
-        provider,
-        client,
-        blockNumber,
-        blockHash,
-        extrinsic,
-        index,
-        blockEvents,
-        timestamp,
-        loggerOptions,
-      )),
-    );
+    const chunkSize = 100;
+    const chunks = module.exports.chunker(extrinsics, chunkSize);
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map((extrinsic, index) => module.exports.processExtrinsic(
+          provider,
+          client,
+          blockNumber,
+          blockHash,
+          extrinsic,
+          index,
+          blockEvents,
+          timestamp,
+          loggerOptions,
+        )),
+      );
+    }
     // Log execution time
     const endTime = new Date().getTime();
     logger.debug(loggerOptions, `Added ${extrinsics.length} extrinsics in ${((endTime - startTime) / 1000).toFixed(3)}s`);
@@ -461,11 +465,15 @@ module.exports = {
     client, blockNumber, blockEvents, timestamp, loggerOptions,
   ) => {
     const startTime = new Date().getTime();
-    await Promise.all(
-      blockEvents.map((record, index) => module.exports.processEvent(
-        client, blockNumber, record, index, timestamp, loggerOptions,
-      )),
-    );
+    const chunkSize = 100;
+    const chunks = module.exports.chunker(blockEvents, chunkSize);
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map((record, index) => module.exports.processEvent(
+          client, blockNumber, record, index, timestamp, loggerOptions,
+        )),
+      );
+    }
     // Log execution time
     const endTime = new Date().getTime();
     logger.debug(loggerOptions, `Added ${blockEvents.length} events in ${((endTime - startTime) / 1000).toFixed(3)}s`);
@@ -1171,4 +1179,8 @@ module.exports = {
     }
     return null;
   },
+  chunker: (a, n) => Array.from(
+    { length: Math.ceil(a.length / n) },
+    (_, i) => a.slice(i * n, i * n + n),
+  )
 }
