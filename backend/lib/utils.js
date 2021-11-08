@@ -159,16 +159,16 @@ module.exports = {
   ) => {
     const startTime = new Date().getTime();
     const chunkSize = 100;
-    for (var i = 0; i < extrinsics.length; i += chunkSize) {
-      const chunk = extrinsics.slice(i, i + chunkSize);
+    const indexedExtrinsics = extrinsics.map((extrinsic, index) => ([index, extrinsic]));
+    const chunks = module.exports.chunker(indexedExtrinsics, chunkSize);
+    for (const chunk of chunks) {
       await Promise.all(
-        chunk.map((extrinsic, index) => module.exports.processExtrinsic(
+        chunk.map((indexedExtrinsic) => module.exports.processExtrinsic(
           provider,
           client,
           blockNumber,
           blockHash,
-          extrinsic,
-          index,
+          indexedExtrinsic,
           blockEvents,
           timestamp,
           loggerOptions,
@@ -184,12 +184,13 @@ module.exports = {
     client,
     blockNumber,
     blockHash,
-    extrinsic,
-    index,
+    indexedExtrinsic,
     blockEvents,
     timestamp,
     loggerOptions,
   ) => {
+    const index = indexedExtrinsic[0];
+    const extrinsic = indexedExtrinsic[1];
     const { api } = provider;
     const { isSigned } = extrinsic;
     const signer = isSigned ? extrinsic.signer.toString() : '';
@@ -466,11 +467,12 @@ module.exports = {
   ) => {
     const startTime = new Date().getTime();
     const chunkSize = 100;
-    for (var i = 0; i < blockEvents.length; i += chunkSize) {
-      const chunk = blockEvents.slice(i, i + chunkSize);
+    const indexedBlockEvents = blockEvents.map((event, index) => ([index, event]));
+    const chunks = module.exports.chunker(indexedBlockEvents, chunkSize);
+    for (const chunk of chunks) {
       await Promise.all(
-        chunk.map((record, index) => module.exports.processEvent(
-          client, blockNumber, record, index, timestamp, loggerOptions,
+        chunk.map((indexedEvent) => module.exports.processEvent(
+          client, blockNumber, indexedEvent, timestamp, loggerOptions,
         )),
       );
     }
@@ -479,8 +481,10 @@ module.exports = {
     logger.debug(loggerOptions, `Added ${blockEvents.length} events in ${((endTime - startTime) / 1000).toFixed(3)}s`);
   },
   processEvent: async (
-    client, blockNumber, record, index, timestamp, loggerOptions,
+    client, blockNumber, indexedEvent, timestamp, loggerOptions,
   ) => {
+    const index = indexedEvent[0];
+    const record = indexedEvent[1];
     const { event, phase } = record;
     let sql = `INSERT INTO event (
       block_number,
