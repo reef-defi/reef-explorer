@@ -6,7 +6,7 @@
       {
         'table-cell--button': tag === 'button',
         'table-cell--sorting': isSorting,
-        'table-cell--descending-sort': isSorting && sortable[1].descending,
+        'table-cell--descending-sort': isDescending,
       },
     ]"
   >
@@ -26,7 +26,7 @@
         <font-awesome-icon
           v-if="sortable"
           class="table-cell__sort-icon"
-          :class="{ 'table-cell__sort-icon--reverse': sortable.descending }"
+          :class="{ 'table-cell__sort-icon--reverse': isDescending }"
           icon="caret-down"
         />
       </component>
@@ -62,6 +62,13 @@ export default {
     isSorting() {
       return this.sortable && this.sortable[0] === this.sortable[1]?.property
     },
+    isDescending() {
+      return (
+        this.isSorting &&
+        ((this.sortable[1]?.descending && !this.sortable[2]) ||
+          (!this.sortable[1]?.descending && this.sortable[2]))
+      )
+    },
   },
   methods: {
     sort() {
@@ -75,6 +82,10 @@ export default {
       } else {
         // eslint-disable-next-line
         this.sortable[1].property = this.sortable[0]
+        // eslint-disable-next-line
+        if (this.sortable[2]) this.sortable[1].descending = true
+        // eslint-disable-next-line
+        else this.sortable[1].descending = false
       }
     },
   },
@@ -254,6 +265,10 @@ export default {
     .table-cell__content-wrapper {
       align-items: flex-start;
 
+      .table-cell__content {
+        justify-content: flex-start;
+      }
+
       > * {
         text-align: left;
       }
@@ -264,6 +279,10 @@ export default {
     .table-cell__content-wrapper {
       align-items: center;
 
+      .table-cell__content {
+        justify-content: center;
+      }
+
       > * {
         text-align: center;
       }
@@ -273,6 +292,10 @@ export default {
   &--right {
     .table-cell__content-wrapper {
       align-items: flex-end;
+
+      .table-cell__content {
+        justify-content: flex-end;
+      }
 
       > * {
         text-align: right;
