@@ -34,6 +34,11 @@ export default {
           font-weight: 600;
         }
       }
+
+      .identicon,
+      .eth-identicon {
+        margin-left: 0;
+      }
     }
   }
 }

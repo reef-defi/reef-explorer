@@ -1,16 +1,34 @@
 <template>
-  <td class="table-cell" :class="`table-cell--${align}`">
+  <td
+    class="table-cell"
+    :class="[
+      `table-cell--${align}`,
+      {
+        'table-cell--button': tag === 'button',
+        'table-cell--sorting': isSorting,
+        'table-cell--descending-sort': isSorting && sortable[1].descending,
+      },
+    ]"
+  >
     <div class="table-cell__content-wrapper">
       <component
-        :is="getLink.url ? 'nuxt-link' : 'div'"
-        :to="getLink.url ? getLink.url : null"
+        :is="tag"
+        :to="!sortable && getLink.url ? getLink.url : null"
         class="table-cell__content"
         :class="{
           'table-cell__content--link': !!getLink.url,
           'table-cell__content--fill': getLink.fill !== false,
         }"
+        @click="sort()"
       >
         <slot />
+
+        <font-awesome-icon
+          v-if="sortable"
+          class="table-cell__sort-icon"
+          :class="{ 'table-cell__sort-icon--reverse': sortable.descending }"
+          icon="caret-down"
+        />
       </component>
     </div>
   </td>
@@ -21,6 +39,7 @@ export default {
   name: 'Cell',
   props: {
     link: { type: [String, Object], default: '' },
+    sortable: { type: Array, default: null },
     align: {
       type: String,
       default: 'left',
@@ -30,9 +49,33 @@ export default {
     },
   },
   computed: {
+    tag() {
+      if (this.sortable) return 'button'
+      if (this.getLink.url) return 'nuxt-link'
+
+      return 'div'
+    },
     getLink() {
       if (typeof this.link !== 'object') return { url: this.link }
       return this.link
+    },
+    isSorting() {
+      return this.sortable && this.sortable[0] === this.sortable[1]?.property
+    },
+  },
+  methods: {
+    sort() {
+      if (this.tag !== 'button' || !this.sortable) {
+        return
+      }
+
+      if (this.isSorting) {
+        // eslint-disable-next-line
+        this.sortable[1].descending = !this.sortable[1].descending
+      } else {
+        // eslint-disable-next-line
+        this.sortable[1].property = this.sortable[0]
+      }
     },
   },
 }
@@ -141,6 +184,67 @@ export default {
             opacity: 1;
             transform: none;
           }
+        }
+      }
+    }
+  }
+
+  &--sorting {
+    .table-cell__content-wrapper {
+      .table-cell__content {
+        color: #8d1b70 !important;
+
+        .table-cell__sort-icon {
+          opacity: 1 !important;
+        }
+      }
+    }
+  }
+
+  &--descending-sort {
+    .table-cell__content-wrapper {
+      .table-cell__content {
+        .table-cell__sort-icon {
+          transform: scaleY(-1);
+        }
+      }
+    }
+  }
+
+  &--button {
+    padding: 0 !important;
+
+    .table-cell__content-wrapper {
+      padding: 0;
+      height: auto !important;
+      min-height: unset !important;
+      max-height: unset !important;
+
+      .table-cell__content {
+        height: $height !important;
+        padding: 5px 12px;
+        width: 100%;
+        border: none;
+        background: transparent;
+        transition: all 0.1s;
+
+        .table-cell__sort-icon {
+          transition: all 0.15s;
+          opacity: 0;
+          margin-left: 7px;
+        }
+
+        &:hover {
+          background: #eaedf3;
+          transition: none;
+
+          .table-cell__sort-icon {
+            opacity: 1;
+          }
+        }
+
+        &:active {
+          background: darken(#eaedf3, 3%);
         }
       }
     }
