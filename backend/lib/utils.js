@@ -503,7 +503,7 @@ module.exports = {
     }
 
     // Store staking reward
-    if (event.section === 'staking' && event.method === 'Reward') {
+    if (event.section === 'staking' && (event.method === 'Reward' || event.method === 'Rewarded')) {
       // TODO: also store validator and era index
       sql = `INSERT INTO staking_reward (
         block_number,
@@ -529,7 +529,7 @@ module.exports = {
       }
     }
     // Store staking slash
-    if (event.section === 'staking' && event.method === 'Slash') {
+    if (event.section === 'staking' && (event.method === 'Slash' || event.method === 'Slashed')) {
       // TODO: also store validator and era index
       sql = `INSERT INTO staking_slash (
         block_number,
