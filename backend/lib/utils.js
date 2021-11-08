@@ -159,8 +159,8 @@ module.exports = {
   ) => {
     const startTime = new Date().getTime();
     const chunkSize = 100;
-    const chunks = module.exports.chunker(extrinsics, chunkSize);
-    for (const chunk of chunks) {
+    for (var i = 0; i < extrinsics.length; i += chunkSize) {
+      const chunk = extrinsics.slice(i, i + chunkSize);
       await Promise.all(
         chunk.map((extrinsic, index) => module.exports.processExtrinsic(
           provider,
@@ -466,8 +466,8 @@ module.exports = {
   ) => {
     const startTime = new Date().getTime();
     const chunkSize = 100;
-    const chunks = module.exports.chunker(blockEvents, chunkSize);
-    for (const chunk of chunks) {
+    for (var i = 0; i < blockEvents.length; i += chunkSize) {
+      const chunk = blockEvents.slice(i, i + chunkSize);
       await Promise.all(
         chunk.map((record, index) => module.exports.processEvent(
           client, blockNumber, record, index, timestamp, loggerOptions,
@@ -1179,8 +1179,4 @@ module.exports = {
     }
     return null;
   },
-  chunker: (a, n) => Array.from(
-    { length: Math.ceil(a.length / n) },
-    (_, i) => a.slice(i * n, i * n + n),
-  )
 }
