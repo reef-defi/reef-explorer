@@ -24,12 +24,12 @@
 
       <Table>
         <THead>
-          <Cell>Token</Cell>
-          <Cell>Address</Cell>
-          <Cell align="right">Balance</Cell>
+          <Cell :sortable="['token_name', activeSort]">Token</Cell>
+          <Cell :sortable="['contract_id', activeSort]">Address</Cell>
+          <Cell :sortable="['balance', activeSort]" align="right">Balance</Cell>
         </THead>
 
-        <Row v-for="(item, index) in paginated" :key="index">
+        <Row v-for="(item, index) in list" :key="index">
           <Cell :link="`/token/${item.contract_id}`">{{
             item.token_name
           }}</Cell>
@@ -111,8 +111,12 @@ export default {
         return name.includes(filter) || address.includes(filter)
       })
     },
-    paginated() {
-      return this.paginate(this.searchResults, this.perPage, this.currentPage)
+    list() {
+      return this.paginate(
+        this.sort(this.searchResults),
+        this.perPage,
+        this.currentPage
+      )
     },
   },
   methods: {

@@ -24,17 +24,19 @@
       <Table>
         <THead>
           <Cell width="10" />
-          <Cell>Hash</Cell>
-          <Cell>Block</Cell>
-          <Cell>Date</Cell>
-          <Cell>From</Cell>
-          <Cell>To</Cell>
-          <Cell align="right">Amount</Cell>
-          <Cell align="right">Fee</Cell>
-          <Cell align="center" width="10">Success</Cell>
+          <Cell :sortable="['hash', activeSort]">Hash</Cell>
+          <Cell :sortable="['block_number', activeSort]">Block</Cell>
+          <Cell :sortable="['timestamp', activeSort, true]">Date</Cell>
+          <Cell :sortable="['source', activeSort]">From</Cell>
+          <Cell :sortable="['destination', activeSort]">To</Cell>
+          <Cell :sortable="['amount', activeSort]" align="right">Amount</Cell>
+          <Cell :sortable="['fee_amount', activeSort]" align="right">Fee</Cell>
+          <Cell :sortable="['success', activeSort]" align="center" width="10"
+            >Success</Cell
+          >
         </THead>
 
-        <Row v-for="(item, index) in paginated" :key="index">
+        <Row v-for="(item, index) in list" :key="index">
           <Cell
             align="center"
             class="account-transfers__indicator"
@@ -168,8 +170,12 @@ export default {
         )
       })
     },
-    paginated() {
-      return this.paginate(this.searchResults, this.perPage, this.currentPage)
+    list() {
+      return this.paginate(
+        this.sort(this.searchResults),
+        this.perPage,
+        this.currentPage
+      )
     },
   },
   methods: {

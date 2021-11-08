@@ -20,15 +20,17 @@
 
       <Table>
         <THead>
-          <Cell>Hash</Cell>
-          <Cell>Block</Cell>
-          <Cell>Date</Cell>
-          <Cell>Signer</Cell>
+          <Cell :sortable="['hash', activeSort]">Hash</Cell>
+          <Cell :sortable="['block_number', activeSort]">Block</Cell>
+          <Cell :sortable="['timestamp', activeSort, true]">Date</Cell>
+          <Cell :sortable="['signer', activeSort]">Signer</Cell>
           <Cell>Extrinsic</Cell>
-          <Cell align="center">Success</Cell>
+          <Cell :sortable="['success', activeSort]" align="center"
+            >Success</Cell
+          >
         </THead>
 
-        <Row v-for="(item, index) in paginated" :key="index">
+        <Row v-for="(item, index) in list" :key="index">
           <Cell :link="`/extrinsic/${item.hash}`">
             {{ shortHash(item.hash) }}
           </Cell>
@@ -122,8 +124,12 @@ export default {
     }
   },
   computed: {
-    paginated() {
-      return this.paginate(this.activities, this.perPage, this.currentPage)
+    list() {
+      return this.paginate(
+        this.sort(this.activities),
+        this.perPage,
+        this.currentPage
+      )
     },
   },
   methods: {

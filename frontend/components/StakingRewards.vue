@@ -24,13 +24,13 @@
 
       <Table>
         <THead>
-          <Cell>Block Number</Cell>
-          <Cell>Date</Cell>
-          <Cell>Time Ago</Cell>
-          <Cell align="right">Reward</Cell>
+          <Cell :sortable="['block_number', activeSort]">Block Number</Cell>
+          <Cell :sortable="['timestamp', activeSort]">Date</Cell>
+          <Cell :sortable="['timeago', activeSort, true]">Time Ago</Cell>
+          <Cell :sortable="['amount', activeSort]" align="right">Reward</Cell>
         </THead>
 
-        <Row v-for="(item, index) in paginated" :key="index">
+        <Row v-for="(item, index) in list" :key="index">
           <Cell :link="`/block?blockNumber=${item.block_number}`">
             # {{ formatNumber(item.block_number) }}
           </Cell>
@@ -104,8 +104,12 @@ export default {
         return block.includes(filter) || amount.includes(filter)
       })
     },
-    paginated() {
-      return this.paginate(this.searchResults, this.perPage, this.currentPage)
+    list() {
+      return this.paginate(
+        this.sort(this.searchResults),
+        this.perPage,
+        this.currentPage
+      )
     },
   },
   methods: {
