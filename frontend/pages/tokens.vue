@@ -23,7 +23,7 @@
             </THead>
 
             <Row v-for="(item, index) in tokens" :key="index">
-              <Cell :link="`/token/${item.contract_id}`">
+              <Cell v-if="item.name" :link="`/token/${item.contract_id}`">
                 <img
                   v-if="item.token_icon_url"
                   :src="item.token_icon_url"
@@ -38,6 +38,8 @@
                   title="Validated Token"
                 />
               </Cell>
+
+              <Cell v-else />
 
               <Cell :link="{ url: `/token/${item.contract_id}`, fill: false }">
                 <eth-identicon :address="item.contract_id" :size="20" />
