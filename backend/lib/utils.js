@@ -615,27 +615,17 @@ module.exports = {
     }
   },
   getExtrinsicSuccess: (index, blockEvents) => {
-    // assume success if no events were extracted
-    if (blockEvents.length === 0) {
-      return true;
-    }
-    let extrinsicSuccess = false;
-    blockEvents.forEach((record) => {
-      const { event, phase } = record;
-      if (
-        (parseInt(phase.toHuman().ApplyExtrinsic, 10) === index || parseInt(phase.toHuman().applyExtrinsic, 10) === index)
+    return blockEvents
+      .find(({ event, phase }) => (
+        (phase.toJSON()?.ApplyExtrinsic === index || phase.toJSON()?.applyExtrinsic === index)
           && event.section === 'system'
           && event.method === 'ExtrinsicSuccess'
-      ) {
-        extrinsicSuccess = true;
-      }
-    });
-    return extrinsicSuccess;
+      )) ? true : false;
   },
   getExtrinsicError: (index, blockEvents) => JSON.stringify(
     blockEvents
       .find(({ event, phase }) => (
-        (parseInt(phase.toHuman().ApplyExtrinsic, 10) === index || parseInt(phase.toHuman().applyExtrinsic, 10) === index)
+        (phase.toJSON()?.ApplyExtrinsic === index || phase.toJSON()?.applyExtrinsic === index)
           && event.section === 'system'
           && event.method === 'ExtrinsicFailed'
       )).event.data || '',
