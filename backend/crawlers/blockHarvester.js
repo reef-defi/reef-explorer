@@ -12,7 +12,7 @@ const {
   getDisplayName,
   wait,
   logHarvestError,
-  storeGenesisContracts,
+  // storeGenesisContracts,
 } = require('../lib/utils');
 const backendConfig = require('../backend.config');
 
@@ -289,8 +289,8 @@ const crawler = async (delayedStart) => {
     synced = await isNodeSynced(api, loggerOptions);
   }
 
-  logger.info(loggerOptions, 'Storing and processing genesis contracts...');
-  await storeGenesisContracts(provider, client, loggerOptions);
+  // logger.info(loggerOptions, 'Storing and processing genesis contracts...');
+  // await storeGenesisContracts(provider, client, loggerOptions);
 
   // Get gaps from block table
   // Thanks to @miguelmota: https://gist.github.com/miguelmota/6d40be2ecb083507de1d073443154610

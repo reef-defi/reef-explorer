@@ -14,7 +14,6 @@ const {
   updateFinalized,
   updateAccountsInfo,
   logHarvestError,
-  updateReefContractTotalSupply,
 } = require('../lib/utils');
 const backendConfig = require('../backend.config');
 
@@ -198,7 +197,7 @@ const crawler = async () => {
         await updateFinalized(client, finalizedBlock, loggerOptions);
 
         // Update REEF contract virtual supply
-        await updateReefContractTotalSupply(client, totalIssuance, loggerOptions);
+        // await updateReefContractTotalSupply(client, totalIssuance, loggerOptions);
 
         const endTime = new Date().getTime();
         logger.info(loggerOptions, `Added block #${blockNumber} (${shortHash(blockHash.toString())}) processed in ${((endTime - startTime) / 1000).toFixed(3)}s`);
