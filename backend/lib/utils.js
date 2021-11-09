@@ -623,9 +623,9 @@ module.exports = {
     blockEvents.forEach((record) => {
       const { event, phase } = record;
       if (
-        parseInt(phase.toHuman().ApplyExtrinsic, 10) === index
-        && event.section === 'system'
-        && event.method === 'ExtrinsicSuccess'
+        (parseInt(phase.toHuman().ApplyExtrinsic, 10) === index || parseInt(phase.toHuman().applyExtrinsic, 10) === index)
+          && event.section === 'system'
+          && event.method === 'ExtrinsicSuccess'
       ) {
         extrinsicSuccess = true;
       }
@@ -635,7 +635,7 @@ module.exports = {
   getExtrinsicError: (index, blockEvents) => JSON.stringify(
     blockEvents
       .find(({ event, phase }) => (
-        parseInt(phase.toHuman().ApplyExtrinsic, 10) === index
+        (parseInt(phase.toHuman().ApplyExtrinsic, 10) === index || parseInt(phase.toHuman().applyExtrinsic, 10) === index)
           && event.section === 'system'
           && event.method === 'ExtrinsicFailed'
       )).event.data || '',
