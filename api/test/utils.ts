@@ -42,7 +42,7 @@ export const sourceTester = async ({name, filename, sources, bytecode}: Contract
       source: sources,
       compilerVersion: "v0.8.4+commit.c7e474f2",
       target: "london",
-      optimization: true,
+      optimization: "true",
       runs: 200,
 
       address: "",

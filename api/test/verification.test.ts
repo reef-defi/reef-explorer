@@ -11,10 +11,6 @@ import MinimalProxy from "./contracts/MinimalProxy";
 import MultiSigWallet from "./contracts/MultiSigWallet";
 import MerkleTree from "./contracts/MerkleTree";
 import UniDirectionalPaymentChannel from "./contracts/UniDirectionalPaymentChannel";
-
-import {verifyContractArguments} from "../src/compiler/argumentEncoder";
-
-import {verifyContract} from "../src/compiler/compiler";
 import {describe, it} from "mocha";
 import {expect} from "chai";
 import { argumentCustomTester, argumentTester, ContractStorage, sourceTester } from "./utils";

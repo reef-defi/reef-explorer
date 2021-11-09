@@ -2,7 +2,7 @@ import express, {Response} from 'express';
 import morgan from 'morgan';
 import { verifyContractArguments } from './compiler/argumentEncoder';
 import { verifyContract } from './compiler/compiler';
-import { authenticationToken, config, getReefPrice } from './connector';
+import { authenticationToken, config, getReefPrice, query } from './connector';
 import { contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys, errorStatus } from './utils';
@@ -35,21 +35,21 @@ const verify = async (verification: AutomaticContractVerificationReq): Promise<v
   const {abi, fullAbi} = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
   
-  await updateContractStatus({...verification, abi: fullAbi});
-  await contractVerificationInsert({...verification, status: "VERIFIED"})
+  await updateContractStatus({...verification, abi: fullAbi, optimization: verification.optimization === "true"});
+  await contractVerificationInsert({...verification, status: "VERIFIED", optimization: verification.optimization === "true"})
 }
 
 app.post('/api/verificator/submit-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
-    
     await verify(req.body);
     res.send("Verified");
   } catch (err) {
+    console.log(err);
     if (err.status === 404) {
-      await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
+      await contractVerificationInsert({...req.body, status: "NOT VERIFIED", optimization: req.body.optimization === "true"})
     }
-    res.status(errorStatus(err)).send(err);
+    res.status(errorStatus(err)).send({message: err.message});
   }
 });
 
@@ -64,7 +64,7 @@ app.post('/api/verificator/form-verification', async (req: AppRequest<ManualCont
     res.send("Verified");
   } catch (err) {
     if (err.status === 404) {
-      await contractVerificationInsert({...req.body, status: "NOT VERIFIED"})
+      await contractVerificationInsert({...req.body, status: "NOT VERIFIED", optimization: req.body.optimization === "true"})
     }
     res.status(errorStatus(err)).send(err.message);
   }
@@ -144,11 +144,39 @@ app.get('/api/token/:address', async (req: AppRequest<{}>, res: Response) => {
 });
 
 // TODO db testing
-// app.get('/api/test', async (_, res) => {
+// app.get('/api/test/erc20-contracts', async (_, res) => {
 //   try {
-//     const result = await query("SELECT * FROM contract WHERE contract_id = $1", ["0x49251e3df078cAAfC803F92cD2F50441eF378868"]);
+//     const result = await query("SELECT e.contract_id, e.name, e.symbol FROM contract as c INNER JOIN erc20 as e ON c.contract_id = e.contract_id;", []);
 //     res.send(result)
 //   } catch (err) {
+//     console.log(err);
+//     res.status(errorStatus(err)).send(err.message);
+//   }
+// })
+// app.get('/api/test/contracts', async (_, res) => {
+//   try {
+//     const result = await query("SELECT * FROM contract LIMIT 1;", []);
+//     res.send(result)
+//   } catch (err) {
+//     console.log(err);
+//     res.status(errorStatus(err)).send(err.message);
+//   }
+// })
+// app.get('/api/test/token-holders', async (_, res) => {
+//   try {
+//     const result = await query("SELECT contract_id FROM token_holder;", []);
+//     res.send(result)
+//   } catch (err) {
+//     console.log(err);
+//     res.status(errorStatus(err)).send(err.message);
+//   }
+// })
+// app.get('/api/test/cvr', async (_, res) => {
+//   try {
+//     const result = await query("SELECT * FROM contract_verification_request;", []);
+//     res.send(result)
+//   } catch (err) {
+//     console.log(err);
 //     res.status(errorStatus(err)).send(err.message);
 //   }
 // })
