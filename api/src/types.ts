@@ -67,7 +67,7 @@ export interface AutomaticContractVerificationReq {
   filename: string;
   license: License;
   arguments: string;
-  optimization: boolean;
+  optimization: string;
   compilerVersion: string;
 }
 
@@ -98,23 +98,24 @@ export interface TokenDB extends DefaultToken {
 }
 
 interface TokenInfoDefault {
-  abi: string; 
   name: string;
   runs: number;
   signer: string;
   source: string;
   target: Target;
-  bytecode: string;
-  license: License;
   verified: string;
   optimization: boolean;
 }
 
 export interface TokenInfo extends TokenInfoDefault {
+  deployedBytecode: string;
   compilerVersion: string;
+  compilerData: string;
 }
 export interface TokenInfoDB extends TokenInfoDefault {
   compiler_version: string;
+  deployment_bytecode: string;
+  compiler_data: string;
 }
 
 interface DefaultPool {
