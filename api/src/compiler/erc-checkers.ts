@@ -2,6 +2,7 @@ import { ABI, ERC20Data } from "../types";
 import { Provider } from "@reef-defi/evm-provider";
 import { WsProvider} from '@polkadot/api';
 import { Contract } from "@ethersproject/contracts";
+import { APP_CONFIGURATION } from "../config";
 
 const DEFAULT_ERC20_ABI: string[] = [
   `{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"}`,
@@ -33,7 +34,7 @@ export const checkIfContractIsERC20 = (abi: ABI): boolean => {
 
 export const extractERC20ContractData = async (address: string, abi: ABI): Promise<ERC20Data> => {
   const provider = new Provider({
-    provider: new WsProvider("ws://0.0.0.0:9944")
+    provider: new WsProvider(APP_CONFIGURATION.nodeWs)
   });
   await provider.api.isReadyOrError;
 

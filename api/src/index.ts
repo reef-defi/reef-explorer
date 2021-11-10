@@ -3,7 +3,8 @@ import morgan from 'morgan';
 import { verifyContractArguments } from './compiler/argumentEncoder';
 import { verifyContract } from './compiler/compiler';
 import { checkIfContractIsERC20, extractERC20ContractData } from './compiler/erc-checkers';
-import { authenticationToken, config, getReefPrice, query } from './connector';
+import { APP_CONFIGURATION } from './config';
+import { authenticationToken, getReefPrice, query } from './connector';
 import { contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, insertErc20Token, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys, errorStatus } from './utils';
@@ -11,8 +12,8 @@ import { ensure, ensureObjectKeys, errorStatus } from './utils';
 const cors = require('cors');
 const app = express();
 
-app.listen(config.httpPort, () => {
-  console.log(`Reef explorer API is running on port ${config.httpPort}.`);
+app.listen(APP_CONFIGURATION.httpPort, () => {
+  console.log(`Reef explorer API is running on port ${APP_CONFIGURATION.httpPort}.`);
 });
 
 // Parse incoming requests with JSON payloads
