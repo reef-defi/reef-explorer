@@ -227,3 +227,9 @@ export interface VerifyContract {
   abi: ABI;
   fullAbi: ABI;
 }
+
+export interface ERC20Data {
+  name: string;
+  symbol: string;
+  decimals: number;
+}

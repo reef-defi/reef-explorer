@@ -2,8 +2,9 @@ import express, {Response} from 'express';
 import morgan from 'morgan';
 import { verifyContractArguments } from './compiler/argumentEncoder';
 import { verifyContract } from './compiler/compiler';
+import { checkIfContractIsERC20, extractERC20ContractData } from './compiler/erc-checkers';
 import { authenticationToken, config, getReefPrice, query } from './connector';
-import { contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, updateContractStatus } from './queries';
+import { contractVerificationInsert, contractVerificationStatus, findContractBytecode, findPool, findStakingRewards, findTokenInfo, findUserPool, findUserTokens, insertErc20Token, updateContractStatus } from './queries';
 import { AccountAddress, AppRequest, AutomaticContractVerificationReq, ContractVerificationID, ManualContractVerificationReq, PoolReq, UserPoolReq } from './types';
 import { ensure, ensureObjectKeys, errorStatus } from './utils';
 
@@ -35,6 +36,11 @@ const verify = async (verification: AutomaticContractVerificationReq): Promise<v
   const {abi, fullAbi} = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
   
+  if (checkIfContractIsERC20(abi)) {
+    const data = await extractERC20ContractData(verification.address, abi);
+    await insertErc20Token(verification.address, data);
+  }
+
   await updateContractStatus({...verification, abi: fullAbi, optimization: verification.optimization === "true"});
   await contractVerificationInsert({...verification, status: "VERIFIED", optimization: verification.optimization === "true"})
 }
