@@ -1,6 +1,6 @@
 
 import { query } from "./connector";
-import { Bytecode, ContracVerificationInsert, License, Pool, PoolDB, StakingRewardDB, Status, Target, Token, TokenDB, TokenInfo, TokenInfoDB, UserTokenDB } from "./types";
+import { Bytecode, ContracVerificationInsert, ERC20Data, License, Pool, PoolDB, StakingRewardDB, Status, Target, Token, TokenDB, TokenInfo, TokenInfoDB, UserTokenDB } from "./types";
 import { ensure } from "./utils";
 import { ContractInterface } from "@ethersproject/contracts";
 
@@ -225,4 +225,14 @@ export const findTokenInfo = async (address: string): Promise<TokenInfo[]> => {
         deployedBytecode: token.deployment_bytecode,
         compilerData: token.compiler_data,
       }));
+}
+
+const INSERT_ERC20_TOKEN = `
+INSERT INTO erc20 
+  (contract_id, name, symbol, decimals)
+VALUES
+  ($1, $2, $3, $4);
+`;
+export const insertErc20Token = async (address: string, {name, symbol, decimals}: ERC20Data): Promise<void> => {
+  await query(INSERT_ERC20_TOKEN, [address, name, symbol, decimals]);
 }
