@@ -7,6 +7,7 @@
         'table-cell--button': tag === 'button',
         'table-cell--sorting': isSorting,
         'table-cell--descending-sort': isDescending,
+        'table-cell--wrap': wrap,
       },
     ]"
   >
@@ -47,6 +48,7 @@ export default {
         return ['left', 'center', 'right'].includes(value)
       },
     },
+    wrap: { type: Boolean, default: false },
   },
   computed: {
     tag() {
@@ -299,6 +301,21 @@ export default {
 
       > * {
         text-align: right;
+      }
+    }
+  }
+
+  &--wrap {
+    .table-cell__content-wrapper {
+      height: unset;
+      max-height: unset;
+
+      .table-cell__content {
+        padding: 10px 0;
+        white-space: initial;
+        line-height: 1.6;
+        justify-content: flex-end;
+        word-break: break-all;
       }
     }
   }
