@@ -196,9 +196,6 @@ const crawler = async () => {
         // Update finalized blocks
         await updateFinalized(client, finalizedBlock, loggerOptions);
 
-        // Update REEF contract virtual supply
-        // await updateReefContractTotalSupply(client, totalIssuance, loggerOptions);
-
         const endTime = new Date().getTime();
         logger.info(loggerOptions, `Added block #${blockNumber} (${shortHash(blockHash.toString())}) processed in ${((endTime - startTime) / 1000).toFixed(3)}s`);
       }
