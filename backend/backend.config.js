@@ -3,15 +3,15 @@ require('dotenv').config();
 
 module.exports = {
   substrateNetwork: process.env.SUBSTRATE_NETWORK || 'reefexplorer',
-  // wsProviderUrl: process.env.WS_PROVIDER_URL || 'ws://substrate-node:9944',
-  wsProviderUrl: 'ws://127.0.0.1:9944',
+  wsProviderUrl: process.env.WS_PROVIDER_URL || 'ws://substrate-node:9944',
+  // wsProviderUrl: 'ws://127.0.0.1:9944',
   postgresConnParams: {
     user: process.env.POSTGRES_USER || 'reefexplorer',
-    // host: process.env.POSTGRES_HOST || 'postgres',
-    host: '0.0.0.0',
+    host: process.env.POSTGRES_HOST || 'postgres',
+    // host: '0.0.0.0',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
     password: process.env.POSTGRES_PASSWORD || 'reefexplorer',
-    port: parseInt(process.env.POSTGRES_PORT, 10) || 54321,
+    port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
   },
   logLevel: process.env.LOG_LEVEL || 'info', // Use 'debug' to see DEBUG level messages
   crawlers: [
