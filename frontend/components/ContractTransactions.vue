@@ -1,5 +1,5 @@
 <template>
-  <div class="contract-executions">
+  <div class="contract-executions list-view">
     <div v-if="loading" class="text-center py-4">
       <Loading />
     </div>
@@ -9,60 +9,61 @@
       </h5>
     </div>
     <div v-else>
-      <div class="table-responsive">
-        <b-table striped hover :fields="fields" :items="extrinsics">
-          <template #cell(hash)="data">
-            <p class="mb-0">
-              <nuxt-link :to="`/contract/tx/${data.item.hash}`">
-                {{ shortHash(data.item.hash) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(timestamp)="data">
-            <p class="mb-0">
-              <font-awesome-icon :icon="['far', 'clock']" />
-              {{ fromNow(data.item.timestamp) }}
-              ({{ formatTimestamp(data.item.timestamp) }})
-            </p>
-          </template>
-          <template #cell(block_number)="data">
-            <p class="mb-0">
-              <nuxt-link
-                :to="`/extrinsic/${data.item.block_number}/${data.item.extrinsic_index}`"
-              >
-                #{{ formatNumber(data.item.block_number) }}-{{
-                  data.item.extrinsic_index
-                }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(signer)="data">
-            <p class="mb-0">
-              <nuxt-link
-                :to="`/account/${data.item.signer}`"
-                :title="$t('pages.accounts.account_details')"
-              >
-                <ReefIdenticon
-                  :key="data.item.signer"
-                  :address="data.item.signer"
-                  :size="20"
-                />
-                {{ shortAddress(data.item.signer) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(success)="data">
-            <p class="mb-0">
-              <font-awesome-icon
-                v-if="data.item.success"
-                icon="check"
-                class="text-success"
-              />
-              <font-awesome-icon v-else icon="times" class="text-danger" />
-            </p>
-          </template>
-        </b-table>
-      </div>
+      <Table>
+        <THead>
+          <Cell>Transaction</Cell>
+          <Cell>Timestamp</Cell>
+          <Cell>Extrinsic</Cell>
+          <Cell>Signer</Cell>
+          <Cell align="center">Success</Cell>
+        </THead>
+
+        <Row v-for="(item, index) in extrinsics" :key="index">
+          <Cell :link="`/contract/tx/${item.hash}`">{{
+            shortHash(item.hash)
+          }}</Cell>
+
+          <Cell class="list-view__age">
+            <font-awesome-icon :icon="['far', 'clock']" />
+            <span
+              >{{ fromNow(item.timestamp) }} ({{
+                formatTimestamp(item.timestamp)
+              }})</span
+            >
+          </Cell>
+
+          <Cell
+            :link="{
+              url: `/extrinsic/${item.block_number}/${item.extrinsic_index}`,
+              fill: false,
+            }"
+            ># {{ formatNumber(item.block_number) }}-{{
+              item.extrinsic_index
+            }}</Cell
+          >
+
+          <Cell
+            :link="{ url: `/account/${item.signer}`, fill: false }"
+            :title="$t('pages.accounts.account_details')"
+          >
+            <ReefIdenticon
+              :key="item.signer"
+              :address="item.signer"
+              :size="20"
+            />
+            <span>{{ shortAddress(item.signer) }}</span>
+          </Cell>
+
+          <Cell align="center">
+            <font-awesome-icon
+              v-if="item.success"
+              icon="check"
+              class="text-success"
+            />
+            <font-awesome-icon v-else icon="times" class="text-danger" />
+          </Cell>
+        </Row>
+      </Table>
     </div>
   </div>
 </template>
@@ -85,34 +86,6 @@ export default {
     return {
       loading: true,
       extrinsics: [],
-      fields: [
-        {
-          key: 'hash',
-          label: 'Transaction',
-          class: 'd-none d-sm-none d-md-none d-lg-block d-xl-block',
-          sortable: true,
-        },
-        {
-          key: 'timestamp',
-          label: 'Timestamp',
-          sortable: true,
-        },
-        {
-          key: 'block_number',
-          label: 'Extrinsic',
-          sortable: true,
-        },
-        {
-          key: 'signer',
-          label: 'Signer',
-          sortable: true,
-        },
-        {
-          key: 'success',
-          label: 'Success',
-          sortable: true,
-        },
-      ],
     }
   },
   apollo: {

@@ -8,20 +8,7 @@
         <template v-else-if="!parsedExtrinsic">
           <h1 class="text-center">Extrinsic not found!</h1>
         </template>
-        <template v-else>
-          <div class="card mt-4 mb-3">
-            <div class="card-body">
-              <h4 class="text-center mb-4">
-                Extrinsic {{ blockNumber }}-{{ extrinsicIndex }}
-              </h4>
-              <Extrinsic :extrinsic="parsedExtrinsic" />
-            </div>
-          </div>
-          <extrinsic-events
-            :block-number="parseInt(blockNumber)"
-            :extrinsic-index="parseInt(extrinsicIndex)"
-          />
-        </template>
+        <Extrinsic v-else :extrinsic="parsedExtrinsic" />
       </b-container>
     </section>
   </div>
@@ -30,14 +17,12 @@
 import { gql } from 'graphql-tag'
 import Loading from '@/components/Loading.vue'
 import Extrinsic from '@/components/Extrinsic.vue'
-import ExtrinsicEvents from '@/components/ExtrinsicEvents.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
   components: {
     Loading,
     Extrinsic,
-    ExtrinsicEvents,
   },
   mixins: [commonMixin],
   data() {

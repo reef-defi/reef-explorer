@@ -1,5 +1,5 @@
 <template>
-  <div class="staking-slashes">
+  <div class="staking-slashes list-view">
     <div v-if="loading" class="text-center py-4">
       <Loading />
     </div>
@@ -7,81 +7,48 @@
       <h5>{{ $t('components.staking_slashes.no_slash_found') }}</h5>
     </div>
     <div v-else>
-      <JsonCSV
-        :data="stakingSlashes"
-        class="download-csv mb-2"
-        :name="`polkastats_staking_slashes_${accountId}.csv`"
-      >
-        <font-awesome-icon icon="file-csv" />
-        {{ $t('pages.accounts.download_csv') }}
-      </JsonCSV>
-      <!-- Filter -->
-      <b-row style="margin-bottom: 1rem">
-        <b-col cols="12">
-          <b-form-input
-            id="filterInput"
-            v-model="filter"
-            type="search"
-            :placeholder="$t('components.staking_slashes.search')"
-          />
-        </b-col>
-      </b-row>
-      <div class="table-responsive">
-        <b-table
-          striped
-          hover
-          :fields="fields"
-          :per-page="perPage"
-          :current-page="currentPage"
-          :items="stakingSlashes"
-          :filter="filter"
-          @filtered="onFiltered"
+      <div class="list-view__table-head">
+        <Input
+          v-model="filter"
+          :placeholder="$t('components.staking_slashes.search')"
+        />
+        <JsonCSV
+          :data="stakingSlashes"
+          class="list-view__download-btn"
+          :name="`polkastats_staking_slashes_${accountId}.csv`"
         >
-          <template #cell(block_number)="data">
-            <p class="mb-0">
-              <nuxt-link
-                v-b-tooltip.hover
-                :to="`/block?blockNumber=${data.item.block_number}`"
-                title="Check block information"
-              >
-                #{{ formatNumber(data.item.block_number) }}
-              </nuxt-link>
-            </p>
-          </template>
-          <template #cell(timestamp)="data">
-            <p class="mb-0">
-              {{ getDateFromTimestamp(data.item.timestamp) }}
-            </p>
-          </template>
-          <template #cell(timeago)="data">
-            <p class="mb-0">
-              {{ fromNow(data.item.timeago) }}
-            </p>
-          </template>
-          <template #cell(amount)="data">
-            <p class="mb-0">
-              {{ formatAmount(data.item.amount, 6) }}
-            </p>
-          </template>
-        </b-table>
-        <div class="mt-4 d-flex">
-          <b-pagination
-            v-model="currentPage"
-            :total-rows="totalRows"
-            :per-page="perPage"
-            aria-controls="staking-slashes"
-          />
-          <b-button-group class="ml-2">
-            <b-button
-              v-for="(item, index) in tableOptions"
-              :key="index"
-              variant="primary2"
-              @click="handleNumFields(item)"
-            >
-              {{ item }}
-            </b-button>
-          </b-button-group>
-        </div>
+          <font-awesome-icon icon="file-csv" />
+          <span>{{ $t('pages.accounts.download_csv') }}</span>
+        </JsonCSV>
+      </div>
+      <Table>
+        <THead>
+          <Cell :sortable="['block_number', activeSort]">Block Number</Cell>
+          <Cell :sortable="['timestamp', activeSort]">Date</Cell>
+          <Cell :sortable="['timeago', activeSort, true]">Time Ago</Cell>
+          <Cell :sortable="['amount', activeSort]" align="right">Slash</Cell>
+        </THead>
+
+        <Row v-for="(item, index) in list" :key="index">
+          <Cell :link="`/block?blockNumber=${item.block_number}`">
+            # {{ formatNumber(item.block_number) }}
+          </Cell>
+
+          <Cell>{{ getDateFromTimestamp(item.timestamp) }}</Cell>
+
+          <Cell>{{ fromNow(item.timeago) }}</Cell>
+
+          <Cell align="right">{{ formatAmount(item.amount, 6) }}</Cell>
+        </Row>
+      </Table>
+
+      <div class="list-view__pagination">
+        <PerPage v-model="perPage" />
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="searchResults.length"
+          :per-page="perPage"
+        />
       </div>
     </div>
   </div>
@@ -93,13 +60,16 @@ import JsonCSV from 'vue-json-csv'
 import commonMixin from '@/mixins/commonMixin.js'
 import Loading from '@/components/Loading.vue'
 import { paginationOptions } from '@/frontend.config.js'
+import Input from '@/components/Input'
+import tableUtils from '@/mixins/tableUtils'
 
 export default {
   components: {
     Loading,
     JsonCSV,
+    Input,
   },
-  mixins: [commonMixin],
+  mixins: [commonMixin, tableUtils],
   props: {
     accountId: {
       type: String,
@@ -113,45 +83,31 @@ export default {
       filter: null,
       filterOn: [],
       tableOptions: paginationOptions,
-      perPage: localStorage.paginationOptions
-        ? parseInt(localStorage.paginationOptions)
-        : 10,
+      perPage: null,
       currentPage: 1,
       totalRows: 1,
-      fields: [
-        {
-          key: 'block_number',
-          label: 'Block number',
-          class: 'd-none d-sm-none d-md-none d-lg-table-cell d-xl-table-cell',
-          sortable: true,
-        },
-        {
-          key: 'timestamp',
-          label: 'Date',
-          sortable: true,
-        },
-        {
-          key: 'timeago',
-          label: 'Time ago',
-          sortable: true,
-        },
-        {
-          key: 'amount',
-          label: 'Slash',
-          sortable: true,
-        },
-      ],
     }
   },
-  methods: {
-    handleNumFields(num) {
-      localStorage.paginationOptions = num
-      this.perPage = parseInt(num)
+  computed: {
+    searchResults() {
+      const list = this.stakingSlashes || []
+
+      if (!this.filter) return list
+
+      return list.filter((item) => {
+        const filter = this.filter.toLowerCase()
+        const block = item.block_number
+          ? String(item.block_number).toLowerCase()
+          : ''
+        return block.includes(filter)
+      })
     },
-    onFiltered(filteredItems) {
-      // Trigger pagination to update the number of buttons/pages due to filtering
-      this.totalRows = filteredItems.length
-      this.currentPage = 1
+    list() {
+      return this.paginate(
+        this.sort(this.searchResults),
+        this.perPage,
+        this.currentPage
+      )
     },
   },
   apollo: {

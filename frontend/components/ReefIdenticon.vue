@@ -2,8 +2,8 @@
   <div
     v-b-tooltip.hover
     title="Click to copy address to clipboard"
-    class="d-inline-block"
-    @click="showToast"
+    class="d-inline-block identicon"
+    @click.stop.prevent="showToast"
   >
     <Identicon
       :key="address"
@@ -16,7 +16,7 @@
   </div>
 </template>
 <script>
-import { Identicon } from '@polkadot/vue-identicon'
+import Identicon from '@polkadot/vue-identicon'
 export default {
   components: {
     Identicon,

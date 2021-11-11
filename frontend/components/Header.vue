@@ -7,18 +7,12 @@
         </nuxt-link>
 
         <div class="header__links">
+          <nuxt-link to="/" exact>Explore</nuxt-link>
           <nuxt-link to="/blocks">Blocks</nuxt-link>
           <nuxt-link to="/accounts">Accounts</nuxt-link>
           <nuxt-link to="/transfers">Transfers</nuxt-link>
           <nuxt-link to="/contracts">Contracts</nuxt-link>
-
-          <div class="header__links-group">
-            <span class="header__links-group-label">Tokens</span>
-
-            <div class="header__links-group-links">
-              <nuxt-link to="/tokens">REEF-20</nuxt-link>
-            </div>
-          </div>
+          <nuxt-link to="/tokens">Tokens</nuxt-link>
 
           <div class="header__links-group">
             <span class="header__links-group-label">Other</span>

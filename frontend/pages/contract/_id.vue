@@ -8,281 +8,222 @@
         <template v-else-if="!contract">
           <h1 class="text-center">Contract not found!</h1>
         </template>
-        <template v-else>
-          <div class="card mb-4">
-            <div class="card-body">
-              <h4 class="text-center mb-4">
-                <eth-identicon :address="contractId" :size="32" />
-                <span v-if="contract.name">
-                  {{ contract.name }}
-                </span>
-                <span v-else>
-                  {{ shortHash(contractId) }}
-                </span>
-                <p class="mt-3">
-                  <b-badge
-                    v-if="contract.is_erc20"
-                    :to="`/token/${contract.contract_id}`"
-                    class="ml-2"
-                    variant="info"
-                  >
-                    ERC-20 token
-                  </b-badge>
-                  <b-badge
-                    v-if="contract.verified"
-                    class="ml-2"
-                    variant="success"
-                  >
-                    Verified source
-                    <font-awesome-icon icon="check" />
-                  </b-badge>
-                  <b-badge v-else class="ml-2" variant="danger">
-                    Not verified source
-                    <font-awesome-icon icon="times" />
-                  </b-badge>
-                </p>
-              </h4>
-              <b-tabs content-class="mt-3">
-                <b-tab title="General" active>
-                  <div class="table-responsive pb-4">
-                    <table class="table contract-data table-striped">
-                      <tbody>
-                        <tr>
-                          <td>Contract address</td>
-                          <td class="text-right">
-                            <eth-identicon :address="contractId" :size="16" />
-                            {{ contractId }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.verified') }}</td>
-                          <td class="text-right">
-                            <p v-if="contract.verified" class="mb-0">
-                              <font-awesome-icon
-                                icon="check"
-                                class="text-success"
-                              />
-                            </p>
-                            <p v-else class="mb-0">
-                              <font-awesome-icon
-                                icon="times"
-                                class="text-danger"
-                              />
-                            </p>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Created at block</td>
-                          <td class="text-right">
-                            <nuxt-link
-                              :to="`/block?blockNumber=${contract.block_height}`"
-                            >
-                              #{{ formatNumber(contract.block_height) }}
-                            </nuxt-link>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.signer') }}</td>
-                          <td class="text-right">
-                            <div v-if="contract.signer">
-                              <ReefIdenticon
-                                :key="contract.signer"
-                                :address="contract.signer"
-                                :size="20"
-                              />
-                              <nuxt-link :to="`/account/${contract.signer}`">
-                                {{ shortAddress(contract.signer) }}
-                              </nuxt-link>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.value">
-                          <td>{{ $t('details.contract.value') }}</td>
-                          <td class="text-right">
-                            {{ contract.value }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.gas_limit">
-                          <td>{{ $t('details.contract.gas_limit') }}</td>
-                          <td class="text-right">
-                            {{ contract.gas_limit }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.storage_limit">
-                          <td>{{ $t('details.contract.storage_limit') }}</td>
-                          <td class="text-right">
-                            {{ contract.storage_limit }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.bytecode">
-                          <td>{{ $t('details.contract.bytecode') }}</td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.bytecode
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.deployment_bytecode">
-                          <td>
-                            {{ $t('details.contract.deployment_bytecode') }}
-                          </td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.deployment_bytecode
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.arguments">
-                          <td>
-                            {{ $t('details.contract.arguments') }}
-                          </td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.arguments
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr v-if="decodedArguments">
-                          <td>
-                            {{ $t('details.contract.decoded_arguments') }}
-                          </td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              decodedArguments
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.metadata">
-                          <td>
-                            {{ $t('details.contract.metadata') }}
-                          </td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.metadata
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr v-if="decodedMetadata">
-                          <td>
-                            {{ $t('details.contract.decoded_metadata') }}
-                          </td>
-                          <td class="text-right">
-                            <vue-json-pretty
-                              :data="
-                                JSON.parse(JSON.stringify(decodedMetadata))
-                              "
-                              :deep="2"
-                            />
-                          </td>
-                        </tr>
-                        <Promised :promise="getIpfsHash()">
-                          <template #default="data">
-                            <tr>
-                              <td>
-                                {{ $t('details.contract.ipfs_hash') }}
-                              </td>
-                              <td class="text-right">
-                                <a
-                                  :href="`https://ipfs.io/ipfs/${data}`"
-                                  target="_blank"
-                                >
-                                  {{ data }}
-                                </a>
-                              </td>
-                            </tr>
-                          </template>
-                        </Promised>
-                        <Promised :promise="getBzzr1Hash()">
-                          <template #default="data">
-                            <tr>
-                              <td>
-                                {{ $t('details.contract.bzzr1_hash') }}
-                              </td>
-                              <td class="text-right">{{ data }}</td>
-                            </tr>
-                          </template>
-                        </Promised>
-                        <tr v-if="decodedSolcVersion">
-                          <td>
-                            {{ $t('details.contract.deployment_solc_version') }}
-                          </td>
-                          <td class="text-right">
-                            {{ decodedSolcVersion }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </b-tab>
-                <b-tab v-if="contract.verified" title="Developer">
-                  <div class="table-responsive pb-4">
-                    <table class="table table-striped">
-                      <tbody>
-                        <tr>
-                          <td>{{ $t('details.contract.compiler_version') }}</td>
-                          <td class="text-right">
-                            {{ contract.compiler_version }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.optimization') }}</td>
-                          <td class="text-right">
-                            <p v-if="contract.optimization" class="mb-0">
-                              <font-awesome-icon
-                                icon="check"
-                                class="text-success"
-                              />
-                            </p>
-                            <p v-else class="mb-0">
-                              <font-awesome-icon
-                                icon="times"
-                                class="text-danger"
-                              />
-                            </p>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.runs') }}</td>
-                          <td class="text-right">
-                            {{ contract.runs }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.target') }}</td>
-                          <td class="text-right">
-                            {{ contract.target }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.contract.license') }}</td>
-                          <td class="text-right">
-                            {{ contract.license }}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </b-tab>
-                <b-tab v-if="contract.verified" title="Verified source">
-                  <pre>{{ contract.source }}</pre>
-                </b-tab>
-                <b-tab v-if="contract.verified" title="ABI">
-                  <vue-json-pretty :data="JSON.parse(contract.abi)" />
-                </b-tab>
-                <b-tab title="Transactions">
-                  <contract-transactions :contract-id="contractId" />
-                </b-tab>
-                <b-tab v-if="contract.verified" title="Execute">
-                  <contract-execute
-                    :contract-id="contractId"
-                    :contract-name="contract.name"
-                    :contract-abi="JSON.parse(contract.abi)"
-                  />
-                </b-tab>
-              </b-tabs>
-            </div>
+        <Card v-else class="contract-details">
+          <div class="contract-details__identicon">
+            <eth-identicon :address="contractId" :size="80" />
           </div>
-        </template>
+
+          <Headline>{{ contract.name || shortHash(contractId) }}</Headline>
+
+          <h4 class="text-center mb-4">
+            <p class="mt-3">
+              <b-badge
+                v-if="contract.is_erc20"
+                :to="`/token/${contract.contract_id}`"
+                class="ml-2"
+                variant="info"
+              >
+                ERC-20 token
+              </b-badge>
+              <b-badge v-if="contract.verified" class="ml-2" variant="success">
+                Verified source
+                <font-awesome-icon icon="check" />
+              </b-badge>
+              <b-badge v-else class="ml-2" variant="danger">
+                Not verified source
+                <font-awesome-icon icon="times" />
+              </b-badge>
+            </p>
+          </h4>
+
+          <Tabs v-model="tab" :options="tabs" />
+
+          <!-- General -->
+
+          <Data v-if="tab === 'general'">
+            <Row>
+              <Cell>Contract address</Cell>
+              <Cell>
+                <eth-identicon :address="contractId" :size="20" />
+                <span>{{ contractId }}</span>
+              </Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.contract.verified') }}</Cell>
+              <Cell>
+                <font-awesome-icon
+                  :icon="contract.verified ? 'check' : 'times'"
+                  :class="contract.verified ? 'text-success' : 'text-danger'"
+                />
+              </Cell>
+            </Row>
+
+            <Row>
+              <Cell>Created at block</Cell>
+              <Cell>
+                <nuxt-link :to="`/block?blockNumber=${contract.block_height}`">
+                  # {{ formatNumber(contract.block_height) }}
+                </nuxt-link>
+              </Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.contract.signer') }}</Cell>
+              <Cell>
+                <ReefIdenticon
+                  v-if="contract.signer"
+                  :key="contract.signer"
+                  class="contract-details__account-identicon"
+                  :address="contract.signer"
+                  :size="20"
+                />
+                <nuxt-link
+                  v-if="contract.signer"
+                  :to="`/account/${contract.signer}`"
+                >
+                  {{ shortAddress(contract.signer) }}
+                </nuxt-link>
+              </Cell>
+            </Row>
+
+            <Row v-if="contract.value">
+              <Cell>{{ $t('details.contract.value') }}</Cell>
+              <Cell>{{ contract.value }}</Cell>
+            </Row>
+
+            <Row v-if="contract.gas_limit">
+              <Cell>{{ $t('details.contract.gas_limit') }}</Cell>
+              <Cell>{{ contract.gas_limit }}</Cell>
+            </Row>
+
+            <Row v-if="contract.storage_limit">
+              <Cell>{{ $t('details.contract.storage_limit') }}</Cell>
+              <Cell>{{ contract.storage_limit }}</Cell>
+            </Row>
+
+            <Row v-if="contract.bytecode">
+              <Cell>{{ $t('details.contract.bytecode') }}</Cell>
+              <Cell wrap>{{ contract.bytecode }}</Cell>
+            </Row>
+
+            <Row v-if="contract.deployment_bytecode">
+              <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
+              <Cell wrap>{{ contract.deployment_bytecode }}</Cell>
+            </Row>
+
+            <Row v-if="contract.arguments">
+              <Cell>{{ $t('details.contract.arguments') }}</Cell>
+              <Cell wrap>{{ contract.arguments }}</Cell>
+            </Row>
+
+            <Row v-if="decodedArguments">
+              <Cell>{{ $t('details.contract.decoded_arguments') }}</Cell>
+              <Cell wrap>{{ decodedArguments }}</Cell>
+            </Row>
+
+            <Row v-if="contract.metadata">
+              <Cell>{{ $t('details.contract.metadata') }}</Cell>
+              <Cell wrap>{{ contract.metadata }}</Cell>
+            </Row>
+
+            <Row v-if="decodedMetadata">
+              <Cell>{{ $t('details.contract.decoded_metadata') }}</Cell>
+              <Cell class="table-json" wrap>
+                <vue-json-pretty
+                  :data="JSON.parse(JSON.stringify(decodedMetadata))"
+                  :deep="2"
+                />
+              </Cell>
+            </Row>
+
+            <Promised :promise="getIpfsHash()">
+              <template #default="data">
+                <Row>
+                  <Cell>{{ $t('details.contract.ipfs_hash') }}</Cell>
+                  <Cell>
+                    <a :href="`https://ipfs.io/ipfs/${data}`" target="_blank">
+                      {{ data }}
+                    </a>
+                  </Cell>
+                </Row>
+              </template>
+            </Promised>
+
+            <Promised :promise="getBzzr1Hash()">
+              <template #default="data">
+                <Row>
+                  <Cell>{{ $t('details.contract.bzzr1_hash') }}</Cell>
+                  <Cell>{{ data }}</Cell>
+                </Row>
+              </template>
+            </Promised>
+
+            <Row v-if="decodedSolcVersion">
+              <Cell>{{ $t('details.contract.deployment_solc_version') }}</Cell>
+              <Cell wrap>{{ decodedSolcVersion }}</Cell>
+            </Row>
+          </Data>
+
+          <!-- Developer -->
+
+          <Data v-if="tab === 'developer'">
+            <Row>
+              <Cell>{{ $t('details.contract.compiler_version') }}</Cell>
+              <Cell>{{ contract.compiler_version }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.contract.optimization') }}</Cell>
+              <Cell>
+                <font-awesome-icon
+                  :icon="contract.optimization ? 'check' : 'times'"
+                  :class="
+                    contract.optimization ? 'text-success' : 'text-danger'
+                  "
+                />
+              </Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.contract.runs') }}</Cell>
+              <Cell>{{ contract.runs }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.contract.target') }}</Cell>
+              <Cell>{{ contract.target }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.contract.license') }}</Cell>
+              <Cell>{{ contract.licence }}</Cell>
+            </Row>
+          </Data>
+
+          <!-- Verified Source -->
+
+          <pre v-if="tab === 'source'" class="contract-details__source">{{
+            contract.source
+          }}</pre>
+
+          <vue-json-pretty
+            v-if="tab === 'abi'"
+            :data="JSON.parse(contract.abi)"
+          />
+
+          <ContractTransactions
+            v-if="tab === 'transactions'"
+            :contract-id="contractId"
+          />
+
+          <ContractExecute
+            v-if="tab === 'execute'"
+            :contract-id="contractId"
+            :contract-name="contract.name"
+            :contract-abi="JSON.parse(contract.abi)"
+          />
+        </Card>
       </b-container>
     </section>
   </div>
@@ -317,9 +258,27 @@ export default {
       loading: true,
       contractId: this.$route.params.id,
       contract: undefined,
+      tab: 'general',
     }
   },
   computed: {
+    tabs() {
+      if (this.contract?.verified) {
+        return {
+          general: 'General',
+          developer: 'Developer',
+          source: 'Verified Source',
+          abi: 'ABI',
+          transactions: 'Transactions',
+          execute: 'Execute',
+        }
+      }
+
+      return {
+        general: 'General',
+        transactions: 'Transactions',
+      }
+    },
     decodedArguments() {
       if (this.contract.abi && this.contract.arguments) {
         // get constructor arguments types array
@@ -425,3 +384,74 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+.contract-details {
+  .contract-details__source {
+    background: rgba(#eaedf3, 0.5);
+  }
+
+  .details-headline {
+    & + * {
+      margin-top: 15px;
+    }
+  }
+
+  .contract-details__identicon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    box-shadow: 0 0 10px -10px rgba(#0f233f, 0.5),
+      0 5px 15px -5px rgba(#0f233f, 0.25);
+    border-radius: 50%;
+    height: 110px;
+    width: 110px;
+    margin: 0 auto 15px auto;
+    overflow: hidden;
+
+    img {
+      border-radius: 50%;
+    }
+  }
+
+  .contract-details__account-identicon {
+    display: flex !important;
+  }
+
+  .tabs {
+    margin: 25px 0;
+  }
+
+  .data {
+    .table-cell {
+      & + .table-cell {
+        .table-cell__content-wrapper {
+          align-items: flex-end;
+
+          .table-cell__content {
+            text-align: right;
+          }
+
+          > * {
+            text-align: right;
+          }
+        }
+      }
+
+      &.table-json {
+        .table-cell__content-wrapper {
+          align-items: flex-start;
+
+          .table-cell__content {
+            width: 100%;
+            display: block;
+            text-align: left;
+            word-break: initial;
+          }
+        }
+      }
+    }
+  }
+}
+</style>

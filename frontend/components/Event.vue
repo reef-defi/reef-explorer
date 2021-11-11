@@ -1,57 +1,52 @@
 <template>
-  <div v-if="event" class="table-responsive pb-4">
-    <table class="table table-striped event-table">
-      <tbody>
-        <tr>
-          <td>Block number</td>
-          <td>
-            <nuxt-link
-              v-b-tooltip.hover
-              :to="`/block?blockNumber=${event.block_number}`"
-              title="Check block information"
-            >
-              #{{ formatNumber(event.block_number) }}
-            </nuxt-link>
-          </td>
-        </tr>
-        <tr>
-          <td>Timestamp</td>
-          <td>
-            <p class="mb-0">
-              {{ getDateFromTimestamp(event.timestamp) }}
-            </p>
-          </td>
-        </tr>
-        <tr>
-          <td>Event index</td>
-          <td>
-            {{ event.event_index }}
-          </td>
-        </tr>
-        <tr>
-          <td>Section and method</td>
-          <td>
-            {{ event.section }} ➡
-            {{ event.method }}
-          </td>
-        </tr>
-        <tr>
-          <td>Phase</td>
-          <td>
-            {{ event.phase }}
-          </td>
-        </tr>
-        <tr>
-          <td>Data</td>
-          <td>
-            <pre class="mb-0">{{
-              JSON.stringify(JSON.parse(event.data), null, 2)
-            }}</pre>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <Card v-if="event" class="event-details">
+    <Headline
+      >Event {{ $route.params.block }}-{{ $route.params.index }}
+    </Headline>
+
+    <Data>
+      <Row>
+        <Cell>Block number</Cell>
+        <Cell
+          ><nuxt-link :to="`/block?blockNumber=${event.block_number}`">
+            # {{ formatNumber(event.block_number) }}
+          </nuxt-link>
+        </Cell>
+      </Row>
+
+      <Row>
+        <Cell>Timestamp</Cell>
+        <Cell>
+          {{ getDateFromTimestamp(event.timestamp) }}
+        </Cell>
+      </Row>
+
+      <Row>
+        <Cell>Event Index</Cell>
+        <Cell>{{ event.event_index }}</Cell>
+      </Row>
+
+      <Row>
+        <Cell>Section &amp; Method</Cell>
+        <Cell>
+          {{ event.section }} ➡
+          {{ event.method }}
+        </Cell>
+      </Row>
+
+      <Row>
+        <Cell>Phase</Cell>
+        <Cell>{{ event.phase }}</Cell>
+      </Row>
+
+      <Row class="event-details__data">
+        <Cell>Data</Cell>
+        <Cell>
+          <pre>{{ JSON.stringify(JSON.parse(event.data), null, 2) }}</pre>
+        </Cell>
+      </Row>
+    </Data>
+  </Card>
 </template>
 
 <script>
@@ -66,3 +61,32 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+.event-details {
+  .event-details__data {
+    .table-cell {
+      &:last-child {
+        .table-cell__content-wrapper {
+          height: unset;
+          max-height: unset;
+
+          .table-cell__content {
+            padding: 15px 0;
+            white-space: initial;
+            line-height: 1.6;
+
+            pre {
+              font-size: 13px;
+              line-height: 15px;
+              font-weight: 500;
+              color: #3e3f42;
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</style>

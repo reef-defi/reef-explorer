@@ -162,9 +162,6 @@ h1 {
   color: $light;
 }
 
-.identicon {
-  cursor: pointer;
-}
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
@@ -263,9 +260,6 @@ h1 {
 }
 
 // account page
-.account-page .table tr td .identicon {
-  display: inline-block;
-}
 .account-page .amount {
   color: $primary2;
   font-weight: 700;

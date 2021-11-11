@@ -12,39 +12,46 @@
         (item) => item.type === 'function'
       )"
       :key="`message-${index}`"
+      class="contract-execute__section"
     >
-      <b-card class="mb-4">
-        <b-card-title>
-          <strong>{{ message.name }}</strong> ({{ getInputs(message) }})
-          <font-awesome-icon
-            v-if="message.stateMutability !== 'view'"
-            icon="database"
-          />
-          <span v-if="message.outputs.length > 0">
-            : {{ getOutputs(message) }}
-          </span>
-        </b-card-title>
-        <template v-if="message.stateMutability === 'view'">
-          <contract-call-function
-            :provider="provider"
-            :contract-id="contractId"
-            :contract-interface="contractInterface"
-            :contract-abi="contractAbi"
-            :function-name="message.name"
-            :function-name-with-args="getFunctionNameWithArgs(message)"
-          />
-        </template>
-        <template v-else>
-          <contract-call-function-write
-            :provider="provider"
-            :contract-id="contractId"
-            :contract-interface="contractInterface"
-            :contract-abi="contractAbi"
-            :function-name="message.name"
-            :function-name-with-args="getFunctionNameWithArgs(message)"
-          />
-        </template>
-      </b-card>
+      <div class="contract-execute__section-head">
+        <div class="contract-execute__section-title">
+          {{ message.name }}
+        </div>
+        <div
+          v-if="message.stateMutability !== 'view'"
+          class="contract-execute__section-experimental"
+        >
+          <font-awesome-icon icon="database" />
+        </div>
+        <div
+          v-if="message.outputs.length > 0"
+          class="contract-execute__section-output"
+        >
+          {{ getOutputs(message) }}
+        </div>
+      </div>
+
+      <template v-if="message.stateMutability === 'view'">
+        <contract-call-function
+          :provider="provider"
+          :contract-id="contractId"
+          :contract-interface="contractInterface"
+          :contract-abi="contractAbi"
+          :function-name="message.name"
+          :function-name-with-args="getFunctionNameWithArgs(message)"
+        />
+      </template>
+      <template v-else>
+        <contract-call-function-write
+          :provider="provider"
+          :contract-id="contractId"
+          :contract-interface="contractInterface"
+          :contract-abi="contractAbi"
+          :function-name="message.name"
+          :function-name-with-args="getFunctionNameWithArgs(message)"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -127,9 +134,83 @@ export default {
 }
 </script>
 
-<style>
-.contract-execute .card-title {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
+<style lang="scss">
+.contract-execute {
+  .alert {
+    margin-bottom: 5px;
+
+    p {
+      margin: 0 !important;
+    }
+  }
+
+  .contract-execute__section {
+    padding: 25px 0;
+
+    .contract-execute__section-head {
+      width: 100%;
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 18px;
+
+      .contract-execute__section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #3e3f42;
+      }
+
+      .contract-execute__section-output {
+        margin-left: 15px;
+        background: rgba(#eaedf3, 0.65);
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 4px 9px;
+        border-radius: 5px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .contract-execute__section-experimental {
+        margin-left: 10px;
+        color: #3e3f42;
+        font-size: 16px;
+      }
+    }
+
+    .btn {
+      margin-top: 5px;
+      border: none;
+      padding: 7px 21px;
+      font-size: 15px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #a93185, #5531a9);
+      transition: filter 0.15s;
+
+      &:hover {
+        filter: brightness(1.2);
+      }
+
+      &:active {
+        filter: brightness(1.4);
+      }
+    }
+
+    & + .contract-execute__section {
+      border-top: solid 1px #eaedf3;
+    }
+
+    .alert {
+      margin-bottom: 0;
+    }
+
+    &:last-child {
+      padding-bottom: 10px;
+    }
+  }
 }
 </style>
