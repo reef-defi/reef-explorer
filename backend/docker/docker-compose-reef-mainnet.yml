@@ -22,7 +22,7 @@ services:
   # SQL data base
   #
   postgres:
-    image: postgres:13
+    image: postgres
     restart: always
     shm_size: 1gb
     volumes:
@@ -118,19 +118,6 @@ services:
       - NODE_ENV=production
       - NODE_PORT=8000
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
-
-  #
-  # Contract verificator
-  #
-  verificator:
-    image: verificator:latest
-    build:
-      context: ../../verificator
-      dockerfile: Dockerfile
-    depends_on:
-      - 'postgres'
-      - 'substrate-node'
-    restart: always
 
 #
 # Persistent volumes

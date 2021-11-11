@@ -34,6 +34,8 @@ services:
     environment:
       POSTGRES_USER: 'reefexplorer'
       POSTGRES_PASSWORD: 'reefexplorer'
+    # ports:
+    #   - '54321:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U reefexplorer']
       interval: 5s
@@ -119,19 +121,6 @@ services:
       - NODE_ENV=production
       - NODE_PORT=8000
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
-
-  #
-  # Contract verificator
-  #
-  verificator:
-    image: verificator:latest
-    build:
-      context: ../../verificator
-      dockerfile: Dockerfile
-    depends_on:
-      - 'postgres'
-      - 'substrate-node'
-    restart: always
 
 #
 # Persistent volumes
