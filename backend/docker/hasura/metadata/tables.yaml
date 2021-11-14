@@ -6,18 +6,18 @@
     permission:
       columns:
       - account_id
-      - available_balance
-      - balances
-      - block_height
-      - evm_address
-      - evm_nonce
-      - free_balance
       - identity
       - identity_display
       - identity_display_parent
+      - balances
+      - available_balance
+      - free_balance
       - locked_balance
       - nonce
       - timestamp
+      - block_height
+      - evm_address
+      - evm_nonce
       filter: {}
       allow_aggregations: true
 - table:
@@ -50,48 +50,37 @@
     schema: public
     name: contract
   array_relationships:
-  - name: holders
+  - name: erc20s
     using:
-      manual_configuration:
-        remote_table:
+      foreign_key_constraint_on:
+        column: contract_id
+        table:
           schema: public
-          name: token_holder
-        column_mapping:
-          contract_id: contract_id
+          name: erc20
   select_permissions:
   - role: public
     permission:
       columns:
-      - abi
-      - arguments
-      - block_height
-      - bytecode
-      - compiler_version
       - contract_id
-      - deployment_bytecode
-      - gas_limit
-      - is_erc20
-      - license
-      - metadata
+      - owner
       - name
-      - optimization
-      - runs
-      - signer
-      - source
-      - storage_limit
-      - target
-      - timestamp
-      - token_coingecko_id
-      - token_coinmarketcap_id
-      - token_decimals
-      - token_description
-      - token_icon_url
-      - token_name
-      - token_symbol
-      - token_total_supply
-      - token_validated
       - value
+      - gas_limit
+      - storage_limit
       - verified
+      - target
+      - runs
+      - source
+      - icon_url
+      - arguments
+      - compiler_version
+      - optimization
+      - deployment_bytecode
+      - bytecode_metadata
+      - bytecode_arguments
+      - compiler_data
+      - block_height
+      - timestamp
       filter: {}
       allow_aggregations: true
 - table:
@@ -103,18 +92,18 @@
       columns:
       - id
       - contract_id
-      - source
-      - filename
-      - compiler_version
-      - arguments
-      - optimization
       - runs
-      - target
-      - license
+      - name
+      - source
       - status
-      - error_type
-      - error_message
+      - target
+      - filename
       - timestamp
+      - arguments
+      - error_type
+      - optimization
+      - compiler_version
+      - error_message
       filter: {}
       allow_aggregations: true
 - table:
@@ -223,6 +212,25 @@
       allow_aggregations: true
 - table:
     schema: public
+    name: erc20
+  object_relationships:
+  - name: contract
+    using:
+      foreign_key_constraint_on: contract_id
+  select_permissions:
+  - role: public
+    permission:
+      columns:
+      - id
+      - contract_id
+      - name
+      - symbol
+      - decimals
+      - description
+      filter: {}
+      allow_aggregations: true
+- table:
+    schema: public
     name: event
   select_permissions:
   - role: public
@@ -268,6 +276,7 @@
       columns:
       - block_number
       - error
+      - stack
       - timestamp
       filter: {}
       allow_aggregations: true
@@ -284,6 +293,35 @@
       - engine
       - data
       - timestamp
+      filter: {}
+      allow_aggregations: true
+- table:
+    schema: public
+    name: pool
+  select_permissions:
+  - role: public
+    permission:
+      columns:
+      - address
+      - decimals
+      - reserve1
+      - reserve2
+      - total_supply
+      - minimum_liquidity
+      - token1
+      - token2
+      filter: {}
+      allow_aggregations: true
+- table:
+    schema: public
+    name: pool_user
+  select_permissions:
+  - role: public
+    permission:
+      columns:
+      - pool_address
+      - user_address
+      - balance
       filter: {}
       allow_aggregations: true
 - table:
@@ -391,15 +429,6 @@
 - table:
     schema: public
     name: token_holder
-  object_relationships:
-  - name: contract
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: contract
-        column_mapping:
-          contract_id: contract_id
   select_permissions:
   - role: public
     permission:
