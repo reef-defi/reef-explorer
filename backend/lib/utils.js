@@ -157,19 +157,23 @@ module.exports = {
     loggerOptions,
   ) => {
     const startTime = new Date().getTime();
-    await Promise.all(
-      extrinsics.map((extrinsic, index) => module.exports.processExtrinsic(
-        provider,
-        client,
-        blockNumber,
-        blockHash,
-        extrinsic,
-        index,
-        blockEvents,
-        timestamp,
-        loggerOptions,
-      )),
-    );
+    const chunkSize = 100;
+    const indexedExtrinsics = extrinsics.map((extrinsic, index) => ([index, extrinsic]));
+    const chunks = module.exports.chunker(indexedExtrinsics, chunkSize);
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map((indexedExtrinsic) => module.exports.processExtrinsic(
+          provider,
+          client,
+          blockNumber,
+          blockHash,
+          indexedExtrinsic,
+          blockEvents,
+          timestamp,
+          loggerOptions,
+        )),
+      );
+    }
     // Log execution time
     const endTime = new Date().getTime();
     logger.debug(loggerOptions, `Added ${extrinsics.length} extrinsics in ${((endTime - startTime) / 1000).toFixed(3)}s`);
@@ -179,12 +183,12 @@ module.exports = {
     client,
     blockNumber,
     blockHash,
-    extrinsic,
-    index,
+    indexedExtrinsic,
     blockEvents,
     timestamp,
     loggerOptions,
   ) => {
+    const [index, extrinsic]  = indexedExtrinsic;
     const { api } = provider;
     const { isSigned } = extrinsic;
     const signer = isSigned ? extrinsic.signer.toString() : '';
@@ -400,19 +404,24 @@ module.exports = {
     client, blockNumber, blockEvents, timestamp, loggerOptions,
   ) => {
     const startTime = new Date().getTime();
-    await Promise.all(
-      blockEvents.map((record, index) => module.exports.processEvent(
-        client, blockNumber, record, index, timestamp, loggerOptions,
-      )),
-    );
+    const chunkSize = 100;
+    const indexedBlockEvents = blockEvents.map((event, index) => ([index, event]));
+    const chunks = module.exports.chunker(indexedBlockEvents, chunkSize);
+    for (const chunk of chunks) {
+      await Promise.all(
+        chunk.map((indexedEvent) => module.exports.processEvent(
+          client, blockNumber, indexedEvent, timestamp, loggerOptions,
+        )),
+      );
+    }
     // Log execution time
     const endTime = new Date().getTime();
     logger.debug(loggerOptions, `Added ${blockEvents.length} events in ${((endTime - startTime) / 1000).toFixed(3)}s`);
   },
   processEvent: async (
-    client, blockNumber, record, index, timestamp, loggerOptions,
+    client, blockNumber, indexedEvent, timestamp, loggerOptions,
   ) => {
-    const { event, phase } = record;
+    const [index, { event, phase }] = indexedEvent;
     let sql = `INSERT INTO event (
       block_number,
       event_index,
@@ -706,4 +715,8 @@ module.exports = {
     }
     return null;
   },
+  chunker: (a, n) => Array.from(
+    { length: Math.ceil(a.length / n) },
+    (_, i) => a.slice(i * n, i * n + n),
+  )
 }
