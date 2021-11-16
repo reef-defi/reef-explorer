@@ -1,6 +1,18 @@
 import { utils } from 'ethers';
-import {ABI, ABIFragment, ParamererInput, Parameters} from "../types"
+import { ABI, ABIFragment } from "../types"
 import { ensure } from '../utils';
+
+interface ParamererInput {
+  type: string;
+  value: string;
+  name?: string;
+}
+
+interface Parameters {
+  type: string;
+  funcName: string;
+  inputs: ParamererInput[];
+};
 
 const abiCoder = new utils.AbiCoder();
 

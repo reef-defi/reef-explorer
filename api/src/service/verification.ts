@@ -2,7 +2,7 @@ import { query } from "../connector";
 import { verifyContractArguments } from "../contract-compiler/argumentEncoder";
 import { verifyContract } from "../contract-compiler/compiler";
 import { checkIfContractIsERC20, extractERC20ContractData } from "../contract-compiler/erc-checkers";
-import { ABI, AutomaticContractVerificationReq, License, Target } from "../types";
+import { ABI, AutomaticContractVerificationReq, ERC20Data, License, Target } from "../types";
 import { ensure } from "../utils";
 
 interface Bytecode {
@@ -11,12 +11,6 @@ interface Bytecode {
 
 interface Status {
   status: string;
-}
-
-interface ERC20Data {
-  name: string;
-  symbol: string;
-  decimals: number;
 }
 
 interface ContracVerificationInsert {

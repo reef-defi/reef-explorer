@@ -90,3 +90,9 @@ export interface Pool extends DefaultPool {
   userPoolBalance: string;
   minimumLiquidity: string;
 }
+
+export interface ERC20Data {
+  name: string;
+  symbol: string;
+  decimals: number;
+}
