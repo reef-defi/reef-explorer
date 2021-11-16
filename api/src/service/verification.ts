@@ -1,7 +1,7 @@
 import { query } from "../connector";
-import { verifyContractArguments } from "../contract-compiler/argumentEncoder";
-import { verifyContract } from "../contract-compiler/compiler";
-import { checkIfContractIsERC20, extractERC20ContractData } from "../contract-compiler/erc-checkers";
+import { verifyContractArguments } from "./contract-compiler/argumentEncoder";
+import { verifyContract } from "./contract-compiler/compiler";
+import { checkIfContractIsERC20, extractERC20ContractData } from "./contract-compiler/erc-checkers";
 import { ABI, AutomaticContractVerificationReq, ERC20Data, License, Target } from "../types";
 import { ensure } from "../utils";
 

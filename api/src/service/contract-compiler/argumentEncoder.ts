@@ -1,6 +1,6 @@
 import { utils } from 'ethers';
-import { ABI, ABIFragment } from "../types"
-import { ensure } from '../utils';
+import { ABI, ABIFragment } from "../../types"
+import { ensure } from '../../utils';
 
 interface ParamererInput {
   type: string;
