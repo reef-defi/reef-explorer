@@ -2,10 +2,13 @@
   <div class="verify-contract">
     <section>
       <b-container class="page-verify-contract main py-5">
-        <Headline class="verify-contract__headline">
-          {{ $t('pages.verifyContract.title') }}
-        </Headline>
-        <div class="verify-contract">
+        <div class="verify-contract__head">
+          <Headline class="verify-contract__headline">
+            {{ $t('pages.verifyContract.title') }}
+          </Headline>
+          <Tabs v-model="tab" :options="$options.tabs" />
+        </div>
+        <div v-if="tab === 'verify'" class="verify-contract">
           <b-alert show>
             Source code verification provides
             <strong>transparency</strong> for users interacting with REEF smart
@@ -184,6 +187,7 @@
             >
           </b-form>
         </div>
+        <VerificationRequests v-if="tab === 'requests'" :requests="requests" />
       </b-container>
     </section>
   </div>
@@ -200,8 +204,13 @@ import { network } from '@/frontend.config.js'
 
 export default {
   mixins: [commonMixin, validationMixin],
+  tabs: {
+    verify: 'Verify Contract',
+    requests: 'Verificantion Requests',
+  },
   data() {
     return {
+      tab: 'verify',
       requestId: null,
       requestIds: [],
       requests: [],
@@ -4311,11 +4320,36 @@ export default {
 
 <style lang="scss">
 .verify-contract {
-  .verify-contract__headline {
-    margin-bottom: 20px;
+  .verify-contract__head {
     width: 100%;
-    justify-content: flex-start;
-    text-align: left;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .verify-contract__headline {
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .tabs {
+      margin-top: 0;
+    }
+
+    @media only screen and (max-width: 991px) {
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+
+      .verify-contract__headline {
+        justify-content: center;
+        text-align: center;
+      }
+
+      .tabs {
+        margin-top: 15px;
+      }
+    }
   }
 
   .alert {
