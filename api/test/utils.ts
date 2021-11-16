@@ -1,6 +1,6 @@
-import { verifyContractArguments } from "../src/compiler/argumentEncoder";
-import { verifyContract } from "../src/compiler/compiler";
-import { ABI } from "../src/types";
+import { verifyContractArguments } from "../src/services/contract-compiler/argumentEncoder";
+import { verifyContract } from "../src/services/contract-compiler/compiler";
+import { ABI } from "../src/utils/types";
 
 export interface ContractStorage {
   abi: ABI,

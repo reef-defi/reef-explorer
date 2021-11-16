@@ -1,7 +1,63 @@
-import { ABI, AutomaticContractVerificationReq, Compile, CompilerContracts, CompilerResult, Contracts, SolcContracts, Target, VerifyContract } from "../types";
-import { ensure } from "../utils";
+import { ABI, AutomaticContractVerificationReq, Target } from "../../utils/types";
+import { ensure } from "../../utils/utils";
 
 const solc = require('solc');
+
+
+interface Contracts {
+  [contractFilename: string]: string
+}
+
+interface CompilerContracts {
+  [filename: string]: {
+    content: string;
+  }
+}
+
+interface SolcContracts {
+  language: 'Solidity';
+  sources: CompilerContracts;
+  settings: {
+    optimizer: {
+      runs: number;
+      enabled: boolean;
+    };
+    evmVersion?: Target;
+    outputSelection: {
+      "*": {
+        '*': string[];
+      };
+    };
+  };
+}
+
+interface CompilerResult {
+  errors?: {
+    type: string;
+    formattedMessage: string;
+  }[];
+  contracts?: {
+    [filename: string]: {
+      [name: string]: any;
+    };
+  };
+  sources: {
+    [filename: string]: {
+      id: number;
+    };
+  };
+}
+
+interface Compile {
+  abi: ABI;
+  fullAbi: ABI;
+  fullBytecode: string;
+}
+
+interface VerifyContract {
+  abi: ABI;
+  fullAbi: ABI;
+}
 
 const toCompilerContracts = (contracts: Contracts): CompilerContracts => 
   Object.keys(contracts)
