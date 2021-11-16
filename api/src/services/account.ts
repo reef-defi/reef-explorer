@@ -1,6 +1,6 @@
-import { query } from "../connector";
-import { Pool, PoolDB } from "../types";
-import { ensure } from "../utils";
+import { query } from "../utils/connector";
+import { Pool, PoolDB } from "../utils/types";
+import { ensure } from "../utils/utils";
 
 interface UserTokenDB {
   contract_id: string;

@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { findPoolQuery, findStakingRewards, findTokenInfo } from "../services/contract";
-import { AppRequest, PoolReq } from "../types";
-import { ensure, errorStatus } from "../utils";
+import { AppRequest, PoolReq } from "../utils/types";
+import { ensure, errorStatus } from "../utils/utils";
 
 export const findPool = async (req: AppRequest<PoolReq>, res: Response) => {
   try {

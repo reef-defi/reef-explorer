@@ -1,8 +1,8 @@
 import { Response } from "express";
 import { authenticationToken } from "../services/utils";
 import { contractVerificationInsert, contractVerificationStatus, verify } from "../services/verification";
-import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from "../types";
-import { ensureObjectKeys, errorStatus, ensure } from "../utils";
+import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from "../utils/types";
+import { ensureObjectKeys, errorStatus, ensure } from "../utils/utils";
 
 interface ContractVerificationID {
   id: string;

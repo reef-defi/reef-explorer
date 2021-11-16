@@ -1,5 +1,5 @@
 import axios from "axios";
-import { APP_CONFIGURATION } from "../config";
+import { APP_CONFIGURATION } from "../utils/config";
 
 const REEF_DENOM = "reef-finance";
 

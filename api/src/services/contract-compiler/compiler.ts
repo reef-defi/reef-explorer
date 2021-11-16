@@ -1,5 +1,5 @@
-import { ABI, AutomaticContractVerificationReq, Target } from "../../types";
-import { ensure } from "../../utils";
+import { ABI, AutomaticContractVerificationReq, Target } from "../../utils/types";
+import { ensure } from "../../utils/utils";
 
 const solc = require('solc');
 

@@ -1,9 +1,9 @@
-import { query } from "../connector";
+import { query } from "../utils/connector";
 import { verifyContractArguments } from "./contract-compiler/argumentEncoder";
 import { verifyContract } from "./contract-compiler/compiler";
 import { checkIfContractIsERC20, extractERC20ContractData } from "./contract-compiler/erc-checkers";
-import { ABI, AutomaticContractVerificationReq, ERC20Data, License, Target } from "../types";
-import { ensure } from "../utils";
+import { ABI, AutomaticContractVerificationReq, ERC20Data, License, Target } from "../utils/types";
+import { ensure } from "../utils/utils";
 
 interface Bytecode {
   deployment_bytecode: string;

@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { findUserTokens, findUserPool } from "../services/account";
-import { AppRequest, PoolReq } from "../types";
-import { ensure, errorStatus } from "../utils";
+import { AppRequest, PoolReq } from "../utils/types";
+import { ensure, errorStatus } from "../utils/utils";
 
 interface AccountAddress {
   address: string;
