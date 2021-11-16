@@ -122,7 +122,7 @@
               <Cell wrap>{{ decodedArguments }}</Cell>
             </Row>
 
-            <!-- <Row v-if="contract.metadata">
+            <Row v-if="contract.metadata">
               <Cell>{{ $t('details.contract.metadata') }}</Cell>
               <Cell wrap>{{ contract.metadata }}</Cell>
             </Row>
@@ -135,7 +135,7 @@
                   :deep="2"
                 />
               </Cell>
-            </Row> -->
+            </Row>
 
             <Promised :promise="getIpfsHash()">
               <template #default="data">
@@ -207,10 +207,7 @@
             contract.source
           }}</pre>
 
-          <!-- <vue-json-pretty
-            v-if="tab === 'abi'"
-            :data="JSON.parse(contract.abi)"
-          /> -->
+          <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
 
           <ContractTransactions
             v-if="tab === 'transactions'"
@@ -221,7 +218,7 @@
             v-if="tab === 'execute'"
             :contract-id="contractId"
             :contract-name="contract.name"
-            :contract-abi="JSON.parse(contract.abi)"
+            :contract-abi="contract.abi"
           />
         </Card>
       </b-container>
@@ -230,7 +227,7 @@
 </template>
 <script>
 import { gql } from 'graphql-tag'
-// import VueJsonPretty from 'vue-json-pretty'
+import VueJsonPretty from 'vue-json-pretty'
 import { ethers } from 'ethers'
 import cbor from 'cbor'
 import Hash from 'ipfs-only-hash'
@@ -246,7 +243,7 @@ export default {
   components: {
     ReefIdenticon,
     Loading,
-    // VueJsonPretty,
+    VueJsonPretty,
     ContractTransactions,
     ContractExecute,
     Promised,
@@ -280,9 +277,9 @@ export default {
       }
     },
     decodedArguments() {
-      if (this.contract.abi && this.contract.arguments) {
+      if (this.contract.abi && this.contract.bytecode_arguments) {
         // get constructor arguments types array
-        const constructorTypes = JSON.parse(this.contract.abi)
+        const constructorTypes = this.contract.abi
           .find(({ type }) => type === 'constructor')
           .inputs.map((input) => input.type)
 
@@ -290,24 +287,30 @@ export default {
         const abiCoder = new ethers.utils.AbiCoder()
         const decoded = abiCoder.decode(
           constructorTypes,
-          '0x' + this.contract.arguments
+          '0x' + this.contract.bytecode_arguments
         )
         return decoded.toString()
       }
       return null
     },
     decodedMetadata() {
-      if (this.contract.metadata) {
+      if (this.contract.bytecode_metadata) {
         let encodedMetadata = ''
         const endSeq1 = '0033'
-        const endSeqIndex1 = this.contract.metadata.indexOf(endSeq1)
+        const endSeqIndex1 = this.contract.bytecode_metadata.indexOf(endSeq1)
         const endSeq2 = '0032'
-        const endSeqIndex2 = this.contract.metadata.indexOf(endSeq2)
-        if (this.contract.metadata.includes(endSeq1)) {
-          encodedMetadata = this.contract.metadata.slice(0, endSeqIndex1)
+        const endSeqIndex2 = this.contract.bytecode_metadata.indexOf(endSeq2)
+        if (this.contract.bytecode_metadata.includes(endSeq1)) {
+          encodedMetadata = this.contract.bytecode_metadata.slice(
+            0,
+            endSeqIndex1
+          )
         }
-        if (this.contract.metadata.includes(endSeq2)) {
-          encodedMetadata = this.contract.metadata.slice(0, endSeqIndex2)
+        if (this.contract.bytecode_metadata.includes(endSeq2)) {
+          encodedMetadata = this.contract.bytecode_metadata.slice(
+            0,
+            endSeqIndex2
+          )
         }
         // metadata is CBOR encoded (http://cbor.me/)
         const decodedMetadata = cbor.decode(encodedMetadata)
@@ -337,6 +340,8 @@ export default {
               contract_id
               name
               deployment_bytecode
+              bytecode_metadata
+              bytecode_arguments
               arguments
               value
               gas_limit
@@ -346,6 +351,7 @@ export default {
               verified
               source
               compiler_version
+              compiler_data
               optimization
               runs
               target
@@ -361,6 +367,7 @@ export default {
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
+            this.contract.abi = data.contract[0].compiler_data[0]
           }
           this.loading = false
         },
