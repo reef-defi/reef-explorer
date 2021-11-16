@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { formVerification, submitVerification, verificationStatus } from "../controllers/contract-verification";
+import { formVerification, submitVerification, verificationStatus } from "../controllers/verification";
 
 const router = Router();
 
