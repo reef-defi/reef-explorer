@@ -72,17 +72,17 @@
               <Cell>{{ $t('details.contract.signer') }}</Cell>
               <Cell>
                 <ReefIdenticon
-                  v-if="contract.signer"
-                  :key="contract.signer"
+                  v-if="contract.owner"
+                  :key="contract.owner"
                   class="contract-details__account-identicon"
-                  :address="contract.signer"
+                  :address="contract.owner"
                   :size="20"
                 />
                 <nuxt-link
-                  v-if="contract.signer"
-                  :to="`/account/${contract.signer}`"
+                  v-if="contract.owner"
+                  :to="`/account/${contract.owner}`"
                 >
-                  {{ shortAddress(contract.signer) }}
+                  {{ shortAddress(contract.owner) }}
                 </nuxt-link>
               </Cell>
             </Row>
@@ -102,10 +102,10 @@
               <Cell>{{ contract.storage_limit }}</Cell>
             </Row>
 
-            <Row v-if="contract.bytecode">
+            <!-- <Row v-if="contract.bytecode">
               <Cell>{{ $t('details.contract.bytecode') }}</Cell>
               <Cell wrap>{{ contract.bytecode }}</Cell>
-            </Row>
+            </Row> -->
 
             <Row v-if="contract.deployment_bytecode">
               <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
@@ -122,7 +122,7 @@
               <Cell wrap>{{ decodedArguments }}</Cell>
             </Row>
 
-            <Row v-if="contract.metadata">
+            <!-- <Row v-if="contract.metadata">
               <Cell>{{ $t('details.contract.metadata') }}</Cell>
               <Cell wrap>{{ contract.metadata }}</Cell>
             </Row>
@@ -135,7 +135,7 @@
                   :deep="2"
                 />
               </Cell>
-            </Row>
+            </Row> -->
 
             <Promised :promise="getIpfsHash()">
               <template #default="data">
@@ -207,10 +207,10 @@
             contract.source
           }}</pre>
 
-          <vue-json-pretty
+          <!-- <vue-json-pretty
             v-if="tab === 'abi'"
             :data="JSON.parse(contract.abi)"
-          />
+          /> -->
 
           <ContractTransactions
             v-if="tab === 'transactions'"
@@ -230,7 +230,7 @@
 </template>
 <script>
 import { gql } from 'graphql-tag'
-import VueJsonPretty from 'vue-json-pretty'
+// import VueJsonPretty from 'vue-json-pretty'
 import { ethers } from 'ethers'
 import cbor from 'cbor'
 import Hash from 'ipfs-only-hash'
@@ -246,7 +246,7 @@ export default {
   components: {
     ReefIdenticon,
     Loading,
-    VueJsonPretty,
+    // VueJsonPretty,
     ContractTransactions,
     ContractExecute,
     Promised,
@@ -337,13 +337,11 @@ export default {
               contract_id
               name
               deployment_bytecode
-              bytecode
-              metadata
               arguments
               value
               gas_limit
               storage_limit
-              signer
+              owner
               block_height
               verified
               source
@@ -351,9 +349,6 @@ export default {
               optimization
               runs
               target
-              abi
-              license
-              is_erc20
               timestamp
             }
           }

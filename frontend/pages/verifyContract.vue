@@ -9,201 +9,201 @@
             </h1>
           </b-col>
         </b-row>
-        <b-tabs content-class="mt-3">
-          <b-tab title="Verify contract" active>
-            <div class="verify-contract">
-              <b-alert show>
-                Source code verification provides
-                <strong>transparency</strong> for users interacting with REEF
-                smart contracts. By uploading the source code, ReefScan will
-                match the compiled code with that on the blockchain, allowing
-                the users to audit the code to independently verify that it
-                actually does what it is supposed to do.
-              </b-alert>
-              <b-form enctype="multipart/form-data" @submit="onSubmit">
-                <div class="row">
-                  <div class="col-md-6">
-                    <b-form-group
-                      id="input-group-source"
-                      label="Source file:"
-                      label-for="address"
-                    >
-                      <b-form-file
-                        ref="source"
-                        v-model="$v.source.$model"
-                        accept=".sol"
-                        placeholder="Please select contract source file..."
-                        drop-placeholder="Drop contract source file here..."
-                        :state="validateState('source')"
-                        aria-describedby="source-help"
-                        @change="onFileChange"
-                      ></b-form-file>
-                      <b-form-text id="source-help">
-                        <ul>
-                          <li>
-                            <font-awesome-icon icon="arrow-right" /> Multiple
-                            source files should be combined in one single file
-                            using
-                            <a
-                              href="https://github.com/reef-defi/reef-merger"
-                              target="_blank"
-                              >reef-merger</a
-                            >.
-                          </li>
-                          <li>
-                            <font-awesome-icon icon="arrow-right" />
-                            <strong>Filename</strong> excluding the extension
-                            should be <strong>equal</strong> to
-                            <strong>contract name</strong> in source code.
-                          </li>
-                          <li>
-                            <font-awesome-icon icon="arrow-right" /> File
-                            extension should be <strong>".sol"</strong>.
-                          </li>
-                        </ul>
-                      </b-form-text>
-                      <b-progress
-                        v-show="
-                          uploadPercentage > 0 && uploadPercentage !== 100
-                        "
-                        striped
-                        animated
-                        :max="100"
-                        class="mt-3"
-                        :value="uploadPercentage"
-                      ></b-progress>
-                    </b-form-group>
-                  </div>
-                  <div class="col-md-6">
-                    <b-form-group
-                      id="input-group-address"
-                      label="Address:"
-                      label-for="address"
-                      description="Please enter the Contract Address you would like to verify"
-                    >
-                      <b-form-input
-                        id="address"
-                        v-model="$v.address.$model"
-                        type="text"
-                        placeholder="Enter address"
-                        :state="validateState('address')"
-                      ></b-form-input>
-                    </b-form-group>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <b-form-group
-                      id="compiler-version"
-                      label="Compiler version:"
-                      label-for="compiler-version"
-                    >
-                      <b-form-select
-                        id="compiler-version"
-                        v-model="$v.compilerVersion.$model"
-                        :options="
-                          nightly ? compilerVersions : compilerAllVersions
-                        "
-                        :state="validateState('compilerVersion')"
-                      ></b-form-select>
-                      <b-form-checkbox
-                        id="nightly"
-                        v-model="nightly"
-                        name="nightly"
-                        class="py-2"
-                      >
-                        Un-Check to show nightly commits also
-                      </b-form-checkbox>
-                    </b-form-group>
-                  </div>
-                  <div class="col-md-6">
-                    <b-form-group
-                      id="input-group-optimization-target"
-                      label="EVM version:"
-                      label-for="optimization-target"
-                    >
-                      <b-form-select
-                        id="optimization-target"
-                        v-model="$v.target.$model"
-                        :options="targetOptions"
-                        :state="validateState('target')"
-                      ></b-form-select>
-                    </b-form-group>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <b-form-group
-                      id="input-group-optimization"
-                      label="Optimization:"
-                      label-for="optimization"
-                    >
-                      <b-form-select
-                        id="optimization"
-                        v-model="$v.optimization.$model"
-                        :options="optimizationOptions"
-                        :state="validateState('optimization')"
-                      ></b-form-select>
-                    </b-form-group>
-                  </div>
-                  <div class="col-md-6">
-                    <b-form-group
-                      id="input-group-optimization-runs"
-                      label="Runs (Optimization):"
-                      label-for="optimization-runs"
-                    >
-                      <b-form-input
-                        id="optimization-runs"
-                        v-model="$v.runs.$model"
-                        type="number"
-                        :state="validateState('runs')"
-                      ></b-form-input>
-                    </b-form-group>
-                  </div>
-                </div>
-
+        <div class="verify-contract">
+          <b-alert show>
+            Source code verification provides
+            <strong>transparency</strong> for users interacting with REEF smart
+            contracts. By uploading the source code, ReefScan will match the
+            compiled code with that on the blockchain, allowing the users to
+            audit the code to independently verify that it actually does what it
+            is supposed to do.
+          </b-alert>
+          <b-form enctype="multipart/form-data" @submit="onSubmit">
+            <div class="row">
+              <div class="col-md-6">
                 <b-form-group
-                  id="input-group-arguments"
-                  label="Constructor arguments:"
-                  label-for="arguments"
-                  description="Encoded constructor arguments"
+                  id="input-group-source"
+                  label="Source file:"
+                  label-for="address"
                 >
-                  <b-form-textarea
-                    id="arguments"
-                    v-model="$v.arguments.$model"
-                    placeholder="Enter encoded constructor arguments..."
-                    rows="6"
-                  ></b-form-textarea>
+                  <b-form-file
+                    ref="source"
+                    v-model="$v.source.$model"
+                    accept=".sol"
+                    placeholder="Please select contract source file..."
+                    drop-placeholder="Drop contract source file here..."
+                    :state="validateState('source')"
+                    aria-describedby="source-help"
+                    @change="onFileChange"
+                  ></b-form-file>
+                  <b-form-text id="source-help">
+                    <ul>
+                      <li>
+                        <font-awesome-icon icon="arrow-right" /> Multiple source
+                        files should be combined in one single file using
+                        <a
+                          href="https://github.com/reef-defi/reef-merger"
+                          target="_blank"
+                          >reef-merger</a
+                        >.
+                      </li>
+                      <li>
+                        <font-awesome-icon icon="arrow-right" />
+                        <strong>Filename</strong> excluding the extension should
+                        be <strong>equal</strong> to
+                        <strong>contract name</strong> in source code.
+                      </li>
+                      <li>
+                        <font-awesome-icon icon="arrow-right" /> File extension
+                        should be <strong>".sol"</strong>.
+                      </li>
+                    </ul>
+                  </b-form-text>
+                  <b-progress
+                    v-show="uploadPercentage > 0 && uploadPercentage !== 100"
+                    striped
+                    animated
+                    :max="100"
+                    class="mt-3"
+                    :value="uploadPercentage"
+                  ></b-progress>
                 </b-form-group>
-
+              </div>
+              <div class="col-md-6">
                 <b-form-group
-                  id="input-group-license"
-                  label="Open source license:"
-                  label-for="license"
-                  description="Please select Open Source License Type"
+                  id="input-group-address"
+                  label="Address:"
+                  label-for="address"
+                  description="Please enter the Contract Address you would like to verify"
+                >
+                  <b-form-input
+                    id="address"
+                    v-model="$v.address.$model"
+                    type="text"
+                    placeholder="Enter address"
+                    :state="validateState('address')"
+                  ></b-form-input>
+                </b-form-group>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <b-form-group
+                  id="compiler-version"
+                  label="Compiler version:"
+                  label-for="compiler-version"
                 >
                   <b-form-select
-                    id="license"
-                    v-model="$v.license.$model"
-                    :options="licenses"
-                    :state="validateState('license')"
+                    id="compiler-version"
+                    v-model="$v.compilerVersion.$model"
+                    :options="nightly ? compilerVersions : compilerAllVersions"
+                    :state="validateState('compilerVersion')"
+                  ></b-form-select>
+                  <b-form-checkbox
+                    id="nightly"
+                    v-model="nightly"
+                    name="nightly"
+                    class="py-2"
+                  >
+                    Un-Check to show nightly commits also
+                  </b-form-checkbox>
+                </b-form-group>
+              </div>
+              <div class="col-md-6">
+                <b-form-group
+                  id="input-group-optimization-target"
+                  label="EVM version:"
+                  label-for="optimization-target"
+                >
+                  <b-form-select
+                    id="optimization-target"
+                    v-model="$v.target.$model"
+                    :options="targetOptions"
+                    :state="validateState('target')"
                   ></b-form-select>
                 </b-form-group>
-                <recaptcha />
-                <verification-status :id="requestId" />
-                <b-button
-                  type="submit"
-                  variant="outline-primary2"
-                  class="btn-block"
-                  >VERIFY CONTRACT</b-button
-                >
-              </b-form>
+              </div>
             </div>
-          </b-tab>
-          <b-tab title="Verification requests">
-            <verification-requests :requests="requests" class="my-4" />
-          </b-tab>
-        </b-tabs>
+            <div class="row">
+              <div class="col-md-6">
+                <b-form-group
+                  id="input-group-optimization"
+                  label="Optimization:"
+                  label-for="optimization"
+                >
+                  <b-form-select
+                    id="optimization"
+                    v-model="$v.optimization.$model"
+                    :options="optimizationOptions"
+                    :state="validateState('optimization')"
+                  ></b-form-select>
+                </b-form-group>
+              </div>
+              <div class="col-md-6">
+                <b-form-group
+                  id="input-group-optimization-runs"
+                  label="Runs (Optimization):"
+                  label-for="optimization-runs"
+                >
+                  <b-form-input
+                    id="optimization-runs"
+                    v-model="$v.runs.$model"
+                    type="number"
+                    :state="validateState('runs')"
+                  ></b-form-input>
+                </b-form-group>
+              </div>
+            </div>
+
+            <b-form-group
+              id="input-group-arguments"
+              label="Constructor arguments:"
+              label-for="arguments"
+              description="Encoded constructor arguments"
+            >
+              <b-form-textarea
+                id="arguments"
+                v-model="$v.arguments.$model"
+                placeholder="Enter encoded constructor arguments..."
+                rows="6"
+              ></b-form-textarea>
+            </b-form-group>
+
+            <b-form-group
+              id="input-group-license"
+              label="Open source license:"
+              label-for="license"
+              description="Please select Open Source License Type"
+            >
+              <b-form-select
+                id="license"
+                v-model="$v.license.$model"
+                :options="licenses"
+                :state="validateState('license')"
+              ></b-form-select>
+            </b-form-group>
+            <recaptcha />
+            <b-alert
+              v-if="requestStatus === 'Verified'"
+              variant="success"
+              class="text-center"
+              show
+            >
+              {{ requestStatus }}
+            </b-alert>
+            <b-alert
+              v-if="requestStatus && requestStatus !== 'Verified'"
+              variant="danger"
+              class="text-center"
+              show
+            >
+              {{ requestStatus }}
+            </b-alert>
+            <b-button type="submit" variant="outline-primary2" class="btn-block"
+              >VERIFY CONTRACT</b-button
+            >
+          </b-form>
+        </div>
       </b-container>
     </section>
   </div>
@@ -222,6 +222,7 @@ export default {
   mixins: [commonMixin, validationMixin],
   data() {
     return {
+      requestStatus: null,
       requestId: null,
       requestIds: [],
       requests: [],
@@ -1798,31 +1799,26 @@ export default {
         const sourceObject = {}
         sourceObject[vm.source.name] = vm.sourceContent
         this.$axios
-          .post(network.verificatorApi + '/manual-contract-verification', {
-            filename: vm.source.name,
-            name: vm.source.name.split('.')[0],
-            source: JSON.stringify(sourceObject),
+          .post(network.verificatorApi + '/form-verification', {
             address: toChecksumAddress(vm.address),
-            compilerVersion: vm.compilerVersion,
-            arguments: vm.arguments
-              ? JSON.stringify(vm.arguments)
-              : JSON.stringify([]),
-            optimization: JSON.stringify(vm.optimization),
+            name: vm.source.name.split('.')[0],
             runs: vm.runs,
-            target,
-            license: undefined,
+            filename: vm.source.name,
+            source: JSON.stringify(sourceObject),
+            compilerVersion: vm.compilerVersion,
+            optimization: JSON.stringify(vm.optimization),
             token,
+            arguments: vm.arguments,
+            target,
+            license: vm.license,
           })
           .then((resp) => {
             // eslint-disable-next-line no-console
-            // console.log('verification request data uploaded:', resp.data)
-            vm.requestId = resp.data.data.id
-            vm.requestIds.push(resp.data.data.id)
-            // eslint-disable-next-line no-console
-            // console.log('verification request id:', vm.requestId)
+            console.log('verification status:', resp.data)
+            vm.requestStatus = resp.data
           })
-          .catch(function (errors) {
-            vm.requestId = null
+          .catch((error) => {
+            vm.requestStatus = error.response.data
           })
 
         // at the end you need to reset recaptcha
@@ -1836,7 +1832,7 @@ export default {
       if (!checkAddressChecksum(contractId)) {
         return false
       }
-      const client = vm.$apollo
+      const client = vm.$apollo.provider.defaultClient
       const query = gql`
         query contract {
           contract(where: { contract_id: { _eq: "${
@@ -1865,42 +1861,42 @@ export default {
       reader.readAsText(file)
     },
   },
-  apollo: {
-    $subscribe: {
-      requests: {
-        query: gql`
-          subscription contract_verification_request($requestIds: [String!]) {
-            contract_verification_request(
-              where: { id: { _in: $requestIds } }
-              order_by: { timestamp: desc }
-            ) {
-              compiler_version
-              contract_id
-              error_message
-              error_type
-              filename
-              id
-              license
-              optimization
-              runs
-              status
-              target
-              timestamp
-            }
-          }
-        `,
-        variables() {
-          return {
-            requestIds: this.requestIds,
-          }
-        },
-        result({ data }) {
-          this.requests = data.contract_verification_request
-          // eslint-disable-next-line no-console
-          // console.log(this.requests)
-        },
-      },
-    },
-  },
+  // apollo: {
+  //   $subscribe: {
+  //     requests: {
+  //       query: gql`
+  //         subscription contract_verification_request($requestIds: [String!]) {
+  //           contract_verification_request(
+  //             where: { id: { _in: $requestIds } }
+  //             order_by: { timestamp: desc }
+  //           ) {
+  //             compiler_version
+  //             contract_id
+  //             error_message
+  //             error_type
+  //             filename
+  //             id
+  //             license
+  //             optimization
+  //             runs
+  //             status
+  //             target
+  //             timestamp
+  //           }
+  //         }
+  //       `,
+  //       variables() {
+  //         return {
+  //           requestIds: this.requestIds,
+  //         }
+  //       },
+  //       result({ data }) {
+  //         this.requests = data.contract_verification_request
+  //         // eslint-disable-next-line no-console
+  //         // console.log(this.requests)
+  //       },
+  //     },
+  //   },
+  // },
 }
 </script>

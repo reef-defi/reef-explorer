@@ -281,7 +281,7 @@ CREATE TABLE IF NOT EXISTS erc20 (
   symbol TEXT,
   decimals INT,
   description TEXT DEFAULT NULL,
-  
+  total_supply NUMERIC(80,0) DEFAULT NULL,
   PRIMARY KEY ( id ),
   CONSTRAINT fk_contract_id
     FOREIGN KEY (contract_id)
