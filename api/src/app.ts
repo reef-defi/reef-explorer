@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import accountRouter from './routes/account';
 import contractRouter from "./routes/contract";
 import verificationRouter from "./routes/verification";
-import { getReefPrice } from "./service/utils";
+import { getReefPrice } from "./services/utils";
 import { errorStatus } from "./utils";
 
 const cors = require('cors');

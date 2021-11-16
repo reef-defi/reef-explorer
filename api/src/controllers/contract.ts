@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { findPoolQuery, findStakingRewards, findTokenInfo } from "../service/contract";
+import { findPoolQuery, findStakingRewards, findTokenInfo } from "../services/contract";
 import { AppRequest, PoolReq } from "../types";
 import { ensure, errorStatus } from "../utils";
 

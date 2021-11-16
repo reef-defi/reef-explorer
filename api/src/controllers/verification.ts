@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { authenticationToken } from "../service/utils";
-import { contractVerificationInsert, contractVerificationStatus, verify } from "../service/verification";
+import { authenticationToken } from "../services/utils";
+import { contractVerificationInsert, contractVerificationStatus, verify } from "../services/verification";
 import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from "../types";
 import { ensureObjectKeys, errorStatus, ensure } from "../utils";
 

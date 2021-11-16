@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { findUserTokens, findUserPool } from "../service/account";
+import { findUserTokens, findUserPool } from "../services/account";
 import { AppRequest, PoolReq } from "../types";
 import { ensure, errorStatus } from "../utils";
 
