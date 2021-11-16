@@ -52,12 +52,12 @@ interface UpdateContract {
   compilerVersion: string;
 }
 const UPDATE_CONTRACT_STATUS = `UPDATE contract
-SET verified = TRUE, name = $2, compiler_data = $3, source = $4, compiler_version = $5, optimization = $6, target = $7
+SET verified = TRUE, name = $2, compiler_data = $3, source = $4, compiler_version = $5, optimization = $6, target = $7, license = $8
 WHERE contract_id = $1`;
 export const updateContractStatus = async ({address, name, abi, source, compilerVersion, optimization, target, license}: UpdateContract): Promise<void> => {
   await query(
     UPDATE_CONTRACT_STATUS,
-    [address, name, JSON.stringify(abi), source, compilerVersion, optimization, target]
+    [address, name, JSON.stringify(abi), source, compilerVersion, optimization, target, license]
   );
 };
 
