@@ -367,7 +367,7 @@ export default {
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
-            this.contract.abi = data.contract[0].compiler_data[0]
+            this.contract.abi = data.contract[0].compiler_data.flat()
           }
           this.loading = false
         },
