@@ -48,7 +48,7 @@ const verify = async (verification: AutomaticContractVerificationReq): Promise<v
 
 app.post('/api/verificator/submit-verification', async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
+    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "target"]);
     await verify(req.body);
     res.send("Verified");
   } catch (err) {
@@ -62,7 +62,7 @@ app.post('/api/verificator/submit-verification', async (req: AppRequest<Automati
 
 app.post('/api/verificator/form-verification', async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
+    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "target", "license"]);
     
     const isAuthenticated = await authenticationToken(req.body.token);
     ensure(isAuthenticated, "Google Token Authentication failed!", 404);
