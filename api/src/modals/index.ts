@@ -1,0 +1,1 @@
+// TODO When the time comes to remove GraphQL from project, write all db as modals
