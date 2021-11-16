@@ -5,7 +5,7 @@ import { ensure } from "../utils/utils";
 interface TokenInfoDefault {
   name: string;
   runs: number;
-  signer: string;
+  owner: string;
   source: string;
   target: Target;
   verified: string;
@@ -35,7 +35,7 @@ interface StakingRewardDB {
   block_number: number;
 }
 
-const FIND_TOKEN_INFO = `SELECT name, verified, deployment_bytecode, compiler_data, source, compiler_version, optimization, runs, target
+const FIND_TOKEN_INFO = `SELECT name, owner, verified, deployment_bytecode, compiler_data, source, compiler_version, optimization, runs, target
 FROM contract
 WHERE contract_id = $1`;
 
@@ -62,19 +62,20 @@ FROM event
 WHERE section = 'staking' AND method = 'Reward'`;
 
 
+const toTokenInfo = ({compiler_data, compiler_version, verified, deployment_bytecode, owner, name, runs, target, source, optimization}: TokenInfoDB): TokenInfo => ({
+  name, runs, target, owner, source, optimization, verified,
+  compilerData: compiler_data,
+  compilerVersion: compiler_version,
+  deployedBytecode: deployment_bytecode
+});
+
 export const findTokenInfo = async (address: string): Promise<TokenInfo[]> => {
   const results = await query<TokenInfoDB>(
     FIND_TOKEN_INFO,
     [address]
   );
   ensure(results.length > 0, `Contract with address: ${address}, does not exist`);
-  return results
-    .map((token) =>
-      ({...token, 
-        compilerVersion: token.compiler_version,
-        deployedBytecode: token.deployment_bytecode,
-        compilerData: token.compiler_data,
-      }));
+  return results.map(toTokenInfo);
 }
 
 export const findStakingRewards = async (): Promise<StakingRewardDB[]> => 

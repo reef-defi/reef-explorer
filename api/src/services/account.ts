@@ -29,20 +29,7 @@ WHERE
   pu.user_address = $3 AND
   p.pool_address = pu.pool_address`;
 
-const FIND_USER_TOKENS = `SELECT
-  th.contract_id,
-  holder_account_id,
-  holder_evm_address,
-  balance,
-  token_decimals,
-  token_symbol
-FROM
-  token_holder AS th,
-  contract AS c
-WHERE
-  (holder_account_id = $1 OR holder_evm_address = $1)
-  AND th.contract_id = c.contract_id`;
-
+const FIND_USER_TOKENS = `SELECT * FROM contract WHERE owner = $1;`;
 
 export const findUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<Pool> => {
   const pools = await query<PoolDB>(FIND_USER_POOL, [tokenAddress1, tokenAddress2, userAddress]);
