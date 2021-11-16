@@ -8,21 +8,14 @@
         <template v-else-if="!extrinsic">
           <h1 class="text-center">Contract tx not found!</h1>
         </template>
-        <template v-else>
-          <div class="card mt-4 mb-3">
-            <div class="card-body">
-              <h4 class="text-center mb-4">Contract transaction</h4>
-              <contract-transaction
-                :contract="contract"
-                :extrinsic="extrinsic"
-              />
-            </div>
-          </div>
+        <Card v-else class="list-view">
+          <Headline>Contract Transaction</Headline>
+          <contract-transaction :contract="contract" :extrinsic="extrinsic" />
           <extrinsic-events
             :block-number="parseInt(extrinsic.block_number)"
             :extrinsic-index="parseInt(extrinsic.extrinsic_index)"
           />
-        </template>
+        </Card>
       </b-container>
     </section>
   </div>
