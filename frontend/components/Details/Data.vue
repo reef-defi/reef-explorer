@@ -41,5 +41,20 @@ export default {
       }
     }
   }
+
+  .table-cell {
+    &.table-json {
+      .table-cell__content-wrapper {
+        align-items: flex-start;
+
+        .table-cell__content {
+          width: 100%;
+          display: block;
+          text-align: left;
+          word-break: initial;
+        }
+      }
+    }
+  }
 }
 </style>

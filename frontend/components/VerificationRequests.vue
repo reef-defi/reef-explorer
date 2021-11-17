@@ -1,19 +1,30 @@
 <template>
-  <div class="verification-requests">
-    <div class="table-responsive">
-      <b-table striped hover :fields="fields" :items="requests">
-        <template #cell(contract_id)="data">
-          <p class="mb-0">
-            {{ shortAddress(data.item.contract_id) }}
-          </p>
-        </template>
-        <template #cell(timestamp)="data">
-          <p class="mb-0">
-            {{ getDateFromTimestamp(data.item.timestamp / 1000) }}
-          </p>
-        </template>
-      </b-table>
-    </div>
+  <div>
+    <Table>
+      <THead>
+        <Cell>Date/Time</Cell>
+        <Cell>Contract</Cell>
+        <Cell>Filename</Cell>
+        <Cell>Compiler</Cell>
+        <Cell>Optimization</Cell>
+        <Cell>Runs</Cell>
+        <Cell>Target</Cell>
+        <Cell>Status</Cell>
+        <Cell>Error Type</Cell>
+      </THead>
+
+      <Row v-for="(item, index) in requests" :key="index">
+        <Cell>{{ getDateFromTimestamp(item.timestamp / 1000) }}</Cell>
+        <Cell>{{ shortAddress(item.contract_id) }}</Cell>
+        <Cell>{{ item.filename }}</Cell>
+        <Cell>{{ item.compiler_version }}</Cell>
+        <Cell>{{ item.optimization }}</Cell>
+        <Cell>{{ item.runs }}</Cell>
+        <Cell>{{ item.target }}</Cell>
+        <Cell>{{ item.status }}</Cell>
+        <Cell>{{ item.error_type }}</Cell>
+      </Row>
+    </Table>
   </div>
 </template>
 
@@ -28,63 +39,5 @@ export default {
       default: () => [],
     },
   },
-  data() {
-    return {
-      fields: [
-        {
-          key: 'timestamp',
-          label: 'Date/time',
-        },
-        {
-          key: 'contract_id',
-          label: 'Contract',
-        },
-        {
-          key: 'filename',
-          label: 'Filename',
-        },
-        {
-          key: 'compiler_version',
-          label: 'Compiler',
-        },
-
-        {
-          key: 'optimization',
-          label: 'Optimization',
-        },
-        {
-          key: 'runs',
-          label: 'Runs',
-        },
-        {
-          key: 'target',
-          label: 'Target',
-        },
-        {
-          key: 'status',
-          label: 'Status',
-        },
-        {
-          key: 'error_type',
-          label: 'Error type',
-        },
-      ],
-    }
-  },
 }
 </script>
-
-<style>
-.verification-requests .table th,
-.verification-requests .table td {
-  padding: 0.45rem;
-}
-.verification-requests .table thead th {
-  border-bottom: 0;
-}
-.verification-requests .identicon {
-  display: inline-block;
-  margin: 0 0.2rem 0 0;
-  cursor: copy;
-}
-</style>

@@ -1,15 +1,14 @@
 <template>
-  <div>
+  <div class="verify-contract">
     <section>
       <b-container class="page-verify-contract main py-5">
-        <b-row class="mb-2">
-          <b-col cols="12">
-            <h1>
-              {{ $t('pages.verifyContract.title') }}
-            </h1>
-          </b-col>
-        </b-row>
-        <div class="verify-contract">
+        <div class="verify-contract__head">
+          <Headline class="verify-contract__headline">
+            {{ $t('pages.verifyContract.title') }}
+          </Headline>
+          <Tabs v-model="tab" :options="$options.tabs" />
+        </div>
+        <div v-if="tab === 'verify'" class="verify-contract">
           <b-alert show>
             Source code verification provides
             <strong>transparency</strong> for users interacting with REEF smart
@@ -200,7 +199,7 @@
               {{ requestStatus }}
             </b-alert>
             <b-button type="submit" variant="outline-primary2" class="btn-block"
-              >VERIFY CONTRACT</b-button
+              >Verify Contract</b-button
             >
           </b-form>
         </div>
@@ -220,8 +219,13 @@ import { network } from '@/frontend.config.js'
 
 export default {
   mixins: [commonMixin, validationMixin],
+  tabs: {
+    verify: 'Verify Contract',
+    requests: 'Verificantion Requests',
+  },
   data() {
     return {
+      tab: 'verify',
       requestStatus: null,
       requestId: null,
       requestIds: [],
@@ -1900,3 +1904,62 @@ export default {
   // },
 }
 </script>
+
+<style lang="scss">
+.verify-contract {
+  .verify-contract__head {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .verify-contract__headline {
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .tabs {
+      margin-top: 0;
+    }
+
+    @media only screen and (max-width: 991px) {
+      flex-flow: column nowrap;
+      justify-content: flex-start;
+
+      .verify-contract__headline {
+        justify-content: center;
+        text-align: center;
+      }
+
+      .tabs {
+        margin-top: 15px;
+      }
+    }
+  }
+
+  .alert {
+    margin-bottom: 25px;
+  }
+
+  .btn {
+    margin-top: 5px;
+    border: none;
+    padding: 10px 21px;
+    font-size: 15px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #a93185, #5531a9);
+    transition: filter 0.15s;
+    color: white;
+
+    &:hover {
+      filter: brightness(1.2);
+    }
+
+    &:active {
+      filter: brightness(1.4);
+    }
+  }
+}
+</style>

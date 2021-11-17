@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!parsedAccount">
-          <h1 class="text-center">Account not valid!</h1>
-        </template>
+        <NotFound v-else-if="!parsedAccount" text="Account not valid" />
         <Card v-else class="account-details">
           <div class="account-details__identicon">
             <ReefIdenticon

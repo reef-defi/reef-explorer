@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!contract">
-          <h1 class="text-center">Contract not found!</h1>
-        </template>
+        <NotFound v-else-if="!contract" text="Contract not found" />
         <Card v-else class="contract-details">
           <div class="contract-details__identicon">
             <eth-identicon :address="contractId" :size="80" />
@@ -207,12 +205,18 @@
             contract.source
           }}</pre>
 
+          <!-- ABI -->
+
           <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
+
+          <!-- Transactions -->
 
           <ContractTransactions
             v-if="tab === 'transactions'"
             :contract-id="contractId"
           />
+
+          <!-- Execute -->
 
           <ContractExecute
             v-if="tab === 'execute'"
@@ -437,19 +441,6 @@ export default {
 
           > * {
             text-align: right;
-          }
-        }
-      }
-
-      &.table-json {
-        .table-cell__content-wrapper {
-          align-items: flex-start;
-
-          .table-cell__content {
-            width: 100%;
-            display: block;
-            text-align: left;
-            word-break: initial;
           }
         }
       }

@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!parsedEvent">
-          <h1 class="text-center">Event not found!</h1>
-        </template>
+        <NotFound v-else-if="!parsedEvent" text="Event not found" />
         <Event v-else :event="parsedEvent" />
       </b-container>
     </section>

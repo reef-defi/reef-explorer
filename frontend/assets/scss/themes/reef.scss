@@ -314,11 +314,14 @@ h1 {
   }
 }
 
-.contract-page pre {
-  background-color: $gray-100;
-  color: $gray-600;
-  font-size: 0.8rem;
-  padding: 1rem;
+.contract-page,
+.token-page {
+  pre {
+    background-color: $gray-100;
+    color: $gray-600;
+    font-size: 0.8rem;
+    padding: 1rem;
+  }
 }
 
 .contract-page table.contract-data tr td:first-child {

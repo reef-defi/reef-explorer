@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!transfer">
-          <h1 class="text-center">Transfer not found!</h1>
-        </template>
+        <NotFound v-else-if="!transfer" text="Transfer not found" />
         <Transfer v-else :transfer="transfer" />
       </b-container>
     </section>

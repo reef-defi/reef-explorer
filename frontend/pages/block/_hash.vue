@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!parsedBlock">
-          <h1 class="text-center">Block not found!</h1>
-        </template>
+        <NotFound v-else-if="!parsedBlock" text="Block not found" />
         <template v-else>
           <Block
             :parsed-block="parsedBlock"

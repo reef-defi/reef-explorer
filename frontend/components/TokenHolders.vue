@@ -1,42 +1,39 @@
 <template>
-  <div class="token-holders">
-    <div class="table-responsive">
-      <b-table striped hover :fields="fields" :items="holders">
-        <template #cell(holder_account_id)="data">
-          <p class="mb-0">
-            <nuxt-link
-              :to="`/account/${data.item.holder_account_id}`"
-              :title="$t('pages.accounts.account_details')"
-            >
-              <ReefIdenticon
-                :key="data.item.holder_account_id"
-                :address="data.item.holder_account_id"
-                :size="20"
-              />
-              {{ shortAddress(data.item.holder_account_id) }}
-            </nuxt-link>
-          </p>
-        </template>
-        <template #cell(holder_evm_address)="data">
-          <span v-if="data.item.holder_evm_address">
-            <eth-identicon :address="data.item.holder_evm_address" :size="20" />
-            <nuxt-link :to="`/account/${data.item.holder_account_id}`">
-              {{
-                data.item.holder_evm_address
-                  ? shortHash(data.item.holder_evm_address)
-                  : ''
-              }}
-            </nuxt-link>
-          </span>
-        </template>
-        <template #cell(balance)="data">
-          <p class="mb-0">
-            {{ formatTokenAmount(data.item.balance, decimals, symbol) }}
-          </p>
-        </template>
-      </b-table>
-    </div>
-  </div>
+  <Table>
+    <THead>
+      <Cell>Account ID</Cell>
+      <Cell>EVM Address</Cell>
+      <Cell align="right">Balance</Cell>
+    </THead>
+
+    <Row v-for="(item, index) in holders" :key="index">
+      <Cell
+        :link="`/account/${item.holder_account_id}`"
+        :title="$t('pages.accounts.account_details')"
+      >
+        <ReefIdenticon
+          :key="item.holder_account_id"
+          :address="item.holder_account_id"
+          :size="20"
+        />
+        <span>{{ shortAddress(item.holder_account_id) }}</span>
+      </Cell>
+
+      <Cell
+        v-if="item.holder_evm_address"
+        :link="{ fill: false, url: `/account/${item.holder_account_id}` }"
+      >
+        <eth-identicon :address="item.holder_evm_address" :size="20" />
+        <span>{{
+          item.holder_evm_address ? shortHash(item.holder_evm_address) : ''
+        }}</span>
+      </Cell>
+
+      <Cell align="right">{{
+        formatTokenAmount(item.balance, decimals, symbol)
+      }}</Cell>
+    </Row>
+  </Table>
 </template>
 
 <script>
@@ -61,34 +58,7 @@ export default {
   data() {
     return {
       extrinsics: [],
-      fields: [
-        {
-          key: 'holder_account_id',
-          label: 'Account Id',
-          sortable: true,
-        },
-        {
-          key: 'holder_evm_address',
-          label: 'EVM address',
-          sortable: true,
-        },
-        {
-          key: 'balance',
-          label: 'Balance',
-          sortable: true,
-        },
-      ],
     }
   },
 }
 </script>
-
-<style>
-.token-holders .table th,
-.token-holders .table td {
-  padding: 0.45rem;
-}
-.token-holders .table thead th {
-  border-bottom: 0;
-}
-</style>
