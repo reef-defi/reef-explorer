@@ -62,7 +62,6 @@ That will build and start all the required dockers:
 - Hasura GraphQL server
 - Reef chain node
 - Nodejs crawler
-- Verificator
 - API
 
 ### Hasura console

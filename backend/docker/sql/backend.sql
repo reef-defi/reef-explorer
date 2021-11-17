@@ -281,7 +281,7 @@ CREATE TABLE IF NOT EXISTS erc20 (
   symbol TEXT,
   decimals INT,
   description TEXT DEFAULT NULL,
-  
+  total_supply NUMERIC(80,0) DEFAULT NULL,
   PRIMARY KEY ( id ),
   CONSTRAINT fk_contract_id
     FOREIGN KEY (contract_id)
@@ -369,7 +369,8 @@ INSERT INTO total (name, count) VALUES
   ('current_era', 0),
   ('active_era', 0),
   ('minimum_stake', 0),
-  ('contracts', 0);
+  ('contracts', 0),
+  ('tokens', 0);
 
 
 INSERT INTO contract (

@@ -72,17 +72,17 @@
               <Cell>{{ $t('details.contract.signer') }}</Cell>
               <Cell>
                 <ReefIdenticon
-                  v-if="contract.signer"
-                  :key="contract.signer"
+                  v-if="contract.owner"
+                  :key="contract.owner"
                   class="contract-details__account-identicon"
-                  :address="contract.signer"
+                  :address="contract.owner"
                   :size="20"
                 />
                 <nuxt-link
-                  v-if="contract.signer"
-                  :to="`/account/${contract.signer}`"
+                  v-if="contract.owner"
+                  :to="`/account/${contract.owner}`"
                 >
-                  {{ shortAddress(contract.signer) }}
+                  {{ shortAddress(contract.owner) }}
                 </nuxt-link>
               </Cell>
             </Row>
@@ -102,10 +102,10 @@
               <Cell>{{ contract.storage_limit }}</Cell>
             </Row>
 
-            <Row v-if="contract.bytecode">
+            <!-- <Row v-if="contract.bytecode">
               <Cell>{{ $t('details.contract.bytecode') }}</Cell>
               <Cell wrap>{{ contract.bytecode }}</Cell>
-            </Row>
+            </Row> -->
 
             <Row v-if="contract.deployment_bytecode">
               <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
@@ -207,10 +207,7 @@
             contract.source
           }}</pre>
 
-          <vue-json-pretty
-            v-if="tab === 'abi'"
-            :data="JSON.parse(contract.abi)"
-          />
+          <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
 
           <ContractTransactions
             v-if="tab === 'transactions'"
@@ -221,7 +218,7 @@
             v-if="tab === 'execute'"
             :contract-id="contractId"
             :contract-name="contract.name"
-            :contract-abi="JSON.parse(contract.abi)"
+            :contract-abi="contract.abi"
           />
         </Card>
       </b-container>
@@ -280,9 +277,9 @@ export default {
       }
     },
     decodedArguments() {
-      if (this.contract.abi && this.contract.arguments) {
+      if (this.contract.abi && this.contract.bytecode_arguments) {
         // get constructor arguments types array
-        const constructorTypes = JSON.parse(this.contract.abi)
+        const constructorTypes = this.contract.abi
           .find(({ type }) => type === 'constructor')
           .inputs.map((input) => input.type)
 
@@ -290,24 +287,30 @@ export default {
         const abiCoder = new ethers.utils.AbiCoder()
         const decoded = abiCoder.decode(
           constructorTypes,
-          '0x' + this.contract.arguments
+          '0x' + this.contract.bytecode_arguments
         )
         return decoded.toString()
       }
       return null
     },
     decodedMetadata() {
-      if (this.contract.metadata) {
+      if (this.contract.bytecode_metadata) {
         let encodedMetadata = ''
         const endSeq1 = '0033'
-        const endSeqIndex1 = this.contract.metadata.indexOf(endSeq1)
+        const endSeqIndex1 = this.contract.bytecode_metadata.indexOf(endSeq1)
         const endSeq2 = '0032'
-        const endSeqIndex2 = this.contract.metadata.indexOf(endSeq2)
-        if (this.contract.metadata.includes(endSeq1)) {
-          encodedMetadata = this.contract.metadata.slice(0, endSeqIndex1)
+        const endSeqIndex2 = this.contract.bytecode_metadata.indexOf(endSeq2)
+        if (this.contract.bytecode_metadata.includes(endSeq1)) {
+          encodedMetadata = this.contract.bytecode_metadata.slice(
+            0,
+            endSeqIndex1
+          )
         }
-        if (this.contract.metadata.includes(endSeq2)) {
-          encodedMetadata = this.contract.metadata.slice(0, endSeqIndex2)
+        if (this.contract.bytecode_metadata.includes(endSeq2)) {
+          encodedMetadata = this.contract.bytecode_metadata.slice(
+            0,
+            endSeqIndex2
+          )
         }
         // metadata is CBOR encoded (http://cbor.me/)
         const decodedMetadata = cbor.decode(encodedMetadata)
@@ -337,23 +340,21 @@ export default {
               contract_id
               name
               deployment_bytecode
-              bytecode
-              metadata
+              bytecode_metadata
+              bytecode_arguments
               arguments
               value
               gas_limit
               storage_limit
-              signer
+              owner
               block_height
               verified
               source
               compiler_version
+              compiler_data
               optimization
               runs
               target
-              abi
-              license
-              is_erc20
               timestamp
             }
           }
@@ -366,6 +367,7 @@ export default {
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
+            this.contract.abi = data.contract[0].compiler_data.flat()
           }
           this.loading = false
         },

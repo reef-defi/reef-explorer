@@ -18,6 +18,7 @@ export type Target =
   | "tangerineWhistle";
 
 export type License = 
+  | "none"
   | "unlicense"
   | "MIT"
   | "GNU GPLv2"
