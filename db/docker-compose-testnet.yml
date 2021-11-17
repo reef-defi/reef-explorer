@@ -1,0 +1,77 @@
+version: '3.7'
+
+services:
+  #
+  # reef node
+  #
+  substrate-node:
+    image: testnet-node/latest
+    hostname: substrate-node
+    build: ./node/testnet
+    volumes:
+      - 'substrate-data:/data'
+    ports:
+      - '30333:30333'
+      - '9933:9933'
+      - '9944:9944'
+    expose:
+      - '9944'
+    command: -d /data --ws-max-connections 1000 --chain testnet --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0'
+    restart: always
+
+  #
+  # PostgresSQL database
+  #
+  postgres:
+    image: postgres:13
+    restart: always
+    shm_size: 1gb
+    volumes:
+      - 'db-data:/var/lib/postgresql/data'
+      - './sql/initialization/init.sql:/docker-entrypoint-initdb.d/00_init.sql'
+      - './sql/initialization/account.sql:/docker-entrypoint-initdb.d/01_account.sql'
+      - './sql/initialization/block.sql:/docker-entrypoint-initdb.d/02_block.sql'
+      - './sql/initialization/extrinsic.sql:/docker-entrypoint-initdb.d/03_extrinsic.sql'
+      - './sql/initialization/event.sql:/docker-entrypoint-initdb.d/04_event.sql'
+      - './sql/initialization/error.sql:/docker-entrypoint-initdb.d/05_error.sql'
+      - './sql/initialization/contract.sql:/docker-entrypoint-initdb.d/06_contract.sql'
+      - './sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/07_evmEvent.sql'
+      # Chain info sql must be the last to initialize!
+      - './sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/17_chainInfo.sql'
+    environment:
+      POSTGRES_USER: 'reefexplorer'
+      POSTGRES_PASSWORD: 'reefexplorer'
+    ports:
+      - '54321:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reefexplorer']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # TODO enable GraphQL
+  # Hasura GraphQL server
+  #
+  # graphql-engine:
+  #   image: hasura/graphql-engine:v1.3.3.cli-migrations-v2
+  #   ports:
+  #     - '8082:8080'
+  #   volumes:
+  #     - './hasura/metadata:/hasura-metadata'
+  #   depends_on:
+  #     - 'postgres'
+  #   restart: always
+  #   environment:
+  #     HASURA_GRAPHQL_DATABASE_URL: postgres://reefexplorer:reefexplorer@postgres:5432/reefexplorer
+  #     HASURA_GRAPHQL_ENABLE_CONSOLE: 'true' # set to "false" to disable console
+  #     HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+  #     HASURA_GRAPHQL_UNAUTHORIZED_ROLE: public
+  #     HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+
+#
+# Persistent volumes
+#
+volumes:
+  sql:
+  db-data: {}
+  substrate-data: {}

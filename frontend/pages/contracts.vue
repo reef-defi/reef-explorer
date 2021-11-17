@@ -127,11 +127,6 @@ export default {
             ) {
               contract_id
               name
-              bytecode
-              value
-              gas_limit
-              storage_limit
-              signer
               block_height
               timestamp
               verified

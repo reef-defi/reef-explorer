@@ -105,10 +105,6 @@ export default {
     await this.provider.api.disconnect()
   },
   methods: {
-    // getInterface(contractAbi) {
-    //   const iface = new ethers.utils.Interface(contractAbi)
-    //   return iface.functions
-    // },
     getInputs(message) {
       const inputs = []
       for (const input of message.inputs) {

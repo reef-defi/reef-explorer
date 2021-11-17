@@ -134,3 +134,29 @@ CREATE TRIGGER transfer_count_trunc AFTER TRUNCATE ON transfer
 -- initialize the counter table
 UPDATE total SET count = (SELECT count(*) FROM transfer) WHERE name = 'transfers';
 COMMIT;
+
+-- ERC-20 tokens
+START TRANSACTION;
+CREATE FUNCTION token_count() RETURNS trigger LANGUAGE plpgsql AS
+$$BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE total SET count = count + 1 WHERE name = 'tokens';
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE total SET count = count - 1 WHERE name = 'tokens';
+    RETURN OLD;
+  ELSE
+    UPDATE total SET count = 0 WHERE name = 'tokens';
+    RETURN NULL;
+  END IF;
+END;$$;
+CREATE CONSTRAINT TRIGGER token_count_mod
+  AFTER INSERT OR DELETE ON erc20
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE token_count();
+-- TRUNCATE triggers must be FOR EACH STATEMENT
+CREATE TRIGGER token_count_trunc AFTER TRUNCATE ON erc20
+  FOR EACH STATEMENT EXECUTE PROCEDURE token_count();
+-- initialize the counter table
+UPDATE total SET count = (SELECT count(*) FROM erc20) WHERE name = 'tokens';
+COMMIT;

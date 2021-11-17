@@ -57,7 +57,7 @@ const crawler = async (delayedStart) => {
   const accounts = await dbQuery(client, accountsQuery, loggerOptions);
 
   // Get tokens
-  const tokensQuery = 'SELECT contract_id, token_name, token_symbol FROM contract WHERE is_erc20 IS TRUE;';
+  const tokensQuery = 'SELECT e.contract_id, e.name, e.symbol FROM contract as c INNER JOIN erc20 as e ON c.contract_id = e.contract_id;'
   const tokens = await dbQuery(client, tokensQuery, loggerOptions);
 
   // eslint-disable-next-line no-restricted-syntax
