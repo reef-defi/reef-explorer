@@ -1,6 +1,10 @@
 CREATE TABLE IF NOT EXISTS block (
   id BIGINT,
-  hash TEXT NOT NULL,
   
+  -- TODO add block content
+
+  finalized BOOLEAN NOT NULL,
+  parent_hash TEXT NOT NULL,
+
   PRIMARY KEY (id)
 );
