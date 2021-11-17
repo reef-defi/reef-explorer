@@ -1,0 +1,14 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "testnet": "docker-compose -p testnet -f docker-compose-reef-testnet.yml up -d",
+    "purge": "docker stop testnet_postgres_1 && docker rm testnet_postgres_1 && docker volume rm testnet_db-data && docker volume rm testnet_sql",
+    "restart": "docker stop testnet_postgres_1 && docker rm testnet_postgres_1 && docker volume rm testnet_db-data && docker volume rm testnet_sql && docker-compose -p testnet -f docker-compose-reef-testnet.yml up -d",
+    "lint": "eslint --ext \".js\" --ignore-path .gitignore ."
+  },
+  "devDependencies": {}
+}
