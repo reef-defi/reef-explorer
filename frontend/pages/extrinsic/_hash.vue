@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!parsedExtrinsic">
-          <h1 class="text-center">Extrinsic not found!</h1>
-        </template>
+        <NotFound v-else-if="!parsedExtrinsic" text="Extrinsic not found" />
         <Extrinsic v-else :extrinsic="parsedExtrinsic" />
       </b-container>
     </section>

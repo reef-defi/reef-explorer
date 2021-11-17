@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!contract">
-          <h1 class="text-center">Token not found!</h1>
-        </template>
+        <NotFound v-else-if="!contract" text="Token not found" />
 
         <Card v-else class="token-details">
           <div class="token-details__identicon">

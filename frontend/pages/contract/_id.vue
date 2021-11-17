@@ -5,9 +5,7 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!contract">
-          <h1 class="text-center">Contract not found!</h1>
-        </template>
+        <NotFound v-else-if="!contract" text="Contract not found" />
         <Card v-else class="contract-details">
           <div class="contract-details__identicon">
             <eth-identicon :address="contractId" :size="80" />

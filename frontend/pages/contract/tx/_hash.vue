@@ -5,9 +5,10 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <template v-else-if="!extrinsic">
-          <h1 class="text-center">Contract tx not found!</h1>
-        </template>
+        <NotFound
+          v-else-if="!extrinsic"
+          text="Contract transaction not found"
+        />
         <Card v-else class="list-view">
           <Headline>Contract Transaction</Headline>
           <contract-transaction :contract="contract" :extrinsic="extrinsic" />
