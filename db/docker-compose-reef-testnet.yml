@@ -18,6 +18,7 @@ services:
       - '9944'
     command: -d /data --ws-max-connections 1000 --chain testnet --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0'
     restart: always
+
   #
   # PostgresSQL database
   #
@@ -29,10 +30,12 @@ services:
       - 'db-data:/var/lib/postgresql/data'
       - './sql/initialization/init.sql:/docker-entrypoint-initdb.d/00_init.sql'
       - './sql/initialization/account.sql:/docker-entrypoint-initdb.d/01_account.sql'
-    #   - './sql/backend.sql:/docker-entrypoint-initdb.d/00_backend.sql'
-    #   - './sql/contracts_testnet.sql:/docker-entrypoint-initdb.d/01_contracts.sql'
-    #   - './sql/counters.sql:/docker-entrypoint-initdb.d/02_counters.sql'
-    #   - './sql/post_testnet.sql:/docker-entrypoint-initdb.d/03_post.sql'
+      - './sql/initialization/block.sql:/docker-entrypoint-initdb.d/02_block.sql'
+      - './sql/initialization/extrinsic.sql:/docker-entrypoint-initdb.d/03_extrinsic.sql'
+      - './sql/initialization/event.sql:/docker-entrypoint-initdb.d/04_event.sql'
+      - './sql/initialization/error.sql:/docker-entrypoint-initdb.d/05_error.sql'
+      - './sql/initialization/contract.sql:/docker-entrypoint-initdb.d/06_contract.sql'
+      - './sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/07_evmEvent.sql'
     environment:
       POSTGRES_USER: 'reefexplorer'
       POSTGRES_PASSWORD: 'reefexplorer'

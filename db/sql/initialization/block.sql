@@ -1,4 +1,6 @@
 CREATE TABLE IF NOT EXISTS block (
-  id BIGINT PRIMARY KEY,
-  hash TEXT NOT NULL
+  id BIGINT,
+  hash TEXT NOT NULL,
+  
+  PRIMARY KEY (id)
 );
