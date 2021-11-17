@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS event (
-  id BIGSERIAL PRIMARY KEY,
+  id BIGSERIAL,
   block_id BIGINT,
   extrinsic_id BIGINT,
   index BIGINT,

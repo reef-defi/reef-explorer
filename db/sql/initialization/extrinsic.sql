@@ -1,4 +1,4 @@
-CREATE TYPE IF NOT EXISTS ExtrinsicType AS ENUM ('signed', 'unsigned', 'inherent');
+CREATE TYPE ExtrinsicType AS ENUM ('signed', 'unsigned', 'inherent');
 
 CREATE TABLE IF NOT EXISTS extrinsic (
   id BIGSERIAL,

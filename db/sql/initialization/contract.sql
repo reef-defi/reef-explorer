@@ -1,3 +1,5 @@
+CREATE TYPE ContractType AS ENUM ('ERC20', 'ERC721', 'other');
+
 CREATE TABLE IF NOT EXISTS contract (
   address VARCHAR(48),
   extrinsic_id BIGINT,
@@ -11,9 +13,8 @@ CREATE TABLE IF NOT EXISTS contract (
       REFERENCES extrinsic(id)
 );
 
-CREATE TYPE IF NOT EXISTS ContractType AS ENUM ('ERC20', 'ERC721', 'other');
-
-CREATE TABLE IF NOT EXISTS verified-contract (
+CREATE TABLE IF NOT EXISTS verified_contract (
+  id BIGSERIAL,
   address VARCHAR(48),
   
   name TEXT,
@@ -25,22 +26,23 @@ CREATE TABLE IF NOT EXISTS verified-contract (
   compiled_data JSON,
   arguments JSON,
 
-  type ContractType,
+  type ContractType DEFAULT 'other',
   contract_data JSON,
 
+  PRIMARY KEY (id),
   CONSTRAINT fk_contract
     FOREIGN KEY (address)
       REFERENCES contract(address)
 );
 
-CREATE TABLE IF NOT EXISTS newly-verified-contract-queue (
-  address VARCHAR(48),
+CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
+  id BIGINT,
   CONSTRAINT fk_verified_contract
-    FOREIGN KEY (address)
-      REFERENCES verified-contract(address)
+    FOREIGN KEY (id)
+      REFERENCES verified_contract(id)
 );
 
-CREATE TABLE IF NOT EXISTS verification-request (
+CREATE TABLE IF NOT EXISTS verification_request (
   address VARCHAR(48),
   block_id BIGINT,
 
