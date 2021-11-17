@@ -8,213 +8,194 @@
         <template v-else-if="!contract">
           <h1 class="text-center">Token not found!</h1>
         </template>
-        <template v-else>
-          <div class="card mb-4">
-            <div class="card-body">
-              <h4 class="text-center mb-4">
-                <font-awesome-icon
-                  v-if="contract.token_validated"
-                  v-b-tooltip.hover
-                  icon="check"
-                  class="text-success"
-                  title="Validated token"
-                />
-                <img
-                  v-if="contract.token_icon_url"
-                  :src="contract.token_icon_url"
-                  style="width: 32px; height: 32px"
-                />
-                <eth-identicon v-else :address="contractId" :size="32" />
-                <span v-if="contract.name">
-                  {{ contract.name }}
-                </span>
-                <span v-else>
-                  {{ shortHash(contractId) }}
-                </span>
-                <p class="mt-3">
-                  <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
-                  <b-badge
-                    v-if="contract.verified"
-                    class="ml-2"
-                    variant="success"
-                  >
-                    Verified source
-                    <font-awesome-icon icon="check" />
-                  </b-badge>
-                  <b-badge v-else class="ml-2" variant="danger">
-                    Not verified source
-                    <font-awesome-icon icon="times" />
-                  </b-badge>
-                </p>
-              </h4>
-              <b-tabs content-class="mt-3">
-                <b-tab title="Token info" active>
-                  <div class="table-responsive pb-4">
-                    <table class="table table-striped">
-                      <tbody>
-                        <tr>
-                          <td>Contract address</td>
-                          <td>
-                            <eth-identicon :address="contractId" :size="16" />
-                            <nuxt-link :to="`/contract/${contractId}`">
-                              {{ contractId }}
-                            </nuxt-link>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.token_name">
-                          <td>{{ $t('details.token.token_name') }}</td>
-                          <td>
-                            {{ contract.token_name }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.token_symbol">
-                          <td>{{ $t('details.token.token_symbol') }}</td>
-                          <td>
-                            {{ contract.token_symbol }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.token_decimals">
-                          <td>{{ $t('details.token.token_decimals') }}</td>
-                          <td>
-                            {{ contract.token_decimals }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.token_total_supply">
-                          <td>{{ $t('details.token.token_total_supply') }}</td>
-                          <td class="amount">
-                            {{
-                              formatTokenAmount(
-                                contract.token_total_supply,
-                                contract.token_decimals,
-                                contract.token_symbol
-                              )
-                            }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Created at block</td>
-                          <td>
-                            <nuxt-link
-                              :to="`/block?blockNumber=${contract.block_height}`"
-                            >
-                              #{{ formatNumber(contract.block_height) }}
-                            </nuxt-link>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.signer">
-                          <td>{{ $t('details.token.created') }}</td>
-                          <td>
-                            <ReefIdenticon
-                              :key="contract.signer"
-                              :address="contract.signer"
-                              :size="20"
-                            />
-                            <nuxt-link :to="`/account/${contract.signer}`">
-                              {{ shortAddress(contract.signer) }}
-                            </nuxt-link>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </b-tab>
-                <b-tab title="Holders">
-                  <token-holders
-                    :holders="contract.holders"
-                    :decimals="contract.token_decimals"
-                    :symbol="contract.token_symbol"
-                  />
-                </b-tab>
-                <b-tab v-if="contract.verified" title="Developer">
-                  <div class="table-responsive pb-4">
-                    <table class="table table-striped">
-                      <tbody>
-                        <tr>
-                          <td>{{ $t('details.token.compiler_version') }}</td>
-                          <td>
-                            {{ contract.compiler_version }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.token.optimization') }}</td>
-                          <td>
-                            <p v-if="contract.optimization" class="mb-0">
-                              <font-awesome-icon
-                                icon="check"
-                                class="text-success"
-                              />
-                            </p>
-                            <p v-else class="mb-0">
-                              <font-awesome-icon
-                                icon="times"
-                                class="text-danger"
-                              />
-                            </p>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.token.runs') }}</td>
-                          <td>
-                            {{ contract.runs }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.token.target') }}</td>
-                          <td>
-                            {{ contract.target }}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>{{ $t('details.token.license') }}</td>
-                          <td>
-                            {{ contract.license }}
-                          </td>
-                        </tr>
-                        <tr v-if="contract.bytecode">
-                          <td>{{ $t('details.token.bytecode') }}</td>
-                          <td>
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.bytecode
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.deployment_bytecode">
-                          <td>
-                            {{ $t('details.contract.deployment_bytecode') }}
-                          </td>
-                          <td class="text-right">
-                            <span class="bytecode" style="color: #aaa">{{
-                              contract.deployment_bytecode
-                            }}</span>
-                          </td>
-                        </tr>
-                        <tr v-if="contract.abi">
-                          <td>{{ $t('details.token.abi') }}</td>
-                          <td>
-                            <vue-json-pretty :data="JSON.parse(contract.abi)" />
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </b-tab>
-                <b-tab v-if="contract.verified" title="Verified source">
-                  <pre>{{ contract.source }}</pre>
-                </b-tab>
-                <b-tab title="Transactions">
-                  <contract-transactions :contract-id="contractId" />
-                </b-tab>
-                <b-tab v-if="contract.verified" title="Execute">
-                  <contract-execute
-                    :contract-id="contractId"
-                    :contract-name="contract.name"
-                    :contract-abi="JSON.parse(contract.abi)"
-                  />
-                </b-tab>
-              </b-tabs>
-            </div>
+
+        <Card v-else class="token-details">
+          <div class="token-details__identicon">
+            <eth-identicon :address="contractId" :size="80" />
           </div>
-        </template>
+
+          <Headline>
+            <font-awesome-icon
+              v-if="contract.token_validated"
+              v-b-tooltip.hover
+              icon="check"
+              class="text-success"
+              title="Validated token"
+            />
+            <img
+              v-if="contract.token_icon_url"
+              :src="contract.token_icon_url"
+              style="width: 32px; height: 32px"
+            />
+            <span>{{ contract.name || shortHash(contractId) }}</span>
+          </Headline>
+
+          <h4 class="text-center mb-4">
+            <p class="mt-3">
+              <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
+              <b-badge v-if="contract.verified" class="ml-2" variant="success">
+                Verified source
+                <font-awesome-icon icon="check" />
+              </b-badge>
+              <b-badge v-else class="ml-2" variant="danger">
+                Not verified source
+                <font-awesome-icon icon="times" />
+              </b-badge>
+            </p>
+          </h4>
+
+          <Tabs v-model="tab" :options="tabs" />
+
+          <!-- Info -->
+
+          <Data v-if="tab === 'info'">
+            <Row>
+              <Cell>Contract address</Cell>
+              <Cell>
+                <eth-identicon :address="contractId" :size="16" />
+                <nuxt-link :to="`/contract/${contractId}`">
+                  {{ contractId }}
+                </nuxt-link>
+              </Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.token_name') }}</Cell>
+              <Cell>{{ contract.token_name }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.token_symbol') }}</Cell>
+              <Cell>{{ contract.token_symbol }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.token_decimals') }}</Cell>
+              <Cell>{{ contract.token_decimals }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.token_total_supply') }}</Cell>
+              <Cell class="token-details__amount">
+                {{
+                  formatTokenAmount(
+                    contract.token_total_supply,
+                    contract.token_decimals,
+                    contract.token_symbol
+                  )
+                }}
+              </Cell>
+            </Row>
+
+            <Row>
+              <Cell>Created at block</Cell>
+              <Cell>
+                <nuxt-link :to="`/block?blockNumber=${contract.block_height}`">
+                  # {{ formatNumber(contract.block_height) }}
+                </nuxt-link>
+              </Cell>
+            </Row>
+
+            <Row v-if="contract.signer">
+              <Cell>{{ $t('details.token.created') }}</Cell>
+              <Cell>
+                <ReefIdenticon
+                  :key="contract.signer"
+                  :address="contract.signer"
+                  :size="20"
+                  class="token-details__account-identicon"
+                />
+                <nuxt-link :to="`/account/${contract.signer}`">
+                  {{ shortAddress(contract.signer) }}
+                </nuxt-link>
+              </Cell>
+            </Row>
+          </Data>
+
+          <!-- Holders -->
+
+          <TokenHolders
+            v-if="tab === 'holders'"
+            :holders="contract.holders"
+            :decimals="contract.token_decimals"
+            :symbol="contract.token_symbol"
+          />
+
+          <!-- Developer -->
+
+          <Data v-if="tab === 'developer'">
+            <Row>
+              <Cell>{{ $t('details.token.compiler_version') }}</Cell>
+              <Cell>{{ contract.compiler_version }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.optimization') }}</Cell>
+              <Cell>
+                <font-awesome-icon
+                  :icon="contract.optimization ? 'check' : 'times'"
+                  :class="
+                    contract.optimization ? 'text-success' : 'text-danger'
+                  "
+                />
+              </Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.runs') }}</Cell>
+              <Cell>{{ contract.runs }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.target') }}</Cell>
+              <Cell>{{ contract.target }}</Cell>
+            </Row>
+
+            <Row>
+              <Cell>{{ $t('details.token.license') }}</Cell>
+              <Cell>{{ contract.license }}</Cell>
+            </Row>
+
+            <Row v-if="contract.bytecode">
+              <Cell>{{ $t('details.token.bytecode') }}</Cell>
+              <Cell wrap>{{ contract.bytecode }}</Cell>
+            </Row>
+
+            <Row v-if="contract.deployment_bytecode">
+              <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
+              <Cell wrap>{{ contract.deployment_bytecode }}</Cell>
+            </Row>
+
+            <Row v-if="contract.abi">
+              <Cell>{{ $t('details.token.abi') }}</Cell>
+              <Cell class="table-json" wrap>
+                <vue-json-pretty :data="JSON.parse(contract.abi)" />
+              </Cell>
+            </Row>
+          </Data>
+
+          <!-- Source -->
+
+          <pre v-if="tab === 'source'" class="token-details__source">{{
+            contract.source
+          }}</pre>
+
+          <!-- Transactions -->
+
+          <ContractTransactions
+            v-if="tab === 'transactions'"
+            :contract-id="contractId"
+          />
+
+          <!-- Execute -->
+
+          <contract-execute
+            v-if="tab === 'execute'"
+            :contract-id="contractId"
+            :contract-name="contract.name"
+            :contract-abi="JSON.parse(contract.abi)"
+          />
+        </Card>
       </b-container>
     </section>
   </div>
@@ -244,7 +225,28 @@ export default {
       loading: true,
       contractId: this.$route.params.id,
       contract: undefined,
+      tab: 'info',
     }
+  },
+  computed: {
+    tabs() {
+      if (this.contract?.verified) {
+        return {
+          info: 'Token Info',
+          holders: 'Holders',
+          developer: 'Developer',
+          source: 'Verified Source',
+          transactions: 'Transactions',
+          execute: 'Execute',
+        }
+      }
+
+      return {
+        info: 'Token Info',
+        holders: 'Holders',
+        transactions: 'Transactions',
+      }
+    },
   },
   watch: {
     $route() {
@@ -310,3 +312,49 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+.token-details {
+  .details-headline {
+    & + * {
+      margin-top: 15px;
+    }
+  }
+
+  .token-details__identicon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    box-shadow: 0 0 10px -10px rgba(#0f233f, 0.5),
+      0 5px 15px -5px rgba(#0f233f, 0.25);
+    border-radius: 50%;
+    height: 110px;
+    width: 110px;
+    margin: 0 auto 15px auto;
+    overflow: hidden;
+
+    img {
+      border-radius: 50%;
+    }
+  }
+
+  .tabs {
+    margin: 25px 0;
+  }
+
+  .token-details__amount {
+    .table-cell__content {
+      font-weight: 600;
+    }
+  }
+
+  .token-details__account-identicon {
+    display: flex !important;
+  }
+
+  .token-details__source {
+    background: rgba(#eaedf3, 0.5);
+  }
+}
+</style>

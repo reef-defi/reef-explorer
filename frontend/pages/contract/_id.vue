@@ -207,15 +207,21 @@
             contract.source
           }}</pre>
 
+          <!-- ABI -->
+
           <vue-json-pretty
             v-if="tab === 'abi'"
             :data="JSON.parse(contract.abi)"
           />
 
+          <!-- Transactions -->
+
           <ContractTransactions
             v-if="tab === 'transactions'"
             :contract-id="contractId"
           />
+
+          <!-- Execute -->
 
           <ContractExecute
             v-if="tab === 'execute'"
@@ -435,19 +441,6 @@ export default {
 
           > * {
             text-align: right;
-          }
-        }
-      }
-
-      &.table-json {
-        .table-cell__content-wrapper {
-          align-items: flex-start;
-
-          .table-cell__content {
-            width: 100%;
-            display: block;
-            text-align: left;
-            word-break: initial;
           }
         }
       }
