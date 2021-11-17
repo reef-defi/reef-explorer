@@ -27,8 +27,8 @@ services:
     shm_size: 1gb
     volumes:
       - 'db-data:/var/lib/postgresql/data'
-      - './sql/init.sql:/docker-entrypoint-initdb.d/00_init.sql'
-      - './sql/account.sql:/docker-entrypoint-initdb.d/01_account.sql'
+      - './sql/initialization/init.sql:/docker-entrypoint-initdb.d/00_init.sql'
+      - './sql/initialization/account.sql:/docker-entrypoint-initdb.d/01_account.sql'
     #   - './sql/backend.sql:/docker-entrypoint-initdb.d/00_backend.sql'
     #   - './sql/contracts_testnet.sql:/docker-entrypoint-initdb.d/01_contracts.sql'
     #   - './sql/counters.sql:/docker-entrypoint-initdb.d/02_counters.sql'
