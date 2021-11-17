@@ -1,0 +1,14 @@
+{
+  "name": "reefexplorer-db",
+  "version": "1.0.0",
+  "main": "",
+  "license": "MIT",
+  "private": false,
+  "author": "Žiga Franko Gorišek",
+  "scripts": {
+    "run-testnet": "docker-compose -p testnet -f docker-compose-testnet.yml up -d",
+    "purge-testnet": "docker stop testnet_postgres_1 && docker rm testnet_postgres_1 && docker volume rm testnet_db-data && docker volume rm testnet_sql",
+    "reset-testnet": "docker stop testnet_postgres_1 && docker rm testnet_postgres_1 && docker volume rm testnet_db-data && docker volume rm testnet_sql && docker-compose -p testnet -f docker-compose-testnet.yml up -d",
+    "lint": "eslint --ext \".js\" --ignore-path .gitignore ."
+  }
+}
