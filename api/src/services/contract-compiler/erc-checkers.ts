@@ -1,8 +1,8 @@
-import { ABI, ERC20Data } from "../types";
+import { ABI, ERC20Data } from "../../utils/types";
 import { Provider } from "@reef-defi/evm-provider";
 import { WsProvider} from '@polkadot/api';
 import { Contract } from "@ethersproject/contracts";
-import { APP_CONFIGURATION } from "../config";
+import { APP_CONFIGURATION } from "../../utils/config";
 
 const DEFAULT_ERC20_ABI: string[] = [
   `{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"}`,

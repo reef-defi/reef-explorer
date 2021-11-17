@@ -1,5 +1,5 @@
 
-export class StatusError extends Error {
+class StatusError extends Error {
   status: number;
 
   constructor(message: string, status: number) {
