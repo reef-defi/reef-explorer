@@ -1,31 +1,43 @@
-import { dbProvider, nodeProvider } from "./utils/connector";
-import { wait } from "./utils/utils";
+import { processBlock } from "./crawler/block";
+import { lastBlockInDatabase } from "./queries/block";
+import { closeProviders, initializeProviders, nodeProvider } from "./utils/connector";
+const { performance } = require('perf_hooks');
 
+const crawlData = async (): Promise<void> => {
+  console.log("Starting harvesting data...")
+  let blockIndex = await lastBlockInDatabase() + 1;
+  let lastNodeBlockNumber = await nodeProvider.getBlockNumber();
+  let startTime = performance.now();
+  console.log("Last block in database: ", blockIndex);
 
-const nodeHealth = async () => nodeProvider.api.rpc.system.health();
+  while (blockIndex < lastNodeBlockNumber) {
+    if (blockIndex % 1000 === 0) {
+      console.log(`Processing block ${blockIndex}, 1k blocks per ${(performance.now() - startTime / 1000).toFixed(3)} s`)
+      startTime = performance.now();
+    }
 
-const syncNode = async (): Promise<void> => {
-  console.log("Syncing node");
-  const node = await nodeHealth();
-  console.log(node)
-  while(node.isSyncing) {
-    await wait(1000)
+    await processBlock(blockIndex);
+    blockIndex += 1;
+    lastNodeBlockNumber = await nodeProvider.getBlockNumber();
   };
+
+  console.log("Starting to ")
+  listenToNewBlocks();
 }
 
-
-const runner = async (): Promise<void> => {
-  console.log("Connecting to node...")
-  await nodeProvider.api.isReadyOrError
-  console.log("Connecting to database...")
-  await dbProvider.connect();
-
-  await syncNode();
-};
+const listenToNewBlocks = () => {
+  nodeProvider.api.rpc.chain.subscribeNewHeads(async (header) => {
+    // TODO add safty check if the last block in db is really header.number + 1! 
+    // If it is not, cancle subscription and run crawlData function!
+    await processBlock(header.number.toNumber())
+  });
+}
 
 Promise.resolve()
-  .then(() => runner())
+  .then(initializeProviders)
+  .then(crawlData)
   .catch((error) => {
     console.error(error);
     process.exit(-1);
-  });
+  })
+  .finally(closeProviders)

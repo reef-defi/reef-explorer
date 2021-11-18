@@ -1,6 +1,7 @@
 import {Provider} from "@reef-defi/evm-provider";
 import {WsProvider} from "@polkadot/api";
 import {PoolClient, Pool} from "pg";
+import { wait } from "./utils";
 
 const APP_CONFIG = {
   nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9944',
@@ -12,22 +13,49 @@ const APP_CONFIG = {
     port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 54321,
   }
 }
+export let nodeProvider: Provider;
+let dbProvider: PoolClient;
+
+
+const nodeHealth = async () =>
+  nodeProvider.api.rpc.system.health();
+
+const syncNode = async (): Promise<void> => {
+  let node = await nodeHealth();
+  while(node.isSyncing.eq(true)) {
+    await wait(1000);
+    node = await nodeHealth();
+  };
+}
 
 // only used in index.ts!!!
-export let nodeProvider: Provider;
-export let dbProvider: PoolClient;
 
 
-export const initializeNodeProvider = async (): Promise<void> => {
+const initializeNodeProvider = async (): Promise<void> => {
   nodeProvider = new Provider({
     provider: new WsProvider(APP_CONFIG.nodeUrl)
   });
   await nodeProvider.api.isReadyOrError;
 };
 
-export const initializeDatabaseProvider = async (): Promise<void> => {
+const initializeDatabaseProvider = async (): Promise<void> => {
   const pool = new Pool({...APP_CONFIG.postgresConfig});
   dbProvider = await pool.connect();
+}
+
+export const initializeProviders = async (): Promise<void> => {
+  console.log("Connecting to node...")
+  await initializeNodeProvider();
+  console.log("Connecting to database...")
+  await initializeDatabaseProvider();
+  console.log("Syncing node...");
+  await syncNode();
+}
+
+export const closeProviders = async (): Promise<void> => {
+  console.log("Closing providers");
+  await nodeProvider.api.disconnect();
+  dbProvider.release();
 }
 
 export const query = async <Res,>(statement: string): Promise<Res[]> => dbProvider
