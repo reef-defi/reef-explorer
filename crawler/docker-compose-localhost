@@ -1,9 +1,0 @@
-version: '3.7'
-
-services:
-  crawler:
-    image: crawler:latest
-    restart: always
-    environment:
-      WS_PROVIDER_URL: 'ws://substrate-node:9944'
-      POSTGRES_PORT: 54321

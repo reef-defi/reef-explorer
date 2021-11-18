@@ -7,7 +7,9 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "tsc && node ./dist/index.js",
-    "docker-localhost": "docker-compose -p crawler-localhost -f docker-compose-localhost.yml up -d"
+    "localhost": "docker-compose -p crawler-localhost -f docker-compose-localhost.yml up -d",
+    "stop-localhost": "docker stop crawler-localhost-crawler-1 && docker stop crawler-localhost-substrate-node-1",
+    "purge-localhost": "docker rm crawler-localhost-crawler-1 && docker rm crawler-localhost-substrate-node-1 && docker volume rm crawler-localhost_substrate-data"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
