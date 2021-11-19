@@ -18,6 +18,7 @@ services:
       - './sql/initialization/error.sql:/docker-entrypoint-initdb.d/05_error.sql'
       - './sql/initialization/contract.sql:/docker-entrypoint-initdb.d/06_contract.sql'
       - './sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/07_evmEvent.sql'
+      - './sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/08_transfer.sql'
       # Chain info sql must be the last to initialize!
       # - './sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/17_chainInfo.sql'
     environment:

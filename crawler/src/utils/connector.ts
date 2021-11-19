@@ -58,6 +58,14 @@ export const closeProviders = async (): Promise<void> => {
   dbProvider.release();
 }
 
+export const insert = async (statement: string, table: string): Promise<number> => {
+  // console.log(statement)
+  return dbProvider
+    .query(`${statement} SELECT currval(pg_get_serial_sequence('${table}','id'));`)
+    // TODO find out how to correctly tipe this!!
+    .then((res: any) => res[1].rows[0].currval)
+}
+
 export const query = async <Res,>(statement: string): Promise<Res[]> => dbProvider
   .query<Res>(statement)
   .then((res) => res.rows);

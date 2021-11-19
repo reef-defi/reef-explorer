@@ -1,4 +1,4 @@
-import { query } from "../utils/connector"
+import { insert, query } from "../utils/connector"
 
 interface BlockID {
   id: string;
@@ -22,15 +22,13 @@ export const blockFinalized = async (blockId: number): Promise<void> => {
   await query(`UPDATE block SET finalized = true WHERE id = ${blockId}`);
 }
 
-export const insertInitialBlock = async ({id, hash, author, parentHash, stateRoot, extrinsicRoot}: InsertInitialBlock): Promise<void> => {
-  await query(`
-    INSERT INTO block
-      (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
-    VALUES
-      (${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', FALSE)
-    ON CONFLICT DO NOTHING;
-  `);
-};
+export const insertInitialBlock = async ({id, hash, author, parentHash, stateRoot, extrinsicRoot}: InsertInitialBlock): Promise<number> => insert(`
+INSERT INTO block
+  (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
+VALUES
+  (${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', FALSE)
+ON CONFLICT DO NOTHING;
+`, 'block');
 
 export interface InsertExtrinsic {
   blockId: number;
@@ -41,21 +39,46 @@ export interface InsertExtrinsic {
   method: string;
   section: string;
   signed: string;
-}
-export interface SignedExtrinsicData {
-  fee: string;
-  feeDetails: string;
+  status: string;
+  error_message: string;
 }
 
+export interface SignedExtrinsicData {
+  // TODO set tipes
+  fee: any;
+  feeDetails: any;
+}
 
 export const insertExtrinsic = async (
-  {blockId, index, hash, args, docs, method, section, signed}: InsertExtrinsic, 
-  signedData?: SignedExtrinsicData): Promise<void> => {
-  await query(`
-    INSERT INTO extrinsic
-      (block_id, index, hash, args, docs, method, section, signed, type ${signedData ? ', signed_data' : ''})
-    VALUES
-      (${blockId}, ${index}, '${hash}', '[${args}]', '${docs.replace(/'/g, "''")}', '${method}', '${section}', '${signed}', ${signedData ? "'signed'" : "'unsigned'"} ${signedData ? ", '" + JSON.stringify(signedData) + "'" : ''})
-    ON CONFLICT DO NOTHING;
-  `);
+  {blockId, index, hash, args, docs, method, section, status, error_message, signed}: InsertExtrinsic, 
+  signedData?: SignedExtrinsicData): Promise<number> => insert(`
+INSERT INTO extrinsic
+  (block_id, index, hash, args, docs, method, section, signed, status, error_message, type ${signedData ? ', signed_data' : ''})
+VALUES
+  (${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(/'/g, "''")}', '${method}', 
+  '${section}', '${signed}', '${status}', '${error_message}', ${signedData ? "'signed'" : "'unsigned'"} 
+  ${signedData ? ", '" + JSON.stringify(signedData) + "'" : ''})
+ON CONFLICT DO NOTHING;
+`, 'extrinsic');
+
+interface InsertTransfer {
+  blockId: number;
+  extrinsicId: number;
+
+  denom: string;
+  toAddress: string;
+  fromAddress: string;
+  amount: string;
+  feeAmount: string;
+
+  success: boolean;
+  errorMessage: string;
 }
+
+export const insertTransfer = async ({blockId, extrinsicId, denom, toAddress, fromAddress, amount, feeAmount, success, errorMessage}: InsertTransfer): Promise<number> => insert(`
+INSERT INTO transfer
+  (block_id, extrinsic_id, denom, to_address, from_address, amount, fee_amount, success, error_message)
+VALUES
+  (${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', ${amount === "" ? "0" : amount}, ${feeAmount === "" ? "0" : amount}, '${success}', '${errorMessage}');
+`, 'transfer'
+);
