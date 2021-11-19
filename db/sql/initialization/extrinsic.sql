@@ -1,4 +1,5 @@
 CREATE TYPE ExtrinsicType AS ENUM ('signed', 'unsigned', 'inherent');
+CREATE TYPE ExtrinsicStatus AS ENUM ('success', 'error', 'unknown');
 
 CREATE TABLE IF NOT EXISTS extrinsic (
   id BIGSERIAL,
@@ -12,9 +13,13 @@ CREATE TABLE IF NOT EXISTS extrinsic (
   section TEXT NOT NULL,
   signed VARCHAR NOT NULL,
 
+  status ExtrinsicStatus NOT NULL,
+  error_message TEXT,
+
   type ExtrinsicType NOT NULL,
   signed_data JSON,
   inherent_data JSON,
+
 
   timestamp timestamp default current_timestamp,
 

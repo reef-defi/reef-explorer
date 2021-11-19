@@ -7,7 +7,7 @@ let currentBlockIndex = -1;
 let latestBlockIndex = -1;
 
 const processNextBlock = async () => {
-  while (currentBlockIndex + 1 < latestBlockIndex) {
+  while (currentBlockIndex + 1 <= latestBlockIndex) {
     currentBlockIndex += 1;
     await processBlock(currentBlockIndex);
   };
@@ -23,7 +23,7 @@ Promise.resolve()
     latestBlockIndex = header.number.toNumber();
   }))
   .then(processNextBlock)
-  // .then(() => processBlock(1))
+  // .then(() => processBlock(4987))
   .catch((error) => {
     console.error(error);
     process.exit(-1);
