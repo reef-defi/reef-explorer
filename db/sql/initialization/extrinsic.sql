@@ -3,16 +3,20 @@ CREATE TYPE ExtrinsicType AS ENUM ('signed', 'unsigned', 'inherent');
 CREATE TABLE IF NOT EXISTS extrinsic (
   id BIGSERIAL,
   block_id BIGINT,
-  index BIGINT,
 
-  hash TEXT, -- TODO 
-  status TEXT, -- TODO
-  arguments TEXT, -- TODO
-  docs TEXT, -- TODO
+  index BIGINT NOT NULL,
+  hash TEXT NOT NULL,
+  args JSON NOT NULL,
+  docs TEXT NOT NULL, 
+  method TEXT NOT NULL,
+  section TEXT NOT NULL,
+  signed VARCHAR NOT NULL,
 
-  type ExtrinsicType,
+  type ExtrinsicType NOT NULL,
   signed_data JSON,
   inherent_data JSON,
+
+  timestamp timestamp default current_timestamp,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_block

@@ -27,6 +27,35 @@ export const insertInitialBlock = async ({id, hash, author, parentHash, stateRoo
     INSERT INTO block
       (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
     VALUES
-      (${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', FALSE);
+      (${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', FALSE)
+    ON CONFLICT DO NOTHING;
   `);
 };
+
+export interface InsertExtrinsic {
+  blockId: number;
+  index: number;
+  hash: string;
+  args: string;
+  docs: string;
+  method: string;
+  section: string;
+  signed: string;
+}
+export interface SignedExtrinsicData {
+  fee: string;
+  feeDetails: string;
+}
+
+
+export const insertExtrinsic = async (
+  {blockId, index, hash, args, docs, method, section, signed}: InsertExtrinsic, 
+  signedData?: SignedExtrinsicData): Promise<void> => {
+  await query(`
+    INSERT INTO extrinsic
+      (block_id, index, hash, args, docs, method, section, signed, type ${signedData ? ', signed_data' : ''})
+    VALUES
+      (${blockId}, ${index}, '${hash}', '[${args}]', '${docs.replace(/'/g, "''")}', '${method}', '${section}', '${signed}', ${signedData ? "'signed'" : "'unsigned'"} ${signedData ? ", '" + JSON.stringify(signedData) + "'" : ''})
+    ON CONFLICT DO NOTHING;
+  `);
+}
