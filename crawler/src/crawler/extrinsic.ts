@@ -1,23 +1,12 @@
 import {Vec} from "@polkadot/types"
-import {AnyTuple} from "@polkadot/types/types"
 import { nodeProvider } from "../utils/connector";
-import {GenericExtrinsic} from "@polkadot/types/extrinsic"
 import {FrameSystemEventRecord, SpRuntimeDispatchError} from "@polkadot/types/lookup"
 import { SignedExtrinsicData, InsertExtrinsic, insertExtrinsic, insertTransfer } from "../queries/block";
 import { processExtrinsicEvent } from "./event";
 import {BigNumber} from "ethers";
+import { Extrinsic } from "./types";
+import { processNewContract } from "./contract";
 
-type Extrinsic = GenericExtrinsic<AnyTuple>;
-
-const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
-  const fee = await nodeProvider.api.rpc.payment.queryInfo(extrinsicHash);
-  const feeDetails = await nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash);
-
-  return {
-    fee: fee.toJSON(),
-    feeDetails: feeDetails.toJSON(),
-  };
-}
 
 interface ExtrinsicUnknown {
   type: "unknown";
@@ -31,6 +20,25 @@ interface ExtrinsicError {
 }
 
 type ExtrinsicStatus = ExtrinsicError | ExtrinsicSuccess | ExtrinsicUnknown;
+
+interface ProcessTransfer {
+  blockId: number;
+  extrinsicId: number;
+  extrinsic: Extrinsic;
+  status: ExtrinsicStatus;
+  signedData: SignedExtrinsicData;
+}
+
+const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
+  const fee = await nodeProvider.api.rpc.payment.queryInfo(extrinsicHash);
+  const feeDetails = await nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash);
+
+  return {
+    fee: fee.toJSON(),
+    feeDetails: feeDetails.toJSON(),
+  };
+}
+
 
 const extractErrorMessage = (error: SpRuntimeDispatchError): string => {
   if (error.isModule) {
@@ -57,16 +65,6 @@ const extrinsicStatus = (extrinsicEvents: FrameSystemEventRecord[]): ExtrinsicSt
     }, {type: 'unknown'} as ExtrinsicStatus
   );
 
-
-
-interface ProcessTransfer {
-  blockId: number;
-  extrinsicId: number;
-  extrinsic: Extrinsic;
-  status: ExtrinsicStatus;
-  signedData: SignedExtrinsicData;
-}
-
 const processTransfer = async ({blockId, extrinsic, extrinsicId, status, signedData}: ProcessTransfer) => {
   const args: any = extrinsic.args.map((arg) => arg.toJSON());
   
@@ -88,7 +86,7 @@ const processTransfer = async ({blockId, extrinsic, extrinsicId, status, signedD
 }
 
 
-const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, index: number, status: ExtrinsicStatus): Promise<number> => {
+const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, index: number, status: ExtrinsicStatus, sd?: SignedExtrinsicData): Promise<number> => {
   const {signer, meta, hash, args, method, isSigned} = extrinsic;
 
   const extrinsicBody: InsertExtrinsic = {
@@ -104,17 +102,7 @@ const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, ind
     error_message: status.type === 'error' ? status.message : ""
   }
   
-  if (isSigned) {
-    const signedData = await getSignedExtrinsicData(extrinsic.toHex());
-    const extrinsicId = await insertExtrinsic(extrinsicBody, signedData);
-
-    if (method.section === 'balances' || method.section === 'currencies') {
-      await processTransfer({blockId, extrinsic, extrinsicId, status, signedData})
-    }
-    return extrinsicId;
-  } else {
-    return await insertExtrinsic(extrinsicBody); 
-  } 
+  return insertExtrinsic(extrinsicBody, sd);
 }
 
 export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<FrameSystemEventRecord>) => async (extrinsic: Extrinsic, index: number): Promise<void> => {
@@ -124,11 +112,29 @@ export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<FrameSys
     .filter(({phase}) => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index));
 
   const status = extrinsicStatus(events);
-  const extrinsicId = await processExtrinsicInsert(extrinsic, blockId, index, status);
+  const signedData = extrinsic.isSigned
+    ? await getSignedExtrinsicData(extrinsic.toHex())
+    : undefined;
+  const extrinsicId = await processExtrinsicInsert(extrinsic, blockId, index, status, signedData);
+
+  const {section, method} = extrinsic.method;
+
+  if (extrinsic.isSigned && !signedData) {
+    throw new Error("Extrinsic signed but no signed data found....");
+  }
+
+  if (extrinsic.isSigned) {
+    if (section === 'balances' || section === 'currencies') {
+      await processTransfer({blockId, extrinsic, extrinsicId, status, signedData: signedData!})
+    }
+    if (section === "evm") {
+      if (method === "create") {
+        await processNewContract({extrinsicId, extrinsic, extrinsicEvents: events});
+      }
+    }
+  }
 
   const processEvent = processExtrinsicEvent(blockId, extrinsicId);
   await Promise.all(events.map(processEvent));
-
-  const {section} = extrinsic.method;
 }
 

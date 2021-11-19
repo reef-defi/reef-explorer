@@ -3,9 +3,15 @@ CREATE TYPE ContractType AS ENUM ('ERC20', 'ERC721', 'other');
 CREATE TABLE IF NOT EXISTS contract (
   address VARCHAR(48),
   extrinsic_id BIGINT,
-  bytecode TEXT,
-  bytecode_context TEXT,
-  argument_bytecode TEXT,
+  -- owner VARCHAR, -- TODO add owner!!!
+
+  bytecode TEXT NOT NULL,
+  bytecode_context TEXT NOT NULL,
+  argument_bytecode TEXT NOT NULL,
+  gas_limit BIGINT NOT NULL,
+  storage_limit BIGINT NOT NULL,
+
+  timestamp timestamp default current_timestamp,
 
   PRIMARY KEY (address),
   CONSTRAINT fk_extrinsic

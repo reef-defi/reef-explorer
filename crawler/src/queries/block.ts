@@ -82,3 +82,22 @@ VALUES
   (${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', ${amount === "" ? "0" : amount}, ${feeAmount === "" ? "0" : amount}, '${success}', '${errorMessage}');
 `, 'transfer'
 );
+
+interface InsertContract {
+  address: string;
+  extrinsicId: number;
+
+  bytecode: string;
+  bytecodeContext: string;
+  bytecodeArguments: string;
+
+  gasLimit: string;
+  storageLimit: string;
+}
+
+export const insertContract = async ({address, extrinsicId, bytecode, bytecodeContext, bytecodeArguments, gasLimit, storageLimit}: InsertContract): Promise<number> => insert(`
+INSERT INTO contract
+  (address, extrinsic_id, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
+VALUES
+  ('${address}', ${extrinsicId}, '${bytecode}', '${bytecodeContext}', '${bytecodeArguments}', ${gasLimit}, ${storageLimit});
+`, 'contract');
