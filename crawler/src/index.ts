@@ -1,41 +1,29 @@
 import { processBlock } from "./crawler/block";
 import { lastBlockInDatabase } from "./queries/block";
 import { closeProviders, initializeProviders, nodeProvider } from "./utils/connector";
-const { performance } = require('perf_hooks');
+import { wait } from "./utils/utils";
 
-const crawlData = async (): Promise<void> => {
-  console.log("Starting harvesting data...")
-  let blockIndex = await lastBlockInDatabase() + 1;
-  let lastNodeBlockNumber = await nodeProvider.getBlockNumber();
-  let startTime = performance.now();
-  console.log("Last block in database: ", blockIndex);
+let currentBlockIndex = -1;
+let latestBlockIndex = -1;
 
-  while (blockIndex < lastNodeBlockNumber) {
-    if (blockIndex % 1000 === 0) {
-      console.log(`Processing block ${blockIndex}, 1k blocks per ${(performance.now() - startTime / 1000).toFixed(3)} s`)
-      startTime = performance.now();
-    }
-
-    await processBlock(blockIndex);
-    blockIndex += 1;
-    lastNodeBlockNumber = await nodeProvider.getBlockNumber();
+const processNextBlock = async () => {
+  while (currentBlockIndex + 1 < latestBlockIndex) {
+    currentBlockIndex += 1;
+    await processBlock(currentBlockIndex);
   };
 
-  console.log("Starting to ")
-  listenToNewBlocks();
-}
-
-const listenToNewBlocks = () => {
-  nodeProvider.api.rpc.chain.subscribeNewHeads(async (header) => {
-    // TODO add safty check if the last block in db is really header.number + 1! 
-    // If it is not, cancle subscription and run crawlData function!
-    await processBlock(header.number.toNumber())
-  });
+  await wait(100);
+  await processNextBlock();
 }
 
 Promise.resolve()
   .then(initializeProviders)
-  .then(crawlData)
+  .then(async () => currentBlockIndex = await lastBlockInDatabase())
+  .then(() => nodeProvider.api.rpc.chain.subscribeNewHeads((header) => {
+    latestBlockIndex = header.number.toNumber();
+  }))
+  .then(processNextBlock)
+  // .then(() => processBlock(1))
   .catch((error) => {
     console.error(error);
     process.exit(-1);
