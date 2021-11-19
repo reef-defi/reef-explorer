@@ -1,10 +1,10 @@
 import {Vec} from "@polkadot/types"
 import { nodeProvider } from "../utils/connector";
-import {FrameSystemEventRecord, SpRuntimeDispatchError} from "@polkadot/types/lookup"
-import { SignedExtrinsicData, InsertExtrinsic, insertExtrinsic, insertTransfer } from "../queries/block";
+import {SpRuntimeDispatchError} from "@polkadot/types/lookup"
+import { SignedExtrinsicData, InsertExtrinsic, insertExtrinsic, insertTransfer, insertUnverifiedEvmCall, signerExist, insertAccount } from "../queries/block";
 import { processExtrinsicEvent } from "./event";
 import {BigNumber} from "ethers";
-import { Extrinsic } from "./types";
+import { Extrinsic, Event } from "./types";
 import { processNewContract } from "./contract";
 
 
@@ -49,7 +49,7 @@ const extractErrorMessage = (error: SpRuntimeDispatchError): string => {
   }
 }
 
-const extrinsicStatus = (extrinsicEvents: FrameSystemEventRecord[]): ExtrinsicStatus => extrinsicEvents
+const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => extrinsicEvents
   .reduce((prev, {event}) => {
       if (prev.type === 'unknown' && nodeProvider.api.events.system.ExtrinsicSuccess.is(event)) {
         return {type: "success"};
@@ -105,8 +105,51 @@ const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, ind
   return insertExtrinsic(extrinsicBody, sd);
 }
 
-export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<FrameSystemEventRecord>) => async (extrinsic: Extrinsic, index: number): Promise<void> => {
-  console.log("Extrinsic id: ", index);
+interface ResolveSection {
+  blockId: number;
+  extrinsicId: number;
+  extrinsic: Extrinsic;
+  status: ExtrinsicStatus;
+  extrinsicEvents: Event[];
+  signedData: SignedExtrinsicData;
+}
+
+const resolveEvmSection = async (section: ResolveSection): Promise<void> => {
+  const {extrinsic, extrinsicId} = section;
+  const account = extrinsic.signer.toString();
+  const args: any[] = extrinsic.args.map((arg) => arg.toJSON());
+
+  if (section.extrinsic.method.method === "create") {
+    await processNewContract(section)
+  } else {
+    await insertUnverifiedEvmCall({
+      account,
+      extrinsicId,
+      bytecode: args[0],
+      gasLimit: args[2],
+      storageLimit: args[3]
+    });
+  }
+}
+
+const resolveSections = async (section: ResolveSection): Promise<void> => {
+  switch (section.extrinsic.method.section) {
+    case "balances": return processTransfer(section);
+    case "currencies": return processTransfer(section);
+    case "evm": return resolveEvmSection(section);
+  }
+}
+
+const resolveAccount = async (address: string, blockId: number): Promise<void> => {
+  const exists = await signerExist(address);
+  if (exists) { return; }
+
+  const evmAddress = await nodeProvider.api.query.evmAccounts.evmAddresses(address);
+  await insertAccount(address, evmAddress.toString(), blockId);
+}
+
+export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>) => async (extrinsic: Extrinsic, index: number): Promise<void> => {
+  // console.log("Extrinsic id: ", index);
   
   const events = blockEvents
     .filter(({phase}) => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index));
@@ -117,21 +160,13 @@ export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<FrameSys
     : undefined;
   const extrinsicId = await processExtrinsicInsert(extrinsic, blockId, index, status, signedData);
 
-  const {section, method} = extrinsic.method;
-
   if (extrinsic.isSigned && !signedData) {
     throw new Error("Extrinsic signed but no signed data found....");
   }
 
   if (extrinsic.isSigned) {
-    if (section === 'balances' || section === 'currencies') {
-      await processTransfer({blockId, extrinsic, extrinsicId, status, signedData: signedData!})
-    }
-    if (section === "evm") {
-      if (method === "create") {
-        await processNewContract({extrinsicId, extrinsic, extrinsicEvents: events});
-      }
-    }
+    await resolveAccount(extrinsic.signer.toString(), blockId);
+    await resolveSections({extrinsicId, extrinsic, blockId, signedData: signedData!, status, extrinsicEvents: events});
   }
 
   const processEvent = processExtrinsicEvent(blockId, extrinsicId);

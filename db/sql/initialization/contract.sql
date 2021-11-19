@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS contract (
 
   bytecode TEXT NOT NULL,
   bytecode_context TEXT NOT NULL,
-  argument_bytecode TEXT NOT NULL,
+  bytecode_arguments TEXT NOT NULL,
   gas_limit BIGINT NOT NULL,
   storage_limit BIGINT NOT NULL,
 

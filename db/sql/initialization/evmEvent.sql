@@ -1,21 +1,19 @@
 CREATE TYPE EventStatus AS ENUM ('success', 'error');
 
-CREATE TABLE IF NOT EXISTS unverified_evm_event (
+CREATE TABLE IF NOT EXISTS unverified_evm_call (
   extrinsic_id BIGINT,
   signer_address VARCHAR(48),
-  contract_address VARCHAR(48),
 
-  -- TODO add data for parsing
+  bytecode TEXT NOT NULL,
+  gas_limit BIGINT NOT NULL,
+  storage_limit BIGINT NOT NULL,
 
   CONSTRAINT fk_extrinsic
     FOREIGN KEY (extrinsic_id)
       REFERENCES extrinsic(id),
-  CONSTRAINT fk_contract
-    FOREIGN KEY (contract_address)
-      REFERENCES contract(address),
   CONSTRAINT fk_account
     FOREIGN KEY (signer_address)
-      REFERENCES account(evm_address)
+      REFERENCES account(address)
 );
 
 CREATE TABLE IF NOT EXISTS verified_evm_event (
