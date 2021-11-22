@@ -8,5 +8,8 @@ CREATE TABLE IF NOT EXISTS account (
 );
 
 -- Inserting chain account
-INSERT INTO account (block_id, evm_address, address)
-VALUES (0, '0x', '0x');
+INSERT INTO account 
+  (block_id, evm_address, address)
+VALUES
+  (0, '0x', '0x'),
+  (0, 'deleted', 'deleted');

@@ -2,10 +2,10 @@ CREATE TABLE IF NOT EXISTS transfer (
   id BIGSERIAL,
   block_id BIGINT,
   extrinsic_id BIGINT,
-
-  denom TEXT NOT NULL,
   to_address VARCHAR NOT NULL,
   from_address VARCHAR NOT NULL,
+
+  denom TEXT NOT NULL,
   amount NUMERIC(80,0) NOT NULL,
   fee_amount NUMERIC(80, 0) NOT NULL,
 
@@ -20,5 +20,8 @@ CREATE TABLE IF NOT EXISTS transfer (
       REFERENCES block(id),
   CONSTRAINT fk_extrinsic
     FOREIGN KEY(extrinsic_id)
-      REFERENCES extrinsic(id)
+      REFERENCES extrinsic(id),
+  CONSTRAINT fk_from_address
+    FOREIGN KEY(from_address)
+      REFERENCES account(address)
 );
