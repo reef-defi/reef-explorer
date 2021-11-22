@@ -120,19 +120,37 @@ VALUES
 `);
 
 export const signerExist = async (address: string): Promise<boolean> => {
-  const result = await query(`SELECT * FROM account WHERE address = '${address}';`);
+  const result = await query(`SELECT * FROM account WHERE address = '${address}' AND active = true;`);
   return result.length > 0;
 }
 
 export const insertAccount = async (address: string, evmAddress: string, blockId: number): Promise<void> => insert(`
 INSERT INTO account
-  (address, evm_address, block_id)
+  (address, evm_address, block_id, active)
 VALUES
-  ('${address}', '${evmAddress}', ${blockId});
+  ('${address}', '${evmAddress}', ${blockId}, true)
+ON CONFLICT (address) DO UPDATE SET active = TRUE;
 `)
 
-export const deleteAccount = async (address: string): Promise<void> => {
+export const deactiveteAccount = async (address: string): Promise<void> => {
   const exists = await signerExist(address);
   if (!exists) { return; }
-  await query(`DELETE account WHERE address = '${address};'`);
+  await query(`UPDATE account SET active = FALSE WHERE address = '${address}';`);
+};
+
+interface InsertEvent {
+  index: number;
+  blockId: number;
+  extrinsicId: number;
+
+  data: string;
+  method: string;
+  section: string;
 }
+
+export const insertEvent = async ({blockId, extrinsicId, index, data, method, section}: InsertEvent): Promise<void> => insert(`
+INSERT INTO event
+  (block_id, extrinsic_id, index, section, method, data)
+VALUES
+  (${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}');
+`)

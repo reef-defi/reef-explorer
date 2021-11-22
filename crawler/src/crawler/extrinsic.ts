@@ -150,15 +150,16 @@ export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>) 
 
   const extrinsicId = await processExtrinsicInsert(extrinsic, blockId, index, status, signedData);
   
-  const processEvent = processBlockEvent(blockId);
+  const processEvent = processBlockEvent(blockId, extrinsicId);
+  let eventIndex = 0;
   for await (const event of events) {
-    await processEvent(event);
+    await processEvent(event, eventIndex);
+    eventIndex ++;
   }
-  // await Promise.all(events.map(processEvent))
 
-  if (extrinsic.isSigned && !signedData) {
-    throw new Error("Extrinsic signed but no signed data found....");
-  }
+  // if (extrinsic.isSigned && !signedData) {
+  //   throw new Error("Extrinsic signed but no signed data found....");
+  // }
 
   if (extrinsic.isSigned) {
     await resolveSections({extrinsicId, extrinsic, blockId, signedData: signedData!, status, extrinsicEvents: events});
