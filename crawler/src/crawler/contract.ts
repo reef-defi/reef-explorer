@@ -1,10 +1,12 @@
 import { insertContract } from "../queries/block";
-import {Event, Extrinsic} from "./types";
+import {Event, Extrinsic, ExtrinsicStatus} from "./types";
 
 interface ProcessContract {
+  blockId: number;
   extrinsic: Extrinsic;
   extrinsicId: number;
-  extrinsicEvents: Event[]
+  extrinsicEvents: Event[];
+  status: ExtrinsicStatus;
 }
 
 
@@ -19,13 +21,17 @@ const preprocessBytecode = (bytecode: string) => {
   }
 }
 
-export const processNewContract = async ({extrinsicEvents, extrinsic, extrinsicId}: ProcessContract): Promise<void> => {
+export const processNewContract = async ({extrinsicEvents, extrinsic, extrinsicId, blockId, status}: ProcessContract): Promise<void> => {
   const {args} = extrinsic;
   const event = extrinsicEvents.find(
     ({event}) => event.section === 'evm' && event.method === 'Created'
   );
   if (!event) {
-    throw new Error("Event does not exist");
+    const message = status.type === 'error'
+      ? `with message: ${status.message}`
+      : '';
+    console.log(`Block: ${blockId} -> Contract deploy failed ${message}`);
+    return;
   }
   const address = event.event.data[0].toString();
 
@@ -44,4 +50,5 @@ export const processNewContract = async ({extrinsicEvents, extrinsic, extrinsicI
     bytecodeArguments,
     bytecodeContext: context,
   });
+  console.log(`Block: ${blockId} -> New contract with address: ${address} added`);
 }
