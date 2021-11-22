@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS extrinsic (
   signed_data JSON,
   inherent_data JSON,
 
-
   timestamp timestamp default current_timestamp,
 
   PRIMARY KEY (id),
@@ -28,3 +27,8 @@ CREATE TABLE IF NOT EXISTS extrinsic (
     FOREIGN KEY(block_id)
       REFERENCES block(id)
 );
+
+INSERT INTO extrinsic
+  (block_id, index, hash, args, docs, method, section, signed, status, type)
+VALUES
+  (-1, 0, '', '[]', '', '', '', '0x', 'success', 'unsigned');

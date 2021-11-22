@@ -12,3 +12,8 @@ CREATE TABLE IF NOT EXISTS block (
 
   PRIMARY KEY (id)
 );
+
+INSERT INTO block
+  (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
+VALUES
+  (-1, '', '', '', '', '', TRUE);
