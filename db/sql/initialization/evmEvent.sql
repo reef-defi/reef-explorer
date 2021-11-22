@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS unverified_evm_call (
       REFERENCES account(address)
 );
 
-CREATE TABLE IF NOT EXISTS verified_evm_event (
+CREATE TABLE IF NOT EXISTS verified_evm_call (
   id BIGSERIAL,
   extrinsic_id BIGINT,
   signer_address VARCHAR(48),

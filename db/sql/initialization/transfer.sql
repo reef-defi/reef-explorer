@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS transfer (
   id BIGSERIAL,
   block_id BIGINT,
   extrinsic_id BIGINT,
-  to_address VARCHAR NOT NULL,
+  to_address VARCHAR,
   from_address VARCHAR NOT NULL,
 
   denom TEXT NOT NULL,
