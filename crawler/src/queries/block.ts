@@ -107,16 +107,16 @@ ON CONFLICT DO NOTHING;
 interface InsertUnverifiedEvmEvent {
   extrinsicId: number;
   account: string;
-  bytecode: string;
+  data: string;
   gasLimit: string;
   storageLimit: string;
 }
 
-export const insertUnverifiedEvmCall = async ({extrinsicId, storageLimit, gasLimit, bytecode, account}: InsertUnverifiedEvmEvent): Promise<void> => insert(`
+export const insertUnverifiedEvmCall = async ({extrinsicId, storageLimit, gasLimit, data, account}: InsertUnverifiedEvmEvent): Promise<void> => insert(`
 INSERT INTO unverified_evm_call
-  (extrinsic_id, signer_address, bytecode, gas_limit, storage_limit)
+  (extrinsic_id, signer_address, data, gas_limit, storage_limit)
 VALUES
-  (${extrinsicId}, '${account}', '${bytecode}', ${gasLimit}, ${storageLimit});
+  (${extrinsicId}, '${account}', '${data}', ${gasLimit}, ${storageLimit});
 `);
 
 export const signerExist = async (address: string): Promise<boolean> => {
@@ -130,3 +130,9 @@ INSERT INTO account
 VALUES
   ('${address}', '${evmAddress}', ${blockId});
 `)
+
+export const deleteAccount = async (address: string): Promise<void> => {
+  const exists = await signerExist(address);
+  if (!exists) { return; }
+  await query(`DELETE account WHERE address = '${address};'`);
+}

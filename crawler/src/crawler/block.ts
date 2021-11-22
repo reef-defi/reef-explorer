@@ -3,7 +3,7 @@ import { insertInitialBlock, blockFinalized } from "../queries/block";
 import { processBlockExtrinsic } from "./extrinsic";
 
 export const processBlock = async (id: number): Promise<void> => {
-  console.log(`Processing block with id: ${id}`);
+  // console.log(id)
   const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
   const signedBlock = await nodeProvider.api.rpc.chain.getBlock(hash);
   // TODO why the f*** next function shows 'Unable to map u16 to a lookup index'?!?!?!?!
@@ -16,9 +16,9 @@ export const processBlock = async (id: number): Promise<void> => {
     id,
     hash: hash.toString(),
     author: extendedHeader?.author?.toString() || "",
-    parentHash: header?.parentHash.toString() || "",
-    stateRoot: header?.stateRoot.toString() || "",
-    extrinsicRoot: header?.extrinsicsRoot.toString() || "",
+    parentHash: header.parentHash.toString(),
+    stateRoot: header.stateRoot.toString(),
+    extrinsicRoot: header.extrinsicsRoot.toString(),
   };
   await insertInitialBlock(body);
 
