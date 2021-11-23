@@ -5,7 +5,11 @@ CREATE TABLE IF NOT EXISTS unverified_evm_call (
   extrinsic_id BIGINT,
   signer_address VARCHAR(48),
 
+  contract_address VARCHAR NOT NULL,
   data JSON NOT NULL,
+
+  status EventStatus NOT NULL,
+  error_message TEXT,
 
   gas_limit BIGINT NOT NULL,
   storage_limit BIGINT NOT NULL,

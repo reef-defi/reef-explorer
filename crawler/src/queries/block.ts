@@ -1,3 +1,4 @@
+import { ExtrinsicStatus } from "../crawler/types";
 import { insert, insertAndGetId, query } from "../utils/connector"
 
 interface BlockID {
@@ -107,16 +108,18 @@ ON CONFLICT DO NOTHING;
 interface InsertUnverifiedEvmEvent {
   extrinsicId: number;
   account: string;
+  contractAddress: string;
   data: string;
   gasLimit: string;
   storageLimit: string;
+  status: ExtrinsicStatus;
 }
 
-export const insertUnverifiedEvmCall = async ({extrinsicId, storageLimit, gasLimit, data, account}: InsertUnverifiedEvmEvent): Promise<void> => insert(`
+export const insertUnverifiedEvmCall = async ({extrinsicId, contractAddress, storageLimit, gasLimit, data, account, status}: InsertUnverifiedEvmEvent): Promise<void> => insert(`
 INSERT INTO unverified_evm_call
-  (extrinsic_id, signer_address, data, gas_limit, storage_limit)
+  (extrinsic_id, signer_address, contract_address, data, gas_limit, storage_limit, status, error_message)
 VALUES
-  (${extrinsicId}, '${account}', '${data}', ${gasLimit}, ${storageLimit});
+  (${extrinsicId}, '${account}', '${contractAddress}', '${data}', ${gasLimit}, ${storageLimit}, '${status.type === 'success' ? 'success' : 'error'}', '${status.type === 'error' ? status.message : ''}');
 `);
 
 export const signerExist = async (address: string): Promise<boolean> => {

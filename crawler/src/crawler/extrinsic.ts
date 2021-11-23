@@ -19,9 +19,11 @@ interface ProcessTransfer {
 const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
 const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
-  const fee = await nodeProvider.api.rpc.payment.queryInfo(extrinsicHash);
-  const feeDetails = await nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash);
-
+  const [fee, feeDetails] = await Promise.all([
+    nodeProvider.api.rpc.payment.queryInfo(extrinsicHash),
+    nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash),
+  ]);
+  
   return {
     fee: fee.toJSON(),
     feeDetails: feeDetails.toJSON(),
@@ -100,18 +102,23 @@ const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, ind
 }
 
 const processUnverifiedEvmCall = async (section: ResolveSection): Promise<void> => {
-  const {extrinsic, extrinsicId} = section;
+  const {extrinsic, extrinsicId, status} = section;
   const account = resolveSigner(extrinsic);
   const args: any[] = extrinsic.args.map((arg) => arg.toJSON());
+  const contractAddress: string = args[0];
   const data = JSON.stringify(args.slice(0, args.length-2));
+  const gasLimit = args.length >= 3 ? args[args.length-2] : 0;
+  const storageLimit = args.length >= 3 ? args[args.length-1] : 0;
   await insertUnverifiedEvmCall({
     data,
+    status,
     account,
+    gasLimit,
     extrinsicId,
-    gasLimit: args[args.length-2],
-    storageLimit: args[args.length-1]
+    storageLimit,
+    contractAddress,
   });
-  console.log(`Block: ${section.blockId} -> New Unverified evm call by ${account}`);
+  console.log(`Block: ${section.blockId} -> New Unverified evm call by ${account} ${status.type === 'success' ? 'succsessfull' : 'unsuccsessfull'}`);
 }
 
 interface ResolveSection {
@@ -128,7 +135,7 @@ const resolveEvmSection = async (section: ResolveSection): Promise<void> => {
     await processNewContract(section)
   } else {
     await processUnverifiedEvmCall(section);
-  }
+  } 
 }
 
 const resolveSections = async (section: ResolveSection): Promise<void> => {
@@ -151,15 +158,7 @@ export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>) 
   const extrinsicId = await processExtrinsicInsert(extrinsic, blockId, index, status, signedData);
   
   const processEvent = processBlockEvent(blockId, extrinsicId);
-  let eventIndex = 0;
-  for await (const event of events) {
-    await processEvent(event, eventIndex);
-    eventIndex ++;
-  }
-
-  // if (extrinsic.isSigned && !signedData) {
-  //   throw new Error("Extrinsic signed but no signed data found....");
-  // }
+  await Promise.all(events.map(processEvent));
 
   if (extrinsic.isSigned) {
     await resolveSections({extrinsicId, extrinsic, blockId, signedData: signedData!, status, extrinsicEvents: events});
