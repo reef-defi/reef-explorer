@@ -1,11 +1,18 @@
 CREATE TABLE IF NOT EXISTS account (
-  evm_address VARCHAR(42),
-  address VARCHAR(48) NOT NULL, -- TODO maybe we can add also address as Primary Key
-  -- TODO add additional attributes
+  block_id BIGINT,
+  address VARCHAR(48),
+  evm_address VARCHAR(42), -- TODO maybe we can add also address as Primary Key
 
-  PRIMARY KEY (evm_address)
+  active BOOLEAN NOT NULL,
+
+  timestamp timestamp default current_timestamp,
+
+  PRIMARY KEY (address)
 );
 
 -- Inserting chain account
-INSERT INTO account (evm_address, address)
-VALUES ('0x', '0x');
+INSERT INTO account 
+  (block_id, evm_address, address, active)
+VALUES
+  (0, '0x', '0x', true),
+  (0, 'deleted', 'deleted', true);

@@ -1,0 +1,22 @@
+{
+  "name": "reefexplorer-crawler",
+  "version": "1.0.0",
+  "author": "Žiga Franko Gorišek",
+  "license": "MIT",
+  "private": false,
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "tsc && node ./dist/index.js",
+    "localhost": "docker-compose -p crawler-localhost -f docker-compose-localhost.yml up -d",
+    "stop-localhost": "docker stop crawler-localhost-crawler-1 && docker stop crawler-localhost-substrate-node-1",
+    "purge-localhost": "docker rm crawler-localhost-crawler-1 && docker rm crawler-localhost-substrate-node-1 && docker volume rm crawler-localhost_substrate-data"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "@reef-defi/evm-provider": "^1.0.3",
+    "pg": "^8.7.1"
+  }
+}

@@ -35,6 +35,7 @@ interface UpdateContract {
   license?: License;
   optimization: boolean;
   abi: ABI;
+  runs: number;
   compilerVersion: string;
 }
 
@@ -43,7 +44,7 @@ FROM contract
 WHERE contract_id = $1`;
 
 const UPDATE_CONTRACT_STATUS = `UPDATE contract
-SET verified = TRUE, name = $2, compiler_data = $3, source = $4, compiler_version = $5, optimization = $6, target = $7
+SET verified = TRUE, name = $2, compiler_data = $3, source = $4, compiler_version = $5, optimization = $6, target = $7, runs = $8
 WHERE contract_id = $1`;
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO contract_verification_request
@@ -59,10 +60,10 @@ VALUES
 const CONTRACT_VERIFICATION_STATUS = `SELECT status FROM contract_verification_request WHERE id = $1`;
 
 // Queries 
-const updateContractStatus = async ({address, name, abi, source, compilerVersion, optimization, target}: UpdateContract): Promise<void> => {
+const updateContractStatus = async ({address, name, abi, source, compilerVersion, optimization, target, runs}: UpdateContract): Promise<void> => {
   await query(
     UPDATE_CONTRACT_STATUS,
-    [address, name, JSON.stringify(abi), source, compilerVersion, optimization, target]
+    [address, name, JSON.stringify(abi), source, compilerVersion, optimization, target, runs]
   );
 };
 

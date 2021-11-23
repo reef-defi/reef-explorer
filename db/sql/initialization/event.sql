@@ -2,11 +2,13 @@ CREATE TABLE IF NOT EXISTS event (
   id BIGSERIAL,
   block_id BIGINT,
   extrinsic_id BIGINT,
-  index BIGINT,
+  index BIGINT NOT NULL,
   
-  section TEXT, -- TODO
-  method TEXT, -- TODO
-  phase TEXT, -- TODO
+  section TEXT NOT NULL,
+  method TEXT NOT NULL,
+  data JSON NOT NULL,
+
+  timestamp timestamp default current_timestamp,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_block

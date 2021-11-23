@@ -2,24 +2,6 @@ version: '3.7'
 
 services:
   #
-  # reef node
-  #
-  substrate-node:
-    image: testnet-node/latest
-    hostname: substrate-node
-    build: ./node/testnet
-    volumes:
-      - 'substrate-data:/data'
-    ports:
-      - '30333:30333'
-      - '9933:9933'
-      - '9944:9944'
-    expose:
-      - '9944'
-    command: -d /data --ws-max-connections 1000 --chain testnet --pruning=archive --rpc-cors "*" --ws-port 9944 --port 30333 --unsafe-ws-external --no-prometheus --name 'Reef explorer' --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0'
-    restart: always
-
-  #
   # PostgresSQL database
   #
   postgres:
@@ -36,8 +18,9 @@ services:
       - './sql/initialization/error.sql:/docker-entrypoint-initdb.d/05_error.sql'
       - './sql/initialization/contract.sql:/docker-entrypoint-initdb.d/06_contract.sql'
       - './sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/07_evmEvent.sql'
+      - './sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/08_transfer.sql'
       # Chain info sql must be the last to initialize!
-      - './sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/17_chainInfo.sql'
+      # - './sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/17_chainInfo.sql'
     environment:
       POSTGRES_USER: 'reefexplorer'
       POSTGRES_PASSWORD: 'reefexplorer'
@@ -74,4 +57,3 @@ services:
 volumes:
   sql:
   db-data: {}
-  substrate-data: {}
