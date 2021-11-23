@@ -19,6 +19,7 @@ const processNextBlock = async () => {
 Promise.resolve()
   .then(initializeProviders)
   .then(async () => currentBlockIndex = await lastBlockInDatabase())
+  // .then(async () => currentBlockIndex = 609157-1)
   .then(() => nodeProvider.api.rpc.chain.subscribeNewHeads((header) => {
     latestBlockIndex = header.number.toNumber();
   }))
