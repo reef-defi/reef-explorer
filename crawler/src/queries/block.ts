@@ -23,11 +23,27 @@ export const blockFinalized = async (blockId: number): Promise<void> => {
   await query(`UPDATE block SET finalized = true WHERE id = ${blockId}`);
 }
 
-export const insertInitialBlock = async ({id, hash, author, parentHash, stateRoot, extrinsicRoot}: InsertInitialBlock): Promise<number> => insertAndGetId(`
+interface InsertBlockValues extends InsertInitialBlock {
+  finalized: boolean;
+}
+
+const blockValuesStatement = ({id, hash, author, stateRoot, parentHash, extrinsicRoot, finalized}: InsertBlockValues): string =>
+  `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', ${finalized})`;
+
+
+export const insertMultipleBlocks = async (data: InsertBlockValues[]): Promise<void> => insert(`
+INSERT INTO block
+    (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
+  VALUES
+    ${data.map(blockValuesStatement).join(",\n")}
+  ON CONFLICT DO NOTHING;
+`)
+
+export const insertInitialBlock = async (data: InsertInitialBlock): Promise<number> => insertAndGetId(`
 INSERT INTO block
   (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
 VALUES
-  (${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', FALSE)
+  ${blockValuesStatement({...data, finalized: false})}
 ON CONFLICT DO NOTHING;
 `, 'block');
 
