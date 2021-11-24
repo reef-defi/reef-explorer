@@ -6,10 +6,10 @@ import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
 import {Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
-import { compress } from "./utils";
-import { InsertExtrinsic, InsertExtrinsicBody, insertExtrinsics } from "../queries/extrinsic";
+import { InsertExtrinsicBody, insertExtrinsics, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, resolveAccounts } from "./event";
+import { compress, dropDuplicates, range } from "../utils/utils";
 
 export const processBlock = async (id: number): Promise<void> => {
   // console.log(id)
@@ -79,12 +79,11 @@ const blockBodyToInsert = ({id, hash, extendedHeader, signedBlock}: BlockBody) =
 const isExtrinsicEvent = (extrinsicIndex: number) => ({phase}: Event): boolean => 
   phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(extrinsicIndex)
 
-const blockToExtrinsicsHeader = (nextFreeId: number) => ({id, signedBlock, events}: BlockBody, index: number): ExtrinsicHead[] => 
+const blockToExtrinsicsHeader = ({id, signedBlock, events}: BlockBody): ExtrinsicHead[] => 
   signedBlock.block.extrinsics
     .map((extrinsic, index) => ({
       extrinsic,
       blockId: id,
-      id: nextFreeId + index,
       events: events.filter(isExtrinsicEvent(index)),
     }));
 
@@ -100,7 +99,8 @@ const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtr
   };
 }
 
-const extrinsicBody = async (extrinsicHead: ExtrinsicHead): Promise<ExtrinsicBody> => ({...extrinsicHead,
+const extrinsicBody = (nextFreeId: number) => async (extrinsicHead: ExtrinsicHead, index: number): Promise<ExtrinsicBody> => ({...extrinsicHead,
+  id: nextFreeId + index,
   signedData: extrinsicHead.extrinsic.isSigned ? await getSignedExtrinsicData(extrinsicHead.extrinsic.toHex()) : undefined
 })
 
@@ -123,25 +123,26 @@ const extrinsicToInsert = ({id, extrinsic, signedData, blockId, events}: Extrins
   }
 };
 
-const extrinsicToEventHeader = (nextFreeId: number) =>  ({id, blockId, extrinsic, events}: ExtrinsicBody, index: number): EventHead[] => events
+const extrinsicToEventHeader = ({id, blockId, events}: ExtrinsicBody): EventHead[] => events
   .map((event) => ({
     blockId,
     extrinsicId: id,
-    id: nextFreeId + index,
     event
   }));
 
-const eventToInsert = ({id, event, extrinsicId, blockId}: EventHead, index: number): InsertEventValue => ({
-  id, extrinsicId, blockId, index,
+const eventToInsert = (nextFreeId: number) => ({event, extrinsicId, blockId}: EventHead, index: number): InsertEventValue => ({
+  extrinsicId, blockId, index,
+  id: nextFreeId + index,
   data: JSON.stringify(event.event.data.toJSON()),
   method: event.event.method,
   section: event.event.section
 });
 
 export const processBlocks = async (fromId: number, toId: number): Promise<void> => {
-  const blockIds = new Array(toId-fromId)
-    .map((_, index) => fromId + index);
+  console.log(`Processing blocks from ${fromId} to ${toId}`);
+  const blockIds = range(fromId, toId);
 
+  const [freeEventId, freeExtrinsicId] = await nextFreeIds();
   let hashes = await Promise.all(blockIds.map(blockHash));
   let blocks = await Promise.all(hashes.map(blockBody));
 // Free memory
@@ -150,20 +151,20 @@ export const processBlocks = async (fromId: number, toId: number): Promise<void>
   await insertMultipleBlocks(blocks.map(blockBodyToInsert));
 
   // Extrinsics
-  let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader(0)));
-  let extrinsics = await Promise.all(extrinsicHeaders.map(extrinsicBody));
+  let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader));
+  let extrinsics = await Promise.all(extrinsicHeaders.map(extrinsicBody(freeExtrinsicId)));
 
   // Free memory
   blocks = [];
   extrinsicHeaders = [];
 
   await insertExtrinsics(extrinsics.map(extrinsicToInsert));
-
+  
   // Events
-  let events = compress(extrinsics.map(extrinsicToEventHeader(0)));
-  await insertEvents(events.map(eventToInsert));
+  let events = compress(extrinsics.map(extrinsicToEventHeader));
+  await insertEvents(events.map(eventToInsert(freeEventId)));
 
-  let accountHeads = compress(events.map(resolveAccounts));
+  let accountHeads = dropDuplicates(compress(events.map(resolveAccounts)), 'address');
   let accounts = await Promise.all(accountHeads.map(accountHeadToBody));
   await insertAccounts(accounts);
 
@@ -171,5 +172,4 @@ export const processBlocks = async (fromId: number, toId: number): Promise<void>
   events = [];
   accounts = [];
   accountHeads = [];
-
 }

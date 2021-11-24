@@ -23,17 +23,20 @@ const extrinsicToValue = ({id, blockId, index, hash, args, docs, method, section
 (
   ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(/'/g, "''")}', '${method}', 
   '${section}', '${signed}', '${status}', '${error_message}', 
-  ${signedData ? "'signed'" : "'unsigned'"}, ${signedData ? JSON.stringify(signedData) : "null"}
-)
-`
+  ${signedData ? "'signed'" : "'unsigned'"}, ${signedData ? `'${JSON.stringify(signedData)}'` : "null"}
+)`
 
-export const insertExtrinsics = (extrinsics: InsertExtrinsicBody[]): Promise<void> => insert(`
+export const insertExtrinsics = async (extrinsics: InsertExtrinsicBody[]): Promise<void> => {
+  if (extrinsics.length > 0) {
+    await insert(`
 INSERT INTO extrinsic
-  (id, block_id, index, hash, args, docs, method, section, signed, status, error_message, type, signed_data})
+  (id, block_id, index, hash, args, docs, method, section, signed, status, error_message, type, signed_data)
 VALUES
-  ${extrinsics.map(extrinsicToValue).join(",")}
+${extrinsics.map(extrinsicToValue).join(",")}
 ON CONFLICT DO NOTHING;
-`)
+`);
+  }
+}
 
 export const insertExtrinsic = async (
   {blockId, index, hash, args, docs, method, section, status, error_message, signed}: InsertExtrinsic, 
@@ -106,3 +109,26 @@ INSERT INTO unverified_evm_call
 VALUES
   (${extrinsicId}, '${account}', '${contractAddress}', '${data}', ${gasLimit}, ${storageLimit}, '${status.type === 'success' ? 'success' : 'error'}', '${status.type === 'error' ? status.message : ''}');
 `);
+
+interface ID {
+  id: string;
+}
+
+const nextFreeTableId = async (table: string): Promise<number> => {
+  const result = await query<ID>(`SELECT id FROM ${table} ORDER BY id DESC`);
+  return result.length > 0
+    ? parseInt(result[0].id, 10) + 1
+    : 0;
+}
+
+const freeEventId = async () => nextFreeTableId('event'); 
+const freeExtrinsicId = async () => nextFreeTableId('extrinsic');
+
+type EventId = number;
+type ExtrinsicId = number;
+
+export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => await Promise.all([
+  freeEventId(),
+  freeExtrinsicId(),
+]);
+

@@ -46,21 +46,25 @@ export interface InsertEventValue extends InsertEvent {
 }
 
 const toEventValue = ({id, blockId, extrinsicId, index, data, method, section}: InsertEventValue): string => `
-  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}')
-`;
+  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}')`;
 
-export const insertEvents = (events: InsertEventValue[]): Promise<void> => insert(`
+export const insertEvents = async (events: InsertEventValue[]): Promise<void> => {
+  if (events.length > 0) {
+    insert(`
 INSERT INTO event
-  (block_id, extrinsic_id, index, section, method, data)
+  (id, block_id, extrinsic_id, index, section, method, data)
 VALUES
   ${events.map(toEventValue).join(",")};
-`)
+`);
+  }
+}
 
 const accountToInsertValue = ({address, evmAddress, blockId, active}: AccountBody): string => `
-  ('${address}', '${evmAddress}', ${blockId}, ${active})
-`;
+  ('${address}', '${evmAddress}', ${blockId}, ${active})`;
 
-export const insertAccounts = (accounts: AccountBody[]): Promise<void> => insert(`
+export const insertAccounts = async (accounts: AccountBody[]): Promise<void> => {
+  if (accounts.length > 0) {
+    await insert(`
 INSERT INTO account
   (address, evm_address, block_id, active)
 VALUES
@@ -69,4 +73,6 @@ ON CONFLICT (address) DO UPDATE SET
   active = EXCLUDED.active,
   block_id = EXCLUDED.block_id,
   evm_address = EXCLUDED.evm_address;
-`)
+`);
+  }
+}

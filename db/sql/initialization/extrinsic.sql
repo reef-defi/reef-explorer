@@ -2,7 +2,7 @@ CREATE TYPE ExtrinsicType AS ENUM ('signed', 'unsigned', 'inherent');
 CREATE TYPE ExtrinsicStatus AS ENUM ('success', 'error', 'unknown');
 
 CREATE TABLE IF NOT EXISTS extrinsic (
-  id BIGSERIAL,
+  id BIGINT,
   block_id BIGINT,
 
   index BIGINT NOT NULL,
@@ -29,6 +29,6 @@ CREATE TABLE IF NOT EXISTS extrinsic (
 );
 
 INSERT INTO extrinsic
-  (block_id, index, hash, args, docs, method, section, signed, status, type)
+  (id, block_id, index, hash, args, docs, method, section, signed, status, type)
 VALUES
-  (-1, 0, '', '[]', '', '', '', '0x', 'success', 'unsigned');
+  (-1, -1, 0, '', '[]', '', '', '', '0x', 'success', 'unsigned');
