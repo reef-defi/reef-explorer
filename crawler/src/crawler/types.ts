@@ -6,7 +6,6 @@ export type Extrinsic = GenericExtrinsic<AnyTuple>;
 export type Event = FrameSystemEventRecord;
 
 export interface ExtrinsicHead {
-  id: number;
   blockId: number;
   extrinsic: Extrinsic;
   events: Event[];
@@ -18,11 +17,11 @@ export interface SignedExtrinsicData {
   feeDetails: any;
 }
 export interface ExtrinsicBody extends ExtrinsicHead {
+  id: number;
   signedData?: SignedExtrinsicData;
 }
 
 export interface EventHead {
-  id: number;
   event: Event;
   blockId: number;
   extrinsicId: number;
