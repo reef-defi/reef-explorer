@@ -1,15 +1,27 @@
-import { processBlock } from "./crawler/block";
+import { processBlock, processBlocks } from "./crawler/block";
 import { lastBlockInDatabase } from "./queries/block";
 import { closeProviders, initializeProviders, nodeProvider } from "./utils/connector";
-import { wait } from "./utils/utils";
+import { min, wait } from "./utils/utils";
 
+const MAX_BLOCKS_PER_STEP = 1000;
+const HARVESTING_DIFFERENCE_TRASHOLE = 10;
 let currentBlockIndex = -1;
 let latestBlockIndex = -1;
 
 const processNextBlock = async () => {
   while (currentBlockIndex + 1 <= latestBlockIndex) {
-    currentBlockIndex += 1;
-    await processBlock(currentBlockIndex);
+    console.time("Processing time")
+    const difference = min(latestBlockIndex - currentBlockIndex + 1, MAX_BLOCKS_PER_STEP);
+    await processBlocks(currentBlockIndex + 1, currentBlockIndex + difference + 1);
+    currentBlockIndex += difference;
+    console.timeEnd("Processing time")
+    // if (difference > HARVESTING_DIFFERENCE_TRASHOLE) {
+    // } else {
+    //   currentBlockIndex += 1;
+    //   await processBlock(currentBlockIndex);
+    // }
+    // process.exit();
+
   };
 
   await wait(100);
