@@ -1,11 +1,15 @@
 import { nodeProvider } from "../utils/connector";
 import { insertInitialBlock, blockFinalized, insertMultipleBlocks } from "../queries/block";
-import { processBlockExtrinsic } from "./extrinsic";
+import { extrinsicStatus, processBlockExtrinsic, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
-import type { AccountId, BlockNumber, H160, H256, H64, Hash, Header, Index, Justification, KeyValue, SignedBlock, StorageData } from '@polkadot/types/interfaces/runtime';
+import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
-import {Event} from "./types";
+import {Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
+import { compress } from "./utils";
+import { InsertExtrinsic, InsertExtrinsicBody, insertExtrinsics } from "../queries/extrinsic";
+import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
+import { accountHeadToBody, resolveAccounts } from "./event";
 
 export const processBlock = async (id: number): Promise<void> => {
   // console.log(id)
@@ -63,24 +67,109 @@ const blockBody = async ({id, hash}: BlockHash): Promise<BlockBody> => {
   return {id, hash, signedBlock, extendedHeader, events}
 }
 
+const blockBodyToInsert = ({id, hash, extendedHeader, signedBlock}: BlockBody) => ({id, 
+  finalized: true,
+  hash: hash.toString(),
+  author: extendedHeader?.author?.toString() || "",
+  parentHash: signedBlock.block.header.parentHash.toString(),
+  stateRoot: signedBlock.block.header.stateRoot.toString(),
+  extrinsicRoot: signedBlock.block.header.extrinsicsRoot.toString(),
+})
+
+const isExtrinsicEvent = (extrinsicIndex: number) => ({phase}: Event): boolean => 
+  phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(extrinsicIndex)
+
+const blockToExtrinsicsHeader = (nextFreeId: number) => ({id, signedBlock, events}: BlockBody, index: number): ExtrinsicHead[] => 
+  signedBlock.block.extrinsics
+    .map((extrinsic, index) => ({
+      extrinsic,
+      blockId: id,
+      id: nextFreeId + index,
+      events: events.filter(isExtrinsicEvent(index)),
+    }));
+
+const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
+  const [fee, feeDetails] = await Promise.all([
+    nodeProvider.api.rpc.payment.queryInfo(extrinsicHash),
+    nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash),
+  ]);
+  
+  return {
+    fee: fee.toJSON(),
+    feeDetails: feeDetails.toJSON(),
+  };
+}
+
+const extrinsicBody = async (extrinsicHead: ExtrinsicHead): Promise<ExtrinsicBody> => ({...extrinsicHead,
+  signedData: extrinsicHead.extrinsic.isSigned ? await getSignedExtrinsicData(extrinsicHead.extrinsic.toHex()) : undefined
+})
+
+const extrinsicToInsert = ({id, extrinsic, signedData, blockId, events}: ExtrinsicBody, index: number): InsertExtrinsicBody => {
+  const status = extrinsicStatus(events);
+  const {hash, method, args, meta} = extrinsic;
+  return {
+    id,
+    index,
+    blockId,
+    signedData,
+    status: status.type,
+    hash: hash.toString(),
+    method: method.method,
+    section: method.section,
+    signed: resolveSigner(extrinsic),
+    args: JSON.stringify(args),
+    docs: meta.docs.toLocaleString(),
+    error_message: status.type === 'error' ? status.message : "",
+  }
+};
+
+const extrinsicToEventHeader = (nextFreeId: number) =>  ({id, blockId, extrinsic, events}: ExtrinsicBody, index: number): EventHead[] => events
+  .map((event) => ({
+    blockId,
+    extrinsicId: id,
+    id: nextFreeId + index,
+    event
+  }));
+
+const eventToInsert = ({id, event, extrinsicId, blockId}: EventHead, index: number): InsertEventValue => ({
+  id, extrinsicId, blockId, index,
+  data: JSON.stringify(event.event.data.toJSON()),
+  method: event.event.method,
+  section: event.event.section
+});
 
 export const processBlocks = async (fromId: number, toId: number): Promise<void> => {
   const blockIds = new Array(toId-fromId)
     .map((_, index) => fromId + index);
 
-  const hashes = await Promise.all(blockIds.map(blockHash));
-  const blocks = await Promise.all(hashes.map(blockBody));
-
+  let hashes = await Promise.all(blockIds.map(blockHash));
+  let blocks = await Promise.all(hashes.map(blockBody));
+// Free memory
+  hashes = []; 
   // Insert blocks
-  await insertMultipleBlocks(
-    blocks.map(({id, hash, extendedHeader, signedBlock}) => ({id, 
-      finalized: true,
-      hash: hash.toString(),
-      author: extendedHeader?.author?.toString() || "",
-      parentHash: signedBlock.block.header.parentHash.toString(),
-      stateRoot: signedBlock.block.header.stateRoot.toString(),
-      extrinsicRoot: signedBlock.block.header.extrinsicsRoot.toString(),
-    }))
-  )
+  await insertMultipleBlocks(blocks.map(blockBodyToInsert));
+
+  // Extrinsics
+  let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader(0)));
+  let extrinsics = await Promise.all(extrinsicHeaders.map(extrinsicBody));
+
+  // Free memory
+  blocks = [];
+  extrinsicHeaders = [];
+
+  await insertExtrinsics(extrinsics.map(extrinsicToInsert));
+
+  // Events
+  let events = compress(extrinsics.map(extrinsicToEventHeader(0)));
+  await insertEvents(events.map(eventToInsert));
+
+  let accountHeads = compress(events.map(resolveAccounts));
+  let accounts = await Promise.all(accountHeads.map(accountHeadToBody));
+  await insertAccounts(accounts);
+
+  // Free memory
+  events = [];
+  accounts = [];
+  accountHeads = [];
 
 }

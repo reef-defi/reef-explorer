@@ -1,11 +1,11 @@
 import {Vec} from "@polkadot/types"
 import { nodeProvider } from "../utils/connector";
 import {SpRuntimeDispatchError} from "@polkadot/types/lookup"
-import { SignedExtrinsicData, InsertExtrinsic, insertExtrinsic, insertTransfer, insertUnverifiedEvmCall, signerExist, insertAccount } from "../queries/block";
 import {BigNumber} from "ethers";
-import { Extrinsic, Event, ExtrinsicStatus } from "./types";
+import { Extrinsic, Event, ExtrinsicStatus, SignedExtrinsicData } from "./types";
 import { processNewContract } from "./contract";
 import { processBlockEvent } from "./event";
+import { insertTransfer, InsertExtrinsic, insertExtrinsic, insertUnverifiedEvmCall } from "../queries/extrinsic";
 
 
 interface ProcessTransfer {
@@ -16,7 +16,7 @@ interface ProcessTransfer {
   signedData: SignedExtrinsicData;
 }
 
-const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
+export const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
 const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
   const [fee, feeDetails] = await Promise.all([
@@ -39,7 +39,7 @@ const extractErrorMessage = (error: SpRuntimeDispatchError): string => {
   }
 }
 
-const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => extrinsicEvents
+export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => extrinsicEvents
   .reduce((prev, {event}) => {
       if (prev.type === 'unknown' && nodeProvider.api.events.system.ExtrinsicSuccess.is(event)) {
         return {type: "success"};

@@ -1,4 +1,4 @@
-import { insertContract } from "../queries/block";
+import { insertContract } from "../queries/extrinsic";
 import {Event, Extrinsic, ExtrinsicStatus} from "./types";
 
 interface ProcessContract {
