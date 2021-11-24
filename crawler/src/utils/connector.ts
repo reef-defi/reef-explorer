@@ -15,7 +15,7 @@ const APP_CONFIG = {
   }
 }
 
-const nodeUrls = [
+export const nodeUrls = [
   'ws://0.0.0.0:9944',
   'ws://0.0.0.0:9945',
   'ws://0.0.0.0:9946',
@@ -23,6 +23,7 @@ const nodeUrls = [
   'ws://0.0.0.0:9948',
   'ws://0.0.0.0:9949',
   'ws://0.0.0.0:9950',
+  'ws://0.0.0.0:9951',
 ]
 
 let selectedProvider = 0;
@@ -38,9 +39,6 @@ export const nodeQuery = async <T,>(fun: (provider: Provider) => Promise<T>): Pr
   return fun(providerPointer);
 }
 
-const nodeHealth = async () => nodeQuery((provider) => provider.api.rpc.system.health());
-  // nodeProviders[0].api.rpc.system.health();
-
 const areNodesSyncing = async () => {
   for (const provider of nodeProviders) {
     const node = await provider.api.rpc.system.health();
@@ -52,8 +50,7 @@ const areNodesSyncing = async () => {
 }
 
 const syncNode = async (): Promise<void> => {
-  let syncing: boolean = true;
-  while(syncing = await areNodesSyncing()) {
+  while(await areNodesSyncing()) {
     await wait(1000);
   };
 }

@@ -9,6 +9,12 @@ export const min = (...args: number[]): number => {
   }
   return args.reduce((prev, current) => prev < current ? prev : current, args[0]);
 }
+export const max = (...args: number[]): number => {
+  if (args.length === 0) { 
+    throw new Error("Given array is empty!");
+  }
+  return args.reduce((prev, current) => prev > current ? prev : current, args[0]);
+}
 
 export const range = (from: number, to: number): number[] => Array(to-from)
   .fill(0)
@@ -21,12 +27,12 @@ export const compress = <T,> (values: T[][]): T[] => values.reduce(
   
 export const dropDuplicates = <Object, Key extends keyof Object>(objects: Object[], key: Key): Object[] => {
   const existingKeys = new Set<Object[Key]>();
-  let filtered = new Array<Object>();
+  const filtered: Object[] = [];
 
   for (let index = objects.length - 1; index >= 0; index --) {
     const obj = objects[index];
     if (!existingKeys.has(obj[key])) {
-      filtered = [obj, ...filtered];
+      filtered.push(obj)
       existingKeys.add(obj[key])
     }
   }

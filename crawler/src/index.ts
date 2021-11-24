@@ -1,25 +1,26 @@
 import { processBlock, processBlocks } from "./crawler/block";
 import { lastBlockInDatabase } from "./queries/block";
-import { closeProviders, initializeProviders, nodeProvider } from "./utils/connector";
+import { closeProviders, initializeProviders, nodeProvider, nodeUrls } from "./utils/connector";
 import { min, wait } from "./utils/utils";
 
-let MAX_BLOCKS_PER_STEP = 10;
+let BLOCKS_PER_STEP = 4096;
 const HARVESTING_DIFFERENCE_TRASHOLE = 10;
 let currentBlockIndex = -1;
 let latestBlockIndex = -1;
 
+console.warn = () => {};
+
 const processNextBlock = async () => {
-  let index = 0;
   while (currentBlockIndex + 1 <= latestBlockIndex) {
-    console.time("Processing time")
-    const difference = min(latestBlockIndex - currentBlockIndex + 1, MAX_BLOCKS_PER_STEP);
+    const start = Date.now();
+    const difference = min(latestBlockIndex - currentBlockIndex + 1, BLOCKS_PER_STEP);
     await processBlocks(currentBlockIndex + 1, currentBlockIndex + difference + 1);
     currentBlockIndex += difference;
-    console.timeEnd("Processing time")
-    if (index > 1 && index % 5 === 0) {
-      MAX_BLOCKS_PER_STEP += MAX_BLOCKS_PER_STEP;
-    }
-    index += 1;
+    const end = Date.now();
+    
+    console.log(`n nodes: ${nodeUrls.length}\tn blocks: ${BLOCKS_PER_STEP}\tbps: ${(difference/((end-start)/1000)).toFixed(3)}\ttime: ${end-start} ms`)
+
+
     // if (difference > HARVESTING_DIFFERENCE_TRASHOLE) {
     // } else {
     //   currentBlockIndex += 1;
