@@ -3,18 +3,23 @@ import { lastBlockInDatabase } from "./queries/block";
 import { closeProviders, initializeProviders, nodeProvider } from "./utils/connector";
 import { min, wait } from "./utils/utils";
 
-const MAX_BLOCKS_PER_STEP = 1000;
+let MAX_BLOCKS_PER_STEP = 10;
 const HARVESTING_DIFFERENCE_TRASHOLE = 10;
 let currentBlockIndex = -1;
 let latestBlockIndex = -1;
 
 const processNextBlock = async () => {
+  let index = 0;
   while (currentBlockIndex + 1 <= latestBlockIndex) {
     console.time("Processing time")
     const difference = min(latestBlockIndex - currentBlockIndex + 1, MAX_BLOCKS_PER_STEP);
     await processBlocks(currentBlockIndex + 1, currentBlockIndex + difference + 1);
     currentBlockIndex += difference;
     console.timeEnd("Processing time")
+    if (index > 1 && index % 5 === 0) {
+      MAX_BLOCKS_PER_STEP += MAX_BLOCKS_PER_STEP;
+    }
+    index += 1;
     // if (difference > HARVESTING_DIFFERENCE_TRASHOLE) {
     // } else {
     //   currentBlockIndex += 1;

@@ -1,6 +1,6 @@
 import {FrameSystemEventRecord} from "@polkadot/types/lookup"
 import { deactiveteAccount, insertAccount, insertEvent, signerExist } from "../queries/event";
-import { nodeProvider } from "../utils/connector";
+import { nodeProvider, nodeQuery } from "../utils/connector";
 import { AccountBody, AccountHead, Event, EventHead } from "./types";
 
 export const processBlockEvent = (blockId: number, extrinsicId: number) => async (event: FrameSystemEventRecord, index: number): Promise<void> => {
@@ -76,5 +76,5 @@ export const resolveAccounts = (eventHead: EventHead): AccountHead[] => {
 }
 
 export const accountHeadToBody = async (head: AccountHead): Promise<AccountBody> => ({...head,
-  evmAddress: (await nodeProvider.api.query.evmAccounts.evmAddresses(head.address)).toString(),
+  evmAddress: (await nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(head.address))).toString(),
 });

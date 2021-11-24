@@ -1,4 +1,4 @@
-import { nodeProvider } from "../utils/connector";
+import { nodeProvider, nodeQuery } from "../utils/connector";
 import { insertInitialBlock, blockFinalized, insertMultipleBlocks } from "../queries/block";
 import { extrinsicStatus, processBlockExtrinsic, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
@@ -54,15 +54,19 @@ interface BlockBody extends BlockHash {
 }
 
 const blockHash = async (id: number): Promise<BlockHash> => {
-  const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
+  // const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
+  const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
   return {id, hash}
 };
 
 const blockBody = async ({id, hash}: BlockHash): Promise<BlockBody> => {
   const [signedBlock, extendedHeader, events] = await Promise.all([
-    await nodeProvider.api.rpc.chain.getBlock(hash),
-    await nodeProvider.api.derive.chain.getHeader(hash),
-    await nodeProvider.api.query.system.events.at(hash),
+    // await nodeProvider.api.rpc.chain.getBlock(hash),
+    // await nodeProvider.api.derive.chain.getHeader(hash),
+    // await nodeProvider.api.query.system.events.at(hash),
+    nodeQuery((provider) => provider.api.rpc.chain.getBlock(hash)),
+    nodeQuery((provider) => provider.api.derive.chain.getHeader(hash)),
+    nodeQuery((provider) => provider.api.query.system.events.at(hash)),
   ]);
   return {id, hash, signedBlock, extendedHeader, events}
 }
@@ -89,8 +93,10 @@ const blockToExtrinsicsHeader = ({id, signedBlock, events}: BlockBody): Extrinsi
 
 const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
   const [fee, feeDetails] = await Promise.all([
-    nodeProvider.api.rpc.payment.queryInfo(extrinsicHash),
-    nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash),
+    // nodeProvider.api.rpc.payment.queryInfo(extrinsicHash),
+    // nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash),
+    nodeQuery((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
+    nodeQuery((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
   ]);
   
   return {

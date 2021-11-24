@@ -5,6 +5,7 @@ import { wait } from "./utils";
 
 const APP_CONFIG = {
   nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9944',
+  nodeSize: 10,
   postgresConfig: {
     user: process.env.POSTGRES_USER || 'reefexplorer',
     host: process.env.POSTGRES_HOST || '0.0.0.0',
@@ -13,25 +14,65 @@ const APP_CONFIG = {
     port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 54321,
   }
 }
+
+const nodeUrls = [
+  'ws://0.0.0.0:9944',
+  'ws://0.0.0.0:9945',
+  'ws://0.0.0.0:9946',
+  'ws://0.0.0.0:9947',
+  'ws://0.0.0.0:9948',
+  'ws://0.0.0.0:9949',
+  'ws://0.0.0.0:9950',
+]
+
+let selectedProvider = 0;
+let nodeProviders: Provider[] = [];
+
 export let nodeProvider: Provider;
 let dbProvider: PoolClient;
 
+export const nodeQuery = async <T,>(fun: (provider: Provider) => Promise<T>): Promise<T> => {
+  // console.log(nodeProviders)
+  const providerPointer = nodeProviders[selectedProvider];
+  selectedProvider = (selectedProvider + 1) % nodeProviders.length;
+  return fun(providerPointer);
+}
 
-const nodeHealth = async () =>
-  nodeProvider.api.rpc.system.health();
+const nodeHealth = async () => nodeQuery((provider) => provider.api.rpc.system.health());
+  // nodeProviders[0].api.rpc.system.health();
+
+const areNodesSyncing = async () => {
+  for (const provider of nodeProviders) {
+    const node = await provider.api.rpc.system.health();
+    if (node.isSyncing.eq(true)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 const syncNode = async (): Promise<void> => {
-  let node = await nodeHealth();
-  while(node.isSyncing.eq(true)) {
+  let syncing: boolean = true;
+  while(syncing = await areNodesSyncing()) {
     await wait(1000);
-    node = await nodeHealth();
   };
 }
 
 // only used in index.ts!!!
 
+const initializeNodeProvider = async (size: number): Promise<void> => {
+  if (size <= 0) {
+    throw new Error("Minimum number of providers is 1!");
+  }
 
-const initializeNodeProvider = async (): Promise<void> => {
+  for(const url of nodeUrls) {
+    const provider =  new Provider({
+      provider: new WsProvider(url)
+    });
+    await provider.api.isReadyOrError;
+    nodeProviders.push(provider);
+  }
+
   nodeProvider = new Provider({
     provider: new WsProvider(APP_CONFIG.nodeUrl)
   });
@@ -45,11 +86,13 @@ const initializeDatabaseProvider = async (): Promise<void> => {
 
 export const initializeProviders = async (): Promise<void> => {
   console.log("Connecting to node...")
-  await initializeNodeProvider();
+  await initializeNodeProvider(APP_CONFIG.nodeSize);
   console.log("Connecting to database...")
   await initializeDatabaseProvider();
   console.log("Syncing node...");
   await syncNode();
+  console.log("Syncing complete");
+
 }
 
 export const closeProviders = async (): Promise<void> => {
