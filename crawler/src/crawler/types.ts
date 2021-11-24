@@ -9,6 +9,7 @@ export interface ExtrinsicHead {
   blockId: number;
   extrinsic: Extrinsic;
   events: Event[];
+  status: ExtrinsicStatus;
 }
 
 export interface SignedExtrinsicData {
@@ -48,4 +49,57 @@ export interface AccountHead {
 }
 export interface AccountBody extends AccountHead {
   evmAddress: string;
+}
+
+export interface Transfer {
+  blockId: number;
+  extrinsicId: number;
+
+  denom: string;
+  toAddress: string;
+  fromAddress: string;
+  amount: string;
+  feeAmount: string;
+
+  success: boolean;
+  errorMessage: string;
+}
+
+export interface OldContract {
+  blockId: number;
+  extrinsic: Extrinsic;
+  extrinsicId: number;
+  extrinsicEvents: Event[];
+  status: ExtrinsicStatus;
+}
+
+export interface Contract {
+  address: string;
+  extrinsicId: number;
+
+  bytecode: string;
+  bytecodeContext: string;
+  bytecodeArguments: string;
+
+  gasLimit: string;
+  storageLimit: string;
+}
+
+export interface EVMCall {
+  data: string;
+  account: string;
+  gasLimit: string;
+  extrinsicId: number;
+  storageLimit: string;
+  contractAddress: string;
+  status: ExtrinsicStatus;
+}
+
+export interface ResolveSection {
+  blockId: number;
+  extrinsicId: number;
+  extrinsic: Extrinsic;
+  status: ExtrinsicStatus;
+  extrinsicEvents: Event[];
+  signedData: SignedExtrinsicData;
 }

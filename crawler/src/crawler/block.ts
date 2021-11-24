@@ -1,15 +1,17 @@
 import { nodeProvider, nodeQuery } from "../utils/connector";
 import { insertInitialBlock, blockFinalized, insertMultipleBlocks } from "../queries/block";
-import { extrinsicStatus, processBlockExtrinsic, resolveSigner } from "./extrinsic";
+import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, processBlockExtrinsic, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
 import {Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
-import { InsertExtrinsicBody, insertExtrinsics, nextFreeIds } from "../queries/extrinsic";
+import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, resolveAccounts } from "./event";
 import { compress, dropDuplicates, range } from "../utils/utils";
+import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
+import { insertContracts, insertEvmCalls } from "../queries/evmEvent";
 
 export const processBlock = async (id: number): Promise<void> => {
   // console.log(id)
@@ -89,6 +91,7 @@ const blockToExtrinsicsHeader = ({id, signedBlock, events}: BlockBody): Extrinsi
       extrinsic,
       blockId: id,
       events: events.filter(isExtrinsicEvent(index)),
+      status: extrinsicStatus(events)
     }));
 
 const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
@@ -144,8 +147,9 @@ const eventToInsert = (nextFreeId: number) => ({event, extrinsicId, blockId}: Ev
   section: event.event.section
 });
 
+
 export const processBlocks = async (fromId: number, toId: number): Promise<void> => {
-  console.log(`Processing blocks from ${fromId} to ${toId}`);
+  // console.log(`Processing blocks from ${fromId} to ${toId}`);
   const blockIds = range(fromId, toId);
 
   const [freeEventId, freeExtrinsicId] = await nextFreeIds();
@@ -178,4 +182,25 @@ export const processBlocks = async (fromId: number, toId: number): Promise<void>
   events = [];
   accounts = [];
   accountHeads = [];
+
+  // Transfers
+  let transfers = extrinsics
+    .filter(isExtrinsicTransfer)
+    .map(extrinsicBodyToTransfer);
+  await insertTransfers(transfers);
+  transfers = [];
+
+  // Contracts
+  let contracts = extrinsics
+    .filter(isExtrinsicEVMCreate)
+    .map(extrinsicToContract)
+  await insertContracts(contracts)
+  contracts = [];
+
+  // EVM Calls
+  let evmCalls = extrinsics
+    .filter(isExtrinsicEVMCall)
+    .map(extrinsicToEVMCall)
+  await insertEvmCalls(evmCalls);
+  evmCalls = [];
 }
