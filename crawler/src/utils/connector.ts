@@ -1,6 +1,6 @@
 import {Provider} from "@reef-defi/evm-provider";
 import {WsProvider} from "@polkadot/api";
-import {PoolClient, Pool} from "pg";
+import {Pool} from "pg";
 import { wait } from "./utils";
 
 const APP_CONFIG = {
@@ -16,15 +16,15 @@ const APP_CONFIG = {
 }
 
 export const nodeUrls = [
-  'ws://127.0.0.1:9944'
-  // 'ws://0.0.0.0:9944',
-  // 'ws://0.0.0.0:9945',
-  // 'ws://0.0.0.0:9946',
-  // 'ws://0.0.0.0:9947',
-  // 'ws://0.0.0.0:9948',
-  // 'ws://0.0.0.0:9949',
-  // 'ws://0.0.0.0:9950',
-  // 'ws://0.0.0.0:9951',
+  // 'ws://127.0.0.1:9944'
+  'ws://0.0.0.0:9944',
+  'ws://0.0.0.0:9945',
+  'ws://0.0.0.0:9946',
+  'ws://0.0.0.0:9947',
+  'ws://0.0.0.0:9948',
+  'ws://0.0.0.0:9949',
+  'ws://0.0.0.0:9950',
+  'ws://0.0.0.0:9951',
 ]
 
 let selectedProvider = 0;
@@ -34,7 +34,6 @@ export let nodeProvider: Provider;
 let dbProvider: Pool = new Pool({...APP_CONFIG.postgresConfig});
 
 export const nodeQuery = async <T,>(fun: (provider: Provider) => Promise<T>): Promise<T> => {
-  // console.log(nodeProviders)
   const providerPointer = nodeProviders[selectedProvider];
   selectedProvider = (selectedProvider + 1) % nodeProviders.length;
   return fun(providerPointer);
@@ -56,7 +55,6 @@ const syncNode = async (): Promise<void> => {
   };
 }
 
-// only used in index.ts!!!
 
 const initializeNodeProvider = async (size: number): Promise<void> => {
   if (size <= 0) {

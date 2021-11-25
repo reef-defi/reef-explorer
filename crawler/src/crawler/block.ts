@@ -6,7 +6,7 @@ import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
 import {Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
-import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
+import { freeEventId, freeExtrinsicId, InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, resolveAccounts } from "./event";
 import { compress, dropDuplicates, range } from "../utils/utils";
@@ -152,7 +152,6 @@ export const processBlocks = async (fromId: number, toId: number): Promise<void>
   // console.log(`Processing blocks from ${fromId} to ${toId}`);
   const blockIds = range(fromId, toId);
 
-  const [freeEventId, freeExtrinsicId] = await nextFreeIds();
   let hashes = await Promise.all(blockIds.map(blockHash));
   let blocks = await Promise.all(hashes.map(blockBody));
 // Free memory
@@ -162,7 +161,8 @@ export const processBlocks = async (fromId: number, toId: number): Promise<void>
 
   // Extrinsics
   let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader));
-  let extrinsics = await Promise.all(extrinsicHeaders.map(extrinsicBody(freeExtrinsicId)));
+  const [eid, feid] = await nextFreeIds();
+  let extrinsics = await Promise.all(extrinsicHeaders.map(extrinsicBody(feid)));
 
   // Free memory
   blocks = [];
@@ -172,7 +172,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<void>
   
   // Events
   let events = compress(extrinsics.map(extrinsicToEventHeader));
-  await insertEvents(events.map(eventToInsert(freeEventId)));
+  await insertEvents(events.map(eventToInsert(eid)));
 
   let accountHeads = dropDuplicates(compress(events.map(resolveAccounts)), 'address');
   let accounts = await Promise.all(accountHeads.map(accountHeadToBody));
