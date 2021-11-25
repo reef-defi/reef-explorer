@@ -3,11 +3,12 @@ import { deactiveteAccount, insertAccount, insertEvent, signerExist } from "../q
 import { nodeProvider, nodeQuery } from "../utils/connector";
 import { AccountBody, AccountHead, Event, EventHead } from "./types";
 
-export const processBlockEvent = (blockId: number, extrinsicId: number) => async (event: FrameSystemEventRecord, index: number): Promise<void> => {
+export const processBlockEvent = (blockId: number, extrinsicId: number, freeEventId: number) => async (event: FrameSystemEventRecord, index: number): Promise<void> => {
   await insertEvent({
     blockId,
     extrinsicId,
     index,
+    id: freeEventId + index,
     data: JSON.stringify(event.event.data.toJSON()),
     method: event.event.method,
     section: event.event.section

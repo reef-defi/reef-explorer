@@ -5,7 +5,7 @@ import {BigNumber} from "ethers";
 import { Extrinsic, Event, ExtrinsicStatus, SignedExtrinsicData, ExtrinsicBody, Transfer, ResolveSection } from "./types";
 import { processNewContract, processUnverifiedEvmCall } from "./evmEvent";
 import { processBlockEvent } from "./event";
-import { insertTransfer, InsertExtrinsic, insertExtrinsic } from "../queries/extrinsic";
+import { insertTransfer, InsertExtrinsic, insertExtrinsic, InsertExtrinsicBody, freeEventId } from "../queries/extrinsic";
 import { insertEvmCall } from "../queries/evmEvent";
 
 
@@ -83,12 +83,14 @@ const processTransfer = async ({blockId, extrinsic, extrinsicId, status, signedD
 }
 
 
-const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, index: number, status: ExtrinsicStatus, sd?: SignedExtrinsicData): Promise<number> => {
+const processExtrinsicInsert = async (id:number, extrinsic: Extrinsic, blockId: number, index: number, status: ExtrinsicStatus, signedData?: SignedExtrinsicData): Promise<void> => {
   const {meta, hash, args, method} = extrinsic;
 
-  const extrinsicBody: InsertExtrinsic = {
+  const extrinsicBody: InsertExtrinsicBody = {
+    id,
     index,
     blockId,
+    signedData,
     status: status.type,
     hash: hash.toString(),
     method: method.method,
@@ -99,7 +101,7 @@ const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, ind
     error_message: status.type === 'error' ? status.message : ""
   }
   
-  return insertExtrinsic(extrinsicBody, sd);
+  return insertExtrinsic(extrinsicBody);
 }
 
 const resolveEvmSection = async (section: ResolveSection): Promise<void> => {
@@ -118,7 +120,7 @@ const resolveSections = async (section: ResolveSection): Promise<void> => {
   }
 }
 
-export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>) => async (extrinsic: Extrinsic, index: number): Promise<void> => {
+export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>, freeExtrinsicId: number) => async (extrinsic: Extrinsic, index: number): Promise<void> => {
   const events = blockEvents
     .filter(({phase}) => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index));
 
@@ -126,20 +128,20 @@ export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>) 
   const signedData = extrinsic.isSigned
     ? await getSignedExtrinsicData(extrinsic.toHex())
     : undefined;
+  const id = freeExtrinsicId+index
+  await processExtrinsicInsert(id, extrinsic, blockId, index, status, signedData);
 
-  const extrinsicId = await processExtrinsicInsert(extrinsic, blockId, index, status, signedData);
+  const feid = await freeEventId();
   
-  const processEvent = processBlockEvent(blockId, extrinsicId);
+  const processEvent = processBlockEvent(blockId, id, feid);
   await Promise.all(events.map(processEvent));
 
   if (extrinsic.isSigned) {
-    await resolveSections({extrinsicId, extrinsic, blockId, signedData: signedData!, status, extrinsicEvents: events});
+    await resolveSections({extrinsicId: id, extrinsic, blockId, signedData: signedData!, status, extrinsicEvents: events});
   }
 }
 
 // New
-
-
 export const isExtrinsicTransfer = ({extrinsic}: ExtrinsicBody): boolean => 
      extrinsic.method.section === "balances" 
   || extrinsic.method.section === "currencies"

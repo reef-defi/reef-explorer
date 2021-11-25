@@ -1,5 +1,5 @@
 import { nodeProvider, nodeQuery } from "../utils/connector";
-import { insertInitialBlock, blockFinalized, insertMultipleBlocks } from "../queries/block";
+import { insertInitialBlock, blockFinalized, insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
 import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, processBlockExtrinsic, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
@@ -13,35 +13,35 @@ import { compress, dropDuplicates, range } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { insertContracts, insertEvmCalls } from "../queries/evmEvent";
 
-export const processBlock = async (id: number): Promise<void> => {
-  // console.log(id)
-  const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
+// export const processBlock = async (id: number): Promise<void> => {
+//   // console.log(id)
+//   const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
   
-  const [signedBlock, extendedHeader, events] = await Promise.all([
-    await nodeProvider.api.rpc.chain.getBlock(hash),
-    // TODO why the f*** next function shows 'Unable to map u16 to a lookup index'?!?!?!?!
-    await nodeProvider.api.derive.chain.getHeader(hash),
-    await nodeProvider.api.query.system.events.at(hash),
-  ]);
+//   const [signedBlock, extendedHeader, events, [, freeExtrinsicId]] = await Promise.all([
+//     nodeProvider.api.rpc.chain.getBlock(hash),
+//     nodeProvider.api.derive.chain.getHeader(hash),
+//     nodeProvider.api.query.system.events.at(hash),
+//     nextFreeIds()
+//   ]);
 
-  const {block, } = signedBlock;
-  const {header, extrinsics} = block;
+//   const {block, } = signedBlock;
+//   const {header, extrinsics} = block;
   
-  const body = {
-    id,
-    hash: hash.toString(),
-    author: extendedHeader?.author?.toString() || "",
-    parentHash: header.parentHash.toString(),
-    stateRoot: header.stateRoot.toString(),
-    extrinsicRoot: header.extrinsicsRoot.toString(),
-  };
-  await insertInitialBlock(body);
+//   const body = {
+//     id,
+//     hash: hash.toString(),
+//     author: extendedHeader?.author?.toString() || "",
+//     parentHash: header.parentHash.toString(),
+//     stateRoot: header.stateRoot.toString(),
+//     extrinsicRoot: header.extrinsicsRoot.toString(),
+//   };
+//   await insertInitialBlock(body);
 
-  const processExtrinsic = processBlockExtrinsic(id, events);
-  await Promise.all(extrinsics.map(processExtrinsic));
+//   const processExtrinsic = processBlockExtrinsic(id, events, freeExtrinsicId);
+//   await Promise.all(extrinsics.map(processExtrinsic));
 
-  await blockFinalized(id);
-};
+//   await blockFinalized(id);
+// };
 
 
 interface BlockHash {
@@ -203,4 +203,6 @@ export const processBlocks = async (fromId: number, toId: number): Promise<void>
     .map(extrinsicToEVMCall)
   await insertEvmCalls(evmCalls);
   evmCalls = [];
+
+  await updateBlockFinalized(fromId, toId);
 }
