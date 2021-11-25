@@ -24,9 +24,7 @@ CREATE TABLE IF NOT EXISTS contract (
 );
 
 CREATE INDEX IF NOT EXISTS contract_owner ON contract (owner);
-CREATE INDEX IF NOT EXISTS contract_bytecode ON contract (bytecode);
 CREATE INDEX IF NOT EXISTS contract_extrinsic_id ON contract (extrinsic_id);
-CREATE INDEX IF NOT EXISTS contract_bytecode_context ON contract (bytecode_context);
 
 CREATE TABLE IF NOT EXISTS verified_contract (
   id BIGSERIAL,
@@ -45,11 +43,7 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   type ContractType DEFAULT 'other',
   contract_data JSON,
 
-  PRIMARY KEY (id),
-  CONSTRAINT fk_contract
-    FOREIGN KEY (address)
-      REFERENCES contract(address)
-      ON DELETE DO NOTHING
+  PRIMARY KEY (id)
 );
 
 CREATE INDEX IF NOT EXISTS verified_contract_name ON verified_contract (name);

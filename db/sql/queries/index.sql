@@ -62,4 +62,30 @@
 -- );
 -- SELECT * FROM block ORDER BY id DESC LIMIT 10;
 -- SELECT * FROM unverified_evm_call;
-SELECT * from contract;
+-- SELECT * from contract;
+
+delete from block where id > 1114849;
+
+
+-- delete from unverified_evm_call where extrinsic_id >= 1334224;
+-- delete from contract where extrinsic_id >= 1334224;
+-- delete from account where extrinsic_id >= 1334224;
+-- delete from transfer where extrinsic_id >= 1334224;
+-- delete from event where extrinsic_id >= 1334224;
+-- delete from extrinsic where id >= 1334224;
+
+-- SELECT id from extrinsic where block_id = 1114016;
+
+-- ALTER TABLE transfer
+-- DROP CONSTRAINT fk_from_address,
+-- ADD CONSTRAINT fk_from_address
+--   FOREIGN KEY (from_address)
+--   REFERENCES account (address)
+--   ON DELETE CASCADE;
+
+-- ALTER TABLE unverified_evm_call
+-- DROP CONSTRAINT fk_account,
+-- ADD CONSTRAINT fk_account
+--   FOREIGN KEY (signer_address)
+--   REFERENCES account (address)
+--   ON DELETE CASCADE;

@@ -17,10 +17,12 @@ CREATE TABLE IF NOT EXISTS unverified_evm_call (
   PRIMARY KEY (id),
   CONSTRAINT fk_extrinsic
     FOREIGN KEY (extrinsic_id)
-      REFERENCES extrinsic(id),
+      REFERENCES extrinsic(id)
+      ON DELETE CASCADE,
   CONSTRAINT fk_account
     FOREIGN KEY (signer_address)
       REFERENCES account(address)
+      ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS unverified_evm_call_status ON unverified_evm_call (status);

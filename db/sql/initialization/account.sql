@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS account (
 
   PRIMARY KEY (address),
   CONSTRAINT fk_block
-    FOREIGN KEY (block_id)
+    FOREIGN KEY(block_id)
       REFERENCES block(id)
       ON DELETE CASCADE
 );
@@ -22,5 +22,5 @@ CREATE INDEX IF NOT EXISTS account_evm_address ON account (evm_address);
 INSERT INTO account 
   (block_id, evm_address, address, active)
 VALUES
-  (0, '0x', '0x', true),
-  (0, 'deleted', 'deleted', true);
+  (-1, '0x', '0x', true),
+  (-1, 'deleted', 'deleted', true);
