@@ -20,10 +20,16 @@ export const range = (from: number, to: number): number[] => Array(to-from)
   .fill(0)
   .map((_, index) => from + index);
 
-export const compress = <T,> (values: T[][]): T[] => values.reduce(
-  (prev, current) => [...prev, ...current],
-  [] as T[]
-);
+export const compress = <T,> (values: T[][]): T[] => {
+  let newValues: T[] = [];
+  for (const value of values) {
+    for (const innerValue of value) {
+      newValues.push(innerValue)
+    }
+  }
+
+  return newValues;
+}
   
 export const dropDuplicates = <Object, Key extends keyof Object>(objects: Object[], key: Key): Object[] => {
   const existingKeys = new Set<Object[Key]>();

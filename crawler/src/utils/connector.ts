@@ -56,8 +56,8 @@ const syncNode = async (): Promise<void> => {
 }
 
 
-const initializeNodeProvider = async (size: number): Promise<void> => {
-  if (size <= 0) {
+const initializeNodeProvider = async (): Promise<void> => {
+  if (nodeUrls.length <= 0) {
     throw new Error("Minimum number of providers is 1!");
   }
 
@@ -78,7 +78,7 @@ const initializeNodeProvider = async (size: number): Promise<void> => {
 
 export const initializeProviders = async (): Promise<void> => {
   console.log("Connecting to node...")
-  await initializeNodeProvider(APP_CONFIG.nodeSize);
+  await initializeNodeProvider();
   console.log("Syncing node...");
   await syncNode();
   console.log("Syncing complete");
@@ -87,7 +87,18 @@ export const initializeProviders = async (): Promise<void> => {
 export const closeProviders = async (): Promise<void> => {
   console.log("Closing providers");
   await nodeProvider.api.disconnect();
+
+  for (const provider of nodeProviders) {
+    await provider.api.disconnect();
+  }
+  nodeProviders = [];
 }
+
+export const restartNodeProviders = async(): Promise<void> => {
+  await closeProviders();
+  await initializeProviders();
+}
+
 
 export const insertAndGetId = async (statement: string, table: string): Promise<number> => {
   // console.log(statement)

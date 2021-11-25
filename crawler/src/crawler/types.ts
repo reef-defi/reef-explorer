@@ -11,6 +11,13 @@ export interface ExtrinsicHead {
   events: Event[];
   status: ExtrinsicStatus;
 }
+export interface ExtrinsicHeadV2 {
+  id: number;
+  blockId: number;
+  extrinsic: Extrinsic;
+  events: Event[];
+  status: ExtrinsicStatus;
+}
 
 export interface SignedExtrinsicData {
   // TODO set tipes
@@ -20,6 +27,10 @@ export interface SignedExtrinsicData {
 export interface ExtrinsicBody extends ExtrinsicHead {
   id: number;
   signedData?: SignedExtrinsicData;
+}
+export interface ExtrinsicBodyPromise extends ExtrinsicHead {
+  id: number;
+  signedData?: Promise<SignedExtrinsicData>;
 }
 
 export interface EventHead {
