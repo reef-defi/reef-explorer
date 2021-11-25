@@ -22,15 +22,11 @@ export const blockFinalized = async (blockId: number): Promise<void> => {
   await query(`UPDATE block SET finalized = true WHERE id = ${blockId}`);
 }
 
-interface InsertBlockValues extends InsertInitialBlock {
-  finalized: boolean;
-}
-
-const blockValuesStatement = ({id, hash, author, stateRoot, parentHash, extrinsicRoot, finalized}: InsertBlockValues): string =>
-  `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', ${finalized})`;
+const blockValuesStatement = ({id, hash, author, stateRoot, parentHash, extrinsicRoot}: InsertInitialBlock): string =>
+  `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', false)`;
 
 
-export const insertMultipleBlocks = async (data: InsertBlockValues[]): Promise<void> => insert(`
+export const insertMultipleBlocks = async (data: InsertInitialBlock[]): Promise<void> => insert(`
 INSERT INTO block
     (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
   VALUES
@@ -39,10 +35,12 @@ INSERT INTO block
 `)
 
 // TODO use insert multiple blocks!
-export const insertInitialBlock = async (data: InsertInitialBlock): Promise<number> => insertAndGetId(`
-INSERT INTO block
-  (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
-VALUES
-  ${blockValuesStatement({...data, finalized: false})}
-ON CONFLICT DO NOTHING;
-`, 'block');
+export const insertInitialBlock = async (data: InsertInitialBlock): Promise<void> => insertMultipleBlocks([data])
+
+export const updateBlockFinalized = async (fromID: number, toID: number) => await query(
+  `UPDATE block SET finalized = true WHERE id >= ${fromID} AND id < ${toID};`
+);
+
+export const deleteUnfinishedBlocks = async () => await query(
+  `DELETE FROM block WHERE finalized = false;`
+)

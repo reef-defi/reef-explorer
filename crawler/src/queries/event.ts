@@ -12,12 +12,12 @@ interface InsertEvent {
   section: string;
 }
 
-export const insertEvent = async ({blockId, extrinsicId, index, data, method, section}: InsertEvent): Promise<void> => insert(`
-INSERT INTO event
-  (block_id, extrinsic_id, index, section, method, data)
-VALUES
-  (${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}');
-`)
+// export const insertEvent = async ({blockId, extrinsicId, index, data, method, section}: InsertEvent): Promise<void> => insert(`
+// INSERT INTO event
+//   (block_id, extrinsic_id, index, section, method, data)
+// VALUES
+//   (${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}');
+// `)
 
 
 export const signerExist = async (address: string): Promise<boolean> => {
@@ -58,6 +58,8 @@ VALUES
 `);
   }
 }
+export const insertEvent = async (event: InsertEventValue) => insertEvents([event]);
+
 
 const accountToInsertValue = ({address, evmAddress, blockId, active}: AccountBody): string => `
   ('${address}', '${evmAddress}', ${blockId}, ${active})`;

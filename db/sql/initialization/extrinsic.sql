@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS extrinsic (
   CONSTRAINT fk_block
     FOREIGN KEY(block_id)
       REFERENCES block(id)
+      ON DELETE CASCADE
 );
 
 INSERT INTO extrinsic

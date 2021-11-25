@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS contract (
   PRIMARY KEY (address),
   CONSTRAINT fk_extrinsic
     FOREIGN KEY (extrinsic_id)
-      REFERENCES extrinsic(id),
+      REFERENCES extrinsic(id)
+      ON DELETE CASCADE,
   CONSTRAINT fk_owner
     FOREIGN KEY (owner)
       REFERENCES account(address)
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   CONSTRAINT fk_contract
     FOREIGN KEY (address)
       REFERENCES contract(address)
+      ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (

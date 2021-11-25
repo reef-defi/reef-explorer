@@ -19,8 +19,8 @@ export interface InsertExtrinsicBody extends InsertExtrinsic {
   signedData?: SignedExtrinsicData;
 }
 
-const extrinsicToValue = ({id, blockId, index, hash, args, docs, method, section, status, error_message, signed, signedData}: InsertExtrinsicBody): string => `
-(
+const extrinsicToValue = ({id, blockId, index, hash, args, docs, method, section, status, error_message, signed, signedData}: InsertExtrinsicBody): string => 
+`(
   ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(/'/g, "''")}', '${method}', 
   '${section}', '${signed}', '${status}', '${error_message}', 
   ${signedData ? "'signed'" : "'unsigned'"}, ${signedData ? `'${JSON.stringify(signedData)}'` : "null"}
@@ -38,17 +38,8 @@ ON CONFLICT DO NOTHING;
   }
 }
 
-export const insertExtrinsic = async (
-  {blockId, index, hash, args, docs, method, section, status, error_message, signed}: InsertExtrinsic, 
-  signedData?: SignedExtrinsicData): Promise<number> => insertAndGetId(`
-INSERT INTO extrinsic
-  (block_id, index, hash, args, docs, method, section, signed, status, error_message, type ${signedData ? ', signed_data' : ''})
-VALUES
-  (${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(/'/g, "''")}', '${method}', 
-  '${section}', '${signed}', '${status}', '${error_message}', ${signedData ? "'signed'" : "'unsigned'"} 
-  ${signedData ? ", '" + JSON.stringify(signedData) + "'" : ''})
-ON CONFLICT DO NOTHING;
-`, 'extrinsic');
+export const insertExtrinsic = async (extrinsic: InsertExtrinsicBody): Promise<void> => 
+  insertExtrinsics([extrinsic]);
 
 
 const transferToValue = ({blockId, extrinsicId, denom, toAddress, fromAddress, amount, feeAmount, success, errorMessage}: Transfer): string => 
@@ -83,8 +74,8 @@ const nextFreeTableId = async (table: string): Promise<number> => {
     : 0;
 }
 
-const freeEventId = async () => nextFreeTableId('event'); 
-const freeExtrinsicId = async () => nextFreeTableId('extrinsic');
+export const freeEventId = async () => nextFreeTableId('event'); 
+export const freeExtrinsicId = async () => nextFreeTableId('extrinsic');
 
 type EventId = number;
 type ExtrinsicId = number;
