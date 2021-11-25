@@ -9,19 +9,18 @@ interface TokenInfoDefault {
   source: string;
   target: Target;
   verified: string;
+  bytecode: string;
   optimization: boolean;
 }
 
 interface TokenInfo extends TokenInfoDefault {
-  deployedBytecode: string;
   compilerVersion: string;
   compilerData: string;
 }
 
 interface TokenInfoDB extends TokenInfoDefault {
-  compiler_version: string;
-  deployment_bytecode: string;
   compiler_data: string;
+  compiler_version: string;
 }
 
 
@@ -35,9 +34,9 @@ interface StakingRewardDB {
   block_number: number;
 }
 
-const FIND_TOKEN_INFO = `SELECT name, owner, verified, deployment_bytecode, compiler_data, source, compiler_version, optimization, runs, target
-FROM contract
-WHERE contract_id = $1`;
+const FIND_TOKEN_INFO = `SELECT name, owner, verified, bytecode, compiler_data, source, compiler_version, optimization, runs, target
+FROM verified_contract
+WHERE address = $1`;
 
 const FIND_POOL = `
 SELECT 
@@ -62,11 +61,10 @@ FROM event
 WHERE section = 'staking' AND method = 'Reward'`;
 
 
-const toTokenInfo = ({compiler_data, compiler_version, verified, deployment_bytecode, owner, name, runs, target, source, optimization}: TokenInfoDB): TokenInfo => ({
-  name, runs, target, owner, source, optimization, verified,
+const toTokenInfo = ({compiler_data, compiler_version, verified, bytecode, owner, name, runs, target, source, optimization}: TokenInfoDB): TokenInfo => ({
+  name, runs, target, owner, source, optimization, verified, bytecode,
   compilerData: compiler_data,
   compilerVersion: compiler_version,
-  deployedBytecode: deployment_bytecode
 });
 
 export const findTokenInfo = async (address: string): Promise<TokenInfo[]> => {
@@ -92,3 +90,13 @@ export const findPoolQuery = async (tokenAddress1: string, tokenAddress2: string
     userPoolBalance: "0",
   }
 }
+
+interface FindContractDB {
+  address: string;
+  bytecode: string;
+}
+
+export const findContractDB = async (address: string) => query<FindContractDB>(
+  'SELECT address, bytecode FROM contract WHERE address = $1',
+  [address]
+);

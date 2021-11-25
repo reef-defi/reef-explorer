@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { findPoolQuery, findStakingRewards, findTokenInfo } from "../services/contract";
+import { findContractDB, findPoolQuery, findStakingRewards, findTokenInfo } from "../services/contract";
 import { AppRequest, PoolReq } from "../utils/types";
 import { ensure, errorStatus } from "../utils/utils";
 
@@ -34,3 +34,16 @@ export const findToken = async (req: AppRequest<{}>, res: Response) => {
     res.status(errorStatus(err)).send(err.message);
   }
 };
+
+export const findContract = async (req: AppRequest<{}>, res: Response) => {
+  try {
+    ensure(!!req.params.address, "Url paramter address is missing");
+    // const deployedBytecode = await findContractBytecode(req.params.address);
+    const contracts = await findContractDB(req.params.address.toLowerCase());
+    ensure(contracts.length > 0, 'Contract does not exist');
+
+    res.send(contracts[0]);
+  } catch (err) {
+    res.status(errorStatus(err)).send(err.message);
+  }
+}

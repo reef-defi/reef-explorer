@@ -30,11 +30,12 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   name TEXT NOT NULL,
   filename TEXT NOT NULL,
   source JSON NOT NULL,
-  runs INT NOT NULL,
   optimization BOOLEAN NOT NULL,
   compiler_version TEXT NOT NULL, -- TODO maybe change to custom enum type?
   compiled_data JSON NOT NULL,
   args JSON NOT NULL,
+  runs INT NOT NULL,
+  target TEXT NOT NULL,
 
   type ContractType DEFAULT 'other',
   contract_data JSON,
@@ -55,7 +56,6 @@ CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
 
 CREATE TABLE IF NOT EXISTS verification_request (
   address VARCHAR(48),
-  block_id BIGINT NOT NULL,
 
   name TEXT NOT NULL,
   filename TEXT NOT NULL,
@@ -63,8 +63,8 @@ CREATE TABLE IF NOT EXISTS verification_request (
   runs INT NOT NULL,
   optimization BOOLEAN NOT NULL,
   compiler_version TEXT NOT NULL, -- TODO maybe change to custom enum type?
-  compiled_data JSON NOT NULL,
   args JSON NOT NULL,
+  target TEXT NOT NULL,
 
   success BOOLEAN NOT NULL,
   message TEXT,
@@ -147,7 +147,7 @@ VALUES
   );
 
 INSERT INTO verified_contract 
-  (address, name, filename, source, runs, optimization, compiler_version, compiled_data, args)
+  (address, name, filename, source, runs, optimization, compiler_version, compiled_data, args, target)
 VALUES
 -- REEF
   (
@@ -159,7 +159,8 @@ VALUES
     true,
     'v0.6.0+commit.26b70077',
     '{}', -- TODO add compiler data
-    '[]' -- TODO add args
+    '[]', -- TODO add args
+    ''
   ),
 -- RUSD
   (
@@ -171,7 +172,8 @@ VALUES
     true,
     'v0.6.0+commit.26b70077',
     '{}', -- TODO add compiler data
-    '[]' -- TODO add args
+    '[]', -- TODO add args
+    ''
   ),
 -- StateRent
   (
@@ -183,7 +185,8 @@ VALUES
     true,
     'v0.6.0+commit.26b70077',
     '{}', -- TODO add compiler data
-    '[]' -- TODO add args
+    '[]', -- TODO add args
+    ''
   ),
 -- Oracle
   (
@@ -195,7 +198,8 @@ VALUES
     true,
     'v0.6.0+commit.26b70077',
     '{}', -- TODO add compiler data
-    '[]' -- TODO add args
+    '[]', -- TODO add args
+    ''
   ),
 -- Schedule
   (
@@ -207,7 +211,8 @@ VALUES
     true,
     'v0.6.0+commit.26b70077',
     '{}', -- TODO add compiler data
-    '[]' -- TODO add args
+    '[]', -- TODO add args
+    ''
   ),
 -- DEX
   (
@@ -219,5 +224,6 @@ VALUES
     true,
     'v0.6.0+commit.26b70077',
     '{}', -- TODO add compiler data
-    '[]' -- TODO add args
+    '[]', -- TODO add args
+    ''
   );

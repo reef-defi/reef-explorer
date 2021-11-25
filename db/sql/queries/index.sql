@@ -61,4 +61,5 @@
 --       REFERENCES extrinsic(id)
 -- );
 -- SELECT * FROM block ORDER BY id DESC LIMIT 10;
-SELECT * FROM unverified_evm_call;
+-- SELECT * FROM unverified_evm_call;
+SELECT * from contract;
