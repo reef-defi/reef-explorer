@@ -13,6 +13,9 @@ CREATE TABLE IF NOT EXISTS block (
   PRIMARY KEY (id)
 );
 
+CREATE INDEX IF NOT EXISTS block_hash_idx ON block (hash);
+CREATE INDEX IF NOT EXISTS block_finalized_idx ON block (finalized);
+
 INSERT INTO block
   (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
 VALUES

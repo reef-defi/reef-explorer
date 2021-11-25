@@ -19,3 +19,7 @@ CREATE TABLE IF NOT EXISTS event (
     FOREIGN KEY (extrinsic_id)
       REFERENCES extrinsic(id)
 );
+
+CREATE INDEX IF NOT EXISTS event_method ON event (method);
+CREATE INDEX IF NOT EXISTS event_section ON event (section);
+CREATE INDEX IF NOT EXISTS event_block_id ON event (block_id);

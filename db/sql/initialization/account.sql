@@ -7,8 +7,16 @@ CREATE TABLE IF NOT EXISTS account (
 
   timestamp timestamp default current_timestamp,
 
-  PRIMARY KEY (address)
+  PRIMARY KEY (address),
+  CONSTRAINT fk_block
+    FOREIGN KEY (block_id)
+      REFERENCES block(id)
+      ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS account_active ON account (active);
+CREATE INDEX IF NOT EXISTS account_block_id ON account (block_id);
+CREATE INDEX IF NOT EXISTS account_evm_address ON account (evm_address);
 
 -- Inserting chain account
 INSERT INTO account 

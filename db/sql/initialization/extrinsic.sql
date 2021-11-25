@@ -29,6 +29,12 @@ CREATE TABLE IF NOT EXISTS extrinsic (
       ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS extrinsic_hash ON extrinsic (hash);
+CREATE INDEX IF NOT EXISTS extrinsic_method ON extrinsic (method);
+CREATE INDEX IF NOT EXISTS extrinsic_signer ON extrinsic (signer);
+CREATE INDEX IF NOT EXISTS extrinsic_section ON extrinsic (section);
+CREATE INDEX IF NOT EXISTS extrinsic_block_id ON extrinsic (block_id);
+
 INSERT INTO extrinsic
   (id, block_id, index, hash, args, docs, method, section, signed, status, type)
 VALUES

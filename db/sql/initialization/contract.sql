@@ -23,6 +23,11 @@ CREATE TABLE IF NOT EXISTS contract (
       REFERENCES account(address)
 );
 
+CREATE INDEX IF NOT EXISTS contract_owner ON contract (owner);
+CREATE INDEX IF NOT EXISTS contract_bytecode ON contract (bytecode);
+CREATE INDEX IF NOT EXISTS contract_extrinsic_id ON contract (extrinsic_id);
+CREATE INDEX IF NOT EXISTS contract_bytecode_context ON contract (bytecode_context);
+
 CREATE TABLE IF NOT EXISTS verified_contract (
   id BIGSERIAL,
   address VARCHAR(48),
@@ -44,8 +49,13 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   CONSTRAINT fk_contract
     FOREIGN KEY (address)
       REFERENCES contract(address)
-      ON DELETE CASCADE
+      ON DELETE DO NOTHING
 );
+
+CREATE INDEX IF NOT EXISTS verified_contract_name ON verified_contract (name);
+CREATE INDEX IF NOT EXISTS verified_contract_type ON verified_contract (type);
+CREATE INDEX IF NOT EXISTS verified_contract_address ON verified_contract (address);
+CREATE INDEX IF NOT EXISTS verified_contract_filename ON verified_contract (filename);
 
 CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
   id BIGINT,
@@ -55,6 +65,7 @@ CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
 );
 
 CREATE TABLE IF NOT EXISTS verification_request (
+  id BIGSERIAL,
   address VARCHAR(48),
 
   name TEXT NOT NULL,
@@ -69,11 +80,16 @@ CREATE TABLE IF NOT EXISTS verification_request (
   success BOOLEAN NOT NULL,
   message TEXT,
 
+  PRIMARY KEY (id),
   CONSTRAINT fk_contract
     FOREIGN KEY (address)
       REFERENCES contract(address)
 );
 
+CREATE INDEX IF NOT EXISTS verified_contract_name ON verification_request (name);
+CREATE INDEX IF NOT EXISTS verified_contract_address ON verification_request (address);
+CREATE INDEX IF NOT EXISTS verified_contract_success ON verification_request (success);
+CREATE INDEX IF NOT EXISTS verified_contract_filename ON verification_request (filename);
 
 -- Genisis contract insert
 INSERT INTO contract

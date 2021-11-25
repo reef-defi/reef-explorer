@@ -7,6 +7,7 @@
   "author": "Žiga Franko Gorišek",
   "scripts": {
     "run-testnet": "docker-compose -p testnet -f docker-compose-testnet.yml up -d",
+    "build-testnet": "docker-compose -p testnet -f docker-compose-testnet.yml build",
     "stop-testnet": "docker stop testnet-postgres-1",
     "purge-testnet": "docker rm testnet-postgres-1 && docker volume rm testnet_db-data",
     "reset-testnet": "docker stop testnet-postgres-1 && docker rm testnet-postgres-1 && docker volume rm testnet_db-data && docker-compose -p testnet -f docker-compose-testnet.yml up -d",
