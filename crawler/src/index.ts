@@ -14,15 +14,15 @@ console.warn = () => {};
 
 const processNextBlock = async () => {
   while (currentBlockIndex < latestBlockIndex-1) {
-    const start = Date.now();
-
+    
     const difference = min(latestBlockIndex - currentBlockIndex - 1, BLOCKS_PER_STEP);
     const from = currentBlockIndex + 1;
     const to = from + difference;
+    const start = Date.now();
     const per = await processBlocks(from, to);
+    const ms = Date.now() - start
     currentBlockIndex = to - 1;
 
-    const ms = Date.now() - start
     const time = ms/1000;
   
     const bps = difference/time;
@@ -35,7 +35,7 @@ const processNextBlock = async () => {
     //   BLOCKS_PER_STEP = START_BLOCK_STEP;
     // }
   };
-  
+
   await wait(100);
   await processNextBlock();
 }
