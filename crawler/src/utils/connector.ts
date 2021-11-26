@@ -1,7 +1,8 @@
 import {Provider} from "@reef-defi/evm-provider";
 import {WsProvider} from "@polkadot/api";
 import {Pool} from "pg";
-import { wait } from "./utils";
+import { min, wait } from "./utils";
+import { lastBlockInDatabase } from "../queries/block";
 
 const APP_CONFIG = {
   nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9951',
@@ -19,7 +20,7 @@ export const nodeUrls = [
   // 'ws://127.0.0.1:9944'
   // 'ws://0.0.0.0:9944',
   'ws://0.0.0.0:9945',
-  'ws://0.0.0.0:9946',
+  // 'ws://0.0.0.0:9946',
   // 'ws://0.0.0.0:9947',
   // 'ws://0.0.0.0:9948',
   'ws://0.0.0.0:9949',
@@ -29,6 +30,7 @@ export const nodeUrls = [
 
 let selectedProvider = 0;
 let nodeProviders: Provider[] = [];
+let providersLastBlockId: number[] = [];
 
 export let nodeProvider: Provider;
 let dbProvider: Pool = new Pool({...APP_CONFIG.postgresConfig});
@@ -49,12 +51,12 @@ const areNodesSyncing = async () => {
   return false;
 }
 
-const syncNode = async (): Promise<void> => {
+export const syncNode = async (): Promise<void> => {
   while(await areNodesSyncing()) {
     await wait(1000);
   };
 }
-
+export let lastBlockId = -1;
 
 const initializeNodeProvider = async (): Promise<void> => {
   if (nodeUrls.length <= 0) {
@@ -67,10 +69,18 @@ const initializeNodeProvider = async (): Promise<void> => {
     });
     await provider.api.isReadyOrError;
     nodeProviders.push(provider);
+    providersLastBlockId.push(-1);
+  }
+
+  for (let index = 0; index < nodeProviders.length; index++) {
+    nodeProviders[index].api.rpc.chain.subscribeNewHeads(async (header) => {
+      providersLastBlockId[index] = header.number.toNumber();
+      lastBlockId = min(...providersLastBlockId);
+    })
   }
 
   nodeProvider = new Provider({
-    provider: new WsProvider(APP_CONFIG.nodeUrl)
+    provider: new WsProvider(nodeUrls[0])
   });
   await nodeProvider.api.isReadyOrError;
 };

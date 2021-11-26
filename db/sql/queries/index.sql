@@ -66,7 +66,7 @@
 
 -- delete from block where id >= 1144564;
 
-select * from block where id > 1573459;
+-- select * from block where id > 1573459;
 
 
 -- delete from unverified_evm_call where extrinsic_id >= 1334224;
@@ -91,3 +91,6 @@ select * from block where id > 1573459;
 --   FOREIGN KEY (signer_address)
 --   REFERENCES account (address)
 --   ON DELETE CASCADE;
+
+ALTER TABLE verification_request
+DROP CONSTRAINT fk_contract;

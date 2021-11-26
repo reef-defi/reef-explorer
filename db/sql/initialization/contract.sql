@@ -74,10 +74,7 @@ CREATE TABLE IF NOT EXISTS verification_request (
   success BOOLEAN NOT NULL,
   message TEXT,
 
-  PRIMARY KEY (id),
-  CONSTRAINT fk_contract
-    FOREIGN KEY (address)
-      REFERENCES contract(address)
+  PRIMARY KEY (id)
 );
 
 CREATE INDEX IF NOT EXISTS verified_contract_name ON verification_request (name);
