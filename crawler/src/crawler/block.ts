@@ -1,4 +1,4 @@
-import { nodeProvider, nodeQuery } from "../utils/connector";
+import { nodeProvider, nodeQuery, setResolvingBlocksTillId } from "../utils/connector";
 import { insertInitialBlock, blockFinalized, insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
 import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, processBlockExtrinsic, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
@@ -166,6 +166,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   // console.log(`Processing blocks from ${fromId} to ${toId}`);
   const blockIds = range(fromId, toId);
   let per = defaultPerofmance();
+  setResolvingBlocksTillId(toId-1);
   per.transactions = blockIds.length * 2;
   
   let st = Date.now();
