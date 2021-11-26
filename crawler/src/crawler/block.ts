@@ -150,25 +150,16 @@ const eventToInsert = (nextFreeId: number) => ({event, extrinsicId, blockId}: Ev
 
 interface Performance {
   transactions: number;
+  dbTime: number;
   nodeTime: number;
   processingTime: number;
-
-  pt1: number;
-  pt2: number;
-  pt3: number;
-  pt4: number;
-  pt5: number;
 }
 
 const defaultPerofmance = (): Performance => ({
   nodeTime: 0,
+  dbTime: 0,
   processingTime: 0,
-  pt1: 0,
-  pt2: 0,
-  pt3: 0,
-  pt4: 0,
-  pt5: 0,
-  transactions: 0
+  transactions: 0,
 });
 
 export const processBlocks = async (fromId: number, toId: number): Promise<Performance> => {
@@ -185,75 +176,97 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
 // Free memory
   hashes = []; 
   // Insert blocks
+  st = Date.now();
   await insertMultipleBlocks(blocks.map(blockBodyToInsert));
+  per.dbTime += Date.now() - st;
   per.transactions += 1;
-  per.pt1 = Date.now() - st;
 
   // Extrinsics
-  let pt2 = Date.now();
+  st = Date.now();
   let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader));
+  per.transactions += 1 + extrinsicHeaders.filter((e) => e.extrinsic.isSigned).length;
+  per.processingTime += Date.now() - st;
   const [eid, feid] = await nextFreeIds();
-
-  per.transactions += 1 + extrinsicHeaders.length;
+  
   st = Date.now();
   let extrinsics = await Promise.all(extrinsicHeaders.map(extrinsicBody(feid)));
-  per.nodeTime += Date.now() - st;
-
+  per.nodeTime += Date.now() - st + 0;
+  
   // Free memory
   blocks = [];
   extrinsicHeaders = [];
-
-  per.transactions += 1;
+  
+  st = Date.now();
   await insertExtrinsics(extrinsics.map(extrinsicToInsert));
-  per.pt2 = Date.now() - pt2;
-
-  // Events
-  let pt3 = Date.now();
-  let events = compress(extrinsics.map(extrinsicToEventHeader));
-
+  per.dbTime += Date.now() - st;
   per.transactions += 1;
+  
+  // Events
+  st = Date.now();
+  let events = compress(extrinsics.map(extrinsicToEventHeader));
+  per.processingTime += Date.now() - st;
+
+  st = Date.now();
   await insertEvents(events.map(eventToInsert(eid)));
-  per.pt3 = Date.now() - pt3;
-
-  let pt4 = Date.now();
+  per.transactions += 1;
+  per.dbTime += Date.now() - st;
+  
+  st = Date.now();
   let accountHeads = dropDuplicates(compress(events.map(resolveAccounts)), 'address');
-
+  per.processingTime += Date.now() - st;
+  
   per.transactions += accountHeads.length;
+  st = Date.now();
   let accounts = await Promise.all(accountHeads.map(accountHeadToBody));
+  per.nodeTime += Date.now() - st;
+  st = Date.now();
   await insertAccounts(accounts);
-  per.pt4 = Date.now() - pt4;
-
+  per.dbTime += Date.now() - st;
+  
   // Free memory
   events = [];
   accounts = [];
   accountHeads = [];
-  let pt5 = Date.now();
   // Transfers
+  st = Date.now();
   let transfers = extrinsics
     .filter(isExtrinsicTransfer)
     .map(extrinsicBodyToTransfer);
+  per.processingTime += Date.now() - st;
+  
+  st = Date.now();
   await insertTransfers(transfers);
+  per.dbTime += Date.now() - st;
   per.transactions += 1;
   transfers = [];
-
+  
   // Contracts
+  st = Date.now();
   let contracts = extrinsics
     .filter(isExtrinsicEVMCreate)
     .map(extrinsicToContract)
+  per.processingTime += Date.now() - st;
+  st = Date.now();
   await insertContracts(contracts)
+  per.dbTime += Date.now() - st;
   per.transactions += 1;
   contracts = [];
-
+  
   // EVM Calls
+  st = Date.now();
   let evmCalls = extrinsics
     .filter(isExtrinsicEVMCall)
     .map(extrinsicToEVMCall)
+  per.processingTime += Date.now() - st;
+  st = Date.now();
   await insertEvmCalls(evmCalls);
+  per.dbTime += Date.now() - st;
   per.transactions += 1;
   evmCalls = [];
-
+  
+  st = Date.now();
   await updateBlockFinalized(fromId, toId);
+  per.dbTime += Date.now() - st;
   per.transactions += 1;
-  per.pt5 = Date.now() - pt5;
   return per;
 }

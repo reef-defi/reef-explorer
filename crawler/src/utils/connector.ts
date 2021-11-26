@@ -4,7 +4,7 @@ import {Pool} from "pg";
 import { wait } from "./utils";
 
 const APP_CONFIG = {
-  nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9944',
+  nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9951',
   nodeSize: 10,
   postgresConfig: {
     user: process.env.POSTGRES_USER || 'reefexplorer',
@@ -17,11 +17,11 @@ const APP_CONFIG = {
 
 export const nodeUrls = [
   // 'ws://127.0.0.1:9944'
-  'ws://0.0.0.0:9944',
+  // 'ws://0.0.0.0:9944',
   'ws://0.0.0.0:9945',
   'ws://0.0.0.0:9946',
-  'ws://0.0.0.0:9947',
-  'ws://0.0.0.0:9948',
+  // 'ws://0.0.0.0:9947',
+  // 'ws://0.0.0.0:9948',
   'ws://0.0.0.0:9949',
   'ws://0.0.0.0:9950',
   'ws://0.0.0.0:9951',

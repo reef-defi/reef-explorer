@@ -13,19 +13,21 @@ let latestBlockIndex = -1;
 console.warn = () => {};
 
 const processNextBlock = async () => {
-  while (currentBlockIndex + 1 <= latestBlockIndex) {
+  while (currentBlockIndex < latestBlockIndex-1) {
     const start = Date.now();
 
-    const difference = min(latestBlockIndex - currentBlockIndex, BLOCKS_PER_STEP);
+    const difference = min(latestBlockIndex - currentBlockIndex - 1, BLOCKS_PER_STEP);
     const from = currentBlockIndex + 1;
     const to = from + difference;
     const per = await processBlocks(from, to);
-    currentBlockIndex += difference;
+    currentBlockIndex = to - 1;
 
-    const end = Date.now();
-    const bps = difference/((end-start)/1000);
-    console.log(`n nodes: ${nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${per.transactions}\ttps: ${(per.transactions/((end-start)/1000)).toFixed(3)}\ttime: ${((end-start)/1000).toFixed(3)} s\tblock from ${from} to ${to}`)
-    console.log(`PT1: ${(per.pt1/1000).toFixed(3)}s\tPT2: ${(per.pt2/1000).toFixed(3)}s\tPT3: ${(per.pt3/1000).toFixed(3)}s\tPT4: ${(per.pt4/1000).toFixed(3)}s\tPT5: ${(per.pt5/1000).toFixed(3)}s`)
+    const ms = Date.now() - start
+    const time = ms/1000;
+  
+    const bps = difference/time;
+    console.log(`n nodes: ${nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${per.transactions}\ttps: ${(per.transactions/time).toFixed(3)}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`)
+    console.log(`\t\tPerformance\tNode: ${(per.nodeTime / ms * 100).toFixed(2)}%\tDB: ${(per.dbTime/ms*100).toFixed(2)}%\tSys: ${(per.processingTime/ms*100).toFixed(2)}%`)
     BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, MAX_BLOCKS_PER_STEP);
     
     // if (bps < 110 && difference == MAX_BLOCKS_PER_STEP) {
@@ -33,7 +35,7 @@ const processNextBlock = async () => {
     //   BLOCKS_PER_STEP = START_BLOCK_STEP;
     // }
   };
-
+  
   await wait(100);
   await processNextBlock();
 }
@@ -41,11 +43,12 @@ const processNextBlock = async () => {
 Promise.resolve()
   .then(initializeProviders)
   .then(deleteUnfinishedBlocks)
-  .then(async () => currentBlockIndex = await lastBlockInDatabase())
-  // .then(async () => currentBlockIndex = 609157-1)
-  .then(() => nodeProvider.api.rpc.chain.subscribeNewHeads((header) => {
-    latestBlockIndex = header.number.toNumber();
-  }))
+  .then(async () => {
+    currentBlockIndex = await lastBlockInDatabase();
+    nodeProvider.api.rpc.chain.subscribeNewHeads((header) => {
+      latestBlockIndex = header.number.toNumber();
+    });
+  })
   .then(processNextBlock)
   .catch((error) => {
     console.error(error);

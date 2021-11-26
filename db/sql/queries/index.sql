@@ -64,7 +64,9 @@
 -- SELECT * FROM unverified_evm_call;
 -- SELECT * from contract;
 
-delete from block where id > 1114849;
+-- delete from block where id >= 1144564;
+
+select * from block where id > 1573459;
 
 
 -- delete from unverified_evm_call where extrinsic_id >= 1334224;
