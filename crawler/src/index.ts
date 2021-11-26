@@ -1,6 +1,6 @@
 import { processBlocks } from "./crawler/block";
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from "./queries/block";
-import { closeProviders, initializeProviders, lastBlockId, nodeUrls } from "./utils/connector";
+import { closeProviders, initializeProviders, lastBlockId, nodeUrls, restartNodeProviders } from "./utils/connector";
 import { min, wait } from "./utils/utils";
 
 const START_BLOCK_STEP = 32;
@@ -25,6 +25,7 @@ const processNextBlock = async () => {
       })
       .catch(async (err) => {
         await deleteUnfinishedBlocks();
+        await restartNodeProviders();
         return {
           nodeTime: 1,
           dbTime: 1,

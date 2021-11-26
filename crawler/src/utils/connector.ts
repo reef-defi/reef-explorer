@@ -110,6 +110,7 @@ export const closeProviders = async (): Promise<void> => {
     await provider.api.disconnect();
   }
   nodeProviders = [];
+  providersLastBlockId = [];
 }
 
 export const restartNodeProviders = async(): Promise<void> => {
