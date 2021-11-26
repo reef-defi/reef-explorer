@@ -27,6 +27,7 @@ interface ContracVerificationInsert {
   errorMessage?: string;
 }
 
+type ContractType = "other" | "ERC20" | "ERC721";
 interface UpdateContract {
   name: string;
   target: Target;
@@ -39,6 +40,8 @@ interface UpdateContract {
   args: string;
   filename: string;
   compilerVersion: string;
+  type: ContractType;
+  data: string;
 }
 
 const FIND_CONTRACT_BYTECODE = `SELECT bytecode FROM contract WHERE address = $1`;
@@ -64,12 +67,12 @@ VALUES
 const CONTRACT_VERIFICATION_STATUS = `SELECT status FROM verification_request WHERE id = $1`;
 
 // Queries 
-const updateContractStatus = async ({address, name, abi, source, compilerVersion, optimization, target, runs}: UpdateContract): Promise<void> => {
-  await query(
-    UPDATE_CONTRACT_STATUS,
-    [address, name, JSON.stringify(abi), source, compilerVersion, optimization, target, runs]
-  );
-};
+// const updateContractStatus = async ({address, name, abi, source, compilerVersion, optimization, target, runs}: UpdateContract): Promise<void> => {
+//   await query(
+//     UPDATE_CONTRACT_STATUS,
+//     [address, name, JSON.stringify(abi), source, compilerVersion, optimization, target, runs]
+//   );
+// };
 
 const insertErc20Token = async (address: string, {name, symbol, decimals}: ERC20Data): Promise<void> => {
   await query(INSERT_ERC20_TOKEN, [address, name, symbol, decimals]);
@@ -80,7 +83,6 @@ const findContractBytecode = async (address: string): Promise<string> => {
   ensure(bytecodes.length > 0, "Contract does not exist", 404);
   return bytecodes[0].bytecode;
 }
-
 
 
 const insertVerifiedContract = async ({address, name, filename, source, optimization, compilerVersion, abi, args, runs, target}: UpdateContract): Promise<void> => {
@@ -113,14 +115,17 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
   const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
   const {abi, fullAbi} = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
+  let type: ContractType = "other";
+  let data: ERC20Data | undefined;
   if (checkIfContractIsERC20(abi)) {
-    const data = await extractERC20ContractData(verification.address, abi);
-    await insertErc20Token(verification.address, data);
+    data = await extractERC20ContractData(verification.address, abi);
+    type = "ERC20";
+    // await insertErc20Token(verification.address, data);
   }
   console.log(verification.source)
   console.log(verification.arguments)
   console.log(fullAbi)
-  await insertVerifiedContract({...verification, abi: fullAbi, optimization: verification.optimization === "true", args: verification.arguments});
+  await insertVerifiedContract({...verification, abi: fullAbi, optimization: verification.optimization === "true", args: verification.arguments, type, data: data ? JSON.stringify(data) : "null"});
   // await updateContractStatus({...verification, abi: fullAbi, optimization: verification.optimization === "true"});
   await contractVerificationInsert({...verification, success: true, optimization: verification.optimization === "true", args: verification.arguments})
 }
