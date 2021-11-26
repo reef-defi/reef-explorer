@@ -23,7 +23,8 @@ const processNextBlock = async () => {
         currentBlockIndex = to - 1
         return p;
       })
-      .catch((err) => {
+      .catch(async (err) => {
+        await deleteUnfinishedBlocks();
         return {
           nodeTime: 1,
           dbTime: 1,
