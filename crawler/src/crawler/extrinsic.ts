@@ -1,11 +1,12 @@
 import {Vec} from "@polkadot/types"
 import { nodeProvider } from "../utils/connector";
 import {SpRuntimeDispatchError} from "@polkadot/types/lookup"
-import { SignedExtrinsicData, InsertExtrinsic, insertExtrinsic, insertTransfer, insertUnverifiedEvmCall, signerExist, insertAccount } from "../queries/block";
 import {BigNumber} from "ethers";
-import { Extrinsic, Event, ExtrinsicStatus } from "./types";
-import { processNewContract } from "./contract";
+import { Extrinsic, Event, ExtrinsicStatus, SignedExtrinsicData, ExtrinsicBody, Transfer, ResolveSection } from "./types";
+import { processNewContract, processUnverifiedEvmCall } from "./evmEvent";
 import { processBlockEvent } from "./event";
+import { insertTransfer, InsertExtrinsic, insertExtrinsic, InsertExtrinsicBody, freeEventId } from "../queries/extrinsic";
+import { insertEvmCall } from "../queries/evmEvent";
 
 
 interface ProcessTransfer {
@@ -16,7 +17,7 @@ interface ProcessTransfer {
   signedData: SignedExtrinsicData;
 }
 
-const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
+export const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
 const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
   const [fee, feeDetails] = await Promise.all([
@@ -39,7 +40,7 @@ const extractErrorMessage = (error: SpRuntimeDispatchError): string => {
   }
 }
 
-const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => extrinsicEvents
+export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => extrinsicEvents
   .reduce((prev, {event}) => {
       if (prev.type === 'unknown' && nodeProvider.api.events.system.ExtrinsicSuccess.is(event)) {
         return {type: "success"};
@@ -82,12 +83,14 @@ const processTransfer = async ({blockId, extrinsic, extrinsicId, status, signedD
 }
 
 
-const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, index: number, status: ExtrinsicStatus, sd?: SignedExtrinsicData): Promise<number> => {
+const processExtrinsicInsert = async (id:number, extrinsic: Extrinsic, blockId: number, index: number, status: ExtrinsicStatus, signedData?: SignedExtrinsicData): Promise<void> => {
   const {meta, hash, args, method} = extrinsic;
 
-  const extrinsicBody: InsertExtrinsic = {
+  const extrinsicBody: InsertExtrinsicBody = {
+    id,
     index,
     blockId,
+    signedData,
     status: status.type,
     hash: hash.toString(),
     method: method.method,
@@ -98,36 +101,7 @@ const processExtrinsicInsert = async (extrinsic: Extrinsic, blockId: number, ind
     error_message: status.type === 'error' ? status.message : ""
   }
   
-  return insertExtrinsic(extrinsicBody, sd);
-}
-
-const processUnverifiedEvmCall = async (section: ResolveSection): Promise<void> => {
-  const {extrinsic, extrinsicId, status} = section;
-  const account = resolveSigner(extrinsic);
-  const args: any[] = extrinsic.args.map((arg) => arg.toJSON());
-  const contractAddress: string = args[0];
-  const data = JSON.stringify(args.slice(0, args.length-2));
-  const gasLimit = args.length >= 3 ? args[args.length-2] : 0;
-  const storageLimit = args.length >= 3 ? args[args.length-1] : 0;
-  await insertUnverifiedEvmCall({
-    data,
-    status,
-    account,
-    gasLimit,
-    extrinsicId,
-    storageLimit,
-    contractAddress,
-  });
-  console.log(`Block: ${section.blockId} -> New Unverified evm call by ${account} ${status.type === 'success' ? 'succsessfull' : 'unsuccsessfull'}`);
-}
-
-interface ResolveSection {
-  blockId: number;
-  extrinsicId: number;
-  extrinsic: Extrinsic;
-  status: ExtrinsicStatus;
-  extrinsicEvents: Event[];
-  signedData: SignedExtrinsicData;
+  return insertExtrinsic(extrinsicBody);
 }
 
 const resolveEvmSection = async (section: ResolveSection): Promise<void> => {
@@ -146,7 +120,7 @@ const resolveSections = async (section: ResolveSection): Promise<void> => {
   }
 }
 
-export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>) => async (extrinsic: Extrinsic, index: number): Promise<void> => {
+export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>, freeExtrinsicId: number) => async (extrinsic: Extrinsic, index: number): Promise<void> => {
   const events = blockEvents
     .filter(({phase}) => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index));
 
@@ -154,14 +128,44 @@ export const processBlockExtrinsic = (blockId: number, blockEvents: Vec<Event>) 
   const signedData = extrinsic.isSigned
     ? await getSignedExtrinsicData(extrinsic.toHex())
     : undefined;
+  const id = freeExtrinsicId+index
+  await processExtrinsicInsert(id, extrinsic, blockId, index, status, signedData);
 
-  const extrinsicId = await processExtrinsicInsert(extrinsic, blockId, index, status, signedData);
+  const feid = await freeEventId();
   
-  const processEvent = processBlockEvent(blockId, extrinsicId);
+  const processEvent = processBlockEvent(blockId, id, feid);
   await Promise.all(events.map(processEvent));
 
   if (extrinsic.isSigned) {
-    await resolveSections({extrinsicId, extrinsic, blockId, signedData: signedData!, status, extrinsicEvents: events});
+    await resolveSections({extrinsicId: id, extrinsic, blockId, signedData: signedData!, status, extrinsicEvents: events});
   }
 }
 
+// New
+export const isExtrinsicTransfer = ({extrinsic}: ExtrinsicBody): boolean => 
+     extrinsic.method.section === "balances" 
+  || extrinsic.method.section === "currencies"
+
+export const extrinsicBodyToTransfer = ({extrinsic, status, blockId, id, signedData}: ExtrinsicBody): Transfer => {
+  const args: any = extrinsic.args.map((arg) => arg.toJSON());
+  
+  const toAddress = args[0]?.id || 'deleted';
+  const fromAddress = resolveSigner(extrinsic);
+
+  const denom: string = extrinsic.method.section === 'currencies' ? args[1].token : 'REEF';
+  const amount: string = BigNumber.from(
+    extrinsic.method.section === 'currencies' ? args[2] : args[1]
+  ).toString();
+
+  return {
+    denom,
+    amount,
+    blockId,
+    toAddress,
+    fromAddress,
+    extrinsicId: id,
+    success: status.type === "success",
+    feeAmount: signedData!.fee.partialFee,
+    errorMessage: status.type === "error" ? status.message : "",
+  }
+}

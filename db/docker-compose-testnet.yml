@@ -11,8 +11,8 @@ services:
     volumes:
       - 'db-data:/var/lib/postgresql/data'
       - './sql/initialization/init.sql:/docker-entrypoint-initdb.d/00_init.sql'
-      - './sql/initialization/account.sql:/docker-entrypoint-initdb.d/01_account.sql'
-      - './sql/initialization/block.sql:/docker-entrypoint-initdb.d/02_block.sql'
+      - './sql/initialization/block.sql:/docker-entrypoint-initdb.d/01_block.sql'
+      - './sql/initialization/account.sql:/docker-entrypoint-initdb.d/02_account.sql'
       - './sql/initialization/extrinsic.sql:/docker-entrypoint-initdb.d/03_extrinsic.sql'
       - './sql/initialization/event.sql:/docker-entrypoint-initdb.d/04_event.sql'
       - './sql/initialization/error.sql:/docker-entrypoint-initdb.d/05_error.sql'

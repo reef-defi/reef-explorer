@@ -1,10 +1,11 @@
 import {Provider} from "@reef-defi/evm-provider";
 import {WsProvider} from "@polkadot/api";
-import {PoolClient, Pool} from "pg";
-import { wait } from "./utils";
+import {Pool} from "pg";
+import { max, min, wait } from "./utils";
 
 const APP_CONFIG = {
-  nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9944',
+  nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9951',
+  nodeSize: 10,
   postgresConfig: {
     user: process.env.POSTGRES_USER || 'reefexplorer',
     host: process.env.POSTGRES_HOST || '0.0.0.0',
@@ -13,50 +14,110 @@ const APP_CONFIG = {
     port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 54321,
   }
 }
+
+export const nodeUrls = [
+  // 'ws://127.0.0.1:9944'
+  'ws://0.0.0.0:9944',
+  'ws://0.0.0.0:9945',
+  // 'ws://0.0.0.0:9946',
+  // 'ws://0.0.0.0:9947',
+  // 'ws://0.0.0.0:9948',
+  // 'ws://0.0.0.0:9949',
+  // 'ws://0.0.0.0:9950',
+  // 'ws://0.0.0.0:9951',
+]
+
+let selectedProvider = 0;
+let nodeProviders: Provider[] = [];
+let providersLastBlockId: number[] = [];
+
 export let nodeProvider: Provider;
-let dbProvider: PoolClient;
+let dbProvider: Pool = new Pool({...APP_CONFIG.postgresConfig});
 
+let resolvingBlocksUntil = -1;
 
-const nodeHealth = async () =>
-  nodeProvider.api.rpc.system.health();
-
-const syncNode = async (): Promise<void> => {
-  let node = await nodeHealth();
-  while(node.isSyncing.eq(true)) {
-    await wait(1000);
-    node = await nodeHealth();
-  };
+export const setResolvingBlocksTillId = (id: number) => {
+  resolvingBlocksUntil = id;
 }
 
-// only used in index.ts!!!
+export const nodeQuery = async <T,>(fun: (provider: Provider) => Promise<T>): Promise<T> => {
+  selectedProvider = (selectedProvider + 1) % nodeProviders.length;
+  while (providersLastBlockId[selectedProvider] < resolvingBlocksUntil) {
+    selectedProvider = (selectedProvider + 1) % nodeProviders.length;
+  }
+  const providerPointer = nodeProviders[selectedProvider];
+  return fun(providerPointer);
+}
 
+const areNodesSyncing = async () => {
+  for (const provider of nodeProviders) {
+    const node = await provider.api.rpc.system.health();
+    if (node.isSyncing.eq(true)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export const syncNode = async (): Promise<void> => {
+  while(await areNodesSyncing()) {
+    await wait(1000);
+  };
+}
+export let lastBlockId = -1;
 
 const initializeNodeProvider = async (): Promise<void> => {
+  if (nodeUrls.length <= 0) {
+    throw new Error("Minimum number of providers is 1!");
+  }
+
+  for(const url of nodeUrls) {
+    const provider =  new Provider({
+      provider: new WsProvider(url)
+    });
+    await provider.api.isReadyOrError;
+    nodeProviders.push(provider);
+    providersLastBlockId.push(-1);
+  }
+
+  for (let index = 0; index < nodeProviders.length; index++) {
+    nodeProviders[index].api.rpc.chain.subscribeNewHeads(async (header) => {
+      providersLastBlockId[index] = header.number.toNumber();
+      lastBlockId = max(...providersLastBlockId);
+    })
+  }
+
   nodeProvider = new Provider({
-    provider: new WsProvider(APP_CONFIG.nodeUrl)
+    provider: new WsProvider(nodeUrls[0])
   });
   await nodeProvider.api.isReadyOrError;
 };
 
-const initializeDatabaseProvider = async (): Promise<void> => {
-  const pool = new Pool({...APP_CONFIG.postgresConfig});
-  dbProvider = await pool.connect();
-}
 
 export const initializeProviders = async (): Promise<void> => {
   console.log("Connecting to node...")
   await initializeNodeProvider();
-  console.log("Connecting to database...")
-  await initializeDatabaseProvider();
   console.log("Syncing node...");
   await syncNode();
+  console.log("Syncing complete");
 }
 
 export const closeProviders = async (): Promise<void> => {
   console.log("Closing providers");
   await nodeProvider.api.disconnect();
-  dbProvider.release();
+
+  for (const provider of nodeProviders) {
+    await provider.api.disconnect();
+  }
+  nodeProviders = [];
+  providersLastBlockId = [];
 }
+
+export const restartNodeProviders = async(): Promise<void> => {
+  await closeProviders();
+  await initializeProviders();
+}
+
 
 export const insertAndGetId = async (statement: string, table: string): Promise<number> => {
   // console.log(statement)

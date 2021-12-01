@@ -16,7 +16,7 @@ export const submitVerification = async (req: AppRequest<AutomaticContractVerifi
   } catch (err) {
     console.log(err);
     if (err.status === 404) {
-      await contractVerificationInsert({...req.body, status: "NOT VERIFIED", optimization: req.body.optimization === "true"})
+      await contractVerificationInsert({...req.body, success: false, optimization: req.body.optimization === "true", args: req.body.arguments, errorMessage: err.message})
     }
     res.status(errorStatus(err)).send({message: err.message});
   }
@@ -33,7 +33,7 @@ export const formVerification = async (req: AppRequest<ManualContractVerificatio
     res.send("Verified");
   } catch (err) {
     if (err.status === 404) {
-      await contractVerificationInsert({...req.body, status: "NOT VERIFIED", optimization: req.body.optimization === "true"})
+      await contractVerificationInsert({...req.body, success: false, optimization: req.body.optimization === "true", args: req.body.arguments, errorMessage: err.message})
     }
     res.status(errorStatus(err)).send(err.message);
   }

@@ -17,11 +17,18 @@ CREATE TABLE IF NOT EXISTS unverified_evm_call (
   PRIMARY KEY (id),
   CONSTRAINT fk_extrinsic
     FOREIGN KEY (extrinsic_id)
-      REFERENCES extrinsic(id),
+      REFERENCES extrinsic(id)
+      ON DELETE CASCADE,
   CONSTRAINT fk_account
     FOREIGN KEY (signer_address)
       REFERENCES account(address)
+      ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS unverified_evm_call_status ON unverified_evm_call (status);
+CREATE INDEX IF NOT EXISTS unverified_evm_call_extrinsic_id ON unverified_evm_call (extrinsic_id);
+CREATE INDEX IF NOT EXISTS unverified_evm_call_signer_address ON unverified_evm_call (signer_address);
+CREATE INDEX IF NOT EXISTS unverified_evm_call_contract_address ON unverified_evm_call (contract_address);
 
 CREATE TABLE IF NOT EXISTS verified_evm_call (
   id BIGSERIAL,
