@@ -72,4 +72,3 @@ app.get('/api/price/reef', async (_, res: Response) => {
 app.listen(APP_CONFIGURATION.httpPort, () => {
   console.log(`Reef explorer API is running on port ${APP_CONFIGURATION.httpPort}.`);
 });
-

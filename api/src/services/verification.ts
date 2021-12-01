@@ -135,3 +135,6 @@ export const contractVerificationStatus = async (id: string): Promise<string> =>
   ensure(result.length > 0, "Contract does not exist...", 404);
   return result[0].status;
 };
+
+export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => 
+  query<ContracVerificationInsert>(`SELECT * FROM verified_contract WHERE address = $1`, [address]);
