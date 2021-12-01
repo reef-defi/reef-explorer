@@ -2,7 +2,7 @@ export const APP_CONFIGURATION = {
   recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
   httpPort: process.env.PORT || 3000,
   // nodeWs: 'ws://substrate-node:9944',
-  nodeWs: 'ws://127.0.0.1:9944',
+  nodeWs: 'ws://0.0.0.0:9944',
   postgresConfig: {
     port: 54321,
     host: '0.0.0.0',
