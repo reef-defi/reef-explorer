@@ -1,5 +1,5 @@
-import { nodeProvider, nodeQuery, setResolvingBlocksTillId } from "../utils/connector";
-import { insertInitialBlock, blockFinalized, insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
+import {  nodeQuery, setResolvingBlocksTillId } from "../utils/connector";
+import { insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
 import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, processBlockExtrinsic, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
