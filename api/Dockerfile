@@ -2,10 +2,9 @@ FROM node:fermium
 
 WORKDIR /usr/app/api
 
-COPY . /usr/app/api
-
-EXPOSE 8000
+COPY . .
 
 RUN yarn 
 
+EXPOSE 8000
 CMD ["yarn", "start"]

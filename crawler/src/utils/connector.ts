@@ -11,6 +11,9 @@ let nodeProviders: Provider[] = [];
 let providersLastBlockId: number[] = [];
 let dbProvider: Pool = new Pool({...APP_CONFIG.postgresConfig});
 
+export let lastBlockId = -1;
+
+
 export const setResolvingBlocksTillId = (id: number) => {
   resolvingBlocksUntil = id;
 }
@@ -39,7 +42,6 @@ export const syncNode = async (): Promise<void> => {
     await wait(1000);
   };
 }
-export let lastBlockId = -1;
 
 const initializeNodeProvider = async (): Promise<void> => {
   if (APP_CONFIG.nodeUrls.length <= 0) {
@@ -62,6 +64,13 @@ const initializeNodeProvider = async (): Promise<void> => {
     })
   }
 };
+
+export const getProvider = (): Provider => {
+  if (nodeProviders.length === 0) {
+    throw new Error("Non provider ")
+  }
+  return nodeProviders[0];
+}
 
 
 export const initializeProviders = async (): Promise<void> => {
