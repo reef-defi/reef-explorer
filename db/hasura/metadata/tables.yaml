@@ -1,0 +1,33 @@
+- table:
+    schema: public
+    name: account
+- table:
+  schema: public
+  name: block
+- table:
+  schema: public
+  name: contract
+- table:
+  schema: public
+  name: verified_contract
+- table:
+  schema: public
+  name: newly_verified_contract_queue
+- table:
+  schema: public
+  name: verification_request
+- table:
+  schema: public
+  name: event
+- table:
+  schema: public
+  name: unverified_evm_call
+- table:
+  schema: public
+  name: verified_evm_call
+- table:
+  schema: public
+  name: extrinsic
+- table:
+  schema: public
+  name: transfer

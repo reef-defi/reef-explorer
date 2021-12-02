@@ -40,6 +40,21 @@ services:
       timeout: 5s
       retries: 5
 
+  graphql-engine:
+    image: hasura/graphql-engine:v1.3.3.cli-migrations-v2
+    ports:
+      - '8082:8080'
+    volumes:
+      - './db/hasura/metadata:/hasura-metadata'
+    depends_on:
+      - 'postgres'
+    restart: always
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://reefexplorer:reefexplorer@postgres:5432/reefexplorer
+      HASURA_GRAPHQL_ENABLE_CONSOLE: 'true' # set to "false" to disable console
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: public
+      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
 
   crawler:
     image: crawler
