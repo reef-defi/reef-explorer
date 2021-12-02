@@ -1,4 +1,5 @@
 
+
 const toNumber = (defaultValue: number, value?: string): number => {
   if (!value) {
     return defaultValue;
@@ -6,14 +7,14 @@ const toNumber = (defaultValue: number, value?: string): number => {
   return parseInt(value, 10);
 }
 
-export const APP_CONFIGURATION = {
-  httpPort: toNumber(8000, process.env.PORT),
-  nodeWs: process.env.NODE_URL || 'ws://0.0.0.0:9944',
-  recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
+export const APP_CONFIG = {
+  nodeUrls: process.env.NODE_PROVIDER_URLS || ['ws://0.0.0.0:9944'],
+  startBlockSize: toNumber(32, process.env.START_BLOCK_SIZE),
+  maxBlocksPerStep: toNumber(1024, process.env.MAX_BLOCKS_PER_STEP),
 
   postgresConfig: {
-    port: toNumber(5432, process.env.POSTGRES_PORT), 
     host: process.env.POSTGRES_HOST || '0.0.0.0',
+    port: toNumber(54321, process.env.POSTGRES_PORT),
     user: process.env.POSTGRES_USER || 'reefexplorer',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
     password: process.env.POSTGRES_PASSWORD || 'reefexplorer',

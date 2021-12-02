@@ -1,40 +1,15 @@
 import {Provider} from "@reef-defi/evm-provider";
 import {WsProvider} from "@polkadot/api";
 import {Pool} from "pg";
-import { max, min, wait } from "./utils";
+import { max, wait } from "./utils";
+import { APP_CONFIG } from "../config";
 
-const APP_CONFIG = {
-  nodeUrl: process.env.WS_PROVIDER_URL || 'ws://0.0.0.0:9951',
-  nodeSize: 10,
-  postgresConfig: {
-    user: process.env.POSTGRES_USER || 'reefexplorer',
-    host: process.env.POSTGRES_HOST || '0.0.0.0',
-    database: process.env.POSTGRES_DATABASE || 'reefexplorer',
-    password: process.env.POSTGRES_PASSWORD || 'reefexplorer',
-    port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 54321,
-  }
-}
-
-export const nodeUrls = [
-  // 'ws://127.0.0.1:9944'
-  'ws://0.0.0.0:9944',
-  'ws://0.0.0.0:9945',
-  // 'ws://0.0.0.0:9946',
-  // 'ws://0.0.0.0:9947',
-  // 'ws://0.0.0.0:9948',
-  // 'ws://0.0.0.0:9949',
-  // 'ws://0.0.0.0:9950',
-  // 'ws://0.0.0.0:9951',
-]
 
 let selectedProvider = 0;
+let resolvingBlocksUntil = -1;
 let nodeProviders: Provider[] = [];
 let providersLastBlockId: number[] = [];
-
-export let nodeProvider: Provider;
 let dbProvider: Pool = new Pool({...APP_CONFIG.postgresConfig});
-
-let resolvingBlocksUntil = -1;
 
 export const setResolvingBlocksTillId = (id: number) => {
   resolvingBlocksUntil = id;
@@ -67,11 +42,11 @@ export const syncNode = async (): Promise<void> => {
 export let lastBlockId = -1;
 
 const initializeNodeProvider = async (): Promise<void> => {
-  if (nodeUrls.length <= 0) {
+  if (APP_CONFIG.nodeUrls.length <= 0) {
     throw new Error("Minimum number of providers is 1!");
   }
 
-  for(const url of nodeUrls) {
+  for(const url of APP_CONFIG.nodeUrls) {
     const provider =  new Provider({
       provider: new WsProvider(url)
     });
@@ -86,11 +61,6 @@ const initializeNodeProvider = async (): Promise<void> => {
       lastBlockId = max(...providersLastBlockId);
     })
   }
-
-  nodeProvider = new Provider({
-    provider: new WsProvider(nodeUrls[0])
-  });
-  await nodeProvider.api.isReadyOrError;
 };
 
 
@@ -104,7 +74,6 @@ export const initializeProviders = async (): Promise<void> => {
 
 export const closeProviders = async (): Promise<void> => {
   console.log("Closing providers");
-  await nodeProvider.api.disconnect();
 
   for (const provider of nodeProviders) {
     await provider.api.disconnect();
