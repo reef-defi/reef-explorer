@@ -1,26 +1,29 @@
 <template>
   <!-- Filter -->
-  <b-row class="mb-4 search-section">
-    <div class="container">
-      <div v-if="label || $slots.label" class="search-section__label-section">
-        <label v-if="label" class="search-section__label" v-html="label" />
-        <slot name="label" />
+  <div>
+    <b-row class="mb-4 search-section">
+      <div v-if="!!infoMsg" class="info-message container">{{ infoMsg }}</div>
+      <div class="container top-margin">
+        <div v-if="label || $slots.label" class="search-section__label-section">
+          <label v-if="label" class="search-section__label" v-html="label" />
+          <slot name="label" />
+        </div>
+        <b-form-input
+          id="searchInput"
+          :value="value"
+          class="search-section__input"
+          type="search"
+          :placeholder="placeholder"
+          @keydown.native="$emit('keydown', $event)"
+          @input="$emit('input', $event)"
+        />
+        <Chain v-if="showStats" />
+        <slot name="bottom" />
       </div>
-      <b-form-input
-        id="searchInput"
-        :value="value"
-        class="search-section__input"
-        type="search"
-        :placeholder="placeholder"
-        @keydown.native="$emit('keydown', $event)"
-        @input="$emit('input', $event)"
-      />
-      <Chain v-if="showStats" />
-      <slot name="bottom" />
-    </div>
 
-    <bubbles :amount="20" />
-  </b-row>
+      <bubbles :amount="20" />
+    </b-row>
+  </div>
 </template>
 
 <script>
@@ -35,6 +38,7 @@ export default {
   props: {
     value: { default: '' },
     label: { type: String, default: '' },
+    infoMsg: { type: String, default: '' },
     placeholder: { type: String, default: '' },
     showStats: { type: Boolean, default: false },
   },
@@ -44,9 +48,21 @@ export default {
 <style lang="scss">
 .search-section {
   position: relative;
-  padding: 70px 0 0 0;
   background: linear-gradient(130deg, #a51863, #3c127b);
   margin: 0 !important;
+
+  .info-message {
+    text-align: center;
+    color: #efa3d2;
+    background: rgba(104, 28, 255, 0.55);
+    border-radius: 1em;
+    margin-top: 1em;
+    padding-top: 0.1em;
+  }
+
+  .top-margin {
+    padding: 70px 0 0 0;
+  }
 
   .search-section__label-section {
     width: 100%;
