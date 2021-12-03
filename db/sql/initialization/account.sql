@@ -4,10 +4,9 @@ CREATE TABLE IF NOT EXISTS account (
   evm_address VARCHAR(42), -- TODO maybe we can add also address as Primary Key
 
   active BOOLEAN NOT NULL,
-  balance NUMERIC(80,0) NOT NULL,
-  available_balance NUMERIC(80,0) NOT NULL,
   free_balance NUMERIC(80,0) NOT NULL,
   locked_balance NUMERIC(80,0) NOT NULL,
+  available_balance NUMERIC(80,0) NOT NULL,
 
   timestamp timestamp default current_timestamp,
 
