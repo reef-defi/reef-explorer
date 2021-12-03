@@ -56,16 +56,12 @@ interface BlockBody extends BlockHash {
 }
 
 const blockHash = async (id: number): Promise<BlockHash> => {
-  // const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
   const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
   return {id, hash}
 };
 
 const blockBody = async ({id, hash}: BlockHash): Promise<BlockBody> => {
   const [signedBlock, extendedHeader, events] = await Promise.all([
-    // await nodeProvider.api.rpc.chain.getBlock(hash),
-    // await nodeProvider.api.derive.chain.getHeader(hash),
-    // await nodeProvider.api.query.system.events.at(hash),
     nodeQuery((provider) => provider.api.rpc.chain.getBlock(hash)),
     nodeQuery((provider) => provider.api.derive.chain.getHeader(hash)),
     nodeQuery((provider) => provider.api.query.system.events.at(hash)),

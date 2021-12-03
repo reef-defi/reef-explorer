@@ -24,6 +24,15 @@ export const resolveAccounts = (eventHead: EventHead): AccountHead[] => {
   return [];
 }
 
-export const accountHeadToBody = async (head: AccountHead): Promise<AccountBody> => ({...head,
-  evmAddress: (await nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(head.address))).toString(),
-});
+export const accountHeadToBody = async (head: AccountHead): Promise<AccountBody> => {
+  const [evmAddress, balances] = await Promise.all([
+    nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(head.address)),
+    nodeQuery((provider) => provider.api.derive.balances.all(head.address))
+  ])
+  return ({...head,
+    evmAddress: evmAddress.toString(),
+    freeBalance: balances.freeBalance.toString(),
+    lockedBalance: balances.lockedBalance.toString(),
+    availableBalance: balances.availableBalance.toString(),
+  });
+}
