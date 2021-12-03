@@ -60,6 +60,9 @@ export interface AccountHead {
 }
 export interface AccountBody extends AccountHead {
   evmAddress: string;
+  freeBalance: string;
+  lockedBalance: string;
+  availableBalance: string;
 }
 
 export interface Transfer {
