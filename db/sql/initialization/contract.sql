@@ -27,7 +27,6 @@ CREATE INDEX IF NOT EXISTS contract_owner ON contract (owner);
 CREATE INDEX IF NOT EXISTS contract_extrinsic_id ON contract (extrinsic_id);
 
 CREATE TABLE IF NOT EXISTS verified_contract (
-  id BIGSERIAL,
   address VARCHAR(48),
   
   name TEXT NOT NULL,
@@ -43,7 +42,11 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   type ContractType DEFAULT 'other',
   contract_data JSON,
 
-  PRIMARY KEY (id)
+  UNIQUE (address),
+  CONSTRAINT fk_address
+    FOREIGN KEY (address)
+      REFERENCES contract(address)
+      ON DELETE NO ACTION
 );
 
 CREATE INDEX IF NOT EXISTS verified_contract_name ON verified_contract (name);
@@ -52,10 +55,11 @@ CREATE INDEX IF NOT EXISTS verified_contract_address ON verified_contract (addre
 CREATE INDEX IF NOT EXISTS verified_contract_filename ON verified_contract (filename);
 
 CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
-  id BIGINT,
+  address VARCHAR(48),
   CONSTRAINT fk_verified_contract
-    FOREIGN KEY (id)
-      REFERENCES verified_contract(id)
+    FOREIGN KEY (address)
+      REFERENCES verified_contract(address)
+      ON DELETE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS verification_request (
@@ -84,19 +88,19 @@ CREATE INDEX IF NOT EXISTS verified_contract_filename ON verification_request (f
 
 
 CREATE TABLE IF NOT EXISTS account_token_balance (
-  verified_contract_id BIGINT,
   account_address VARCHAR(48),
   token_address VARCHAR(48) NOT NULL,
   balance NUMERIC(80,0) NOT NULL,
   decimals INT NOT NULL,
 
+  UNIQUE (account_address, token_address),
   CONSTRAINT fk_account_address
     FOREIGN KEY (account_address)
       REFERENCES account(address)
       ON DELETE CASCADE,
-  CONSTRAINT fk_verified_contract_id
-    FOREIGN KEY (verified_contract_id)
-      REFERENCES verified_contract(id)
+  CONSTRAINT fk_verified_contract
+    FOREIGN KEY (token_address)
+      REFERENCES verified_contract(address)
       ON DELETE CASCADE
 );
 
@@ -104,7 +108,6 @@ CREATE INDEX IF NOT EXISTS account_token_balance_balance ON account_token_balanc
 CREATE INDEX IF NOT EXISTS account_token_balance_decimals ON account_token_balance(decimals);
 CREATE INDEX IF NOT EXISTS account_token_balance_token_address ON account_token_balance(token_address);
 CREATE INDEX IF NOT EXISTS account_token_balance_account_address ON account_token_balance(account_address);
-CREATE INDEX IF NOT EXISTS account_token_balance_verified_contract_id ON account_token_balance(verified_contract_id);
 
 -- Genisis contract insert
 INSERT INTO contract
