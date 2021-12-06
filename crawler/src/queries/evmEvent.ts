@@ -1,5 +1,5 @@
-import { AccountTokenBalance, Contract, EVMCall } from "../crawler/types";
-import { insert } from "../utils/connector";
+import { AccountTokenBalance, Contract, ERC20Token, EVMCall } from "../crawler/types";
+import { insert, query } from "../utils/connector";
 
 
 const contractToValues = ({address, extrinsicId, bytecode, bytecodeContext, bytecodeArguments, gasLimit, storageLimit}: Contract): string => 
@@ -52,6 +52,12 @@ export const insertAccountTokenBalances = async (accountTokenBalances: AccountTo
     INSERT INTO account_token_balance
       (account_address, token_address, balance, decimals)
     VALUES
-      ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")};
+      ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")}
+    ON CONFLICT (account_address, token_address) DO UPDATE SET
+      balance = EXCLUDED.balance
+      decimals = EXCLUDED.decimals;
   `)
 }
+
+export const getERC20Tokens = async (): Promise<ERC20Token[]> => 
+  query<ERC20Token>(`SELECT address FROM verified_contract WHERE type='ERC20';`)

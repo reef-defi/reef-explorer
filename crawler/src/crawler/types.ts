@@ -128,3 +128,8 @@ export interface AccountTokenBalance extends AccountTokenHead {
   balance: string;
   decimals: number;
 }
+
+
+export interface ERC20Token {
+  address: string;
+}
