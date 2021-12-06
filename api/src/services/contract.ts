@@ -1,4 +1,4 @@
-import { query } from "../utils/connector";
+import { query, queryDb } from "../utils/connector";
 import { PoolDB, Pool, Target } from "../utils/types";
 import { ensure } from "../utils/utils";
 
@@ -100,3 +100,33 @@ export const findContractDB = async (address: string) => query<FindContractDB>(
   'SELECT address, bytecode FROM contract WHERE address = $1',
   [address]
 );
+
+interface VerifiedContractBase {
+  name: string;
+  address: string;
+}
+
+interface ERC20Token extends VerifiedContractBase {
+  tokenName: string;
+  tokenSymbol: string;
+  decimals: number;
+}
+
+interface GetERC20 extends VerifiedContractBase {
+  contract_data: string;
+}
+
+export const getERC20Tokens = async (): Promise<ERC20Token[]> => {
+  const res = await queryDb<GetERC20>("SELECT address, name, contract_data FROM verified_contract WHERE type='ERC20';");
+  return res
+  .map(({address, name, contract_data}) => {
+    const data = JSON.parse(contract_data);
+    return {
+      name,
+      address,
+      decimals: data["decimals"],
+      tokenName: data["name"],
+      tokenSymbol: data['symbol'],
+    };
+  });
+}

@@ -1,27 +1,27 @@
 import { Response } from "express";
-import { findContractDB, findPoolQuery, findStakingRewards, findTokenInfo } from "../services/contract";
+import { findContractDB, findPoolQuery, findStakingRewards, findTokenInfo, getERC20Tokens } from "../services/contract";
 import { AppRequest, PoolReq } from "../utils/types";
 import { ensure, errorStatus } from "../utils/utils";
 
-export const findPool = async (req: AppRequest<PoolReq>, res: Response) => {
-  try {
-    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress1 is missing");
-    ensure(!!req.body.tokenAddress1, "Parameter tokenAddress2 is missing");
-    const pool = await findPoolQuery(req.body.tokenAddress1, req.body.tokenAddress2);
-    res.send(pool);
-  } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
-  }
-};
+// export const findPool = async (req: AppRequest<PoolReq>, res: Response) => {
+//   try {
+//     ensure(!!req.body.tokenAddress1, "Parameter tokenAddress1 is missing");
+//     ensure(!!req.body.tokenAddress1, "Parameter tokenAddress2 is missing");
+//     const pool = await findPoolQuery(req.body.tokenAddress1, req.body.tokenAddress2);
+//     res.send(pool);
+//   } catch (err) {
+//     res.status(errorStatus(err)).send(err.message);
+//   }
+// };
 
-export const stakingRewards = async (_, res: Response) => {
-  try {
-    const rewards = await findStakingRewards();
-    res.send({rewards: [...rewards]});
-  } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
-  }
-};
+// export const stakingRewards = async (_, res: Response) => {
+//   try {
+//     const rewards = await findStakingRewards();
+//     res.send({rewards: [...rewards]});
+//   } catch (err) {
+//     res.status(errorStatus(err)).send(err.message);
+//   }
+// };
 
 export const findToken = async (req: AppRequest<{}>, res: Response) => {
   try {
@@ -43,6 +43,15 @@ export const findContract = async (req: AppRequest<{}>, res: Response) => {
     ensure(contracts.length > 0, 'Contract does not exist');
 
     res.send(contracts[0]);
+  } catch (err) {
+    res.status(errorStatus(err)).send(err.message);
+  }
+}
+
+export const getAllERC20Tokens = async (_, res: Response) => {
+  try {
+    const tokens = await getERC20Tokens();
+    res.send({tokens: [...tokens]});
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }

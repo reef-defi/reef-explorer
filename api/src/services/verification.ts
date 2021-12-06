@@ -46,9 +46,9 @@ interface UpdateContract {
 
 const FIND_CONTRACT_BYTECODE = `SELECT bytecode FROM contract WHERE address = $1`;
 
-const UPDATE_CONTRACT_STATUS = `UPDATE contract
-SET verified = TRUE, name = $2, compiler_data = $3, source = $4, compiler_version = $5, optimization = $6, target = $7, runs = $8
-WHERE address = $1`;
+// const UPDATE_CONTRACT_STATUS = `UPDATE contract
+// SET verified = TRUE, name = $2, compiler_data = $3, source = $4, compiler_version = $5, optimization = $6, target = $7, runs = $8
+// WHERE address = $1`;
 
 const INSERT_VERIFIED_CONTRACT = `INSERT INTO verified_contract
 (address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
@@ -58,11 +58,11 @@ const INSERT_CONTRACT_VERIFICATION = `INSERT INTO verification_request
 (address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`;
 
-const INSERT_ERC20_TOKEN = `
-INSERT INTO erc20 
-  (contract_id, name, symbol, decimals)
-VALUES
-  ($1, $2, $3, $4);`;
+// const INSERT_ERC20_TOKEN = `
+// INSERT INTO erc20 
+//   (contract_id, name, symbol, decimals)
+// VALUES
+//   ($1, $2, $3, $4);`;
 
 const CONTRACT_VERIFICATION_STATUS = `SELECT status FROM verification_request WHERE id = $1`;
 
@@ -74,9 +74,9 @@ const CONTRACT_VERIFICATION_STATUS = `SELECT status FROM verification_request WH
 //   );
 // };
 
-const insertErc20Token = async (address: string, {name, symbol, decimals}: ERC20Data): Promise<void> => {
-  await query(INSERT_ERC20_TOKEN, [address, name, symbol, decimals]);
-}
+// const insertErc20Token = async (address: string, {name, symbol, decimals}: ERC20Data): Promise<void> => {
+//   await query(INSERT_ERC20_TOKEN, [address, name, symbol, decimals]);
+// }
 
 const findContractBytecode = async (address: string): Promise<string> => {
   const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
