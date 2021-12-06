@@ -23,7 +23,7 @@ CREATE INDEX IF NOT EXISTS account_evm_address ON account (evm_address);
 
 -- Inserting chain account
 INSERT INTO account 
-  (block_id, evm_address, address, active, balance, available_balance, free_balance, locked_balance)
+  (block_id, evm_address, address, active, available_balance, free_balance, locked_balance)
 VALUES
-  (-1, '0x', '0x', true, 0, 0, 0, 0),
-  (-1, 'deleted', 'deleted', true, 0, 0, 0, 0);
+  (-1, '0x', '0x', true, 0, 0, 0),
+  (-1, 'deleted', 'deleted', true, 0, 0, 0);
