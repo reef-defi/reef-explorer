@@ -117,3 +117,14 @@ export interface ResolveSection {
   extrinsicEvents: Event[];
   signedData: SignedExtrinsicData;
 }
+
+export interface AccountTokenHead {
+  accountAddress: string;
+  contractAddress: string;
+  accountEvmAddress: string;
+}
+
+export interface AccountTokenBalance extends AccountTokenHead {
+  balance: string;
+  decimals: number;
+}

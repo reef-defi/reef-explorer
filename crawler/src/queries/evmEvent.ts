@@ -1,4 +1,4 @@
-import { Contract, EVMCall } from "../crawler/types";
+import { AccountTokenBalance, Contract, EVMCall } from "../crawler/types";
 import { insert } from "../utils/connector";
 
 
@@ -41,3 +41,17 @@ export const insertContract = async (contract: Contract): Promise<void> =>
 
 export const insertEvmCall = async (call: EVMCall): Promise<void> => 
   insertEvmCalls([call])
+
+
+const accountTokenBalanceToValue = ({accountAddress, balance, contractAddress, decimals}: AccountTokenBalance): string => 
+  `('${accountAddress}', '${contractAddress}', ${balance}, ${decimals})`;
+
+export const insertAccountTokenBalances = async (accountTokenBalances: AccountTokenBalance[]): Promise<void> => {
+  if (accountTokenBalances.length === 0) { return; }
+  await insert(`
+    INSERT INTO account_token_balance
+      (account_address, token_address, balance, decimals)
+    VALUES
+      ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")};
+  `)
+}
