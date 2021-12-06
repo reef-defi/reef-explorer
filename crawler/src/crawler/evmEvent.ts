@@ -1,6 +1,9 @@
 import { insertContract, insertEvmCall } from "../queries/evmEvent";
+import { getProvider, nodeQuery } from "../utils/connector";
 import { resolveSigner } from "./extrinsic";
-import {OldContract, ExtrinsicBody, Event, Contract, ResolveSection, EVMCall} from "./types";
+import {Contract as EthContract} from "ethers";
+import {OldContract, ExtrinsicBody, Event, Contract, ResolveSection, EVMCall, AccountBody, AccountTokenHead, AccountTokenBalance} from "./types";
+import erc20Abi from "../assets/erc20Abi";
 
 
 
@@ -124,4 +127,32 @@ export const processUnverifiedEvmCall = async (section: ResolveSection): Promise
     contractAddress,
   });
   console.log(`Block: ${section.blockId} -> New Unverified evm call by ${account} ${status.type === 'success' ? 'succsessfull' : 'unsuccsessfull'}`);
+}
+
+
+export const prepareAccountTokenHeads = (accounts: AccountBody[], erc20Contracts: EVMCall[]): AccountTokenHead[] => {
+  let accountTokenHeads: AccountTokenHead[] = [];
+
+  for (const account of accounts) {
+    for (const token of erc20Contracts) {
+      accountTokenHeads.push({
+        accountAddress: account.address,
+        accountEvmAddress: account.evmAddress,
+        contractAddress: token.contractAddress,
+      })
+    }
+  }
+
+  return accountTokenHeads;
+}
+
+export const extractAccountTokenInformation = async (accountToken: AccountTokenHead): Promise<AccountTokenBalance> => {
+  const token = new EthContract(accountToken.contractAddress, erc20Abi, getProvider());
+
+  const [balance, decimals] = await Promise.all([
+    token.balanceOf(accountToken.accountEvmAddress),
+    token.decimals()  
+  ]);
+
+  return {...accountToken, balance, decimals};
 }
