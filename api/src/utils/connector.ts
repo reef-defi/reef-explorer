@@ -7,3 +7,9 @@ export const query = async <Res>(statement: string, args: any[]): Promise<Res[]>
   const result = await db.query(statement, [...args]);
   return result.rows;
 }
+
+const dbProvider: Pool = new Pool({...APP_CONFIGURATION.postgresConfig});
+
+export const queryDb = async <Res>(statement: string): Promise<Res[]> => dbProvider
+  .query<Res>(statement)
+  .then((res) => res.rows);

@@ -9,7 +9,7 @@ let selectedProvider = 0;
 let resolvingBlocksUntil = -1;
 let nodeProviders: Provider[] = [];
 let providersLastBlockId: number[] = [];
-let dbProvider: Pool = new Pool({...APP_CONFIG.postgresConfig});
+const dbProvider: Pool = new Pool({...APP_CONFIG.postgresConfig});
 
 export let lastBlockId = -1;
 
