@@ -3,24 +3,25 @@ import {SpRuntimeDispatchError} from "@polkadot/types/lookup"
 import {BigNumber} from "ethers";
 import { Extrinsic, Event, ExtrinsicStatus, SignedExtrinsicData, ExtrinsicBody, Transfer, ResolveSection } from "./types";
 import { processNewContract, processUnverifiedEvmCall } from "./evmEvent";
-import { insertTransfer, insertExtrinsic, InsertExtrinsicBody, freeEventId } from "../queries/extrinsic";
-import { getProvider, nodeQuery } from "../utils/connector";
+import { insertTransfer, InsertExtrinsic, insertExtrinsic, InsertExtrinsicBody, freeEventId } from "../queries/extrinsic";
+import { insertEvmCall } from "../queries/evmEvent";
+import { getProvider } from "../utils/connector";
 
 
-// interface ProcessTransfer {
-//   blockId: number;
-//   extrinsicId: number;
-//   extrinsic: Extrinsic;
-//   status: ExtrinsicStatus;
-//   signedData: SignedExtrinsicData;
-// }
+interface ProcessTransfer {
+  blockId: number;
+  extrinsicId: number;
+  extrinsic: Extrinsic;
+  status: ExtrinsicStatus;
+  signedData: SignedExtrinsicData;
+}
 
 export const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
 // const getSignedExtrinsicData = async (extrinsicHash: string): Promise<SignedExtrinsicData> => {
 //   const [fee, feeDetails] = await Promise.all([
-//     nodeQuery((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
-//     nodeQuery((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
+//     nodeProvider.api.rpc.payment.queryInfo(extrinsicHash),
+//     nodeProvider.api.rpc.payment.queryFeeDetails(extrinsicHash),
 //   ]);
   
 //   return {
