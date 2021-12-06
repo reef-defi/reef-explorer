@@ -1,4 +1,4 @@
-import { query } from "../utils/connector";
+import { query, queryDb } from "../utils/connector";
 import { Pool, PoolDB } from "../utils/types";
 import { ensure } from "../utils/utils";
 
@@ -46,5 +46,14 @@ export const findUserPool = async (tokenAddress1: string, tokenAddress2: string,
   };
 }
 
+
+
 export const findUserTokens = async (address: string): Promise<UserTokenDB[]> =>
   query(FIND_USER_TOKENS, [address]);
+
+interface Contract {
+  address: string;
+}
+
+export const findUserContracts = async (address: string): Promise<Contract[]> => 
+  queryDb<Contract>(`SELECT address FROM contract WHERE owner='${address}'`);
