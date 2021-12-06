@@ -2,7 +2,7 @@ import { insertContract, insertEvmCall } from "../queries/evmEvent";
 import { getProvider, nodeQuery } from "../utils/connector";
 import { resolveSigner } from "./extrinsic";
 import {Contract as EthContract} from "ethers";
-import {OldContract, ExtrinsicBody, Event, Contract, ResolveSection, EVMCall, AccountBody, AccountTokenHead, AccountTokenBalance} from "./types";
+import {OldContract, ExtrinsicBody, Event, Contract, ResolveSection, EVMCall, AccountBody, AccountTokenHead, AccountTokenBalance, ERC20Token} from "./types";
 import erc20Abi from "../assets/erc20Abi";
 
 
@@ -130,7 +130,7 @@ export const processUnverifiedEvmCall = async (section: ResolveSection): Promise
 }
 
 
-export const prepareAccountTokenHeads = (accounts: AccountBody[], erc20Contracts: EVMCall[]): AccountTokenHead[] => {
+export const prepareAccountTokenHeads = (accounts: AccountBody[], erc20Contracts: ERC20Token[]): AccountTokenHead[] => {
   let accountTokenHeads: AccountTokenHead[] = [];
 
   for (const account of accounts) {
@@ -138,7 +138,7 @@ export const prepareAccountTokenHeads = (accounts: AccountBody[], erc20Contracts
       accountTokenHeads.push({
         accountAddress: account.address,
         accountEvmAddress: account.evmAddress,
-        contractAddress: token.contractAddress,
+        contractAddress: token.address,
       })
     }
   }

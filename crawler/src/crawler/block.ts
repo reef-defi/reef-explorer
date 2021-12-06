@@ -11,7 +11,7 @@ import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event
 import { accountHeadToBody, accountNewOrKilled, extractAccounts } from "./event";
 import { compress, dropDuplicates, range } from "../utils/utils";
 import { extractAccountTokenInformation, extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate, prepareAccountTokenHeads } from "./evmEvent";
-import { insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
+import { getERC20Tokens, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 
 // export const processBlock = async (id: number): Promise<void> => {
 //   // console.log(id)
@@ -262,11 +262,15 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   per.transactions += 1;
   
   // Token balance
-  let usedEventAccounts = dropDuplicates(compress(events.map(extractAccounts)), 'address');
-  let usedAccounts = await Promise.all(usedEventAccounts.map(accountHeadToBody));
-  let accountTokenBalanceHeaders = prepareAccountTokenHeads(usedAccounts, evmCalls);
-  let accountTokenBalances = await Promise.all(accountTokenBalanceHeaders.map(extractAccountTokenInformation));
-  await insertAccountTokenBalances(accountTokenBalances);
+  // const erc20Tokens = await getERC20Tokens();
+  // let usedEventAccounts = dropDuplicates(compress(events.map(extractAccounts)), 'address')
+  // let usedAccounts = await Promise.all(usedEventAccounts.map(accountHeadToBody));
+  // let accountTokenBalanceHeaders = prepareAccountTokenHeads(
+  //   usedAccounts.filter(({evmAddress}) => evmAddress !== ''), 
+  //   erc20Tokens
+  // );
+  // let accountTokenBalances = await Promise.all(accountTokenBalanceHeaders.map(extractAccountTokenInformation));
+  // await insertAccountTokenBalances(accountTokenBalances);
 
   evmCalls = [];
   
