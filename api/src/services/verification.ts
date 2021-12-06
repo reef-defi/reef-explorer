@@ -51,8 +51,8 @@ SET verified = TRUE, name = $2, compiler_data = $3, source = $4, compiler_versio
 WHERE address = $1`;
 
 const INSERT_VERIFIED_CONTRACT = `INSERT INTO verified_contract
-(address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
+(address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO verification_request
 (address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
@@ -85,10 +85,10 @@ const findContractBytecode = async (address: string): Promise<string> => {
 }
 
 
-const insertVerifiedContract = async ({address, name, filename, source, optimization, compilerVersion, abi, args, runs, target}: UpdateContract): Promise<void> => {
+const insertVerifiedContract = async ({address, name, filename, source, optimization, compilerVersion, abi, args, runs, target, type, data}: UpdateContract): Promise<void> => {
   await query(
     INSERT_VERIFIED_CONTRACT, 
-    [address.toLowerCase(), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target]
+    [address.toLowerCase(), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target, type, data]
   )
 }
 
@@ -122,9 +122,6 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
     type = "ERC20";
     // await insertErc20Token(verification.address, data);
   }
-  console.log(verification.source)
-  console.log(verification.arguments)
-  console.log(fullAbi)
   await insertVerifiedContract({...verification, abi: fullAbi, optimization: verification.optimization === "true", args: verification.arguments, type, data: data ? JSON.stringify(data) : "null"});
   // await updateContractStatus({...verification, abi: fullAbi, optimization: verification.optimization === "true"});
   await contractVerificationInsert({...verification, success: true, optimization: verification.optimization === "true", args: verification.arguments})
