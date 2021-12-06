@@ -1,17 +1,17 @@
 import {  nodeQuery, setResolvingBlocksTillId } from "../utils/connector";
 import { insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
-import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, processBlockExtrinsic, resolveSigner } from "./extrinsic";
+import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
 import {Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
-import { freeEventId, freeExtrinsicId, InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
+import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
-import { accountHeadToBody, resolveAccounts } from "./event";
+import { accountHeadToBody, accountNewOrKilled, extractAccounts } from "./event";
 import { compress, dropDuplicates, range } from "../utils/utils";
-import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
-import { insertContracts, insertEvmCalls } from "../queries/evmEvent";
+import { extractAccountTokenInformation, extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate, prepareAccountTokenHeads } from "./evmEvent";
+import { insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 
 // export const processBlock = async (id: number): Promise<void> => {
 //   // console.log(id)
@@ -208,13 +208,14 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   per.transactions += 1;
   per.dbTime += Date.now() - st;
   
+  // Accounts
   st = Date.now();
-  let accountHeads = dropDuplicates(compress(events.map(resolveAccounts)), 'address');
+  let insertOrDeleteAccount = dropDuplicates(compress(events.map(accountNewOrKilled)), 'address')
   per.processingTime += Date.now() - st;
   
-  per.transactions += accountHeads.length;
+  per.transactions += insertOrDeleteAccount.length;
   st = Date.now();
-  let accounts = await Promise.all(accountHeads.map(accountHeadToBody));
+  let accounts = await Promise.all(insertOrDeleteAccount.map(accountHeadToBody));
   per.nodeTime += Date.now() - st;
   st = Date.now();
   await insertAccounts(accounts);
@@ -223,7 +224,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   // Free memory
   events = [];
   accounts = [];
-  accountHeads = [];
+  insertOrDeleteAccount = [];
   // Transfers
   st = Date.now();
   let transfers = extrinsics
@@ -259,6 +260,14 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   await insertEvmCalls(evmCalls);
   per.dbTime += Date.now() - st;
   per.transactions += 1;
+  
+  // Token balance
+  let usedEventAccounts = dropDuplicates(compress(events.map(extractAccounts)), 'address');
+  let usedAccounts = await Promise.all(usedEventAccounts.map(accountHeadToBody));
+  let accountTokenBalanceHeaders = prepareAccountTokenHeads(usedAccounts, evmCalls);
+  let accountTokenBalances = await Promise.all(accountTokenBalanceHeaders.map(extractAccountTokenInformation));
+  await insertAccountTokenBalances(accountTokenBalances);
+
   evmCalls = [];
   
   st = Date.now();
