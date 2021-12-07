@@ -1,12 +1,12 @@
 import {  nodeQuery, setResolvingBlocksTillId } from "../utils/connector";
 import { insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
-import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, processBlockExtrinsic, resolveSigner } from "./extrinsic";
+import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
 import {Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
-import { freeEventId, freeExtrinsicId, InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
+import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, resolveAccounts } from "./event";
 import { compress, dropDuplicates, range } from "../utils/utils";
@@ -56,16 +56,12 @@ interface BlockBody extends BlockHash {
 }
 
 const blockHash = async (id: number): Promise<BlockHash> => {
-  // const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
   const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
   return {id, hash}
 };
 
 const blockBody = async ({id, hash}: BlockHash): Promise<BlockBody> => {
   const [signedBlock, extendedHeader, events] = await Promise.all([
-    // await nodeProvider.api.rpc.chain.getBlock(hash),
-    // await nodeProvider.api.derive.chain.getHeader(hash),
-    // await nodeProvider.api.query.system.events.at(hash),
     nodeQuery((provider) => provider.api.rpc.chain.getBlock(hash)),
     nodeQuery((provider) => provider.api.derive.chain.getHeader(hash)),
     nodeQuery((provider) => provider.api.query.system.events.at(hash)),
@@ -212,13 +208,14 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   per.transactions += 1;
   per.dbTime += Date.now() - st;
   
+  // Accounts
   st = Date.now();
-  let accountHeads = dropDuplicates(compress(events.map(resolveAccounts)), 'address');
+  let insertOrDeleteAccount = dropDuplicates(compress(events.map(resolveAccounts)), 'address')
   per.processingTime += Date.now() - st;
   
-  per.transactions += accountHeads.length;
+  per.transactions += insertOrDeleteAccount.length;
   st = Date.now();
-  let accounts = await Promise.all(accountHeads.map(accountHeadToBody));
+  let accounts = await Promise.all(insertOrDeleteAccount.map(accountHeadToBody));
   per.nodeTime += Date.now() - st;
   st = Date.now();
   await insertAccounts(accounts);
@@ -227,7 +224,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   // Free memory
   events = [];
   accounts = [];
-  accountHeads = [];
+  insertOrDeleteAccount = [];
   // Transfers
   st = Date.now();
   let transfers = extrinsics
@@ -263,6 +260,18 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   await insertEvmCalls(evmCalls);
   per.dbTime += Date.now() - st;
   per.transactions += 1;
+  
+  // Token balance
+  // const erc20Tokens = await getERC20Tokens();
+  // let usedEventAccounts = dropDuplicates(compress(events.map(extractAccounts)), 'address')
+  // let usedAccounts = await Promise.all(usedEventAccounts.map(accountHeadToBody));
+  // let accountTokenBalanceHeaders = prepareAccountTokenHeads(
+  //   usedAccounts.filter(({evmAddress}) => evmAddress !== ''), 
+  //   erc20Tokens
+  // );
+  // let accountTokenBalances = await Promise.all(accountTokenBalanceHeaders.map(extractAccountTokenInformation));
+  // await insertAccountTokenBalances(accountTokenBalances);
+
   evmCalls = [];
   
   st = Date.now();
