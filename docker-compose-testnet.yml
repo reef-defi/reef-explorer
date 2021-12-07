@@ -59,10 +59,11 @@ services:
   crawler:
     image: crawler
     build: 
-      dockerfile: ./crawler/Dockerfile
+      context: ./crawler
+      dockerfile: ./Dockerfile
     restart: always
     environment:
-      - NODE_PROVIDER_URLS=['ws://substrate-node:9944']
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"]
       - START_BLOCK_STEP=32
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
@@ -79,7 +80,8 @@ services:
   api:
     image: api
     build:
-      dockerfile: ./api/Dockerfile
+      context: ./api
+      dockerfile: ./Dockerfile
     restart: always
     environment:
       - PORT=8000
