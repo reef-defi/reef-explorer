@@ -67,9 +67,9 @@ services:
       - START_BLOCK_STEP=32
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
-      - MAX_BLOCKS_PER_STEP=1024 
+      - MAX_BLOCKS_PER_STEP=1024
       - POSTGRES_PORT=5432
-      - POSTGRES_HOST='0.0.0.0'
+      - POSTGRES_HOST='postgres'
       - POSTGRES_USER='reefexplorer'
       - POSTGRES_DATABASE='reefexplorer'
       - POSTGRES_PASSWORD='reefexplorer'
@@ -87,7 +87,7 @@ services:
       - PORT=8000
       - NODE_URL='ws://substrate-node:9944'
       - POSTGRES_PORT=5432
-      - POSTGRES_HOST='0.0.0.0'
+      - POSTGRES_HOST='postgres'
       - POSTGRES_USER='reefexplorer'
       - POSTGRES_DATABASE='reefexplorer'
       - POSTGRES_PASSWORD='reefexplorer'
