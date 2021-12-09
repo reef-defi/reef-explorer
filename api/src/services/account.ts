@@ -1,15 +1,15 @@
 import { query, queryDb } from "../utils/connector";
-import { Pool, PoolDB } from "../utils/types";
+import { Pool, PoolDB, User, UserTokenBalance } from "../utils/types";
 import { ensure } from "../utils/utils";
 
-interface UserTokenDB {
-  contract_id: string;
-  holder_account_id: string;
-  holder_evm_address: string;
-  balance: string;
-  token_decimals: string;
-  token_symbol: string;
-}
+// interface UserTokenDB {
+//   contract_id: string;
+//   holder_account_id: string;
+//   holder_evm_address: string;
+//   balance: string;
+//   token_decimals: string;
+//   token_symbol: string;
+// }
 
 const FIND_USER_POOL = `
 SELECT 
@@ -46,13 +46,6 @@ WHERE
 //   };
 // }
 
-interface User {
-  address: string;
-  evm_address: string;
-  free_balance: string;
-  locked_balance: string;
-  available_balance: string;
-}
 
 export const getAllUsersWithEvmAddress = async (): Promise<User[]> => 
   queryDb<User>(`
@@ -61,15 +54,16 @@ export const getAllUsersWithEvmAddress = async (): Promise<User[]> =>
     WHERE active=true AND evm_address != '';
   `);
 
+interface UserTokenDB {
+  address: string;
+  contract_data: string;
+}
+
 export const findUserTokens = async (address: string): Promise<UserTokenDB[]> =>
   queryDb<UserTokenDB>(
-    `SELECT c.address, v.contract_data, balance FROM contract as c
+    `SELECT c.address as address, v.contract_data as contract_data FROM contract as c
       INNER JOIN verified_contract as v
         ON c.address = v.address
-      INNER JOIN account as a
-        ON c.owner
-      INNER JOIN account_token_balance atb
-        ON v.address = a.token_address AND a.account_address=c.
       WHERE c.owner='${address}' AND v.type='ERC20';
     `
   );
@@ -81,3 +75,19 @@ interface Contract {
 
 export const findUserContracts = async (address: string): Promise<Contract[]> => 
   queryDb<Contract>(`SELECT address FROM contract WHERE owner='${address}'`);
+
+
+const userTokenBalanceToValue = ({tokenAddress, evm_address, balance, decimals}: UserTokenBalance): string => 
+`('${tokenAddress}', '${evm_address}', ${balance}, ${decimals})`;
+
+export const insertAccountTokenBalances = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
+  await queryDb(`
+    INSERT INTO account_token_balance 
+      (token_address, account_address, balance, decimals)
+    VALUES
+      ${accountTokenBalances.map(userTokenBalanceToValue).join(",\n")}
+    ON CONFLICT (token_address, account_address) DO UPDATE SET
+      balance = EXCLUDED.balance
+      decimals = EXCLUDED.decimals;
+  `)
+}
