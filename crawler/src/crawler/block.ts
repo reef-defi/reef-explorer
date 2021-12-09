@@ -293,21 +293,11 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
         decodedEvent: result
       };
     })
-    .filter(({decodedEvent}) => 
-      decodedEvent.name === "Transfer" ||
-      decodedEvent.name === "TransferFrom" ||
-      decodedEvent.name === "mint" ||
-      decodedEvent.name === "burn"
-    )
-    .map(({address, decimals, decodedEvent, abis, name}): TokenBalanceHead[] => {
-      switch (decodedEvent.name) {
-        case "Transfer": return [
-          {contractAddress: address, signerAddress: decodedEvent.args[0], decimals, abi: abis[name]},
-          {contractAddress: address, signerAddress: decodedEvent.args[1], decimals, abi: abis[name]},
-        ];
-        default: return [];
-      }
-    }));
+    .filter(({decodedEvent}) => decodedEvent.name === "Transfer")
+    .map(({address, decimals, decodedEvent, abis, name}): TokenBalanceHead[] => [
+      {contractAddress: address, signerAddress: decodedEvent.args[0], decimals, abi: abis[name]},
+      {contractAddress: address, signerAddress: decodedEvent.args[1], decimals, abi: abis[name]},
+    ]));
 
   const tokenBalances = await Promise.all(tokenTransferEvents
     .map(async ({decimals, abi, contractAddress, signerAddress}): Promise<AccountTokenBalance> => {
@@ -356,13 +346,6 @@ interface TokenBalanceHead {
   signerAddress: string;
   decimals: number;
   abi: JsonFragment[];
-}
-
-interface TokenBalance {
-  contractAddress: string;
-  signerAddress: string;
-  decimals: number;
-  balance: string;
 }
 
 const getContractBalance = (address: string, contractAddress: string, abi: JsonFragment[]) => 

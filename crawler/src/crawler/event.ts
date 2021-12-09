@@ -12,7 +12,9 @@ export const accountNewOrKilled = (eventHead: EventHead): AccountHead[] => {
     return eventToAccountHead(eventHead);
   } else if (getProvider().api.events.system.KilledAccount.is(event.event)) {
     return eventToAccountHead(eventHead, false);
-  } else if (getProvider().api.events.balances.Transfer.is(event.event)) {
+  } else if (getProvider().api.events.balances.Reserved.is(event.event)) {
+    return eventToAccountHead(eventHead);
+  }else if (getProvider().api.events.balances.Transfer.is(event.event)) {
     const res: any = event.event.data.toJSON();
     return [
       {blockId: blockId, address: res[0], active: true},
