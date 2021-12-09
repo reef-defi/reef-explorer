@@ -97,3 +97,17 @@ export interface ERC20Data {
   symbol: string;
   decimals: number;
 }
+
+
+export interface User {
+  address: string;
+  evm_address: string;
+  free_balance: string;
+  locked_balance: string;
+  available_balance: string;
+}
+export interface UserTokenBalance extends User {
+  tokenAddress: string;
+  balance: string;
+  decimals: number;
+}
