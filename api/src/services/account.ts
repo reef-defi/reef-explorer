@@ -51,7 +51,7 @@ export const getAllUsersWithEvmAddress = async (): Promise<User[]> =>
   queryDb<User>(`
     SELECT address, evm_address, free_balance, locked_balance, available_balance 
     FROM account 
-    WHERE active=true AND evm_address != '';
+    WHERE active=true AND LENGTH(evm_address) = 42;
   `);
 
 interface UserTokenDB {
