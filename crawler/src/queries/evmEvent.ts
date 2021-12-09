@@ -44,7 +44,7 @@ export const insertEvmCall = async (call: EVMCall): Promise<void> =>
 
 
 const accountTokenBalanceToValue = ({accountAddress, balance, contractAddress, decimals}: AccountTokenBalance): string => 
-  `('${accountAddress}', '${contractAddress}', ${balance}, ${decimals})`;
+  `('${accountAddress.toLowerCase()}', '${contractAddress.toLowerCase()}', ${balance}, ${decimals})`;
 
 export const insertAccountTokenBalances = async (accountTokenBalances: AccountTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }
@@ -54,7 +54,7 @@ export const insertAccountTokenBalances = async (accountTokenBalances: AccountTo
     VALUES
       ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")}
     ON CONFLICT (account_address, token_address) DO UPDATE SET
-      balance = EXCLUDED.balance
+      balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;
   `)
 }

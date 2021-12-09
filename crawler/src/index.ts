@@ -23,6 +23,7 @@ const processNextBlock = async () => {
         return p;
       })
       .catch(async (err) => {
+        console.error(err);
         await deleteUnfinishedBlocks();
         await restartNodeProviders();
         return {
