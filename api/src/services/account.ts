@@ -29,27 +29,51 @@ WHERE
   pu.user_address = $3 AND
   p.pool_address = pu.pool_address`;
 
-const FIND_USER_TOKENS = `SELECT * FROM contract WHERE owner = $1;`;
+// const FIND_USER_TOKENS = `SELECT * FROM contract WHERE owner = $1;`;
 
-export const findUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<Pool> => {
-  const pools = await query<PoolDB>(FIND_USER_POOL, [tokenAddress1, tokenAddress2, userAddress]);
-  ensure(pools.length > 0, "User is not in pool...", 404);
+// export const findUserPool = async (tokenAddress1: string, tokenAddress2: string, userAddress: string): Promise<Pool> => {
+//   const pools = await query<PoolDB>(FIND_USER_POOL, [tokenAddress1, tokenAddress2, userAddress]);
+//   ensure(pools.length > 0, "User is not in pool...", 404);
 
-  return {
-    address: pools[0].address,
-    decimals: pools[0].decimals,
-    reserve1: pools[0].reserve1,
-    reserve2: pools[0].reserve2,
-    totalSupply: pools[0].total_supply,
-    userPoolBalance: pools[0].balance,
-    minimumLiquidity: pools[0].minimum_liquidity,
-  };
+//   return {
+//     address: pools[0].address,
+//     decimals: pools[0].decimals,
+//     reserve1: pools[0].reserve1,
+//     reserve2: pools[0].reserve2,
+//     totalSupply: pools[0].total_supply,
+//     userPoolBalance: pools[0].balance,
+//     minimumLiquidity: pools[0].minimum_liquidity,
+//   };
+// }
+
+interface User {
+  address: string;
+  evm_address: string;
+  free_balance: string;
+  locked_balance: string;
+  available_balance: string;
 }
 
-
+export const getAllUsersWithEvmAddress = async (): Promise<User[]> => 
+  queryDb<User>(`
+    SELECT address, evm_address, free_balance, locked_balance, available_balance 
+    FROM account 
+    WHERE active=true AND evm_address != '';
+  `);
 
 export const findUserTokens = async (address: string): Promise<UserTokenDB[]> =>
-  query(FIND_USER_TOKENS, [address]);
+  queryDb<UserTokenDB>(
+    `SELECT c.address, v.contract_data, balance FROM contract as c
+      INNER JOIN verified_contract as v
+        ON c.address = v.address
+      INNER JOIN account as a
+        ON c.owner
+      INNER JOIN account_token_balance atb
+        ON v.address = a.token_address AND a.account_address=c.
+      WHERE c.owner='${address}' AND v.type='ERC20';
+    `
+  );
+  // query(FIND_USER_TOKENS, [address]);
 
 interface Contract {
   address: string;
