@@ -1,6 +1,7 @@
 import {AnyTuple} from "@polkadot/types/types"
 import {GenericExtrinsic} from "@polkadot/types/extrinsic"
 import {FrameSystemEventRecord} from "@polkadot/types/lookup"
+import { JsonFragment } from "@ethersproject/abi";
 
 export type Extrinsic = GenericExtrinsic<AnyTuple>;
 export type Event = FrameSystemEventRecord;
@@ -133,6 +134,16 @@ export interface AccountTokenBalance extends AccountTokenHead {
 export interface ERC20Token {
   name: string;
   address: string;
-  compiled_data: string;
-  contract_data: string;
+  compiled_data: ABIS;
+  contract_data: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+}
+
+export type ABI = JsonFragment[];
+
+export interface ABIS {
+  [name: string]: ABI
 }
