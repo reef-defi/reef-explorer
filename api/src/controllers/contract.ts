@@ -1,7 +1,8 @@
 import { Response } from "express";
-import { findContractDB, findPoolQuery, findStakingRewards, findTokenInfo, getERC20Tokens } from "../services/contract";
+import { findContractDB, findERC20Token, findPoolQuery, findStakingRewards, findTokenAccountTokenBalance, findTokenInfo, getERC20Tokens } from "../services/contract";
+import { queryDb } from "../utils/connector";
 import { AppRequest, PoolReq } from "../utils/types";
-import { ensure, errorStatus } from "../utils/utils";
+import { ensure, ensureObjectKeys, errorStatus } from "../utils/utils";
 
 // export const findPool = async (req: AppRequest<PoolReq>, res: Response) => {
 //   try {
@@ -52,6 +53,26 @@ export const getAllERC20Tokens = async (_, res: Response) => {
   try {
     const tokens = await getERC20Tokens();
     res.send({tokens: [...tokens]});
+  } catch (err) {
+    res.status(errorStatus(err)).send(err.message);
+  }
+}
+
+interface TokenBalanceParam {
+  accountAddress: string;
+  contractAddress: string;
+}
+
+export const accountTokenBalance =async (req: AppRequest<TokenBalanceParam>, res: Response): Promise<void> => {
+  try {
+    ensureObjectKeys(req.body, ["accountAddress", "contractAddress"]);
+    const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress, req.body.contractAddress);
+    
+    if (tokenBalances.length === 0) {
+      const decimals = await findERC20Token(req.body.contractAddress);
+      res.send({balance: 0, decimals});
+    }
+    res.send({balance: tokenBalances[0].balance, decimals: tokenBalances[0].decimals});
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }

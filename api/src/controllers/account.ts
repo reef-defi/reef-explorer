@@ -1,6 +1,6 @@
 import { Response, Request } from "express";
-import { findUserTokens, findUserPool, findUserContracts } from "../services/account";
-import { AppRequest, PoolReq } from "../utils/types";
+import { findUserTokens, findUserContracts } from "../services/account";
+import { AppRequest } from "../utils/types";
 import { ensure, errorStatus } from "../utils/utils";
 
 interface AccountAddress {
