@@ -5,14 +5,14 @@ import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
-import {Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
+import {AccountTokenBalance, Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled, extractAccounts } from "./event";
 import { compress, dropDuplicates, range } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
-import { insertContracts, insertEvmCalls } from "../queries/evmEvent";
-
+import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
+import {utils, Contract} from "ethers";
 // export const processBlock = async (id: number): Promise<void> => {
 //   // console.log(id)
 //   const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
@@ -267,6 +267,61 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   // let accountTokenBalanceHeaders = prepareAccountTokenHeads(usedAccounts, evmCalls);
   // let accountTokenBalances = await Promise.all(accountTokenBalanceHeaders.map(extractAccountTokenInformation));
   // await insertAccountTokenBalances(accountTokenBalances);
+  // Token balances
+  let evmLogs = await Promise.all(events
+    .filter(({event: {event: {method, section}}}) => method === "Log" && section === "evm")
+    .map(({event}): BytecodeLog => (event.event.data.toJSON() as any)[0])
+    .map(async (event): Promise<EvmLog|null> => {
+      const result = await findErc20TokenDB(event.address);
+      if (result.length === 0) { return null; }
+      
+      return {...event,
+        name: result[0].name,
+        abis: JSON.parse(result[0].compiled_data),
+        decimals: parseInt(JSON.parse(result[0].contract_data)["decimals"], 10),
+      }
+    })
+  );
+
+  const tokenTransferEvents = compress(evmLogs
+    .filter((e) => e !== null)
+    .map((event): EvmLogWithDecodedEvent => {
+      const {abis, data, name, topics} = event!;
+      const abi = new utils.Interface(abis[name]);
+      const result = abi.parseLog({topics, data});
+      return {...event!, 
+        decodedEvent: result
+      };
+    })
+    .filter(({decodedEvent}) => 
+      decodedEvent.name === "Transfer" ||
+      decodedEvent.name === "TransferFrom" ||
+      decodedEvent.name === "mint" ||
+      decodedEvent.name === "burn"
+    )
+    .map(({address, decimals, decodedEvent, abis, name}): TokenBalanceHead[] => {
+      switch (decodedEvent.name) {
+        case "Transfer": return [
+          {contractAddress: address, signerAddress: decodedEvent.args[0], decimals, abi: abis[name]},
+          {contractAddress: address, signerAddress: decodedEvent.args[1], decimals, abi: abis[name]},
+        ];
+        default: return [];
+      }
+    }));
+
+  const tokenBalances = await Promise.all(tokenTransferEvents
+    .map(async ({decimals, abi, contractAddress, signerAddress}): Promise<AccountTokenBalance> => {
+      const balance = await getContractBalance(signerAddress, contractAddress, abi);
+      return {
+        decimals,
+        balance,
+        accountAddress: signerAddress,
+        contractAddress
+      }
+    })
+  );
+
+  await insertAccountTokenBalances(tokenBalances);
 
   evmCalls = [];
   
@@ -276,3 +331,42 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   per.transactions += 1;
   return per;
 }
+
+interface BytecodeLog {
+  address: string;
+  data: string;
+  topics: string[];
+}
+import { JsonFragment } from "@ethersproject/abi";
+interface ABI {
+  [name: string]: JsonFragment[]
+}
+interface EvmLog extends BytecodeLog {
+  name: string;
+  abis:ABI
+  decimals: number;
+}
+
+interface EvmLogWithDecodedEvent extends EvmLog {
+  decodedEvent: utils.LogDescription
+}
+
+interface TokenBalanceHead {
+  contractAddress: string;
+  signerAddress: string;
+  decimals: number;
+  abi: JsonFragment[];
+}
+
+interface TokenBalance {
+  contractAddress: string;
+  signerAddress: string;
+  decimals: number;
+  balance: string;
+}
+
+const getContractBalance = (address: string, contractAddress: string, abi: JsonFragment[]) => 
+  nodeQuery(async (provider): Promise<string> => {
+    const contract = new Contract(contractAddress, abi, provider);
+    return await contract.balanceOf(address);
+  });

@@ -121,7 +121,7 @@ export interface ResolveSection {
 export interface AccountTokenHead {
   accountAddress: string;
   contractAddress: string;
-  accountEvmAddress: string;
+  // accountEvmAddress: string;
 }
 
 export interface AccountTokenBalance extends AccountTokenHead {
@@ -131,5 +131,8 @@ export interface AccountTokenBalance extends AccountTokenHead {
 
 
 export interface ERC20Token {
+  name: string;
   address: string;
+  compiled_data: string;
+  contract_data: string;
 }

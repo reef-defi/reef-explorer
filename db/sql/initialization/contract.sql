@@ -88,16 +88,12 @@ CREATE INDEX IF NOT EXISTS verified_contract_filename ON verification_request (f
 
 
 CREATE TABLE IF NOT EXISTS account_token_balance (
-  account_address VARCHAR(48),
-  token_address VARCHAR(48) NOT NULL,
+  token_address VARCHAR,
+  account_address VARCHAR, -- This is EVM address!
   balance NUMERIC(80,0) NOT NULL,
   decimals INT NOT NULL,
 
   UNIQUE (account_address, token_address),
-  CONSTRAINT fk_account_address
-    FOREIGN KEY (account_address)
-      REFERENCES account(address)
-      ON DELETE CASCADE,
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (token_address)
       REFERENCES verified_contract(address)
