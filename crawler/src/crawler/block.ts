@@ -262,12 +262,6 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   per.transactions += 1;
   
   // Token balance
-  // let usedEventAccounts = dropDuplicates(compress(events.map(extractAccounts)), 'address');
-  // let usedAccounts = await Promise.all(usedEventAccounts.map(accountHeadToBody));
-  // let accountTokenBalanceHeaders = prepareAccountTokenHeads(usedAccounts, evmCalls);
-  // let accountTokenBalances = await Promise.all(accountTokenBalanceHeaders.map(extractAccountTokenInformation));
-  // await insertAccountTokenBalances(accountTokenBalances);
-  // Token balances
   let evmLogs = await Promise.all(events
     .filter(({event: {event: {method, section}}}) => method === "Log" && section === "evm")
     .map(({event}): BytecodeLog => (event.event.data.toJSON() as any)[0])
