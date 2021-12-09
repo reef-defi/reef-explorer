@@ -96,8 +96,8 @@ CREATE TABLE IF NOT EXISTS account_token_balance (
   UNIQUE (account_address, token_address),
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (token_address)
-      REFERENCES verified_contract(address)
-      ON DELETE CASCADE
+      REFERENCES contract(address)
+      ON DELETE NO ACTION;
 );
 
 CREATE INDEX IF NOT EXISTS account_token_balance_balance ON account_token_balance(balance);
