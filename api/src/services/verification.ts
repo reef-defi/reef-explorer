@@ -35,7 +35,7 @@ interface UpdateContract {
   address: string;
   license?: License;
   optimization: boolean;
-  abi: ABI;
+  abi: {[filename: string]: ABI};
   runs: number;
   args: string;
   filename: string;
