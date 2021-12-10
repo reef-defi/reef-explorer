@@ -50,13 +50,13 @@ interface CompilerResult {
 
 interface Compile {
   abi: ABI;
-  fullAbi: ABI;
+  fullAbi: {[filename: string]: ABI};
   fullBytecode: string;
 }
 
 interface VerifyContract {
   abi: ABI;
-  fullAbi: ABI;
+  fullAbi: {[filename: string]: ABI};
 }
 
 const toCompilerContracts = (contracts: Contracts): CompilerContracts => 
@@ -107,8 +107,15 @@ const compressErrors = ({errors=[]}: CompilerResult): string => errors
     : prev
   ), "");
 
-const extractAbis = (contracts: any): ABI[] => Object.keys(contracts)
-  .map((name) => contracts[name].abi);
+interface AB {
+  [name: string]: ABI
+}
+const extractAbis = (contracts: any): AB => Object.keys(contracts)
+  .reduce(
+    (prev, name) => ({...prev, [name]: contracts[name].abi}), 
+    {}
+  );
+// .map((name) => contracts[name].abi);
 
 const compileContracts = async (name: string, filename: string, source: string, compilerVersion: string, target: Target, optimizer?: boolean, runs=200): Promise<Compile> => {
   const compiler = await loadCompiler(compilerVersion);
@@ -122,10 +129,15 @@ const compileContracts = async (name: string, filename: string, source: string, 
   ensure(filename in compilerResult.contracts, "Filename does not exist in compiled results");
   ensure(name in compilerResult.contracts[filename], "Name does not exist in compiled results");
   
-  const fullAbi: ABI = Object.keys(compilerResult.contracts)
+  // const fullAbi: ABI = Object.keys(compilerResult.contracts)
+  //   .reduce(
+  //     (prev, filename) => [...prev, ...extractAbis(compilerResult.contracts[filename])],
+  //     []
+  //   );
+  const fullAbi = Object.keys(compilerResult.contracts)
     .reduce(
-      (prev, filename) => [...prev, ...extractAbis(compilerResult.contracts[filename])],
-      []
+      (prev, filename) => ({...prev, ...extractAbis(compilerResult.contracts[filename])}),
+      {}
     );
 
   return {

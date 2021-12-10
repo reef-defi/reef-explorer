@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS verified_evm_call (
   id BIGSERIAL,
   extrinsic_id BIGINT,
   signer_address VARCHAR(48),
-  verified_contract_id BIGINT,
+  contract_address VARCHAR,
 
   event_name TEXT,
   event_args JSON,
@@ -54,6 +54,6 @@ CREATE TABLE IF NOT EXISTS verified_evm_call (
     FOREIGN KEY (signer_address)
       REFERENCES account(address),
   CONSTRAINT fk_verified_contract
-    FOREIGN KEY (verified_contract_id)
-      REFERENCES verified_contract(id)
+    FOREIGN KEY (contract_address)
+      REFERENCES verified_contract(address)
 );
