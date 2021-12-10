@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { authenticationToken } from "../services/utils";
-import { contractVerificationInsert, contractVerificationStatus, verify } from "../services/verification";
+import { contractVerificationInsert, contractVerificationStatus, findVeririedContract, verify } from "../services/verification";
 import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from "../utils/types";
 import { ensureObjectKeys, errorStatus, ensure } from "../utils/utils";
 
@@ -48,3 +48,14 @@ export const verificationStatus = async (req: AppRequest<ContractVerificationID>
     res.status(errorStatus(err)).send(err.message);
   }
 };
+
+export const getVerifiedContract = async (req: AppRequest<{}>, res: Response) => {
+  try {
+    ensure(!!req.params.address, "Url paramter address is missing");
+    const contracts = await findVeririedContract(req.params.address.toLowerCase());
+    ensure(contracts.length > 0, 'Contract does not exist');
+    res.send(contracts[0]);
+  } catch (err) {
+    res.status(errorStatus(err)).send(err.message);
+  }
+}

@@ -1,15 +1,21 @@
+
+const toNumber = (defaultValue: number, value?: string): number => {
+  if (!value) {
+    return defaultValue;
+  }
+  return parseInt(value, 10);
+}
+
 export const APP_CONFIGURATION = {
+  httpPort: toNumber(3000, process.env.PORT),
+  nodeWs: process.env.NODE_URL || 'ws://0.0.0.0:9944',
   recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
-  httpPort: process.env.PORT || 3000,
-  // nodeWs: 'ws://substrate-node:9944',
-  nodeWs: 'ws://127.0.0.1:9944',
+
   postgresConfig: {
-    port: 54321,
-    host: '0.0.0.0',
+    port: toNumber(54321, process.env.POSTGRES_PORT), 
+    host: process.env.POSTGRES_HOST || '0.0.0.0',
     user: process.env.POSTGRES_USER || 'reefexplorer',
-    // host: process.env.POSTGRES_HOST || 'postgres',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
     password: process.env.POSTGRES_PASSWORD || 'reefexplorer',
-    // port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,
   }
 }

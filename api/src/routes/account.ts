@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { accountPool, accountTokens } from "../controllers/account";
+import { accountTokens } from "../controllers/account";
 
 const router = Router();
 
 router.post('/tokens', accountTokens);
-router.post('/pool', accountPool);
+router.get('/:address/owned-tokens', accountTokens);
+router.get('/:address/available-tokens', (re, rs) => {});
+// router.post('/pool', accountPool);
 
 export default router;

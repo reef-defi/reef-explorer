@@ -6,17 +6,15 @@
   "private": false,
   "main": "dist/index.js",
   "scripts": {
-    "start": "tsc && node --max-old-space-size=16384 ./dist/index.js",
-    "localhost": "docker-compose -p crawler-localhost -f docker-compose-localhost.yml up -d",
-    "stop-localhost": "docker stop crawler-localhost-crawler-1 && docker stop crawler-localhost-substrate-node-1",
-    "purge-localhost": "docker rm crawler-localhost-crawler-1 && docker rm crawler-localhost-substrate-node-1 && docker volume rm crawler-localhost_substrate-data"
+    "start": "tsc && node --max-old-space-size=16384 ./dist/index.js"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
+    "@types/pg": "^8.6.1",
     "typescript": "^4.5.2"
   },
   "dependencies": {
-    "@reef-defi/evm-provider": "^1.0.3",
+    "@reef-defi/evm-provider": "^1.0.4",
     "pg": "^8.7.1"
   }
 }

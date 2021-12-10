@@ -1,6 +1,7 @@
 import {AnyTuple} from "@polkadot/types/types"
 import {GenericExtrinsic} from "@polkadot/types/extrinsic"
 import {FrameSystemEventRecord} from "@polkadot/types/lookup"
+import { JsonFragment } from "@ethersproject/abi";
 
 export type Extrinsic = GenericExtrinsic<AnyTuple>;
 export type Event = FrameSystemEventRecord;
@@ -60,6 +61,9 @@ export interface AccountHead {
 }
 export interface AccountBody extends AccountHead {
   evmAddress: string;
+  freeBalance: string;
+  lockedBalance: string;
+  availableBalance: string;
 }
 
 export interface Transfer {
@@ -113,4 +117,33 @@ export interface ResolveSection {
   status: ExtrinsicStatus;
   extrinsicEvents: Event[];
   signedData: SignedExtrinsicData;
+}
+
+export interface AccountTokenHead {
+  accountAddress: string;
+  contractAddress: string;
+  // accountEvmAddress: string;
+}
+
+export interface AccountTokenBalance extends AccountTokenHead {
+  balance: string;
+  decimals: number;
+}
+
+
+export interface ERC20Token {
+  name: string;
+  address: string;
+  compiled_data: ABIS;
+  contract_data: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+}
+
+export type ABI = JsonFragment[];
+
+export interface ABIS {
+  [name: string]: ABI
 }

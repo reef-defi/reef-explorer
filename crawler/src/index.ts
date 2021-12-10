@@ -1,11 +1,10 @@
+import { APP_CONFIG } from "./config";
 import { processBlocks } from "./crawler/block";
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from "./queries/block";
-import { closeProviders, initializeProviders, lastBlockId, nodeUrls, restartNodeProviders } from "./utils/connector";
+import { closeProviders, initializeProviders, lastBlockId, restartNodeProviders } from "./utils/connector";
 import { min, wait } from "./utils/utils";
 
-const START_BLOCK_STEP = 32;
-let BLOCKS_PER_STEP = START_BLOCK_STEP;
-const MAX_BLOCKS_PER_STEP = 1024;
+let BLOCKS_PER_STEP = APP_CONFIG.startBlockSize;
 let currentBlockIndex = -1;
 
 console.warn = () => {};
@@ -24,6 +23,7 @@ const processNextBlock = async () => {
         return p;
       })
       .catch(async (err) => {
+        console.error(err);
         await deleteUnfinishedBlocks();
         await restartNodeProviders();
         return {
@@ -33,20 +33,14 @@ const processNextBlock = async () => {
           transactions: 0,
         }
       })
-    // currentBlockIndex = to - 1;
 
     const ms = Date.now() - start
     const time = ms/1000;
     const bps = difference/time;
 
-    console.log(`n nodes: ${nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${per.transactions}\ttps: ${(per.transactions/time).toFixed(3)}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`)
+    console.log(`n nodes: ${APP_CONFIG.nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${per.transactions}\ttps: ${(per.transactions/time).toFixed(3)}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`)
     console.log(`\t\tPerformance\tNode: ${(per.nodeTime / ms * 100).toFixed(2)}%\tDB: ${(per.dbTime/ms*100).toFixed(2)}%\tSys: ${(per.processingTime/ms*100).toFixed(2)}%`)
-    BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, MAX_BLOCKS_PER_STEP);
-    
-    // if (bps < 110 && difference == MAX_BLOCKS_PER_STEP) {
-    //   await restartNodeProviders();
-    //   BLOCKS_PER_STEP = START_BLOCK_STEP;
-    // }
+    BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, APP_CONFIG.maxBlocksPerStep);    
   };
 
   await wait(100);

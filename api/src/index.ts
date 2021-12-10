@@ -6,6 +6,7 @@ import contractRouter from "./routes/contract";
 import verificationRouter from "./routes/verification";
 import { getReefPrice } from "./services/utils";
 import { errorStatus } from "./utils/utils";
+import { getProvider } from './utils/connector';
 
 const cors = require('cors');
 
@@ -69,7 +70,7 @@ app.get('/api/price/reef', async (_, res: Response) => {
 //   }
 // })
 
-app.listen(APP_CONFIGURATION.httpPort, () => {
+app.listen(APP_CONFIGURATION.httpPort, async () => {
+  await getProvider().api.isReadyOrError;
   console.log(`Reef explorer API is running on port ${APP_CONFIGURATION.httpPort}.`);
 });
-
