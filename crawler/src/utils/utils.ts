@@ -45,3 +45,18 @@ export const dropDuplicates = <Object, Key extends keyof Object>(objects: Object
 
   return filtered;
 }
+export const dropDuplicatesMultiKey = <Object, Key extends keyof Object>(objects: Object[], keys: Key[]): Object[] => {
+  const existingKeys = new Set<string>();
+  const filtered: Object[] = [];
+
+  for (let index = objects.length - 1; index >= 0; index --) {
+    const obj = objects[index];
+    const ids = keys.map((key) => obj[key]).join(", ")
+    if (!existingKeys.has(ids)) {
+      filtered.push(obj)
+      existingKeys.add(ids)
+    }
+  }
+
+  return filtered;
+}
