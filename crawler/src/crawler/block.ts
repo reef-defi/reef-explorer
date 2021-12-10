@@ -9,7 +9,7 @@ import {ABI, ABIS, AccountTokenBalance, Event, EventHead, ExtrinsicBody, Extrins
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled, extractAccounts } from "./event";
-import { compress, dropDuplicates, range } from "../utils/utils";
+import { compress, dropDuplicates, dropDuplicatesMultiKey, range } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
@@ -279,7 +279,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
     })
   );
   
-  const tokenTransferEvents = compress(evmLogs
+  const tokenTransferEvents = dropDuplicatesMultiKey(compress(evmLogs
     .filter((e) => e !== null)
     .map((event): EvmLogWithDecodedEvent => {
         const {abis, data, name, topics} = event!;
@@ -293,7 +293,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
       .map(({address, decimals, decodedEvent, abis, name}): TokenBalanceHead[] => [
           {contractAddress: address, signerAddress: decodedEvent.args[0], decimals, abi: abis[name]},
           {contractAddress: address, signerAddress: decodedEvent.args[1], decimals, abi: abis[name]},
-    ]));
+    ])), ["signerAddress", "contractAddress"]);
   
   const tokenBalances = await Promise.all(tokenTransferEvents
     .map(async ({decimals, abi, contractAddress, signerAddress}): Promise<AccountTokenBalance> => {
