@@ -48,8 +48,8 @@ ON CONFLICT (address) DO UPDATE SET
   evm_address = EXCLUDED.evm_address,
   free_balance = EXCLUDED.free_balance,
   locked_balance = EXCLUDED.locked_balance,
-  available_balance = EXCLUDED.available_balance
-  identity = EXLUDED.identity;
+  available_balance = EXCLUDED.available_balance,
+  identity = EXCLUDED.identity;
 `);
   }
 }

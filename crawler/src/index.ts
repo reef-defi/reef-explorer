@@ -18,22 +18,7 @@ const processNextBlock = async () => {
     
     const start = Date.now();
     const per = await processBlocks(from, to)
-      .then((p) => {
-        currentBlockIndex = to - 1
-        return p;
-      })
-      .catch(async (err) => {
-        console.error(err);
-        await deleteUnfinishedBlocks();
-        await restartNodeProviders();
-        return {
-          nodeTime: 1,
-          dbTime: 1,
-          processingTime: 1,
-          transactions: 0,
-        }
-      })
-
+    currentBlockIndex = to - 1
     const ms = Date.now() - start
     const time = ms/1000;
     const bps = difference/time;

@@ -9,7 +9,7 @@ import {ABI, ABIS, AccountTokenBalance, Event, EventHead, ExtrinsicBody, Extrins
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled, extractAccounts } from "./event";
-import { compress, dropDuplicates, dropDuplicatesMultiKey, range } from "../utils/utils";
+import { compress, dropDuplicates, dropDuplicatesMultiKey, range, resolvePromisesAsChunks } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
@@ -166,8 +166,8 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   per.transactions = blockIds.length * 2;
   
   let st = Date.now();
-  let hashes = await Promise.all(blockIds.map(blockHash));
-  let blocks = await Promise.all(hashes.map(blockBody));
+  let hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
+  let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
   per.nodeTime += Date.now() - st;
   
   // Free memory
@@ -186,7 +186,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   const [eid, feid] = await nextFreeIds();
   
   st = Date.now();
-  let extrinsics = await Promise.all(extrinsicHeaders.map(extrinsicBody(feid)));
+  let extrinsics = await resolvePromisesAsChunks(extrinsicHeaders.map(extrinsicBody(feid)));
   per.nodeTime += Date.now() - st + 0;
   
   // Free memory
@@ -215,7 +215,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   
   per.transactions += insertOrDeleteAccount.length;
   st = Date.now();
-  let accounts = await Promise.all(insertOrDeleteAccount.map(accountHeadToBody));
+  let accounts = await resolvePromisesAsChunks(insertOrDeleteAccount.map(accountHeadToBody));
   per.nodeTime += Date.now() - st;
   st = Date.now();
   await insertAccounts(accounts);
@@ -263,7 +263,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<Perfo
   per.transactions += 1;
   
   // Token balance
-  let evmLogs = await Promise.all(
+  let evmLogs = await resolvePromisesAsChunks(
     compress(extrinsicEvmCalls.map(({events}) => events))
     .filter(({event: {method, section}}) => (method === "Log" && section === "evm"))
     .map(({event}): BytecodeLog => (event.data.toJSON() as any)[0])
