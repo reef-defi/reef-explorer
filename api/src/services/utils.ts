@@ -1,5 +1,7 @@
 import axios from "axios";
 import { APP_CONFIGURATION } from "../utils/config";
+import { queryDb } from "../utils/connector";
+import { ensure } from "../utils/utils";
 
 const REEF_DENOM = "reef-finance";
 
@@ -29,3 +31,17 @@ export const getReefPrice = async (): Promise<Price> => axios
     throw new Error("Can not extract reef price from coingecko...")
   });
   
+
+interface LastBlock {
+  id: number;
+  timestamp: string;
+}
+
+export const getLastBlock = async (): Promise<LastBlock> => {
+  const res = await queryDb<LastBlock>(`SELECT id, timestamp FROM block ORDER BY id DESC`);
+  ensure(res.length > 0, 'Last block is not found');
+  return {
+    id: res[0].id,
+    timestamp: res[0].timestamp
+  };
+};

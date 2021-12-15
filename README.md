@@ -161,6 +161,13 @@ server {
       proxy_set_header Connection "upgrade";
     }
 
+    location /crawler/status {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
 
 
     listen [::]:443 ssl ipv6only=on;
