@@ -52,14 +52,16 @@ export const extractAccounts = (eventHead: EventHead): AccountHead[] => {
 // }
 
 export const accountHeadToBody = async (head: AccountHead): Promise<AccountBody> => {
-  const [evmAddress, balances] = await Promise.all([
+  const [evmAddress, balances, identity] = await Promise.all([
     nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(head.address)),
-    nodeQuery((provider) => provider.api.derive.balances.all(head.address))
+    nodeQuery((provider) => provider.api.derive.balances.all(head.address)),
+    nodeQuery((provider) => provider.api.derive.accounts.identity(head.address))
   ])
   return ({...head,
     evmAddress: evmAddress.toString(),
     freeBalance: balances.freeBalance.toString(),
     lockedBalance: balances.lockedBalance.toString(),
     availableBalance: balances.availableBalance.toString(),
+    identity: identity.display ? identity.display.toString() : '',
   });
 }
