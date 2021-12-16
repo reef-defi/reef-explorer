@@ -36,7 +36,7 @@ export const accountHeadToBody = async (head: AccountHead): Promise<AccountBody>
   const evmNonce: string|null = address !== "" 
     ? await nodeQuery((provider) => provider.api.query.evm.accounts(address))
       .then((res): any => res.toJSON())
-      .then((res) => res.nonce || "0")
+      .then((res) => res?.nonce || null)
     : null;
 
   return ({...head,

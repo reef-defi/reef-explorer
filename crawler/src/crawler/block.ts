@@ -14,6 +14,7 @@ import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsi
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
 import * as Sentry from "@sentry/node";
+import { logger } from "../utils/logger";
 
 interface BlockHash {
   id: number;
@@ -128,26 +129,26 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   const blockIds = range(fromId, toId);
   setResolvingBlocksTillId(toId-1);
   
-  Sentry.captureMessage("Retrieving block hashes")
+  logger.info("Retrieving block hashes")
   transactions += blockIds.length * 2;
   let hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
-  Sentry.captureMessage("Retrieving block bodies")
+  logger.info("Retrieving block bodies")
   let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
   
   // Free memory
   hashes = []; 
   // Insert blocks
-  Sentry.captureMessage("Inserting initial blocks in DB")
+  logger.info("Inserting initial blocks in DB")
   await insertMultipleBlocks(blocks.map(blockBodyToInsert));
   
   // Extrinsics
-  Sentry.captureMessage("Extracting and compressing blocks extrinsics");
+  logger.info("Extracting and compressing blocks extrinsics");
   let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader));
   
-  Sentry.captureMessage("Retrieving next free extrinsic and event ids");
+  logger.info("Retrieving next free extrinsic and event ids");
   const [eid, feid] = await nextFreeIds();
   
-  Sentry.captureMessage("Retrieving neccessery extrinsic data");
+  logger.info("Retrieving neccessery extrinsic data");
   transactions += extrinsicHeaders.length;
   let extrinsics = await resolvePromisesAsChunks(extrinsicHeaders.map(extrinsicBody(feid)));
   
@@ -155,24 +156,24 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   blocks = [];
   extrinsicHeaders = [];
   
-  Sentry.captureMessage("Inserting extriniscs");
+  logger.info("Inserting extriniscs");
   await insertExtrinsics(extrinsics.map(extrinsicToInsert));
   
   // Events
-  Sentry.captureMessage("Extracting and compressing extrinisc events");
+  logger.info("Extracting and compressing extrinisc events");
   let events = compress(extrinsics.map(extrinsicToEventHeader));
   
-  Sentry.captureMessage("Inserting events");
+  logger.info("Inserting events");
   await insertEvents(events.map(eventToInsert(eid)));
   
   // Accounts
-  Sentry.captureMessage("Extracting, compressing and dropping duplicate accounts");
+  logger.info("Extracting, compressing and dropping duplicate accounts");
   let insertOrDeleteAccount = dropDuplicates(compress(events.map(accountNewOrKilled)), 'address')
   
-  Sentry.captureMessage("Retrieving used account info");
+  logger.info("Retrieving used account info");
   transactions += insertOrDeleteAccount.length;
   let accounts = await resolvePromisesAsChunks(insertOrDeleteAccount.map(accountHeadToBody));
-  Sentry.captureMessage("Inserting or updating accounts");
+  logger.info("Inserting or updating accounts");
   await insertAccounts(accounts);
   
   // Free memory
@@ -180,36 +181,36 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   accounts = [];
   insertOrDeleteAccount = [];
   // Transfers
-  Sentry.captureMessage("Extracting transfers");
+  logger.info("Extracting transfers");
   let transfers = extrinsics
     .filter(isExtrinsicTransfer)
     .map(extrinsicBodyToTransfer);
   
-  Sentry.captureMessage("Inserting transfers");
+  logger.info("Inserting transfers");
   await insertTransfers(transfers);
   transfers = [];
   
   // Contracts
-  Sentry.captureMessage("Extracting new contracts");
+  logger.info("Extracting new contracts");
   let contracts = extrinsics
     .filter(isExtrinsicEVMCreate)
     .map(extrinsicToContract)
-  Sentry.captureMessage("Inserting contracts");
+  logger.info("Inserting contracts");
   await insertContracts(contracts)
   contracts = [];
   
   // EVM Calls
-  Sentry.captureMessage("Extracting evm calls");
+  logger.info("Extracting evm calls");
   const extrinsicEvmCalls = extrinsics
   .filter(isExtrinsicEVMCall)
   let evmCalls = extrinsicEvmCalls
   .map(extrinsicToEVMCall)
 
-  Sentry.captureMessage("Inserting evm calls");
+  logger.info("Inserting evm calls");
   await insertEvmCalls(evmCalls);
   
   // Token balance
-  Sentry.captureMessage("Retrieving EVM log if contract is ERC20 token");
+  logger.info("Retrieving EVM log if contract is ERC20 token");
   const evmLogHeaders = compress(extrinsicEvmCalls.map(({events}) => events))
     .filter(({event: {method, section}}) => (method === "Log" && section === "evm"))
     .map(({event}): BytecodeLog => (event.data.toJSON() as any)[0])
@@ -218,7 +219,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   transactions += evmLogHeaders.length;
   let evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
     
-  Sentry.captureMessage("Extracting ERC20 transfer events");
+  logger.info("Extracting ERC20 transfer events");
   const tokenTransferEvents = dropDuplicatesMultiKey(compress(evmLogs
     .filter((e) => e !== null)
     .map((e) => decodeEvmLog(e!))
@@ -226,17 +227,17 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
     .map(erc20TransferEvent)
     ), ["signerAddress", "contractAddress"]);
     
-  Sentry.captureMessage("Retrieving ERC20 account token balances");
+  logger.info("Retrieving ERC20 account token balances");
   transactions += tokenTransferEvents.length;
   const tokenBalances = await resolvePromisesAsChunks(
     tokenTransferEvents.map(extractTokenBalance)
   );
-  Sentry.captureMessage("Inserting token balances");
+  logger.info("Inserting token balances");
   await insertAccountTokenBalances(tokenBalances);
   
   evmCalls = [];
   
-  Sentry.captureMessage("Finalizing blocks");
+  logger.info("Finalizing blocks");
   await updateBlockFinalized(fromId, toId);
   return transactions;
 }

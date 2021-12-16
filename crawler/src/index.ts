@@ -5,6 +5,7 @@ import { closeProviders, initializeProviders, lastBlockId } from "./utils/connec
 import { min, wait } from "./utils/utils";
 import * as Sentry from "@sentry/node";
 import { RewriteFrames } from "@sentry/integrations";
+import { logger } from "./utils/logger";
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // import * as Tracing from "@sentry/tracing";
 
@@ -26,7 +27,6 @@ console.warn = () => {};
 
 const processNextBlock = async () => {
   while (currentBlockIndex < lastBlockId) {
-    
     const difference = min(lastBlockId - currentBlockIndex, BLOCKS_PER_STEP);
     const from = currentBlockIndex + 1;
     const to = from + difference;
@@ -38,8 +38,7 @@ const processNextBlock = async () => {
     const time = ms/1000;
     const bps = difference/time;
 
-    console.log(`n nodes: ${APP_CONFIG.nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${transactions}\ttps: ${(transactions/time).toFixed(3)}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`)
-    // console.log(`\t\tPerformance\tNode: ${(per.nodeTime / ms * 100).toFixed(2)}%\tDB: ${(per.dbTime/ms*100).toFixed(2)}%\tSys: ${(per.processingTime/ms*100).toFixed(2)}%`)
+    logger.info(`n nodes: ${APP_CONFIG.nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${transactions}\ttps: ${(transactions/time).toFixed(3)}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`)
     BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, APP_CONFIG.maxBlocksPerStep);    
   };
 
