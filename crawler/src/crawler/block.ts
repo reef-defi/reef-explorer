@@ -8,41 +8,13 @@ import {Vec} from "@polkadot/types"
 import {ABI, ABIS, AccountTokenBalance, Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
-import { accountHeadToBody, accountNewOrKilled, extractAccounts } from "./event";
+import { accountHeadToBody, accountNewOrKilled } from "./event";
 import { compress, dropDuplicates, dropDuplicatesMultiKey, range, resolvePromisesAsChunks } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
-// export const processBlock = async (id: number): Promise<void> => {
-//   // console.log(id)
-//   const hash = await nodeProvider.api.rpc.chain.getBlockHash(id);
-  
-//   const [signedBlock, extendedHeader, events, [, freeExtrinsicId]] = await Promise.all([
-//     nodeProvider.api.rpc.chain.getBlock(hash),
-//     nodeProvider.api.derive.chain.getHeader(hash),
-//     nodeProvider.api.query.system.events.at(hash),
-//     nextFreeIds()
-//   ]);
-
-//   const {block, } = signedBlock;
-//   const {header, extrinsics} = block;
-  
-//   const body = {
-//     id,
-//     hash: hash.toString(),
-//     author: extendedHeader?.author?.toString() || "",
-//     parentHash: header.parentHash.toString(),
-//     stateRoot: header.stateRoot.toString(),
-//     extrinsicRoot: header.extrinsicsRoot.toString(),
-//   };
-//   await insertInitialBlock(body);
-
-//   const processExtrinsic = processBlockExtrinsic(id, events, freeExtrinsicId);
-//   await Promise.all(extrinsics.map(processExtrinsic));
-
-//   await blockFinalized(id);
-// };
-
+import * as Sentry from "@sentry/node";
+import { logger } from "../utils/logger";
 
 interface BlockHash {
   id: number;
@@ -151,170 +123,123 @@ interface Performance {
   processingTime: number;
 }
 
-const defaultPerofmance = (): Performance => ({
-  nodeTime: 0,
-  dbTime: 0,
-  processingTime: 0,
-  transactions: 0,
-});
-
-export const processBlocks = async (fromId: number, toId: number): Promise<Performance> => {
+export const processBlocks = async (fromId: number, toId: number): Promise<number> => {
   // console.log(`Processing blocks from ${fromId} to ${toId}`);
+  let transactions = 0;
   const blockIds = range(fromId, toId);
-  let per = defaultPerofmance();
   setResolvingBlocksTillId(toId-1);
-  per.transactions = blockIds.length * 2;
   
-  let st = Date.now();
+  logger.info("Retrieving block hashes")
+  transactions += blockIds.length * 2;
   let hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
+  logger.info("Retrieving block bodies")
   let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
-  per.nodeTime += Date.now() - st;
   
   // Free memory
   hashes = []; 
   // Insert blocks
-  st = Date.now();
+  logger.info("Inserting initial blocks in DB")
   await insertMultipleBlocks(blocks.map(blockBodyToInsert));
-  per.dbTime += Date.now() - st;
-  per.transactions += 1;
   
   // Extrinsics
-  st = Date.now();
+  logger.info("Extracting and compressing blocks extrinsics");
   let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader));
-  per.transactions += 1 + extrinsicHeaders.filter((e) => e.extrinsic.isSigned).length;
-  per.processingTime += Date.now() - st;
+  
+  logger.info("Retrieving next free extrinsic and event ids");
   const [eid, feid] = await nextFreeIds();
   
-  st = Date.now();
+  logger.info("Retrieving neccessery extrinsic data");
+  transactions += extrinsicHeaders.length;
   let extrinsics = await resolvePromisesAsChunks(extrinsicHeaders.map(extrinsicBody(feid)));
-  per.nodeTime += Date.now() - st + 0;
   
   // Free memory
   blocks = [];
   extrinsicHeaders = [];
   
-  st = Date.now();
+  logger.info("Inserting extriniscs");
   await insertExtrinsics(extrinsics.map(extrinsicToInsert));
-  per.dbTime += Date.now() - st;
-  per.transactions += 1;
   
   // Events
-  st = Date.now();
+  logger.info("Extracting and compressing extrinisc events");
   let events = compress(extrinsics.map(extrinsicToEventHeader));
-  per.processingTime += Date.now() - st;
   
-  st = Date.now();
+  logger.info("Inserting events");
   await insertEvents(events.map(eventToInsert(eid)));
-  per.transactions += 1;
-  per.dbTime += Date.now() - st;
   
   // Accounts
-  st = Date.now();
+  logger.info("Extracting, compressing and dropping duplicate accounts");
   let insertOrDeleteAccount = dropDuplicates(compress(events.map(accountNewOrKilled)), 'address')
-  per.processingTime += Date.now() - st;
   
-  per.transactions += insertOrDeleteAccount.length;
-  st = Date.now();
+  logger.info("Retrieving used account info");
+  transactions += insertOrDeleteAccount.length;
   let accounts = await resolvePromisesAsChunks(insertOrDeleteAccount.map(accountHeadToBody));
-  per.nodeTime += Date.now() - st;
-  st = Date.now();
+  logger.info("Inserting or updating accounts");
   await insertAccounts(accounts);
-  per.dbTime += Date.now() - st;
   
   // Free memory
   events = [];
   accounts = [];
   insertOrDeleteAccount = [];
   // Transfers
-  st = Date.now();
+  logger.info("Extracting transfers");
   let transfers = extrinsics
     .filter(isExtrinsicTransfer)
     .map(extrinsicBodyToTransfer);
-  per.processingTime += Date.now() - st;
   
-  st = Date.now();
+  logger.info("Inserting transfers");
   await insertTransfers(transfers);
-  per.dbTime += Date.now() - st;
-  per.transactions += 1;
   transfers = [];
   
   // Contracts
-  st = Date.now();
+  logger.info("Extracting new contracts");
   let contracts = extrinsics
     .filter(isExtrinsicEVMCreate)
     .map(extrinsicToContract)
-  per.processingTime += Date.now() - st;
-  st = Date.now();
+  logger.info("Inserting contracts");
   await insertContracts(contracts)
-  per.dbTime += Date.now() - st;
-  per.transactions += 1;
   contracts = [];
   
   // EVM Calls
-  st = Date.now();
+  logger.info("Extracting evm calls");
   const extrinsicEvmCalls = extrinsics
-    .filter(isExtrinsicEVMCall)
+  .filter(isExtrinsicEVMCall)
   let evmCalls = extrinsicEvmCalls
-    .map(extrinsicToEVMCall)
-  per.processingTime += Date.now() - st;
-  st = Date.now();
+  .map(extrinsicToEVMCall)
+
+  logger.info("Inserting evm calls");
   await insertEvmCalls(evmCalls);
-  per.dbTime += Date.now() - st;
-  per.transactions += 1;
   
   // Token balance
-  let evmLogs = await resolvePromisesAsChunks(
-    compress(extrinsicEvmCalls.map(({events}) => events))
+  logger.info("Retrieving EVM log if contract is ERC20 token");
+  const evmLogHeaders = compress(extrinsicEvmCalls.map(({events}) => events))
     .filter(({event: {method, section}}) => (method === "Log" && section === "evm"))
     .map(({event}): BytecodeLog => (event.data.toJSON() as any)[0])
-    .map(async (event): Promise<EvmLog|null> => {
-      const result = await findErc20TokenDB(event.address);
-      if (result.length === 0) { return null; }
-      
-      return {...event,
-        name: result[0].name,
-        abis: result[0].compiled_data,
-        decimals: result[0].contract_data.decimals,
-      }
-    })
-  );
-  
+    .map(extractEvmLog)
+
+  transactions += evmLogHeaders.length;
+  let evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
+    
+  logger.info("Extracting ERC20 transfer events");
   const tokenTransferEvents = dropDuplicatesMultiKey(compress(evmLogs
     .filter((e) => e !== null)
-    .map((event): EvmLogWithDecodedEvent => {
-        const {abis, data, name, topics} = event!;
-        const abi = new utils.Interface(abis[name]);
-        const result = abi.parseLog({topics, data});
-        return {...event!, 
-          decodedEvent: result
-        };
-      })
-      .filter(({decodedEvent}) => decodedEvent.name === "Transfer")
-      .map(({address, decimals, decodedEvent, abis, name}): TokenBalanceHead[] => [
-          {contractAddress: address, signerAddress: decodedEvent.args[0], decimals, abi: abis[name]},
-          {contractAddress: address, signerAddress: decodedEvent.args[1], decimals, abi: abis[name]},
-    ])), ["signerAddress", "contractAddress"]);
-  
-  const tokenBalances = await Promise.all(tokenTransferEvents
-    .map(async ({decimals, abi, contractAddress, signerAddress}): Promise<AccountTokenBalance> => {
-      const balance = await getContractBalance(signerAddress, contractAddress, abi);
-      return {
-        decimals,
-        balance,
-        accountAddress: signerAddress,
-        contractAddress
-      }
-    })
+    .map((e) => decodeEvmLog(e!))
+    .filter(({decodedEvent}) => decodedEvent.name === "Transfer")
+    .map(erc20TransferEvent)
+    ), ["signerAddress", "contractAddress"]);
+    
+  logger.info("Retrieving ERC20 account token balances");
+  transactions += tokenTransferEvents.length;
+  const tokenBalances = await resolvePromisesAsChunks(
+    tokenTransferEvents.map(extractTokenBalance)
   );
+  logger.info("Inserting token balances");
   await insertAccountTokenBalances(tokenBalances);
   
   evmCalls = [];
   
-  st = Date.now();
+  logger.info("Finalizing blocks");
   await updateBlockFinalized(fromId, toId);
-  per.dbTime += Date.now() - st;
-  per.transactions += 1;
-  return per;
+  return transactions;
 }
     
 interface BytecodeLog {
@@ -340,8 +265,44 @@ interface TokenBalanceHead {
   abi: ABI;
 }
 
-const getContractBalance = (address: string, contractAddress: string, abi: ABI) => 
-  nodeQuery(async (provider): Promise<string> => {
+const getContractBalance = (address: string, contractAddress: string, abi: ABI) => nodeQuery(
+  async (provider): Promise<string> => {
     const contract = new Contract(contractAddress, abi, provider);
     return await contract.balanceOf(address);
-  });
+  }
+);
+
+const extractEvmLog = async (event: BytecodeLog): Promise<EvmLog|null> => {
+  const result = await findErc20TokenDB(event.address);
+  if (result.length === 0) { return null; }
+  
+  return {...event,
+    name: result[0].name,
+    abis: result[0].compiled_data,
+    decimals: result[0].contract_data.decimals,
+  }
+}
+
+const decodeEvmLog = (event: EvmLog): EvmLogWithDecodedEvent => {
+  const {abis, data, name, topics} = event!;
+  const abi = new utils.Interface(abis[name]);
+  const result = abi.parseLog({topics, data});
+  return {...event, 
+    decodedEvent: result
+  };
+}
+
+const erc20TransferEvent = ({address, decimals, decodedEvent, abis, name}: EvmLogWithDecodedEvent): TokenBalanceHead[] => [
+  {contractAddress: address, signerAddress: decodedEvent.args[0], decimals, abi: abis[name]},
+  {contractAddress: address, signerAddress: decodedEvent.args[1], decimals, abi: abis[name]},
+]
+
+const extractTokenBalance = async ({decimals, abi, contractAddress, signerAddress}: TokenBalanceHead): Promise<AccountTokenBalance> => {
+  const balance = await getContractBalance(signerAddress, contractAddress, abi);
+  return {
+    decimals,
+    balance,
+    accountAddress: signerAddress,
+    contractAddress
+  }
+}

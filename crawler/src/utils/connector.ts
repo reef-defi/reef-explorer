@@ -3,6 +3,7 @@ import {WsProvider} from "@polkadot/api";
 import {Pool} from "pg";
 import { max, wait } from "./utils";
 import { APP_CONFIG } from "../config";
+import { logger } from "./logger";
 
 let selectedProvider = 0;
 let resolvingBlocksUntil = -1;
@@ -72,15 +73,15 @@ export const getProvider = (): Provider => {
 
 
 export const initializeProviders = async (): Promise<void> => {
-  console.log("Connecting to node...")
+  logger.info("Connecting to node...")
   await initializeNodeProvider();
-  console.log("Syncing node...");
+  logger.info("Syncing node...");
   await syncNode();
-  console.log("Syncing complete");
+  logger.info("Syncing complete");
 }
 
 export const closeProviders = async (): Promise<void> => {
-  console.log("Closing providers");
+  logger.info("Closing providers");
 
   for (const provider of nodeProviders) {
     await provider.api.disconnect();

@@ -10,7 +10,7 @@
     "build-testnet": "docker-compose -p testnet -f docker-compose-local-testnet.yml build",
     "stop-testnet": "docker stop testnet-postgres-1",
     "purge-testnet": "docker rm testnet-postgres-1 && docker volume rm testnet_db-data",
-    "reset-testnet": "docker stop testnet-localhost_postgres_1 && docker rm testnet-localhost_postgres_1 && docker volume rm testnet-localhost_db-data && docker-compose -p testnet -f docker-compose-local-testnet.yml up -d",
+    "reset-testnet": "docker stop testnet_postgres_1 && docker rm testnet_postgres_1 && docker volume rm testnet_db-data && docker-compose -p testnet -f docker-compose-local-testnet.yml up -d",
     "lint": "eslint --ext \".js\" --ignore-path .gitignore ."
   }
 }

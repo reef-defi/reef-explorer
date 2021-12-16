@@ -8,4 +8,4 @@ RUN yarn
 
 COPY . /usr/app/crawler/
 
-CMD ["yarn", "start"]
+CMD ["yarn", "prod"]
