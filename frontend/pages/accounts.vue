@@ -39,18 +39,18 @@
             <Row v-for="(item, index) in paginatedAccounts" :key="index">
               <Cell align="center">#{{ item.rank }}</Cell>
 
-              <Cell :link="{ url: `/account/${item.account_id}`, fill: false }">
+              <Cell :link="{ url: `/account/${item.address}`, fill: false }">
                 <ReefIdenticon
-                  :key="item.account_id"
-                  :address="item.account_id"
+                  :key="item.address"
+                  :address="item.address"
                   :size="20"
                 />
-                <span>{{ shortAddress(item.account_id) }}</span>
+                <span>{{ shortAddress(item.address) }}</span>
               </Cell>
 
               <Cell
                 v-if="item.evm_address"
-                :link="{ url: `/account/${item.account_id}`, fill: false }"
+                :link="{ url: `/account/${item.address}`, fill: false }"
               >
                 <eth-identicon :address="item.evm_address" :size="20" />
                 <span>{{
@@ -68,7 +68,7 @@
               }}</Cell>
 
               <Cell>
-                <a class="favorite" @click="toggleFavorite(item.account_id)">
+                <a class="favorite" @click="toggleFavorite(item.address)">
                   <font-awesome-icon
                     v-if="item.favorite"
                     v-b-tooltip.hover
@@ -92,19 +92,19 @@
             <nuxt-link
               v-for="(item, index) in paginatedAccounts"
               :key="'item-' + index"
-              :to="`/account/${item.account_id}`"
+              :to="`/account/${item.address}`"
               class="accounts__list-item"
             >
               <div class="accounts__list-item-rank">Rank #{{ item.rank }}</div>
               <div class="accounts__list-item-identicon">
                 <ReefIdenticon
-                  :key="item.account_id"
-                  :address="item.account_id"
+                  :key="item.address"
+                  :address="item.address"
                   :size="40"
                 />
               </div>
               <div class="accounts__list-item-account">
-                {{ shortAddress(item.account_id) }}
+                {{ shortAddress(item.address) }}
               </div>
 
               <div class="accounts__list-item-info">
@@ -175,8 +175,8 @@ export default {
       let list = this.parsedAccounts || []
 
       list = list.sort((a, b) => {
-        const keyA = this.isFavorite(a.account_id)
-        const keyB = this.isFavorite(b.account_id)
+        const keyA = this.isFavorite(a.address)
+        const keyB = this.isFavorite(b.address)
 
         if (keyA < keyB) return 1
         if (keyA > keyB) return -1
@@ -188,7 +188,7 @@ export default {
 
       return list.filter((item) => {
         const filter = this.filter.toLowerCase()
-        const accountId = item.account_id ? item.account_id.toLowerCase() : ''
+        const accountId = item.address ? item.address.toLowerCase() : ''
         const evmAddress = item.evm_address
           ? item.evm_address.toLowerCase()
           : ''
@@ -209,7 +209,7 @@ export default {
         return {
           rank: index + 1,
           ...account,
-          favorite: this.isFavorite(account.account_id),
+          favorite: this.isFavorite(account.address),
         }
       })
     },
@@ -273,10 +273,8 @@ export default {
         query: gql`
           query account {
             account(order_by: { free_balance: desc }, where: {}) {
-              account_id
+              address
               evm_address
-              identity_display
-              identity_display_parent
               available_balance
               free_balance
               locked_balance
