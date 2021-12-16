@@ -30,23 +30,27 @@
 
               <Cell
                 :link="{
-                  url: `/extrinsic/${item.block_number}/${item.extrinsic_index}`,
+                  url: `/extrinsic/${item.block_id}/${item.index}`,
                   fill: false,
                 }"
-                >{{ item.block_number }}-{{ item.extrinsic_index }}</Cell
+                >{{ item.block_id }}-{{ item.index }}</Cell
               >
 
               <Cell class="list-view__age">
                 <font-awesome-icon :icon="['far', 'clock']" />
-                <span>{{ getAge(item.timestamp) }}</span>
-                <span>({{ formatTimestamp(item.timestamp) }})</span>
+                <span>{{ getAge(getUnixTimestamp(item.timestamp)) }}</span>
+                <span
+                  >({{
+                    formatTimestamp(getUnixTimestamp(item.timestamp))
+                  }})</span
+                >
               </Cell>
 
               <Cell>{{ item.section }} ➡ {{ item.method }}</Cell>
 
               <Cell align="center">
                 <font-awesome-icon
-                  v-if="item.success"
+                  v-if="item.type === 'success'"
                   icon="check"
                   class="text-success"
                 />
@@ -105,17 +109,16 @@ export default {
             extrinsic(
               limit: $perPage
               offset: $offset
-              where: { block_number: { _eq: $blockNumber } }
-              order_by: { block_number: desc, extrinsic_index: desc }
+              where: { block_id: { _eq: $blockNumber } }
+              order_by: { block_id: desc, index: desc }
             ) {
-              block_number
-              extrinsic_index
-              is_signed
-              signer
+              block_id
+              index
+              signed
               section
               method
               hash
-              success
+              type
               timestamp
             }
           }
@@ -135,20 +138,20 @@ export default {
           this.loading = false
         },
       },
-      totalExtrinsics: {
-        query: gql`
-          subscription total {
-            total(where: { name: { _eq: "extrinsics" } }, limit: 1) {
-              count
-            }
-          }
-        `,
-        result({ data }) {
-          if (!this.filter) {
-            this.totalRows = data.total[0].count
-          }
-        },
-      },
+      // totalExtrinsics: {
+      //   query: gql`
+      //     subscription total {
+      //       total(where: { name: { _eq: "extrinsics" } }, limit: 1) {
+      //         count
+      //       }
+      //     }
+      //   `,
+      //   result({ data }) {
+      //     if (!this.filter) {
+      //       this.totalRows = data.total[0].count
+      //     }
+      //   },
+      // },
     },
   },
 }
