@@ -6,11 +6,11 @@
   "private": false,
   "author": "Žiga Franko Gorišek",
   "scripts": {
-    "run-testnet": "docker-compose -p testnet-localhost -f docker-compose-local-run.yml up -d",
-    "build-testnet": "docker-compose -p testnet -f docker-compose-local-run.yml build",
+    "run-testnet": "docker-compose -p testnet-localhost -f docker-compose-local-testnet.yml up -d",
+    "build-testnet": "docker-compose -p testnet -f docker-compose-local-testnet.yml build",
     "stop-testnet": "docker stop testnet-postgres-1",
     "purge-testnet": "docker rm testnet-postgres-1 && docker volume rm testnet_db-data",
-    "reset-testnet": "docker stop testnet-localhost_postgres_1 && docker rm testnet-localhost_postgres_1 && docker volume rm testnet-localhost_db-data && docker-compose -p testnet -f docker-compose-local-run.yml up -d",
+    "reset-testnet": "docker stop testnet-localhost_postgres_1 && docker rm testnet-localhost_postgres_1 && docker volume rm testnet-localhost_db-data && docker-compose -p testnet -f docker-compose-local-testnet.yml up -d",
     "lint": "eslint --ext \".js\" --ignore-path .gitignore ."
   }
 }

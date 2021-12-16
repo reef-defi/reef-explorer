@@ -60,6 +60,7 @@ export interface AccountHead {
   active: boolean;
 }
 export interface AccountBody extends AccountHead {
+  identity: string;
   evmAddress: string;
   freeBalance: string;
   lockedBalance: string;

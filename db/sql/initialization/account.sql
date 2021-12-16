@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS account (
   address VARCHAR(48),
   evm_address VARCHAR(42), -- TODO maybe we can add also address as Primary Key
 
+  identity VARCHAR,
   active BOOLEAN NOT NULL,
   free_balance NUMERIC(80,0) NOT NULL,
   locked_balance NUMERIC(80,0) NOT NULL,

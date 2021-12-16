@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import accountRouter from './routes/account';
 import contractRouter from "./routes/contract";
 import verificationRouter from "./routes/verification";
-import { getReefPrice } from "./services/utils";
+import { getLastBlock, getReefPrice } from "./services/utils";
 import { errorStatus } from "./utils/utils";
 import { getProvider } from './utils/connector';
 
@@ -29,6 +29,15 @@ app.get('/api/price/reef', async (_, res: Response) => {
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
+});
+
+app.get('/crawler/status', async (_, res: Response) => {
+  try {
+    const result = await getLastBlock();
+    res.send({...result});
+  } catch (err) {
+    res.status(errorStatus(err)).send(err.message);
+  } 
 });
 
 

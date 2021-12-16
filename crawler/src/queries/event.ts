@@ -32,14 +32,14 @@ VALUES
 export const insertEvent = async (event: InsertEventValue) => insertEvents([event]);
 
 
-const accountToInsertValue = ({address, evmAddress, blockId, active, freeBalance, availableBalance, lockedBalance}: AccountBody): string => `
-  ('${address}', '${evmAddress}', ${blockId}, ${active}, ${freeBalance}, ${lockedBalance}, ${availableBalance})`;
+const accountToInsertValue = ({address, evmAddress, blockId, active, freeBalance, availableBalance, lockedBalance, identity}: AccountBody): string => `
+  ('${address}', '${evmAddress}', ${blockId}, ${active}, ${freeBalance}, ${lockedBalance}, ${availableBalance}, '${identity}')`;
 
 export const insertAccounts = async (accounts: AccountBody[]): Promise<void> => {
   if (accounts.length > 0) {
     await insert(`
 INSERT INTO account
-  (address, evm_address, block_id, active, free_balance, locked_balance, available_balance)
+  (address, evm_address, block_id, active, free_balance, locked_balance, available_balance, identity)
 VALUES
   ${accounts.map(accountToInsertValue).join(",")}
 ON CONFLICT (address) DO UPDATE SET
@@ -48,7 +48,8 @@ ON CONFLICT (address) DO UPDATE SET
   evm_address = EXCLUDED.evm_address,
   free_balance = EXCLUDED.free_balance,
   locked_balance = EXCLUDED.locked_balance,
-  available_balance = EXCLUDED.available_balance;
+  available_balance = EXCLUDED.available_balance,
+  identity = EXCLUDED.identity;
 `);
   }
 }

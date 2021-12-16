@@ -84,40 +84,91 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    location /api/v3 {
-            proxy_pass http://localhost:8082/v1/graphql;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
+    location /api/erc20 {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
     }
 
-    location /api/verificator {
-           proxy_pass http://localhost:8000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
+    location /api/token/ {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
     }
 
-    location /api/price {
-           proxy_pass http://localhost:8000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
+    location /api/contract/ {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
     }
 
-    location /api/staking {
-           proxy_pass http://localhost:8000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
+    location /api/token-balance/ {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
     }
 
-    location /api/account/tokens {
-           proxy_pass http://localhost:8000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
+    location /api/account/tokens/ {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
     }
+
+    location /api/account/:address/owned-tokens/ {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
+    location /api/account/:address/available-tokens {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
+    location /api/verificator/status {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
+    location /api/verificator/form-verification {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
+    location /api/verificator/submit-verification {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
+    location /api/verificator/contract/:address {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
+    location /crawler/status {
+      proxy_pass http://localhost:8000;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+
+
 
     listen [::]:443 ssl ipv6only=on;
     listen 443 ssl;

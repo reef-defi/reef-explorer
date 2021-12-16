@@ -101,23 +101,12 @@ export const insertAndGetId = async (statement: string, table: string): Promise<
     .query(`${statement} SELECT currval(pg_get_serial_sequence('${table}','id'));`)
     // TODO find out how to correctly tipe this!!
     .then((res: any) => res[1].rows[0].currval)
-    .catch((error: any) => {
-      console.log(`------------------- Error: \n${statement}\n\n${error}`);
-      return -1; 
-    })
 }
 
 export const insert = async (statement: string): Promise<void> => {
   await dbProvider.query(statement)
-  .catch((error: any) => {
-    console.log(`------------------- Error: \n${statement}\n\n${error}`);
-  })
 }
 
 export const query = async <Res,>(statement: string): Promise<Res[]> => dbProvider
   .query<Res>(statement)
   .then((res: any) => res.rows)
-  .catch((error: any) => {
-    console.log(`------------------- Error: \n${statement}\n\n${error}`);
-    return []; 
-  })

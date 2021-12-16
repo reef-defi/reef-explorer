@@ -1,3 +1,4 @@
+import { APP_CONFIG } from "../config";
 
 export const wait = async (ms: number): Promise<void> => 
   new Promise((res) => setTimeout(res, ms));
@@ -20,6 +21,7 @@ export const range = (from: number, to: number): number[] => Array(to-from)
   .fill(0)
   .map((_, index) => from + index);
 
+  
 export const compress = <T,> (values: T[][]): T[] => {
   let newValues: T[] = [];
   for (const value of values) {
@@ -59,4 +61,23 @@ export const dropDuplicatesMultiKey = <Object, Key extends keyof Object>(objects
   }
 
   return filtered;
+}
+
+export const resolvePromisesAsChunks = async <T,>(requests: Promise<T>[]): Promise<T[]> => {
+  let chunks: T[] = [];
+  let currentChunks: Promise<T>[] = [];
+
+  for (let reqest of requests) {
+    currentChunks.push(reqest);
+
+    if (currentChunks.length === APP_CONFIG.chunkSize) {
+      const resolvedChunk = await Promise.all(currentChunks);
+      chunks.push(...resolvedChunk);
+      currentChunks = [];
+    }
+  }
+
+  const resolvedChunk = await Promise.all(currentChunks);
+  chunks.push(...resolvedChunk);
+  return chunks;
 }
