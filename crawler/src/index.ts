@@ -32,13 +32,13 @@ const processNextBlock = async () => {
     const to = from + difference;
     
     const start = Date.now();
-    const per = await processBlocks(from, to)
+    const transactions = await processBlocks(from, to)
     currentBlockIndex = to - 1
     const ms = Date.now() - start
     const time = ms/1000;
     const bps = difference/time;
 
-    console.log(`n nodes: ${APP_CONFIG.nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${per.transactions}\ttps: ${(per.transactions/time).toFixed(3)}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`)
+    console.log(`n nodes: ${APP_CONFIG.nodeUrls.length}\tn blocks: ${difference}\tbps: ${bps.toFixed(3)}\tn transactions: ${transactions}\ttps: ${(transactions/time).toFixed(3)}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`)
     // console.log(`\t\tPerformance\tNode: ${(per.nodeTime / ms * 100).toFixed(2)}%\tDB: ${(per.dbTime/ms*100).toFixed(2)}%\tSys: ${(per.processingTime/ms*100).toFixed(2)}%`)
     BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, APP_CONFIG.maxBlocksPerStep);    
   };
