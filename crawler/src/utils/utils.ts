@@ -71,15 +71,13 @@ export const resolvePromisesAsChunks = async <T,>(requests: Promise<T>[]): Promi
     currentChunks.push(reqest);
 
     if (currentChunks.length === APP_CONFIG.chunkSize) {
-      for (let chunk of await Promise.all(currentChunks)) {
-        chunks.push(chunk);
-      }
+      const resolvedChunk = await Promise.all(currentChunks);
+      chunks.push(...resolvedChunk);
       currentChunks = [];
     }
   }
 
-  for (let chunk of await Promise.all(currentChunks)) {
-    chunks.push(chunk);
-  }
+  const resolvedChunk = await Promise.all(currentChunks);
+  chunks.push(...resolvedChunk);
   return chunks;
 }
