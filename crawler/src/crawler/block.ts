@@ -8,7 +8,7 @@ import {Vec} from "@polkadot/types"
 import {ABI, ABIS, AccountTokenBalance, Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
-import { accountHeadToBody, accountNewOrKilled, extractAccounts } from "./event";
+import { accountHeadToBody, accountNewOrKilled } from "./event";
 import { compress, dropDuplicates, dropDuplicatesMultiKey, range, resolvePromisesAsChunks } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
@@ -172,7 +172,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   Sentry.captureMessage("Retrieving used account info");
   transactions += insertOrDeleteAccount.length;
   let accounts = await resolvePromisesAsChunks(insertOrDeleteAccount.map(accountHeadToBody));
-  Sentry.captureMessage("Inserting/updating accounts");
+  Sentry.captureMessage("Inserting or updating accounts");
   await insertAccounts(accounts);
   
   // Free memory

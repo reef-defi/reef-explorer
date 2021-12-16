@@ -65,6 +65,8 @@ export interface AccountBody extends AccountHead {
   freeBalance: string;
   lockedBalance: string;
   availableBalance: string;
+  nonce: string;
+  evmNonce: string|null;
 }
 
 export interface Transfer {
