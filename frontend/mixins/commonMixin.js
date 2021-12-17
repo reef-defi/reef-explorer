@@ -17,7 +17,7 @@ export default {
     shortHash(hash) {
       return `${hash.substr(0, 6)}…${hash.substr(hash.length - 4, 4)}`
     },
-    formatNumber(number) {
+    formatNumber(number = '') {
       if (isHex(number)) {
         return parseInt(number, 16)
           .toString()

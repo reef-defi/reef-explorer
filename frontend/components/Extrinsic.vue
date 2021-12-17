@@ -1,27 +1,29 @@
 <template>
   <Card v-if="extrinsic" class="list-view extrinsic-details">
     <Headline
-      >Extrinsic {{ extrinsic.block_number }}-{{ extrinsic.extrinsic_index }}
+      >Extrinsic {{ extrinsic.block_id }}-{{ extrinsic.index }}
     </Headline>
 
     <Data>
       <Row>
         <Cell>Block number</Cell>
         <Cell
-          ><nuxt-link :to="`/block?blockNumber=${extrinsic.block_number}`">
-            # {{ formatNumber(extrinsic.block_number) }}
+          ><nuxt-link :to="`/block?blockNumber=${extrinsic.block_id}`">
+            # {{ formatNumber(extrinsic.block_id) }}
           </nuxt-link>
         </Cell>
       </Row>
 
       <Row>
         <Cell>Timestamp</Cell>
-        <Cell>{{ getDateFromTimestamp(extrinsic.timestamp) }}</Cell>
+        <Cell>{{
+          getDateFromTimestamp(getUnixTimestamp(extrinsic.timestamp))
+        }}</Cell>
       </Row>
 
       <Row>
         <Cell>Extrinsic index</Cell>
-        <Cell>{{ extrinsic.extrinsic_index }}</Cell>
+        <Cell>{{ extrinsic.index }}</Cell>
       </Row>
 
       <Row>
@@ -33,7 +35,7 @@
         <Cell>Signed</Cell>
         <Cell>
           <font-awesome-icon
-            v-if="extrinsic.is_signed"
+            v-if="extrinsic.signed"
             icon="check"
             class="text-success"
           />
@@ -41,7 +43,7 @@
         </Cell>
       </Row>
 
-      <Row class="extrinsic-details__signer">
+      <!-- <Row class="extrinsic-details__signer">
         <Cell>Signer</Cell>
         <Cell>
           <div v-if="extrinsic.signer">
@@ -55,7 +57,7 @@
             </nuxt-link>
           </div>
         </Cell>
-      </Row>
+      </Row> -->
 
       <Row>
         <Cell>Section and method</Cell>
@@ -68,7 +70,7 @@
       <Row class="extrinsic-details__documentation">
         <Cell>Documentation</Cell>
         <Cell>
-          {{ extrinsic.doc }}
+          {{ extrinsic.docs }}
         </Cell>
       </Row>
 
@@ -79,7 +81,7 @@
         </Cell>
       </Row>
 
-      <Row>
+      <!-- <Row>
         <Cell>Weight</Cell>
         <Cell>
           <div v-if="extrinsic.fee_info">
@@ -104,23 +106,23 @@
             {{ formatAmount(JSON.parse(extrinsic.fee_info).partialFee) }}
           </div>
         </Cell>
-      </Row>
+      </Row> -->
 
       <Row>
         <Cell>Status</Cell>
         <Cell>
           <font-awesome-icon
-            v-if="extrinsic.success"
+            v-if="extrinsic.type === 'success'"
             icon="check"
             class="text-success"
           />
           <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="!extrinsic.success">
+          <template v-if="extrinsic.type !== 'success'">
             <Promised
               :promise="
                 getExtrinsicFailedFriendlyError(
-                  extrinsic.block_number,
-                  extrinsic.extrinsic_index,
+                  extrinsic.block_id,
+                  extrinsic.index,
                   $apollo.provider.defaultClient
                 )
               "
@@ -135,8 +137,8 @@
     </Data>
 
     <extrinsic-events
-      :block-number="parseInt(extrinsic.block_number)"
-      :extrinsic-index="parseInt(extrinsic.extrinsic_index)"
+      :block-number="parseInt(extrinsic.block_id)"
+      :extrinsic-index="parseInt(extrinsic.index)"
     />
   </Card>
 </template>
