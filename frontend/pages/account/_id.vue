@@ -33,7 +33,7 @@
 
           <Data>
             <Row>
-              <Cell>{{ $t('details.account.account_id') }}</Cell>
+              <Cell>Address</Cell>
               <Cell>
                 <ReefIdenticon
                   :key="parsedAccount.accountId"
@@ -136,14 +136,14 @@
               </Cell>
             </Row>
 
-            <Row>
+            <Row v-if="parsedAccount.nonce">
               <Cell>{{ $t('details.account.account_nonce') }}</Cell>
               <Cell>
                 {{ parsedAccount.nonce }}
               </Cell>
             </Row>
 
-            <Row>
+            <!-- <Row>
               <Cell>{{ $t('details.account.total_balance') }}</Cell>
               <Cell class="amount">
                 {{ formatAmount(parsedAccount.balances.freeBalance) }}
@@ -197,10 +197,10 @@
               <Cell class="amount">
                 {{ formatAmount(parsedAccount.balances.votingBalance) }}
               </Cell>
-            </Row>
+            </Row> -->
           </Data>
 
-          <Tabs v-model="tab" :options="$options.tabs" />
+          <!-- <Tabs v-model="tab" :options="$options.tabs" />
 
           <AccountTransfers
             v-if="tab === 'transfers'"
@@ -216,7 +216,7 @@
 
           <StakingRewards v-if="tab === 'rewards'" :account-id="accountId" />
 
-          <StakingSlashes v-if="tab === 'slashes'" :account-id="accountId" />
+          <StakingSlashes v-if="tab === 'slashes'" :account-id="accountId" /> -->
         </Card>
       </b-container>
     </section>
@@ -226,23 +226,23 @@
 import { gql } from 'graphql-tag'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
-import Activity from '@/components/Activity.vue'
-import AccountTransfers from '@/components/AccountTransfers.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
-import StakingRewards from '@/components/StakingRewards.vue'
-import StakingSlashes from '@/components/StakingSlashes.vue'
-import AccountTokenBalances from '@/components/AccountTokenBalances.vue'
+// import Activity from '@/components/Activity.vue'
+// import AccountTransfers from '@/components/AccountTransfers.vue'
+// import StakingRewards from '@/components/StakingRewards.vue'
+// import StakingSlashes from '@/components/StakingSlashes.vue'
+// import AccountTokenBalances from '@/components/AccountTokenBalances.vue'
 
 export default {
   components: {
     ReefIdenticon,
     Loading,
-    Activity,
-    AccountTransfers,
-    StakingRewards,
-    StakingSlashes,
-    AccountTokenBalances,
+    // Activity,
+    // AccountTransfers,
+    // StakingRewards,
+    // StakingSlashes,
+    // AccountTokenBalances,
   },
   mixins: [commonMixin],
   middleware: ['account'],
@@ -272,42 +272,35 @@ export default {
     $subscribe: {
       account: {
         query: gql`
-          subscription account($account_id: String!) {
-            account(where: { account_id: { _eq: $account_id } }) {
-              account_id
+          subscription account($address: String!) {
+            account(where: { address: { _eq: $address } }) {
+              address
               evm_address
-              evm_nonce
-              balances
               available_balance
               free_balance
               locked_balance
-              nonce
-              block_height
-              identity
+              block_id
               timestamp
             }
           }
         `,
         variables() {
           return {
-            account_id: this.accountId,
+            address: this.accountId,
           }
         },
         result({ data }) {
           if (data.account[0]) {
             this.parsedAccount = {
-              accountId: data.account[0].account_id,
+              accountId: data.account[0].address,
               evmAddress: data.account[0].evm_address,
               evmNonce: data.account[0].evm_nonce,
               availableBalance: data.account[0].available_balance,
               freeBalance: data.account[0].free_balance,
               lockedBalance: data.account[0].locked_balance,
-              balances: JSON.parse(data.account[0].balances),
+              balances: JSON.parse(data.account[0].balances || '{}'),
               nonce: data.account[0].nonce,
-              identity:
-                data.account[0].identity !== ``
-                  ? JSON.parse(data.account[0].identity)
-                  : {},
+              identity: JSON.parse(data.account[0].identity || '{}'),
               timestamp: data.account[0].timestamp,
             }
           } else if (this.isAddress(this.accountId)) {

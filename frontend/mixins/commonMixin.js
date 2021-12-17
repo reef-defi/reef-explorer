@@ -190,5 +190,13 @@ export default {
 
       return `${diff} ${text}`
     },
+    getUnixTimestamp(value) {
+      const mDate = moment(value)
+      if (mDate._isValid) {
+        return mDate.unix()
+      }
+
+      return value
+    },
   },
 }
