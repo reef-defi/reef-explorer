@@ -35,10 +35,12 @@ export interface ExtrinsicBodyPromise extends ExtrinsicHead {
 }
 
 export interface EventHead {
-  id: number;
   event: Event;
   blockId: number;
   extrinsicId: number;
+}
+export interface EventBody extends EventHead {
+  id: number;
 }
 
 interface ExtrinsicUnknown {

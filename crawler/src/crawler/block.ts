@@ -5,7 +5,7 @@ import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
-import {ABI, ABIS, AccountTokenBalance, Event, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
+import {ABI, ABIS, AccountTokenBalance, Event, EventBody, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled } from "./event";
@@ -100,15 +100,19 @@ const extrinsicToInsert = ({id, extrinsic, signedData, blockId, events}: Extrins
   }
 };
 
-const extrinsicToEventHeader = (nextFreeId: number) => ({id, blockId, events}: ExtrinsicBody): EventHead[] => events
-  .map((event, index) => ({
-    id: nextFreeId + index,
+const extrinsicToEventHeader = ({id, blockId, events}: ExtrinsicBody): EventHead[] => events
+  .map((event) => ({
     blockId,
     extrinsicId: id,
     event
   }));
 
-const eventToInsert =  ({id, event, extrinsicId, blockId}: EventHead, index: number): InsertEventValue => ({
+const eventToBody = (nextFreeId: number) =>  (event: EventHead, index: number): EventBody => ({
+  id: nextFreeId + index,
+  ...event
+});
+  
+const eventToInsert = ({event, extrinsicId, blockId, id}: EventBody, index: number): InsertEventValue => ({
   id, extrinsicId, blockId, index,
   data: JSON.stringify(event.event.data.toJSON()),
   method: event.event.method,
@@ -159,7 +163,8 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   
   // Events
   logger.info("Extracting and compressing extrinisc events");
-  let events = compress(extrinsics.map(extrinsicToEventHeader(eid)));
+  let events = compress(extrinsics.map(extrinsicToEventHeader))
+    .map(eventToBody(eid))
   
   logger.info("Inserting events");
   await insertEvents(events.map(eventToInsert));
@@ -179,7 +184,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   
   // Staking Slash
   await insertStakingSlashEvents(events.filter(isEventStakingSlash));
-  
+
   // Staking Reward
   await insertStakingRewardEvents(events.filter(isEventStakingReward));
     
