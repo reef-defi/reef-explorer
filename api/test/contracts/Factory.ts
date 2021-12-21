@@ -1,5 +1,5 @@
 
-import { ABI } from "../../src/types";
+import { ABI } from "../../src/utils/types";
 import { ContractStorage } from "../utils";
 
 export default {
