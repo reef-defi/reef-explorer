@@ -64,7 +64,7 @@
 -- SELECT * FROM unverified_evm_call;
 -- SELECT * from contract;
 
--- delete from block where id >= 1144564;
+-- delete from block where id >= 47136;
 
 -- select * from block where id > 1573459;
 
@@ -92,5 +92,7 @@
 --   REFERENCES account (address)
 --   ON DELETE CASCADE;
 
-ALTER TABLE verification_request
-DROP CONSTRAINT fk_contract;
+-- ALTER TABLE verification_request
+-- DROP CONSTRAINT fk_contract;
+
+SELECT * FROM event WHERE section = 'staking';
