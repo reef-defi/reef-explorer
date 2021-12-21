@@ -1,9 +1,7 @@
 version: '3.7'
 
 services:
-  #
   # PostgresSQL database
-  #
   postgres:
     image: postgres:13
     restart: always
@@ -18,6 +16,7 @@ services:
       - './sql/initialization/contract.sql:/docker-entrypoint-initdb.d/05_contract.sql'
       - './sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/06_evmEvent.sql'
       - './sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/07_transfer.sql'
+      - './sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
       # Chain info sql must be the last to initialize!
       # - './sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/17_chainInfo.sql'
     environment:
