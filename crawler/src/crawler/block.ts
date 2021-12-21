@@ -1,4 +1,4 @@
-import {  nodeQuery, query, setResolvingBlocksTillId } from "../utils/connector";
+import {  getProvider, nodeQuery, query, setResolvingBlocksTillId } from "../utils/connector";
 import { insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
 import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
@@ -113,11 +113,11 @@ const eventToBody = (nextFreeId: number) =>  (event: EventHead, index: number): 
   ...event
 });
 
-const isEventStakingReward = ({event: {event: {method, section}}}: EventHead): boolean => 
-  section === 'staking' && (method === 'Reward' || method === 'Rewarded');
-
-const isEventStakingSlash = ({event: {event: {method, section}}}: EventHead): boolean => 
-  section === 'staking' && (method === 'Slash' || method === 'Slashed');
+const isEventStakingReward = ({event: {event}}: EventHead): boolean => 
+  getProvider().api.events.staking.Rewarded.is(event)
+  
+const isEventStakingSlash = ({event: {event}}: EventHead): boolean => 
+  getProvider().api.events.staking.Slashed.is(event)
 
 export const processBlocks = async (fromId: number, toId: number): Promise<number> => {
   // console.log(`Processing blocks from ${fromId} to ${toId}`);

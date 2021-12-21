@@ -69,6 +69,9 @@ export interface AccountBody extends AccountHead {
   freeBalance: string;
   lockedBalance: string;
   availableBalance: string;
+  vestedBalance: string;
+  votingBalance: string;
+  reservedBalance: string;
   nonce: string;
   evmNonce: string|null;
 }
