@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS transfer (
   block_id BIGINT,
   extrinsic_id BIGINT,
   to_address VARCHAR,
-  from_address VARCHAR NOT NULL,
+  from_address VARCHAR,
 
   denom TEXT NOT NULL,
   amount NUMERIC(80,0) NOT NULL,
@@ -26,5 +26,16 @@ CREATE TABLE IF NOT EXISTS transfer (
   CONSTRAINT fk_from_address
     FOREIGN KEY(from_address)
       REFERENCES account(address)
+      ON DELETE CASCADE,
+  CONSTRAINT fk_to_address
+    FOREIGN KEY(to_address)
+      REFERENCES account(address)
       ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS transfer_denom ON transfer (denom);
+CREATE INDEX IF NOT EXISTS transfer_success ON transfer (success);
+CREATE INDEX IF NOT EXISTS transfer_block_id ON transfer (block_id);
+CREATE INDEX IF NOT EXISTS transfer_to_address ON transfer (to_address);
+CREATE INDEX IF NOT EXISTS account_from_address ON transfer (from_address);
+CREATE INDEX IF NOT EXISTS transfer_extrinsic_id ON transfer (extrinsic_id);
