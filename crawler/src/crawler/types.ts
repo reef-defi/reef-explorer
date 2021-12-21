@@ -38,6 +38,7 @@ export interface EventHead {
   event: Event;
   blockId: number;
   extrinsicId: number;
+  index: number;
 }
 export interface EventBody extends EventHead {
   id: number;

@@ -1,27 +1,13 @@
-import { AccountBody } from "../crawler/types";
+import { AccountBody, EventBody } from "../crawler/types";
 import { insert, query } from "../utils/connector";
 
 
-interface InsertEvent {
-  index: number;
-  blockId: number;
-  extrinsicId: number;
-
-  data: string;
-  method: string;
-  section: string;
-}
-
-export interface InsertEventValue extends InsertEvent {
-  id: number;
-}
-
-const toEventValue = ({id, blockId, extrinsicId, index, data, method, section}: InsertEventValue): string => `
+const toEventValue = ({id, blockId, extrinsicId, index, event: {event: {method, section, data}}}: EventBody): string => `
   (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}')`;
 
-export const insertEvents = async (events: InsertEventValue[]): Promise<void> => {
+export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
-    insert(`
+    await insert(`
 INSERT INTO event
   (id, block_id, extrinsic_id, index, section, method, data)
 VALUES
@@ -29,7 +15,7 @@ VALUES
 `);
   }
 }
-export const insertEvent = async (event: InsertEventValue) => insertEvents([event]);
+export const insertEvent = async (event: EventBody) => insertEvents([event]);
 
 
 const accountToInsertValue = ({address, evmAddress, blockId, active, freeBalance, availableBalance, lockedBalance, identity, nonce, evmNonce}: AccountBody): string => `

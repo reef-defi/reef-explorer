@@ -1,4 +1,4 @@
-import {  nodeQuery, setResolvingBlocksTillId } from "../utils/connector";
+import {  nodeQuery, query, setResolvingBlocksTillId } from "../utils/connector";
 import { insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
 import { extrinsicBodyToTransfer, extrinsicStatus, isExtrinsicTransfer, resolveSigner } from "./extrinsic";
 import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
@@ -7,14 +7,14 @@ import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
 import {ABI, ABIS, AccountTokenBalance, Event, EventBody, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
-import { insertAccounts, insertEvents, InsertEventValue } from "../queries/event";
+import { insertAccounts, insertEvents } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled } from "./event";
 import { compress, dropDuplicates, dropDuplicatesMultiKey, range, resolvePromisesAsChunks } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
 import { logger } from "../utils/logger";
-import { insertStakingRewardEvents, insertStakingSlashEvents } from "../queries/staking";
+import { insertStakingReward, insertStakingSlash } from "../queries/staking";
 
 interface BlockHash {
   id: number;
@@ -101,8 +101,9 @@ const extrinsicToInsert = ({id, extrinsic, signedData, blockId, events}: Extrins
 };
 
 const extrinsicToEventHeader = ({id, blockId, events}: ExtrinsicBody): EventHead[] => events
-  .map((event) => ({
+  .map((event, index) => ({
     blockId,
+    index,
     extrinsicId: id,
     event
   }));
@@ -110,13 +111,6 @@ const extrinsicToEventHeader = ({id, blockId, events}: ExtrinsicBody): EventHead
 const eventToBody = (nextFreeId: number) =>  (event: EventHead, index: number): EventBody => ({
   id: nextFreeId + index,
   ...event
-});
-  
-const eventToInsert = ({event, extrinsicId, blockId, id}: EventBody, index: number): InsertEventValue => ({
-  id, extrinsicId, blockId, index,
-  data: JSON.stringify(event.event.data.toJSON()),
-  method: event.event.method,
-  section: event.event.section
 });
 
 const isEventStakingReward = ({event: {event: {method, section}}}: EventHead): boolean => 
@@ -167,7 +161,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
     .map(eventToBody(eid))
   
   logger.info("Inserting events");
-  await insertEvents(events.map(eventToInsert));
+  await insertEvents(events);
   
   // Accounts
   logger.info("Extracting, compressing and dropping duplicate accounts");
@@ -184,13 +178,12 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   
   // Staking Slash
   logger.info("Inserting staking slashes");
-  await insertStakingSlashEvents(events.filter(isEventStakingSlash));
+  await insertStakingSlash(events.filter(isEventStakingSlash));
   
   // Staking Reward
   logger.info("Inserting staking rewards");
-  await insertStakingRewardEvents(events.filter(isEventStakingReward));
+  await insertStakingReward(events.filter(isEventStakingReward));
     
-  events = [];
   // Transfers
   logger.info("Extracting transfers");
   let transfers = extrinsics
