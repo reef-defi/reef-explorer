@@ -50,7 +50,7 @@ export const accountHeadToBody = async (head: AccountHead): Promise<AccountBody>
     vestedBalance: balances.vestedBalance.toString(),
     votingBalance: balances.votingBalance.toString(),
     reservedBalance: balances.reservedBalance.toString(),
-    identity: identity.display ? identity.display.toString() : '',
+    identity: JSON.stringify(identity),
     nonce: balances.accountNonce.toString(),
     evmNonce: evmNonce
   });
