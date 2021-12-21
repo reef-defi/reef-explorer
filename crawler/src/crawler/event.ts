@@ -10,7 +10,11 @@ export const accountNewOrKilled = (eventHead: EventHead): AccountHead[] => {
   const {event, blockId} = eventHead;
   if (getProvider().api.events.balances.Endowed.is(event.event)) {
     return eventToAccountHead(eventHead);
-  } else if (getProvider().api.events.system.KilledAccount.is(event.event)) {
+  } else if (getProvider().api.events.staking.Rewarded.is(event.event)) {
+    return eventToAccountHead(eventHead);
+  } else if (getProvider().api.events.staking.Slashed.is(event.event)) {
+    return eventToAccountHead(eventHead);
+  }  else if (getProvider().api.events.system.KilledAccount.is(event.event)) {
     return eventToAccountHead(eventHead, false);
   } else if (getProvider().api.events.balances.Reserved.is(event.event)) {
     return eventToAccountHead(eventHead);
