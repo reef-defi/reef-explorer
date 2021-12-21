@@ -2,16 +2,16 @@ import { AccountBody, EventBody } from "../crawler/types";
 import { insert, query } from "../utils/connector";
 
 
-const toEventValue = ({id, blockId, extrinsicId, index, event: {event: {method, section, data}}}: EventBody): string => `
-  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}')`;
+const toEventValue = ({id, blockId, extrinsicId, index, event: {event: {method, section, data}, phase}}: EventBody): string => `
+  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}')`;
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
     await insert(`
 INSERT INTO event
-  (id, block_id, extrinsic_id, index, section, method, data)
+  (id, block_id, extrinsic_id, index, section, method, data, phase)
 VALUES
-  ${events.map(toEventValue).join(",")};
+  ${events.map(toEventValue).join(",\n")};
 `);
   }
 }
