@@ -20,8 +20,6 @@ INSERT INTO chain_info (name, count) VALUES
   -- ('tokens', 0);
 
 
-
-
 START TRANSACTION;
 CREATE FUNCTION block_count() RETURNS trigger LANGUAGE plpgsql AS
 $$BEGIN
