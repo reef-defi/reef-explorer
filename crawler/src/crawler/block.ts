@@ -13,8 +13,8 @@ import { compress, dropDuplicates, dropDuplicatesMultiKey, range, resolvePromise
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
-import * as Sentry from "@sentry/node";
 import { logger } from "../utils/logger";
+import { insertStakingRewardEvents, insertStakingSlashEvents } from "../queries/staking";
 
 interface BlockHash {
   id: number;
@@ -100,28 +100,26 @@ const extrinsicToInsert = ({id, extrinsic, signedData, blockId, events}: Extrins
   }
 };
 
-const extrinsicToEventHeader = ({id, blockId, events}: ExtrinsicBody): EventHead[] => events
-  .map((event) => ({
+const extrinsicToEventHeader = (nextFreeId: number) => ({id, blockId, events}: ExtrinsicBody): EventHead[] => events
+  .map((event, index) => ({
+    id: nextFreeId + index,
     blockId,
     extrinsicId: id,
     event
   }));
 
-const eventToInsert = (nextFreeId: number) => ({event, extrinsicId, blockId}: EventHead, index: number): InsertEventValue => ({
-  extrinsicId, blockId, index,
-  id: nextFreeId + index,
+const eventToInsert =  ({id, event, extrinsicId, blockId}: EventHead, index: number): InsertEventValue => ({
+  id, extrinsicId, blockId, index,
   data: JSON.stringify(event.event.data.toJSON()),
   method: event.event.method,
   section: event.event.section
 });
 
+const isEventStakingReward = ({event: {event: {method, section}}}: EventHead): boolean => 
+  section === 'staking' && (method === 'Reward' || method === 'Rewarded');
 
-interface Performance {
-  transactions: number;
-  dbTime: number;
-  nodeTime: number;
-  processingTime: number;
-}
+const isEventStakingSlash = ({event: {event: {method, section}}}: EventHead): boolean => 
+  section === 'staking' && (method === 'Slash' || method === 'Slashed');
 
 export const processBlocks = async (fromId: number, toId: number): Promise<number> => {
   // console.log(`Processing blocks from ${fromId} to ${toId}`);
@@ -161,10 +159,10 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   
   // Events
   logger.info("Extracting and compressing extrinisc events");
-  let events = compress(extrinsics.map(extrinsicToEventHeader));
+  let events = compress(extrinsics.map(extrinsicToEventHeader(eid)));
   
   logger.info("Inserting events");
-  await insertEvents(events.map(eventToInsert(eid)));
+  await insertEvents(events.map(eventToInsert));
   
   // Accounts
   logger.info("Extracting, compressing and dropping duplicate accounts");
@@ -175,11 +173,17 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   let accounts = await resolvePromisesAsChunks(insertOrDeleteAccount.map(accountHeadToBody));
   logger.info("Inserting or updating accounts");
   await insertAccounts(accounts);
-  
   // Free memory
-  events = [];
   accounts = [];
   insertOrDeleteAccount = [];
+  
+  // Staking Slash
+  await insertStakingSlashEvents(events.filter(isEventStakingSlash));
+  
+  // Staking Reward
+  await insertStakingRewardEvents(events.filter(isEventStakingReward));
+    
+  events = [];
   // Transfers
   logger.info("Extracting transfers");
   let transfers = extrinsics
