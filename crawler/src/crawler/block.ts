@@ -183,9 +183,11 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   insertOrDeleteAccount = [];
   
   // Staking Slash
+  logger.info("Inserting staking slashes");
   await insertStakingSlashEvents(events.filter(isEventStakingSlash));
-
+  
   // Staking Reward
+  logger.info("Inserting staking rewards");
   await insertStakingRewardEvents(events.filter(isEventStakingReward));
     
   events = [];
