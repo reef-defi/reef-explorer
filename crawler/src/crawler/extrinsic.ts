@@ -31,13 +31,12 @@ export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => ex
     }, {type: 'unknown'} as ExtrinsicStatus
   );
 
-export const isExtrinsicTransfer = ({extrinsic, status}: ExtrinsicBody): boolean => 
-     (extrinsic.method.section === "balances" 
-  || extrinsic.method.section === "currencies") && status.type === "success";
+export const isExtrinsicTransfer = ({extrinsic}: ExtrinsicBody): boolean => 
+    extrinsic.method.section === "balances" || extrinsic.method.section === "currencies";
 
-export const extrinsicBodyToTransfer = ({extrinsic, status, blockId, id, signedData}: ExtrinsicBody): Transfer => {
+export const extrinsicBodyToTransfer = ({extrinsic, status, blockId, id, signedData, events}: ExtrinsicBody): Transfer => {
   const args: any = extrinsic.args.map((arg) => arg.toJSON());
-  
+
   const toAddress = args[0]?.id || 'deleted';
   const fromAddress = resolveSigner(extrinsic);
 
