@@ -5,7 +5,7 @@ import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
-import {ABI, ABIS, AccountTokenBalance, Event, EventBody, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
+import {ABI, ABIS, AccountHead, AccountTokenBalance, Event, EventBody, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled } from "./event";
@@ -162,7 +162,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   
   logger.info("Inserting events");
   await insertEvents(events);
-  
+
   // Accounts
   logger.info("Extracting, compressing and dropping duplicate accounts");
   let insertOrDeleteAccount = dropDuplicates(compress(events.map(accountNewOrKilled)), 'address')
@@ -184,12 +184,12 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   logger.info("Inserting staking rewards");
   await insertStakingReward(events.filter(isEventStakingReward));
     
-  // Transfers
+  // Transfers 
   logger.info("Extracting transfers");
   let transfers = extrinsics
     .filter(isExtrinsicTransfer)
     .map(extrinsicBodyToTransfer);
-  
+
   logger.info("Inserting transfers");
   await insertTransfers(transfers);
   transfers = [];
