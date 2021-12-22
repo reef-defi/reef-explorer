@@ -1,3 +1,4 @@
+-- TODO to_address foreign key was removed from table. Account is not present in any of extrinsic events. Investigate!
 CREATE TABLE IF NOT EXISTS transfer (
   id BIGSERIAL,
   block_id BIGINT,
@@ -25,10 +26,6 @@ CREATE TABLE IF NOT EXISTS transfer (
       ON DELETE CASCADE,
   CONSTRAINT fk_from_address
     FOREIGN KEY(from_address)
-      REFERENCES account(address)
-      ON DELETE CASCADE,
-  CONSTRAINT fk_to_address
-    FOREIGN KEY(to_address)
       REFERENCES account(address)
       ON DELETE CASCADE
 );
