@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS transfer (
   CONSTRAINT fk_from_address
     FOREIGN KEY(from_address)
       REFERENCES account(address)
+      ON DELETE CASCADE,
+  CONSTRAINT fk_to_address
+    FOREIGN KEY(to_address)
+      REFERENCES account(address)
       ON DELETE CASCADE
 );
 
