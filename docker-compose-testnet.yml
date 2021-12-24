@@ -76,10 +76,10 @@ services:
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
       - MAX_BLOCKS_PER_STEP=1024
       - POSTGRES_PORT=5432
-      - POSTGRES_HOST='postgres'
-      - POSTGRES_USER='reefexplorer'
-      - POSTGRES_DATABASE='reefexplorer'
-      - POSTGRES_PASSWORD='reefexplorer'
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=reefexplorer
+      - POSTGRES_DATABASE=reefexplorer
+      - POSTGRES_PASSWORD=reefexplorer
     depends_on:
       - 'postgres'
       - 'substrate-node'
@@ -94,12 +94,12 @@ services:
     restart: always
     environment:
       - PORT=8000
-      - NODE_URL='ws://substrate-node:9944'
+      - NODE_URL=ws://substrate-node:9944
       - POSTGRES_PORT=5432
-      - POSTGRES_HOST='postgres'
-      - POSTGRES_USER='reefexplorer'
-      - POSTGRES_DATABASE='reefexplorer'
-      - POSTGRES_PASSWORD='reefexplorer'
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=reefexplorer
+      - POSTGRES_DATABASE=reefexplorer
+      - POSTGRES_PASSWORD=reefexplorer
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
     depends_on:
       - 'postgres'
