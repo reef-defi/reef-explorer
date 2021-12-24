@@ -5,32 +5,23 @@ object_relationships:
 - name: block
   using:
     foreign_key_constraint_on: block_id
-array_relationships:
-- name: contracts
-  using:
-    foreign_key_constraint_on:
-      column: owner
-      table:
-        name: contract
-        schema: public
-- name: transfers
-  using:
-    foreign_key_constraint_on:
-      column: from_address
-      table:
-        name: transfer
-        schema: public
-- name: unverified_evm_calls
-  using:
-    foreign_key_constraint_on:
-      column: signer_address
-      table:
-        name: unverified_evm_call
-        schema: public
-- name: verified_evm_calls
-  using:
-    foreign_key_constraint_on:
-      column: signer_address
-      table:
-        name: verified_evm_call
-        schema: public
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - block_id
+    - evm_nonce
+    - nonce
+    - active
+    - address
+    - evm_address
+    - identity
+    - available_balance
+    - free_balance
+    - locked_balance
+    - reserved_balance
+    - vested_balance
+    - voting_balance
+    - timestamp
+    filter: {}
+  role: public

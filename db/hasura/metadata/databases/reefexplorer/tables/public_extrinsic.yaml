@@ -5,39 +5,24 @@ object_relationships:
 - name: block
   using:
     foreign_key_constraint_on: block_id
-array_relationships:
-- name: contracts
-  using:
-    foreign_key_constraint_on:
-      column: extrinsic_id
-      table:
-        name: contract
-        schema: public
-- name: events
-  using:
-    foreign_key_constraint_on:
-      column: extrinsic_id
-      table:
-        name: event
-        schema: public
-- name: transfers
-  using:
-    foreign_key_constraint_on:
-      column: extrinsic_id
-      table:
-        name: transfer
-        schema: public
-- name: unverified_evm_calls
-  using:
-    foreign_key_constraint_on:
-      column: extrinsic_id
-      table:
-        name: unverified_evm_call
-        schema: public
-- name: verified_evm_calls
-  using:
-    foreign_key_constraint_on:
-      column: extrinsic_id
-      table:
-        name: verified_evm_call
-        schema: public
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - block_id
+    - id
+    - index
+    - signed
+    - args
+    - inherent_data
+    - signed_data
+    - docs
+    - error_message
+    - hash
+    - method
+    - section
+    - timestamp
+    - status
+    - type
+    filter: {}
+  role: public

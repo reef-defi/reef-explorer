@@ -15,11 +15,18 @@ object_relationships:
       table:
         name: verified_contract
         schema: public
-array_relationships:
-- name: account_token_balances
-  using:
-    foreign_key_constraint_on:
-      column: token_address
-      table:
-        name: account_token_balance
-        schema: public
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - address
+    - extrinsic_id
+    - owner
+    - bytecode
+    - bytecode_context
+    - bytecode_arguments
+    - gas_limit
+    - storage_limit
+    - timestamp
+    filter: {}
+  role: public

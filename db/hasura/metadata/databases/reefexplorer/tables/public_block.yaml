@@ -9,24 +9,17 @@ array_relationships:
       table:
         name: account
         schema: public
-- name: events
-  using:
-    foreign_key_constraint_on:
-      column: block_id
-      table:
-        name: event
-        schema: public
-- name: extrinsics
-  using:
-    foreign_key_constraint_on:
-      column: block_id
-      table:
-        name: extrinsic
-        schema: public
-- name: transfers
-  using:
-    foreign_key_constraint_on:
-      column: block_id
-      table:
-        name: transfer
-        schema: public
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - id
+    - hash
+    - author
+    - state_root
+    - parent_hash
+    - extrinsic_root
+    - finalized
+    - timestamp
+    filter: {}
+  role: public

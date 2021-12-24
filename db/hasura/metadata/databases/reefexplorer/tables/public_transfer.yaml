@@ -11,3 +11,20 @@ object_relationships:
 - name: extrinsic
   using:
     foreign_key_constraint_on: extrinsic_id
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - block_id
+    - extrinsic_id
+    - id
+    - success
+    - from_address
+    - to_address
+    - amount
+    - fee_amount
+    - denom
+    - error_message
+    - timestamp
+    filter: {}
+  role: public

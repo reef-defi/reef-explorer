@@ -11,3 +11,20 @@ object_relationships:
 - name: verified_contract
   using:
     foreign_key_constraint_on: contract_address
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - id
+    - extrinsic_id
+    - signer_address
+    - contract_address
+    - event_name
+    - event_args
+    - status
+    - log
+    - gas_limit
+    - storage_limit
+    - fee
+    filter: {}
+  role: public
