@@ -186,6 +186,7 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   // Accounts
   logger.info("Extracting, compressing and dropping duplicate accounts");
   let insertOrDeleteAccount = dropDuplicates(compress(allAccounts), 'address')
+    .filter(({address}) => address.length === 48);
   
   logger.info("Retrieving used account info");
   transactions += insertOrDeleteAccount.length;
