@@ -1,0 +1,25 @@
+table:
+  name: event
+  schema: public
+object_relationships:
+- name: block
+  using:
+    foreign_key_constraint_on: block_id
+- name: extrinsic
+  using:
+    foreign_key_constraint_on: extrinsic_id
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - block_id
+    - extrinsic_id
+    - id
+    - index
+    - data
+    - phase
+    - method
+    - section
+    - timestamp
+    filter: {}
+  role: public

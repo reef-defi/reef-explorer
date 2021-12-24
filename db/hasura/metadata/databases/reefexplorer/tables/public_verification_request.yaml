@@ -1,0 +1,21 @@
+table:
+  name: verification_request
+  schema: public
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - id
+    - optimization
+    - success
+    - address
+    - runs
+    - args
+    - source
+    - compiler_version
+    - filename
+    - message
+    - name
+    - target
+    filter: {}
+  role: public
