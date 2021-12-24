@@ -9,8 +9,8 @@
         <Card v-else class="account-details">
           <div class="account-details__identicon">
             <ReefIdenticon
-              :key="parsedAccount.accountId"
-              :address="parsedAccount.accountId"
+              :key="parsedAccount.address"
+              :address="parsedAccount.address"
               :size="80"
             />
           </div>
@@ -18,17 +18,17 @@
           <Headline
             v-if="
               parsedAccount.identity.display &&
-              parsedAccount.identity.displayParent
+              parsedAccount.identity.display_parent
             "
           >
-            {{ parsedAccount.identity.displayParent }} /
+            {{ parsedAccount.identity.display_parent }} /
             {{ parsedAccount.identity.display }}
           </Headline>
           <Headline v-else-if="parsedAccount.identity.display">
             {{ parsedAccount.identity.display }}
           </Headline>
           <Headline v-else>
-            {{ shortAddress(parsedAccount.accountId) }}
+            {{ shortAddress(parsedAccount.address) }}
           </Headline>
 
           <Data>
@@ -36,27 +36,30 @@
               <Cell>Address</Cell>
               <Cell>
                 <ReefIdenticon
-                  :key="parsedAccount.accountId"
+                  :key="parsedAccount.address"
                   class="account-details__account-identicon"
-                  :address="parsedAccount.accountId"
+                  :address="parsedAccount.address"
                   :size="20"
                 />
-                <span>{{ parsedAccount.accountId }}</span>
+                <span>{{ parsedAccount.address }}</span>
               </Cell>
             </Row>
 
-            <Row v-if="parsedAccount.evmAddress">
+            <Row v-if="parsedAccount.evm_address">
               <Cell>{{ $t('details.account.evm_address') }}</Cell>
               <Cell>
-                <eth-identicon :address="parsedAccount.evmAddress" :size="20" />
-                <span>{{ parsedAccount.evmAddress }}</span>
+                <eth-identicon
+                  :address="parsedAccount.evm_address"
+                  :size="20"
+                />
+                <span>{{ parsedAccount.evm_address }}</span>
               </Cell>
             </Row>
 
-            <Row v-if="parsedAccount.evmNonce">
+            <Row v-if="parsedAccount.evm_nonce">
               <Cell>{{ $t('details.account.evm_nonce') }}</Cell>
               <Cell>
-                <span>{{ parsedAccount.evmNonce }}</span>
+                <span>{{ parsedAccount.evm_nonce }}</span>
               </Cell>
             </Row>
 
@@ -66,10 +69,10 @@
                 <span
                   v-if="
                     parsedAccount.identity.display &&
-                    parsedAccount.identity.displayParent
+                    parsedAccount.identity.display_parent
                   "
                 >
-                  {{ parsedAccount.identity.displayParent }} /
+                  {{ parsedAccount.identity.display_parent }} /
                   {{ parsedAccount.identity.display }}
                 </span>
                 <span v-else>
@@ -143,64 +146,51 @@
               </Cell>
             </Row>
 
-            <!-- <Row>
+            <Row>
               <Cell>{{ $t('details.account.total_balance') }}</Cell>
               <Cell class="amount">
-                {{ formatAmount(parsedAccount.balances.freeBalance) }}
+                {{ formatAmount(parsedAccount.free_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.available_balance') }}</Cell>
               <Cell class="amount">
-                {{ formatAmount(parsedAccount.balances.availableBalance) }}
+                {{ formatAmount(parsedAccount.available_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.locked_balance') }}</Cell>
               <Cell class="amount">
-                {{ formatAmount(parsedAccount.balances.lockedBalance) }}
+                {{ formatAmount(parsedAccount.locked_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.reserved_balance') }}</Cell>
               <Cell class="amount">
-                {{ formatAmount(parsedAccount.balances.reservedBalance) }}
-              </Cell>
-            </Row>
-
-            <Row>
-              <Cell>{{ $t('details.account.is_vesting') }}</Cell>
-              <Cell>
-                {{ parsedAccount.balances.isVesting ? `Yes` : `No` }}
+                {{ formatAmount(parsedAccount.reserved_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.vested_balance') }}</Cell>
               <Cell class="amount">
-                {{ formatAmount(parsedAccount.balances.vestedBalance) }}
-              </Cell>
-            </Row>
-
-            <Row>
-              <Cell>{{ $t('details.account.vesting_total') }}</Cell>
-              <Cell class="amount">
-                {{ formatAmount(parsedAccount.balances.vestingTotal) }}
+                {{ formatAmount(parsedAccount.vested_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.voting_balance') }}</Cell>
               <Cell class="amount">
-                {{ formatAmount(parsedAccount.balances.votingBalance) }}
+                {{ formatAmount(parsedAccount.voting_balance) }}
               </Cell>
-            </Row> -->
+            </Row>
           </Data>
 
-          <!-- <Tabs v-model="tab" :options="$options.tabs" />
+          <!--
+          <Tabs v-model="tab" :options="$options.tabs" />
 
           <AccountTransfers
             v-if="tab === 'transfers'"
@@ -281,6 +271,15 @@ export default {
               locked_balance
               block_id
               timestamp
+              nonce
+              identity
+              evm_nonce
+              free_balance
+              available_balance
+              locked_balance
+              reserved_balance
+              vested_balance
+              voting_balance
             }
           }
         `,
@@ -291,46 +290,18 @@ export default {
         },
         result({ data }) {
           if (data.account[0]) {
-            this.parsedAccount = {
-              accountId: data.account[0].address,
-              evmAddress: data.account[0].evm_address,
-              evmNonce: data.account[0].evm_nonce,
-              availableBalance: data.account[0].available_balance,
-              freeBalance: data.account[0].free_balance,
-              lockedBalance: data.account[0].locked_balance,
-              balances: JSON.parse(data.account[0].balances || '{}'),
-              nonce: data.account[0].nonce,
-              identity: JSON.parse(data.account[0].identity || '{}'),
-              timestamp: data.account[0].timestamp,
-            }
+            this.parsedAccount = data.account[0]
           } else if (this.isAddress(this.accountId)) {
             this.parsedAccount = {
-              accountId: this.accountId,
-              evmAddress: null,
-              evmNonce: null,
-              availableBalance: '0',
-              freeBalance: '0',
-              lockedBalance: '0',
-              balances: {
-                accountId: this.accountId,
-                accountNonce: '0x00000000',
-                additional: [],
-                freeBalance: '0x00000000000000000000000000000000',
-                frozenFee: '0x00000000000000000000000000000000',
-                frozenMisc: '0x00000000000000000000000000000000',
-                reservedBalance: '0x00000000000000000000000000000000',
-                votingBalance: '0x00000000000000000000000000000000',
-                availableBalance: '0x00000000000000000000000000000000',
-                lockedBalance: '0x00000000000000000000000000000000',
-                lockedBreakdown: [],
-                vestingLocked: '0x00000000000000000000000000000000',
-                isVesting: false,
-                vestedBalance: '0x00000000000000000000000000000000',
-                vestedClaimable: '0x00000000000000000000000000000000',
-                vestingEndBlock: '0x00000000',
-                vestingPerBlock: '0x00000000000000000000000000000000',
-                vestingTotal: '0x00000000000000000000000000000000',
-              },
+              address: this.accountId,
+              evm_address: null,
+              evm_nonce: null,
+              available_balance: '0',
+              free_balance: '0',
+              locked_balance: '0',
+              reserved_balance: '0',
+              vested_balance: '0',
+              voting_balance: '0',
               nonce: 0,
               identity: {},
               timestamp: null,
