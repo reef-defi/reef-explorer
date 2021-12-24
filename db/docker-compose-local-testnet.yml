@@ -1,9 +1,7 @@
 version: '3.7'
 
 services:
-  #
   # PostgresSQL database
-  #
   postgres:
     image: postgres:13
     restart: always
@@ -15,10 +13,11 @@ services:
       - './sql/initialization/account.sql:/docker-entrypoint-initdb.d/02_account.sql'
       - './sql/initialization/extrinsic.sql:/docker-entrypoint-initdb.d/03_extrinsic.sql'
       - './sql/initialization/event.sql:/docker-entrypoint-initdb.d/04_event.sql'
-      - './sql/initialization/error.sql:/docker-entrypoint-initdb.d/05_error.sql'
-      - './sql/initialization/contract.sql:/docker-entrypoint-initdb.d/06_contract.sql'
-      - './sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/07_evmEvent.sql'
-      - './sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/08_transfer.sql'
+      - './sql/initialization/contract.sql:/docker-entrypoint-initdb.d/05_contract.sql'
+      - './sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/06_evmEvent.sql'
+      - './sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/07_transfer.sql'
+      - './sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
+      - './sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/09_chainInfo.sql'
       # Chain info sql must be the last to initialize!
       # - './sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/17_chainInfo.sql'
     environment:
@@ -45,7 +44,7 @@ services:
       - ./hasura/metadata:/hasura-metadata
     environment:
       ## postgres database to store Hasura metadata
-      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://reefexplorer:reefexplorer@postgres:5432/reefexplorer
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://reefexplorer:reefexplorer@postgres:54321/reefexplorer
       ## enable the console served by server
       HASURA_GRAPHQL_ENABLE_CONSOLE: "false" # set "false" to disable console
       ## enable debugging mode. It is recommended to disable this in production

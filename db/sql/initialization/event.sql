@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS event (
   extrinsic_id BIGINT,
   index BIGINT NOT NULL,
   
+  phase JSON NOT NULL,
   section TEXT NOT NULL,
   method TEXT NOT NULL,
   data JSON NOT NULL,

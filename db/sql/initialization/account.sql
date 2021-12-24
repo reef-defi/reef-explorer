@@ -3,13 +3,18 @@ CREATE TABLE IF NOT EXISTS account (
   address VARCHAR(48),
   evm_address VARCHAR(42), -- TODO maybe we can add also address as Primary Key
 
-  identity VARCHAR,
+  identity JSON,
+
   active BOOLEAN NOT NULL,
   free_balance NUMERIC(80,0) NOT NULL,
   locked_balance NUMERIC(80,0) NOT NULL,
   available_balance NUMERIC(80,0) NOT NULL,
+  reserved_balance NUMERIC(80,0) NOT NULL,
+  vested_balance NUMERIC(80,0) NOT NULL,
+  voting_balance NUMERIC(80,0) NOT NULL,
+  
   nonce BIGINT NOT NULL,
-  evm_nonce BIGINT,
+  evm_nonce BIGINT NOT NULL,
 
   timestamp timestamp default current_timestamp,
 
@@ -26,7 +31,7 @@ CREATE INDEX IF NOT EXISTS account_evm_address ON account (evm_address);
 
 -- Inserting chain account
 INSERT INTO account 
-  (block_id, evm_address, address, active, available_balance, free_balance, locked_balance, nonce)
+  (block_id, evm_address, address, active, available_balance, free_balance, locked_balance, reserved_balance, vested_balance, voting_balance, nonce, evm_nonce)
 VALUES
-  (-1, '0x', '0x', true, 0, 0, 0, 0),
-  (-1, 'deleted', 'deleted', true, 0, 0, 0, 0);
+  (-1, '0x', '0x', true, 0, 0, 0, 0, 0, 0, 0, 0),
+  (-1, 'deleted', 'deleted', true, 0, 0, 0, 0, 0, 0, 0, 0);

@@ -5,7 +5,10 @@ const transport = pino.transport({
     {
       level: 'info',
       target: 'pino-pretty', // must be installed separately
-      options: {},
+      options: {
+        colorize: true,
+        translateTime: "yyyy-dd-mm, h:MM:ss TT",
+      },
     }, 
     {
       level: 'trace',
