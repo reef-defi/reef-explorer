@@ -35,7 +35,7 @@ export const accountHeadToBody = async (head: AccountHead): Promise<AccountBody>
     nodeQuery((provider) => provider.api.derive.accounts.identity(head.address))
   ]);
   const address = evmAddress.toString();
-
+  
   const evmNonce: string|null = address !== "" 
     ? await nodeQuery((provider) => provider.api.query.evm.accounts(address))
       .then((res): any => res.toJSON())
