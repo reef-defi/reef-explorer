@@ -1,0 +1,22 @@
+table:
+  name: verified_contract
+  schema: public
+object_relationships:
+- name: contract
+  using:
+    foreign_key_constraint_on: address
+array_relationships:
+- name: newly_verified_contract_queues
+  using:
+    foreign_key_constraint_on:
+      column: address
+      table:
+        name: newly_verified_contract_queue
+        schema: public
+- name: verified_evm_calls
+  using:
+    foreign_key_constraint_on:
+      column: contract_address
+      table:
+        name: verified_evm_call
+        schema: public

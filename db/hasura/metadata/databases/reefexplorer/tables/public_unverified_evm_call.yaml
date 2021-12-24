@@ -1,0 +1,10 @@
+table:
+  name: unverified_evm_call
+  schema: public
+object_relationships:
+- name: account
+  using:
+    foreign_key_constraint_on: signer_address
+- name: extrinsic
+  using:
+    foreign_key_constraint_on: extrinsic_id

@@ -1,0 +1,7 @@
+table:
+  name: account_token_balance
+  schema: public
+object_relationships:
+- name: contract
+  using:
+    foreign_key_constraint_on: token_address

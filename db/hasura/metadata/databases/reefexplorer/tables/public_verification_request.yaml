@@ -1,0 +1,3 @@
+table:
+  name: verification_request
+  schema: public

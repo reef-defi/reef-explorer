@@ -1,0 +1,25 @@
+table:
+  name: contract
+  schema: public
+object_relationships:
+- name: account
+  using:
+    foreign_key_constraint_on: owner
+- name: extrinsic
+  using:
+    foreign_key_constraint_on: extrinsic_id
+- name: verified_contract
+  using:
+    foreign_key_constraint_on:
+      column: address
+      table:
+        name: verified_contract
+        schema: public
+array_relationships:
+- name: account_token_balances
+  using:
+    foreign_key_constraint_on:
+      column: token_address
+      table:
+        name: account_token_balance
+        schema: public
