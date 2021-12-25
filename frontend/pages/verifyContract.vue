@@ -30,6 +30,7 @@
                     id="contract-name"
                     v-model="$v.contractName.$model"
                     type="text"
+                    class="input-height"
                     placeholder="Enter contract name"
                     :state="validateState('contractName')"
                   ></b-form-input>
@@ -44,6 +45,7 @@
                 >
                   <b-form-select
                     id="compiler-version"
+                    class="input-height"
                     v-model="$v.compilerVersion.$model"
                     :options="nightly ? compilerVersions : compilerAllVersions"
                     :state="validateState('compilerVersion')"
@@ -63,6 +65,7 @@
                     id="contract-name"
                     v-model="$v.contractFilename.$model"
                     type="text"
+                    class="input-height"
                     placeholder="Enter contract filename"
                     :state="validateState('contractFilename')"
                   ></b-form-input>
@@ -79,6 +82,7 @@
                     id="optimization-target"
                     v-model="$v.target.$model"
                     :options="targetOptions"
+                    class="input-height"
                     :state="validateState('target')"
                   ></b-form-select>
                 </b-form-group>
@@ -96,6 +100,7 @@
                     id="address"
                     v-model="$v.address.$model"
                     type="text"
+                    class="input-height"
                     placeholder="Enter address"
                     :state="validateState('address')"
                   ></b-form-input>
@@ -111,6 +116,7 @@
                   <b-form-select
                     id="optimization"
                     v-model="$v.optimization.$model"
+                    class="input-height"
                     :options="optimizationOptions"
                     :state="validateState('optimization')"
                   ></b-form-select>
@@ -130,6 +136,7 @@
                 >
                   <b-form-select
                     id="license"
+                    class="input-height"
                     v-model="$v.license.$model"
                     :options="licenses"
                     :state="validateState('license')"
@@ -147,6 +154,7 @@
                 >
                   <b-form-input
                     id="optimization-runs"
+                    class="input-height"
                     v-model="$v.runs.$model"
                     type="number"
                     :state="validateState('runs')"
@@ -154,6 +162,26 @@
                 </b-form-group>
               </div>
             </div>
+            <b-form-group
+              label="Contract sources:"
+            >
+              <div class="row">
+                <div
+                  :key="index"
+                  class="col-md-12"
+                  v-for="(source, index) in source"
+                >
+                  <b-form-input
+                    v-model="source.filename"
+                    placeholder="Source filename"
+                  />
+                  <b-form-textarea
+                    v-model="source.content"
+                    placeholder="Source filename"
+                  />
+                </div>
+              </div>
+            </b-form-group>
 
             <b-form-group
               id="input-group-arguments"
@@ -161,12 +189,13 @@
               label-for="arguments"
               description="Encoded constructor arguments"
             >
-              <b-form-textarea
+              <b-form-input
                 id="arguments"
+                class="input-height"
                 v-model="$v.arguments.$model"
                 placeholder="Enter encoded constructor arguments..."
                 rows="6"
-              ></b-form-textarea>
+              ></b-form-input>
             </b-form-group>
 
 
@@ -219,12 +248,13 @@ export default {
       requestId: null,
       requestIds: [],
       requests: [],
-      source: null,
+      source: [
+        {filename: 'hehconsole.error();', content: 'ola'},
+      ],
       sourceContent: null,
       uploadPercentage: 0,
       address: '',
       compilerVersion: null,
-      verificationError: '',
       arguments: '',
       contractName: '',
       contractFilename: '',
@@ -234,14 +264,15 @@ export default {
       target: 'default',
       license: 'none',
       targetOptions: [
-        { text: 'Default (compiler defaults)', value: 'default' },
-        { text: 'homestead (oldest version)', value: 'homestead' },
-        { text: 'tangerineWhistle', value: 'tangerineWhistle' },
-        { text: 'spuriousDragon', value: 'spuriousDragon' },
-        { text: 'byzantium (default for <= v0.5.4)', value: 'byzantium' },
+        { text: 'Default (compiler defaults)', value: 'london' },
+        { text: 'berlin', value: 'berlin' },
         { text: 'constantinople', value: 'constantinople' },
+        { text: 'spuriousDragon', value: 'spuriousDragon' },
+        { text: 'tangerineWhistle', value: 'tangerineWhistle' },
+        { text: 'homestead (oldest version)', value: 'homestead' },
         { text: 'petersburg (default for >= v0.5.5)', value: 'petersburg' },
         { text: 'istanbul (default for >= v0.5.14)', value: 'istanbul' },
+        { text: 'byzantium (default for <= v0.5.4)', value: 'byzantium' },
       ],
       optimizationOptions: [
         { text: 'Yes', value: true },
@@ -313,7 +344,6 @@ export default {
     },
     address: {
       required,
-      isValidContractId: (value, vm) => vm.isValidContractId(value, vm),
     },
     arguments: {},
     compilerVersion: {
@@ -341,101 +371,83 @@ export default {
     },
     async onSubmit(evt) {
       evt.preventDefault()
-      this.$v.$touch()
-      if (this.$v.$invalid) {
-        return false
-      }
-      try {
-        // generate recaptcha token
-        const token = await this.$recaptcha.getResponse()
+      // this.$v.$touch()
+      // if (this.$v.$invalid) {
+        //   return false
+      // }
+      // try {
+        //   // generate recaptcha token
+      //   const token = await this.$recaptcha.getResponse()
 
-        // figure out default target
+      //   // figure out default target
         const vm = this
-        let target = vm.target
-        // compilerVersion: could be formatted like 'v0.4.24-nightly.2018.5.16+commit.7f965c86' or 'v0.8.6+commit.11564f7e'
-        if (target === 'default') {
-          const compilerVersionNumber = vm.compilerVersion
-            .split('-')[0]
-            .split('+')[0]
-            .substring(1)
-          const compilerVersionNumber1 = parseInt(
-            compilerVersionNumber.split('.')[0]
-          )
-          const compilerVersionNumber2 = parseInt(
-            compilerVersionNumber.split('.')[1]
-          )
-          const compilerVersionNumber3 = parseInt(
-            compilerVersionNumber.split('.')[2]
-          )
-          if (
-            compilerVersionNumber1 === 0 &&
-            compilerVersionNumber2 <= 5 &&
-            compilerVersionNumber3 <= 4
-          ) {
-            target = 'byzantium'
-          } else if (
-            compilerVersionNumber1 === 0 &&
-            compilerVersionNumber2 >= 5 &&
-            compilerVersionNumber3 >= 5 &&
-            compilerVersionNumber3 < 14
-          ) {
-            target = 'petersburg'
-          } else {
-            target = 'istanbul'
-          }
-        }
+        console.log(this.source.map(({filename}) => filename))
+      //   let target = vm.target
+      //   // compilerVersion: could be formatted like 'v0.4.24-nightly.2018.5.16+commit.7f965c86' or 'v0.8.6+commit.11564f7e'
+      //   if (target === 'default') {
+      //     const compilerVersionNumber = vm.compilerVersion
+      //       .split('-')[0]
+      //       .split('+')[0]
+      //       .substring(1)
+      //     const compilerVersionNumber1 = parseInt(
+      //       compilerVersionNumber.split('.')[0]
+      //     )
+      //     const compilerVersionNumber2 = parseInt(
+      //       compilerVersionNumber.split('.')[1]
+      //     )
+      //     const compilerVersionNumber3 = parseInt(
+      //       compilerVersionNumber.split('.')[2]
+      //     )
+      //     if (
+      //       compilerVersionNumber1 === 0 &&
+      //       compilerVersionNumber2 <= 5 &&
+      //       compilerVersionNumber3 <= 4
+      //     ) {
+      //       target = 'byzantium'
+      //     } else if (
+      //       compilerVersionNumber1 === 0 &&
+      //       compilerVersionNumber2 >= 5 &&
+      //       compilerVersionNumber3 >= 5 &&
+      //       compilerVersionNumber3 < 14
+      //     ) {
+      //       target = 'petersburg'
+      //     } else {
+      //       target = 'istanbul'
+      //     }
+      //   }
 
-        // call manual verification api
-        const sourceObject = {}
-        sourceObject[vm.source.name] = vm.sourceContent
-        this.$axios
-          .post(network.verificatorApi + '/form-verification', {
-            address: toChecksumAddress(vm.address),
-            name: vm.source.name.split('.')[0],
-            runs: vm.runs,
-            filename: vm.source.name,
-            source: JSON.stringify(sourceObject),
-            compilerVersion: vm.compilerVersion,
-            optimization: JSON.stringify(vm.optimization),
-            token,
-            arguments: vm.arguments,
-            target,
-            license: vm.license,
-          })
-          .then((resp) => {
-            // eslint-disable-next-line no-console
-            console.log('verification status:', resp.data)
-            vm.requestStatus = resp.data
-          })
-          .catch((error) => {
-            vm.requestStatus = error.response.data
-          })
+      //   // call manual verification api
+      //   const sourceObject = {}
+      //   sourceObject[vm.source.name] = vm.sourceContent
+      //   this.$axios
+      //     .post(network.verificatorApi + '/form-verification', {
+      //       address: toChecksumAddress(vm.address),
+      //       name: vm.source.name.split('.')[0],
+      //       runs: vm.runs,
+      //       filename: vm.source.name,
+      //       source: JSON.stringify(sourceObject),
+      //       compilerVersion: vm.compilerVersion,
+      //       optimization: JSON.stringify(vm.optimization),
+      //       token,
+      //       arguments: vm.arguments,
+      //       target,
+      //       license: vm.license,
+      //     })
+      //     .then((resp) => {
+      //       // eslint-disable-next-line no-console
+      //       console.log('verification status:', resp.data)
+      //       vm.requestStatus = resp.data
+      //     })
+      //     .catch((error) => {
+      //       vm.requestStatus = error.response.data
+      //     })
 
-        // at the end you need to reset recaptcha
-        await this.$recaptcha.reset()
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log('recaptcha error:', error)
-      }
-    },
-    isValidContractId: async (contractId, vm) => {
-      if (!checkAddressChecksum(contractId)) {
-        return false
-      }
-      const client = vm.$apollo.provider.defaultClient
-      const query = gql`
-        query contract {
-          contract(where: { contract_id: { _eq: "${
-            toChecksumAddress(contractId) || ''
-          }" } }) {
-            verified
-          }
-        }
-      `
-      const response = await client.query({ query })
-      return (
-        response.data.contract.length > 0 && !response.data.contract[0].verified
-      )
+      //   // at the end you need to reset recaptcha
+      //   await this.$recaptcha.reset()
+      // } catch (error) {
+      //   // eslint-disable-next-line no-console
+      //   console.log('recaptcha error:', error)
+      // }
     },
     onFileChange(e) {
       const files = e.target.files || e.dataTransfer.files
@@ -490,6 +502,9 @@ export default {
 
   .alert {
     margin-bottom: 25px;
+  }
+  .input-height {
+    height: 45px !important;
   }
 
   .btn {
