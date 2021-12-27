@@ -1,0 +1,115 @@
+version: '3.7'
+
+services:
+  substrate-node:
+    build:
+      context: ${NODE_BUILD_CONTEXT}
+    image: ${NODE_IMAGE}
+    volumes:
+      - substrate-data:/data
+    ports:
+      - ${NODE_PORT}:${NODE_PORT}
+      - ${NODE_WS}:${NODE_WS}
+    # TODO paramaterise chain
+    command: -d /data --ws-max-connections ${NODE_MAX_CONS} ${NODE_CHAIN_CMD} ${NODE_CHAIN} --pruning=archive --rpc-cors "*" --ws-port ${NODE_WS} --port ${NODE_PORT} --unsafe-ws-external --no-prometheus --no-telemetry
+    restart: always
+    networks:
+      - reefscan
+
+  postgres:
+    image: postgres:13
+    restart: always
+    shm_size: 1gb
+    volumes:
+      - 'db-data:/var/lib/postgresql/data'
+      - './db/sql/initialization/init.sql:/docker-entrypoint-initdb.d/00_init.sql'
+      - './db/sql/initialization/block.sql:/docker-entrypoint-initdb.d/01_block.sql'
+      - './db/sql/initialization/account.sql:/docker-entrypoint-initdb.d/02_account.sql'
+      - './db/sql/initialization/extrinsic.sql:/docker-entrypoint-initdb.d/03_extrinsic.sql'
+      - './db/sql/initialization/event.sql:/docker-entrypoint-initdb.d/04_event.sql'
+      - './db/sql/initialization/contract.sql:/docker-entrypoint-initdb.d/05_contract.sql'
+      - './db/sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/06_evmEvent.sql'
+      - './db/sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/07_transfer.sql'
+      - './db/sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
+      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/09_chainInfo.sql'
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${DB_USER} #'reefexplorer'
+      POSTGRES_PASSWORD: ${DB_PW} #'reefexplorer'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reefexplorer']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reefscan
+
+  graphql-engine:
+    image: hasura/graphql-engine:v2.1.1.cli-migrations-v3
+    ports:
+      - 8080:8080
+    volumes:
+      - './db/hasura/metadata:/hasura-metadata'
+    depends_on:
+      - 'postgres'
+    restart: always
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: ${DB_URL} #postgres://reefexplorer:reefexplorer@postgres:5432/reefexplorer
+      HASURA_GRAPHQL_ENABLE_CONSOLE: ${GQL_CONSOLE} #'true' # set to "false" to disable console
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: ${GQL_UNAUTHORIZED_ROLE} #public
+      HASURA_GRAPHQL_ADMIN_SECRET: ${GQL_ADMIN_PW} #myadminsecretkey
+    networks:
+      - reefscan
+
+  crawler:
+    image: crawler
+    build: 
+      context: ./crawler
+    restart: always
+    environment:
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - START_BLOCK_STEP=32
+      # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
+      # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
+      - MAX_BLOCKS_PER_STEP=1024
+      - POSTGRES_PORT=${DB_PORT} #5432
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER} #reefexplorer
+      - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
+      - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+    depends_on:
+      - 'postgres'
+      - 'substrate-node'
+    networks:
+      - reefscan
+
+  api:
+    image: api
+    build:
+      context: ./api
+    restart: always
+    environment:
+      - PORT=${API_PORT} #8000
+      - NODE_URL=ws://${NODE_HOST}:${NODE_WS}
+      - POSTGRES_PORT=${DB_PORT}
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DATABASE=${DB_NAME}
+      - POSTGRES_PASSWORD=${DB_PW}
+      - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
+    depends_on:
+      - postgres
+      - substrate-node
+    networks:
+      - reefscan
+
+# Persistent volumes
+volumes:
+  db-data: {}
+  substrate-data: {}
+
+networks:
+  reefscan:
+    name: reefscan
