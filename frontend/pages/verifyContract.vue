@@ -167,14 +167,24 @@
                 </b-form-group>
               </div>
             </div>
-            <b-form-group
-              label="Contract sources:"
-              label-class="font-weight-bolder"
-            >
+            <div>
+              <div class="d-flex justify-content-lg-between">
+                <label class="d-block font-weight-bolder my-auto">Sources:</label>
+                <div>
+                  <b-button
+                    class="btn-sm btn-danger px-3 mt-0"
+                    v-on:click="removeLastSource"
+                  >-</b-button>
+                  <b-button
+                    class="btn-sm btn-success px-3 mt-0"
+                    v-on:click="addSource"
+                  >+</b-button>
+                </div>
+              </div>
               <div class="row">
                 <div
                   :key="index"
-                  class="col-md-12"
+                  class="col-md-12 pb-3"
                   v-for="(source, index) in source"
                 >
                   <b-form-input
@@ -182,14 +192,36 @@
                     v-model="source.filename"
                     placeholder="Source filename"
                   />
-                  <b-form-textarea
-                    class="content-source"
-                    v-model="source.content"
-                    placeholder="Source code"
-                  />
+                  <div
+                    v-if="source.content === null"
+                    class="d-flex flex-column"
+                  >
+                  <div class="d-flex justify-content-center ">
+                    <b-form-file
+                      accept=".sol"
+                      class="text-center radius-0"
+                      placeholder="Please select contract source file..."
+                      drop-placeholder="Drop contract source file here..."
+                      aria-describedby="source-help"
+                      @change="(event) => onFileChange(event, index)"
+                    />
+                  </div>
+                  <div class="d-flex justify-content-center">
+                    <b-button class="w-100 mt-0 content-source empty-source-btn">
+                      Or create an empty source file
+                    </b-button>
+                  </div>
+                </div>
+                <b-form-textarea
+                  class="content-source"
+                  v-if="source.content !== null"
+                  v-model="source.content"
+                  placeholder="Source code"
+                  rows="7"
+                />
                 </div>
               </div>
-            </b-form-group>
+            </div>
 
             <b-form-group
               id="input-group-arguments"
@@ -225,8 +257,8 @@
               {{ requestStatus }}
             </b-alert>
             <b-button type="submit" variant="outline-primary2" class="btn-block"
-              >Verify Contract</b-button
-            >
+              >Verify Contract
+            </b-button>
           </b-form>
         </div>
       </b-container>
@@ -257,7 +289,8 @@ export default {
       requestIds: [],
       requests: [],
       source: [
-        {filename: 'hehconsole.error();', content: 'ola'},
+        {filename: '', content: null},
+        {filename: 'test', content: "null"},
       ],
       sourceContent: null,
       uploadPercentage: 0,
@@ -269,7 +302,7 @@ export default {
       nightly: true,
       optimization: true,
       runs: 200,
-      target: 'default',
+      target: 'london',
       license: 'none',
       targetOptions: [
         { text: 'Default (compiler defaults)', value: 'london' },
@@ -457,19 +490,25 @@ export default {
       //   console.log('recaptcha error:', error)
       // }
     },
-    onFileChange(e) {
+    onFileChange(e, index) {
       const files = e.target.files || e.dataTransfer.files
       if (!files.length) return
-      this.readFile(files[0])
+      this.readFile(files[0], index)
     },
-    readFile(file) {
+    readFile(file, index) {
       const reader = new FileReader()
-      const vm = this
       reader.onload = (e) => {
-        vm.sourceContent = e.target.result
+        this.source[index].content = e.target.result
       }
       reader.readAsText(file)
     },
+    addSource() {
+      this.source.push({filename: "", content: ""})
+    },
+    removeLastSource() {
+      if (this.source.length <= 1) { return; }
+      this.source = this.source.slice(0, this.source.length-1);
+    }
   },
 }
 </script>
@@ -523,6 +562,15 @@ export default {
   .content-source {
     border-top-left-radius: 0% !important;
     border-top-right-radius: 0% !important;
+  }
+
+  .empty-source-btn {
+    border-bottom-left-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+  }
+
+  .radius-0 {
+    border-radius: 0% !important;
   }
 
   .btn {
