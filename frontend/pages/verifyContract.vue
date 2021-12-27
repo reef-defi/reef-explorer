@@ -62,7 +62,7 @@
                   label="Contract filename:"
                   label-for="contract-filename"
                   label-class="font-weight-bolder"
-                  description="Please specify Filename in which contract is stored"
+                  description="Please specify Filename in which contract is stored. Filename must exist in source filepath maping"
                 >
                   <b-form-input
                     id="contract-name"
@@ -190,7 +190,7 @@
                   <b-form-input
                     class="content-source-filename"
                     v-model="source.filename"
-                    placeholder="Source filename"
+                    placeholder="Contract source filepath"
                   />
                   <div
                     v-if="source.content === null"
@@ -207,7 +207,10 @@
                     />
                   </div>
                   <div class="d-flex justify-content-center">
-                    <b-button class="w-100 mt-0 content-source empty-source-btn">
+                    <b-button
+                      class="w-100 mt-0 content-source empty-source-btn"
+                      v-on:click="() => emptySource(index)"
+                    >
                       Or create an empty source file
                     </b-button>
                   </div>
@@ -222,17 +225,23 @@
                 </div>
               </div>
             </div>
-
+            <b-alert show>
+              Providing contract filesources is crutial for contract verification! <br/>
+              Here user shoudl create a project file-map to verify its contract.
+              It is best to use exact filepaths like in project directory. <br/>
+              I.E. `contract/Storage.sol` should be used in Contract source filepath <br/>
+            </b-alert>
             <b-form-group
               id="input-group-arguments"
               label="Constructor arguments:"
+              label-class="font-weight-bolder"
               label-for="arguments"
               description="Encoded constructor arguments"
             >
               <b-form-input
                 id="arguments"
                 class="input-height"
-                v-model="$v.arguments.$model"
+                v-model="$v.args.$model"
                 placeholder="Enter encoded constructor arguments..."
                 rows="6"
               ></b-form-input>
@@ -267,6 +276,7 @@
 </template>
 
 <script>
+import { axios } from "axios";
 import { gql } from 'graphql-tag'
 import { validationMixin } from 'vuelidate'
 import { checkAddressChecksum, toChecksumAddress } from 'web3-utils'
@@ -290,13 +300,12 @@ export default {
       requests: [],
       source: [
         {filename: '', content: null},
-        {filename: 'test', content: "null"},
       ],
       sourceContent: null,
       uploadPercentage: 0,
       address: '',
       compilerVersion: null,
-      arguments: '',
+      args: '',
       contractName: '',
       contractFilename: '',
       nightly: true,
@@ -386,7 +395,7 @@ export default {
     address: {
       required,
     },
-    arguments: {},
+    args: {},
     compilerVersion: {
       required,
     },
@@ -411,84 +420,62 @@ export default {
       return $dirty ? !$error : null
     },
     async onSubmit(evt) {
-      evt.preventDefault()
-      // this.$v.$touch()
-      // if (this.$v.$invalid) {
-        //   return false
-      // }
-      // try {
-        //   // generate recaptcha token
-      //   const token = await this.$recaptcha.getResponse()
+      evt.preventDefault();
+      const ensure = (condition, message) => {
+        if (!condition) {
+          throw new Error(message);
+        }
+      }
+      try {
+        // generate recaptcha token
+        const token = await this.$recaptcha.getResponse()
+        ensure(this.contractName !== "", "Contract name must not be empty");
+        ensure(this.contractFilename !== "", "Contract filename must not be empty");
+        ensure(this.contractAddress.length === 42, "Contract address is missing or it is not in correct form");
 
-      //   // figure out default target
-        const vm = this
-        console.log(this.source.map(({filename}) => filename))
-      //   let target = vm.target
-      //   // compilerVersion: could be formatted like 'v0.4.24-nightly.2018.5.16+commit.7f965c86' or 'v0.8.6+commit.11564f7e'
-      //   if (target === 'default') {
-      //     const compilerVersionNumber = vm.compilerVersion
-      //       .split('-')[0]
-      //       .split('+')[0]
-      //       .substring(1)
-      //     const compilerVersionNumber1 = parseInt(
-      //       compilerVersionNumber.split('.')[0]
-      //     )
-      //     const compilerVersionNumber2 = parseInt(
-      //       compilerVersionNumber.split('.')[1]
-      //     )
-      //     const compilerVersionNumber3 = parseInt(
-      //       compilerVersionNumber.split('.')[2]
-      //     )
-      //     if (
-      //       compilerVersionNumber1 === 0 &&
-      //       compilerVersionNumber2 <= 5 &&
-      //       compilerVersionNumber3 <= 4
-      //     ) {
-      //       target = 'byzantium'
-      //     } else if (
-      //       compilerVersionNumber1 === 0 &&
-      //       compilerVersionNumber2 >= 5 &&
-      //       compilerVersionNumber3 >= 5 &&
-      //       compilerVersionNumber3 < 14
-      //     ) {
-      //       target = 'petersburg'
-      //     } else {
-      //       target = 'istanbul'
-      //     }
-      //   }
+        this.source
+          .foreach(({filename, content}) => {
+            ensure(filename !== "", "Source filename is missing");
+            ensure(content !== "" && content !== null, "Source filename is missing");
+          });
+        ensure(this.compilerVersion !== null, "Compiler version is missing");
 
-      //   // call manual verification api
-      //   const sourceObject = {}
-      //   sourceObject[vm.source.name] = vm.sourceContent
-      //   this.$axios
-      //     .post(network.verificatorApi + '/form-verification', {
-      //       address: toChecksumAddress(vm.address),
-      //       name: vm.source.name.split('.')[0],
-      //       runs: vm.runs,
-      //       filename: vm.source.name,
-      //       source: JSON.stringify(sourceObject),
-      //       compilerVersion: vm.compilerVersion,
-      //       optimization: JSON.stringify(vm.optimization),
-      //       token,
-      //       arguments: vm.arguments,
-      //       target,
-      //       license: vm.license,
-      //     })
-      //     .then((resp) => {
-      //       // eslint-disable-next-line no-console
-      //       console.log('verification status:', resp.data)
-      //       vm.requestStatus = resp.data
-      //     })
-      //     .catch((error) => {
-      //       vm.requestStatus = error.response.data
-      //     })
+        //   // call manual verification api
+        const sourceObj = this.source
+          .reduce((prev, {filename, content}) =>
+            ({...prev, [filename]: content}),
+          {});
 
-      //   // at the end you need to reset recaptcha
-      //   await this.$recaptcha.reset()
-      // } catch (error) {
-      //   // eslint-disable-next-line no-console
-      //   console.log('recaptcha error:', error)
-      // }
+        const body = {
+          token,
+          runs: this.runs,
+          source: sourceObj,
+          target: this.target,
+          arguments: `[${this.args}]`,
+          license: this.license,
+          name: this.contractName,
+          address: this.contractAddress,
+          filename: this.contractFilename,
+          optimization: this.optimization,
+          compilerVersion: this.compilerVersion,
+        };
+        const res = await axios
+          .post("http://localhost:8000/api/verificator/form-verification", body);
+        console.log("Result: ", res);
+        // at the end you need to reset recaptcha
+        await this.$recaptcha.reset();
+        this.requestStatus = "Verified";
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        if (error.response) {
+          this.requestStatus = error.response.data;
+        } else if (error.message) {
+          this.requestStatus = error.message;
+        } else {
+          this.requestStatus = 'Recaptcha token is missing';
+          console.log('recaptcha error:', error)
+        }
+      }
     },
     onFileChange(e, index) {
       const files = e.target.files || e.dataTransfer.files
@@ -503,11 +490,14 @@ export default {
       reader.readAsText(file)
     },
     addSource() {
-      this.source.push({filename: "", content: ""})
+      this.source.push({filename: "", content: null})
     },
     removeLastSource() {
       if (this.source.length <= 1) { return; }
       this.source = this.source.slice(0, this.source.length-1);
+    },
+    emptySource(index) {
+      this.source[index].content = "";
     }
   },
 }
