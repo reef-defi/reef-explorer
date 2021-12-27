@@ -52,7 +52,7 @@ describe('Testing invalid arguments', () => {
     expect(argumentCustomTester(Greeter, ["ello world"])).to.false
   )
   it('should not verify Flipper arguments', () => 
-    expect(argumentCustomTester(Flipper, ["false"])).to.false
+    expect(argumentCustomTester(Flipper, [false])).to.false
   )
   it('should not verify ERC20Contract arguments', () => 
   expect(argumentCustomTester(ERC20Contract, ["98762421659845165189198984984321861981"])).to.false
