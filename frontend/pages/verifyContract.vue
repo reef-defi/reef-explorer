@@ -24,6 +24,7 @@
                   id="input-group-address"
                   label="Contract name:"
                   label-for="contract-name"
+                  label-class="font-weight-bolder"
                   description="Please enter the contract Name you would like to verify"
                 >
                   <b-form-input
@@ -41,6 +42,7 @@
                   id="compiler-version"
                   label="Compiler version:"
                   label-for="compiler-version"
+                  label-class="font-weight-bolder"
                   description="Please select used Compiler Version for compiling contract"
                 >
                   <b-form-select
@@ -59,6 +61,7 @@
                   id="input-group-address"
                   label="Contract filename:"
                   label-for="contract-filename"
+                  label-class="font-weight-bolder"
                   description="Please specify Filename in which contract is stored"
                 >
                   <b-form-input
@@ -76,6 +79,7 @@
                   id="input-group-optimization-target"
                   label="EVM version:"
                   label-for="optimization-target"
+                  label-class="font-weight-bolder"
                   description="Please select used EVM Version for compiling contract"
                 >
                   <b-form-select
@@ -94,6 +98,7 @@
                   id="input-group-address"
                   label="Address:"
                   label-for="address"
+                  label-class="font-weight-bolder"
                   description="Please enter the contracts Address"
                 >
                   <b-form-input
@@ -111,6 +116,7 @@
                   id="input-group-optimization"
                   label="Optimization:"
                   label-for="optimization"
+                  label-class="font-weight-bolder"
                   description="Please select contract Optimization"
                 >
                   <b-form-select
@@ -124,14 +130,12 @@
               </div>
             </div>
             <div class="row">
-
-            </div>
-            <div class="row">
               <div class="col-md-6">
                 <b-form-group
                   id="input-group-license"
                   label="Open source license:"
                   label-for="license"
+                  label-class="font-weight-bolder"
                   description="Please select Open Source License Type"
                 >
                   <b-form-select
@@ -150,6 +154,7 @@
                   id="input-group-optimization-runs"
                   label="Runs (Optimization):"
                   label-for="optimization-runs"
+                  label-class="font-weight-bolder"
                   description="Please specify number of Runs used to optimize contracts source"
                 >
                   <b-form-input
@@ -164,6 +169,7 @@
             </div>
             <b-form-group
               label="Contract sources:"
+              label-class="font-weight-bolder"
             >
               <div class="row">
                 <div
@@ -172,12 +178,14 @@
                   v-for="(source, index) in source"
                 >
                   <b-form-input
+                    class="content-source-filename"
                     v-model="source.filename"
                     placeholder="Source filename"
                   />
                   <b-form-textarea
+                    class="content-source"
                     v-model="source.content"
-                    placeholder="Source filename"
+                    placeholder="Source code"
                   />
                 </div>
               </div>
@@ -505,6 +513,16 @@ export default {
   }
   .input-height {
     height: 45px !important;
+  }
+  .content-source-filename {
+    border-bottom-left-radius: 0% !important;
+    border-bottom-right-radius: 0% !important;
+    border-bottom: solid 1px !important;
+    border-color: #ccc !important;
+  }
+  .content-source {
+    border-top-left-radius: 0% !important;
+    border-top-right-radius: 0% !important;
   }
 
   .btn {
