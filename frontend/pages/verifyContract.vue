@@ -276,10 +276,7 @@
 </template>
 
 <script>
-import { axios } from "axios";
-import { gql } from 'graphql-tag'
 import { validationMixin } from 'vuelidate'
-import { checkAddressChecksum, toChecksumAddress } from 'web3-utils'
 // eslint-disable-next-line no-unused-vars
 import { required, integer, minValue } from 'vuelidate/lib/validators'
 import commonMixin from '@/mixins/commonMixin.js'
@@ -383,6 +380,9 @@ export default {
     }
   },
   validations: {
+    contractAddress: {
+      required,
+    },
     contractName: {
       required,
     },
@@ -431,10 +431,10 @@ export default {
         const token = await this.$recaptcha.getResponse()
         ensure(this.contractName !== "", "Contract name must not be empty");
         ensure(this.contractFilename !== "", "Contract filename must not be empty");
-        ensure(this.contractAddress.length === 42, "Contract address is missing or it is not in correct form");
+        ensure(this.address.length === 42, "Contract address is missing or it is not in correct form");
 
         this.source
-          .foreach(({filename, content}) => {
+          .forEach(({filename, content}) => {
             ensure(filename !== "", "Source filename is missing");
             ensure(content !== "" && content !== null, "Source filename is missing");
           });
@@ -449,26 +449,24 @@ export default {
         const body = {
           token,
           runs: this.runs,
-          source: sourceObj,
           target: this.target,
-          arguments: `[${this.args}]`,
+          address: this.address,
           license: this.license,
           name: this.contractName,
-          address: this.contractAddress,
+          arguments: `[${this.args}]`,
           filename: this.contractFilename,
-          optimization: this.optimization,
+          source: JSON.stringify(sourceObj),
+          optimization: `${this.optimization}`,
           compilerVersion: this.compilerVersion,
         };
-        const res = await axios
-          .post("http://localhost:8000/api/verificator/form-verification", body);
-        console.log("Result: ", res);
+        await this.$axios.post(network.verificatorApi, body);
         // at the end you need to reset recaptcha
         await this.$recaptcha.reset();
         this.requestStatus = "Verified";
       } catch (error) {
         // eslint-disable-next-line no-console
         if (error.response) {
-          this.requestStatus = error.response.data;
+          this.requestStatus = error.response.data.message;
         } else if (error.message) {
           this.requestStatus = error.message;
         } else {
