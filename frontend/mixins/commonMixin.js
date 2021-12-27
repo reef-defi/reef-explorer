@@ -157,10 +157,17 @@ export default {
       }
       return ''
     },
+    // TODO gql returns date string so this might not be needed - check
     fromNow: (timestamp) => {
       moment.relativeTimeThreshold('s', 60)
       moment.relativeTimeThreshold('ss', 0)
       const date = moment.unix(timestamp)
+      return moment(date).fromNow()
+    },
+    fromDateNow: (dateString) => {
+      moment.relativeTimeThreshold('s', 60)
+      moment.relativeTimeThreshold('ss', 0)
+      const date = moment(dateString)
       return moment(date).fromNow()
     },
     formatTimestamp: (timestamp) => {

@@ -24,15 +24,15 @@
 
       <Table>
         <THead>
-          <Cell :sortable="['block_number', activeSort]">Block Number</Cell>
+          <Cell :sortable="['block_id', activeSort]">Block Number</Cell>
           <Cell :sortable="['timestamp', activeSort]">Date</Cell>
           <Cell :sortable="['timeago', activeSort, true]">Time Ago</Cell>
           <Cell :sortable="['amount', activeSort]" align="right">Reward</Cell>
         </THead>
 
         <Row v-for="(item, index) in list" :key="index">
-          <Cell :link="`/block?blockNumber=${item.block_number}`">
-            # {{ formatNumber(item.block_number) }}
+          <Cell :link="`/block?blockNumber=${item.block_id}`">
+            # {{ formatNumber(item.block_id) }}
           </Cell>
 
           <Cell>{{ getDateFromTimestamp(item.timestamp) }}</Cell>
@@ -97,9 +97,7 @@ export default {
 
       return list.filter((item) => {
         const filter = this.filter.toLowerCase()
-        const block = item.block_number
-          ? String(item.block_number).toLowerCase()
-          : ''
+        const block = item.block_id ? String(item.block_id).toLowerCase() : ''
         const amount = this.formatAmount(item.amount, 6)
         return block.includes(filter) || amount.includes(filter)
       })
@@ -127,6 +125,24 @@ export default {
     $subscribe: {
       event: {
         query: gql`
+          subscription staking($accountId: String!) {
+            staking(
+              order_by: { id: desc }
+              where: { account: { _eq: $accountId } }
+            ) {
+              id
+              account
+              amount
+              event {
+                index
+                block_id
+              }
+              timestamp
+            }
+          }
+        `,
+        /* TODO remove
+        query: gql`
           subscription staking_reward($accountId: String!) {
             staking_reward(
               order_by: { block_number: desc }
@@ -138,7 +154,7 @@ export default {
               timestamp
             }
           }
-        `,
+        `, */
         variables() {
           return {
             accountId: this.accountId,
@@ -148,11 +164,12 @@ export default {
           return !this.accountId
         },
         result({ data }) {
-          this.stakingRewards = data.staking_reward.map((event) => {
+          this.stakingRewards = data.staking.map((event) => {
+            const timestamp = new Date(event.timestamp).getTime() / 1000
             return {
-              block_number: event.block_number,
-              timestamp: event.timestamp,
-              timeago: event.timestamp,
+              block_id: event.block_id,
+              timestamp,
+              timeago: timestamp,
               amount: event.amount,
             }
           })

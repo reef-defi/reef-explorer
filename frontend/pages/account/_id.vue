@@ -148,48 +148,47 @@
 
             <Row>
               <Cell>{{ $t('details.account.total_balance') }}</Cell>
-              <Cell class="amount">
+              <Cell>
                 {{ formatAmount(parsedAccount.free_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.available_balance') }}</Cell>
-              <Cell class="amount">
+              <Cell>
                 {{ formatAmount(parsedAccount.available_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.locked_balance') }}</Cell>
-              <Cell class="amount">
+              <Cell>
                 {{ formatAmount(parsedAccount.locked_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.reserved_balance') }}</Cell>
-              <Cell class="amount">
+              <Cell>
                 {{ formatAmount(parsedAccount.reserved_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.vested_balance') }}</Cell>
-              <Cell class="amount">
+              <Cell>
                 {{ formatAmount(parsedAccount.vested_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.voting_balance') }}</Cell>
-              <Cell class="amount">
+              <Cell>
                 {{ formatAmount(parsedAccount.voting_balance) }}
               </Cell>
             </Row>
           </Data>
 
-          <!--
           <Tabs v-model="tab" :options="$options.tabs" />
 
           <AccountTransfers
@@ -206,7 +205,7 @@
 
           <StakingRewards v-if="tab === 'rewards'" :account-id="accountId" />
 
-          <StakingSlashes v-if="tab === 'slashes'" :account-id="accountId" /> -->
+          <!--          <StakingSlashes v-if="tab === 'slashes'" :account-id="accountId" />-->
         </Card>
       </b-container>
     </section>
@@ -339,7 +338,7 @@ export default {
     .table-cell__content {
       font-weight: 600;
       background: linear-gradient(90deg, #a93185, #5531a9);
-      background-clip: text;
+      //background-clip: text;
       -webkit-text-fill-color: transparent;
     }
   }
