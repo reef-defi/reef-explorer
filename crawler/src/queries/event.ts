@@ -1,9 +1,19 @@
 import { AccountBody, EventBody } from "../crawler/types";
-import { insert, query } from "../utils/connector";
+import { insert } from "../utils/connector";
 
-
-const toEventValue = ({id, blockId, extrinsicId, index, event: {event: {method, section, data}, phase}}: EventBody): string => `
-  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}')`;
+const toEventValue = ({
+  id,
+  blockId,
+  extrinsicId,
+  index,
+  event: {
+    event: { method, section, data },
+    phase,
+  },
+}: EventBody): string => `
+  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(
+  phase
+)}')`;
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
@@ -14,14 +24,29 @@ VALUES
   ${events.map(toEventValue).join(",\n")};
 `);
   }
-}
+};
 export const insertEvent = async (event: EventBody) => insertEvents([event]);
 
-
-const accountToInsertValue = ({address, evmAddress, blockId, active, freeBalance, availableBalance, lockedBalance, reservedBalance, votingBalance, vestedBalance, identity, nonce, evmNonce}: AccountBody): string => `
+const accountToInsertValue = ({
+  address,
+  evmAddress,
+  blockId,
+  active,
+  freeBalance,
+  availableBalance,
+  lockedBalance,
+  reservedBalance,
+  votingBalance,
+  vestedBalance,
+  identity,
+  nonce,
+  evmNonce,
+}: AccountBody): string => `
   ('${address}', '${evmAddress}', ${blockId}, ${active}, ${freeBalance}, ${lockedBalance}, ${availableBalance}, ${reservedBalance}, ${votingBalance}, ${vestedBalance}, '${identity}', ${nonce}, ${evmNonce})`;
 
-export const insertAccounts = async (accounts: AccountBody[]): Promise<void> => {
+export const insertAccounts = async (
+  accounts: AccountBody[]
+): Promise<void> => {
   if (accounts.length > 0) {
     await insert(`
 INSERT INTO account
@@ -43,4 +68,4 @@ ON CONFLICT (address) DO UPDATE SET
   identity = EXCLUDED.identity;
 `);
   }
-}
+};
