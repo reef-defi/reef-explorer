@@ -18,38 +18,6 @@ const preprocessBytecode = (bytecode: string) => {
   }
 }
 
-export const processNewContract = async ({extrinsicEvents, extrinsic, extrinsicId, blockId, status}: OldContract): Promise<void> => {
-  const {args} = extrinsic;
-  const event = extrinsicEvents.find(
-    ({event}) => event.section === 'evm' && event.method === 'Created'
-  );
-  if (!event) {
-    const message = status.type === 'error'
-      ? `with message: ${status.message}`
-      : '';
-    console.log(`Block: ${blockId} -> Contract deploy failed ${message}`);
-    return;
-  }
-  const address = event.event.data[0].toString();
-
-  const bytecode = args[0].toString();
-  const gasLimit = args[2].toString();
-  const storageLimit = args[3].toString();
-
-  const {context, args: bytecodeArguments} = preprocessBytecode(bytecode)
-
-  await insertContract({
-    address,
-    bytecode,
-    gasLimit,
-    extrinsicId,
-    storageLimit,
-    bytecodeArguments,
-    bytecodeContext: context,
-  });
-  console.log(`Block: ${blockId} -> New contract with address: ${address} added`);
-}
-
 const findContractEvent = (events: Event[]): Event|undefined => events.find(
   ({event}) => event.section === 'evm' && event.method === 'Created'
 );
@@ -66,7 +34,7 @@ export const isExtrinsicEVMCall = ({extrinsic: {method}}: ExtrinsicBody): boolea
 }
 
 export const extrinsicToContract = ({extrinsic, events, id}: ExtrinsicBody): Contract => {
-  const {args} = extrinsic;
+  const {args, signer} = extrinsic;
   const event = events.find(
     ({event}) => event.section === 'evm' && event.method === 'Created'
   )!;
@@ -86,6 +54,7 @@ export const extrinsicToContract = ({extrinsic, events, id}: ExtrinsicBody): Con
     bytecodeContext,
     extrinsicId: id,
     bytecodeArguments,
+    signer: signer.toString()
   }
 }
 
@@ -130,38 +99,9 @@ export const processUnverifiedEvmCall = async (section: ResolveSection): Promise
 }
 
 
-// export const prepareAccountTokenHeads = (accounts: AccountBody[], erc20Contracts: ERC20Token[]): AccountTokenHead[] => {
-//   let accountTokenHeads: AccountTokenHead[] = [];
-
-//   for (const account of accounts) {
-//     for (const token of erc20Contracts) {
-//       accountTokenHeads.push({
-//         accountAddress: account.address,
-//         accountEvmAddress: account.evmAddress,
-//         contractAddress: token.address,
-//       })
-//     }
-//   }
-
-//   return accountTokenHeads;
-// }
-
-// export const extractAccountTokenInformation = async (accountToken: AccountTokenHead): Promise<AccountTokenBalance> => {
-//   const token = new EthContract(accountToken.contractAddress, erc20Abi, getProvider());
-
-//   const [balance, decimals] = await Promise.all([
-//     token.balanceOf(accountToken.accountEvmAddress),
-//     token.decimals()  
-//   ]);
-
-//   return {...accountToken, balance, decimals};
-// }
-
 export const isEventEvmLog = ({event: {method, section}}: Event): boolean => 
   method === "Log" && section === "evm";
 
-
-  // const erc20ContractInterface = new utils.Interface(abi["ERC20Contract"]);
 
 interface BytecodeLog {
   address: string;
