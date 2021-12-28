@@ -30,7 +30,7 @@ export const insertExtrinsics = async (extrinsics: InsertExtrinsicBody[]): Promi
   if (extrinsics.length > 0) {
     await insert(`
 INSERT INTO extrinsic
-  (id, block_id, index, hash, args, docs, method, section, signed, status, error_message, type, signed_data)
+  (id, block_id, index, hash, args, docs, method, section, signer, status, error_message, type, signed_data)
 VALUES
 ${extrinsics.map(extrinsicToValue).join(",")}
 ON CONFLICT DO NOTHING;
