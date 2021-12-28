@@ -2,7 +2,7 @@ CREATE TYPE StakingType AS ENUM ('Reward', 'Slash');
 
 CREATE TABLE IF NOT EXISTS staking (
   id BIGSERIAL,
-  account VARCHAR,
+  signer VARCHAR,
   event_id BIGINT,
 
   type StakingType NOT NULL,
@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS staking (
   timestamp timestamp default current_timestamp,
 
   PRIMARY KEY (id),
-  CONSTRAINT fk_account
-    FOREIGN KEY (account)
+  CONSTRAINT fk_signer
+    FOREIGN KEY (signer)
       REFERENCES account(address)
       ON DELETE CASCADE,
   CONSTRAINT fk_event
@@ -22,5 +22,5 @@ CREATE TABLE IF NOT EXISTS staking (
 );
 
 CREATE INDEX IF NOT EXISTS staking_type ON staking (type);
-CREATE INDEX IF NOT EXISTS staking_account ON staking (account);
+CREATE INDEX IF NOT EXISTS staking_signer ON staking (signer);
 CREATE INDEX IF NOT EXISTS staking_event_id ON staking (event_id);
