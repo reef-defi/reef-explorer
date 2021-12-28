@@ -19,10 +19,6 @@
   },
   "homepage": "https://github.com/reef-defi/reef-explorer#readme",
   "workspaces": ["api","backend","frontend", "db"],
-  "scripts": {
-    "run-testnet": "docker-compose -p testnet1 -f docker-compose-testnet.yml up -d",
-    "stop-testnet": "docker stop testnet1-api-1 && docker stop testnet1-substrate-node-1 && docker stop testnet1-crawler-1 && docker stop testnet1-postgres-1",
-    "purge-testnet": "docker rm -v testnet1-api-1 && docker rm -v testnet1-crawler-1 && docker image rm api && docker image rm crawler"
-  }
+  "scripts": {}
  }
  
