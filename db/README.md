@@ -13,14 +13,5 @@ make env=dev up
 ```
 
 ## Hasura console
-You will need to install the Hasura-cli:
-```
-curl -L https://github.com/hasura/graphql-engine/raw/stable/cli/get.sh | bash
-```
-
-To enter into hasura console you should run the stack using the `Makefile` method 
-described in above section.  Then:
-```
-cd reef-explorer/db/hasura
-hasura console
-```
+Run the stack using the `Makefile` method described above.
+Visit the console at `http://localhost:8080`
