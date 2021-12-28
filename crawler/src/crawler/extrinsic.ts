@@ -34,8 +34,9 @@ export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => ex
 export const isExtrinsicTransfer = ({extrinsic}: ExtrinsicBody): boolean => 
     extrinsic.method.section === "balances" || extrinsic.method.section === "currencies";
 
-export const extrinsicBodyToTransfer = ({extrinsic, status, blockId, id, signedData, events}: ExtrinsicBody): Transfer => {
+export const extrinsicBodyToTransfer = ({extrinsic, status, blockId, id, signedData}: ExtrinsicBody): Transfer => {
   const args: any = extrinsic.args.map((arg) => arg.toJSON());
+
 
   const toAddress = args[0]?.id || 'deleted';
   const fromAddress = resolveSigner(extrinsic);
@@ -45,15 +46,25 @@ export const extrinsicBodyToTransfer = ({extrinsic, status, blockId, id, signedD
     extrinsic.method.section === 'currencies' ? args[2] : args[1]
   ).toString();
 
+  const tokenAddress = extrinsic.method.section === 'balances' 
+    ? "0x0000000000000000000000000000000001000000"
+    : "";
+
+  if (tokenAddress === "") {
+    console.log(args);
+    throw new Error("currencies transfer");
+  }
+
   return {
     denom,
     amount,
     blockId,
     toAddress,
     fromAddress,
+    tokenAddress,
     extrinsicId: id,
     success: status.type === "success",
-    feeAmount: signedData!.fee.partialFee,
+    feeAmount: BigNumber.from(signedData!.fee.partialFee).toString(),
     errorMessage: status.type === "error" ? status.message : "",
   }
 }

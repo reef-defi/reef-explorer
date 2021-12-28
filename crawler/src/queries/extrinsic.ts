@@ -42,14 +42,14 @@ export const insertExtrinsic = async (extrinsic: InsertExtrinsicBody): Promise<v
   insertExtrinsics([extrinsic]);
 
 
-const transferToValue = ({blockId, extrinsicId, denom, toAddress, fromAddress, amount, feeAmount, success, errorMessage}: Transfer): string => 
-`(${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', ${amount === "" ? "0" : amount}, ${feeAmount === "" ? "0" : amount}, '${success}', '${errorMessage}')`;
+const transferToValue = ({blockId, extrinsicId, denom, toAddress, fromAddress, tokenAddress, amount, feeAmount, success, errorMessage}: Transfer): string => 
+`(${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', '${tokenAddress}', ${amount === "" ? "0" : amount}, ${feeAmount === "" ? "0" : amount}, '${success}', '${errorMessage}')`;
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   if (transfers.length === 0) { return; }
   await insert(`
     INSERT INTO transfer
-      (block_id, extrinsic_id, denom, to_address, from_address, amount, fee_amount, success, error_message)
+      (block_id, extrinsic_id, denom, to_address, from_address, token_address, amount, fee_amount, success, error_message)
     VALUES
       ${transfers.map(transferToValue).join(",\n")}
   `)
