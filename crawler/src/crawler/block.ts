@@ -14,7 +14,7 @@ import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsi
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
 import { logger } from "../utils/logger";
-import { insertStakingReward, insertStakingSlash } from "../queries/staking";
+import { insertStaking } from "../queries/staking";
 
 interface BlockHash {
   id: number;
@@ -199,11 +199,11 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   
   // Staking Slash
   logger.info("Inserting staking slashes");
-  await insertStakingSlash(events.filter(isEventStakingSlash));
+  await insertStaking(events.filter(isEventStakingSlash), 'Slash');
   
   // Staking Reward
   logger.info("Inserting staking rewards");
-  await insertStakingReward(events.filter(isEventStakingReward));
+  await insertStaking(events.filter(isEventStakingReward), 'Reward');
     
   // Transfers 
 
