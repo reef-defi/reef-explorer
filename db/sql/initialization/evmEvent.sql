@@ -3,7 +3,7 @@ CREATE TYPE EventStatus AS ENUM ('success', 'error');
 CREATE TABLE IF NOT EXISTS unverified_evm_call (
   id BIGSERIAL,
   extrinsic_id BIGINT,
-  signer_address VARCHAR(48),
+  signer VARCHAR,
 
   contract_address VARCHAR NOT NULL,
   data JSON NOT NULL,
@@ -19,21 +19,21 @@ CREATE TABLE IF NOT EXISTS unverified_evm_call (
     FOREIGN KEY (extrinsic_id)
       REFERENCES extrinsic(id)
       ON DELETE CASCADE,
-  CONSTRAINT fk_account
-    FOREIGN KEY (signer_address)
+  CONSTRAINT fk_signer
+    FOREIGN KEY (signer)
       REFERENCES account(address)
       ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS unverified_evm_call_signer ON unverified_evm_call (signer);
 CREATE INDEX IF NOT EXISTS unverified_evm_call_status ON unverified_evm_call (status);
 CREATE INDEX IF NOT EXISTS unverified_evm_call_extrinsic_id ON unverified_evm_call (extrinsic_id);
-CREATE INDEX IF NOT EXISTS unverified_evm_call_signer_address ON unverified_evm_call (signer_address);
 CREATE INDEX IF NOT EXISTS unverified_evm_call_contract_address ON unverified_evm_call (contract_address);
 
 CREATE TABLE IF NOT EXISTS verified_evm_call (
   id BIGSERIAL,
+  signer VARCHAR,
   extrinsic_id BIGINT,
-  signer_address VARCHAR(48),
   contract_address VARCHAR,
 
   event_name TEXT,
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS verified_evm_call (
   CONSTRAINT fk_extrinsic
     FOREIGN KEY (extrinsic_id)
       REFERENCES extrinsic(id),
-  CONSTRAINT fk_account
-    FOREIGN KEY (signer_address)
+  CONSTRAINT fk_signer
+    FOREIGN KEY (signer)
       REFERENCES account(address),
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (contract_address)
