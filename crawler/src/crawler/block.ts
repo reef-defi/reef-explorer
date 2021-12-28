@@ -206,7 +206,6 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   await insertStaking(events.filter(isEventStakingReward), 'Reward');
     
   // Transfers 
-
   logger.info("Inserting transfers");
   await insertTransfers(transfers);
   transfers = [];

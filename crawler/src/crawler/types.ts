@@ -83,6 +83,7 @@ export interface Transfer {
   denom: string;
   toAddress: string;
   fromAddress: string;
+  tokenAddress: string;
   amount: string;
   feeAmount: string;
 
