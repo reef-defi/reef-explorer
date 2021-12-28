@@ -43,7 +43,7 @@ export const insertEvmCall = async (call: EVMCall): Promise<void> =>
   insertEvmCalls([call])
 
 
-const accountTokenBalanceToValue = ({accountAddress, balance, contractAddress, decimals}: AccountTokenBalance): string => 
+const accountTokenBalanceToValue = ({accountEvmAddress: accountAddress, balance, contractAddress, decimals}: AccountTokenBalance): string => 
   `('${accountAddress.toLowerCase()}', '${contractAddress.toLowerCase()}', ${balance}, ${decimals})`;
 
 export const insertAccountTokenBalances = async (accountTokenBalances: AccountTokenBalance[]): Promise<void> => {

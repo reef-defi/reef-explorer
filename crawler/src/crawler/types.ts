@@ -101,6 +101,7 @@ export interface OldContract {
 export interface Contract {
   address: string;
   extrinsicId: number;
+  signer: string;
 
   bytecode: string;
   bytecodeContext: string;
@@ -130,7 +131,7 @@ export interface ResolveSection {
 }
 
 export interface AccountTokenHead {
-  accountAddress: string;
+  accountEvmAddress: string;
   contractAddress: string;
   // accountEvmAddress: string;
 }
@@ -138,6 +139,7 @@ export interface AccountTokenHead {
 export interface AccountTokenBalance extends AccountTokenHead {
   balance: string;
   decimals: number;
+  signer: string;
 }
 
 

@@ -9,7 +9,7 @@ import {ABI, ABIS, AccountHead, AccountTokenBalance, Event, EventBody, EventHead
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled } from "./event";
-import { compress, dropDuplicates, dropDuplicatesMultiKey, range, resolvePromisesAsChunks } from "../utils/utils";
+import { compress, dropDuplicates, dropDuplicatesMultiKey, ensure, range, resolvePromisesAsChunks } from "../utils/utils";
 import { extrinsicToContract, extrinsicToEVMCall, isExtrinsicEVMCall, isExtrinsicEVMCreate } from "./evmEvent";
 import { findErc20TokenDB, insertAccountTokenBalances, insertContracts, insertEvmCalls } from "../queries/evmEvent";
 import {utils, Contract} from "ethers";
@@ -320,10 +320,13 @@ const erc20TransferEvent = ({address, decimals, decodedEvent, abis, name}: EvmLo
 
 const extractTokenBalance = async ({decimals, abi, contractAddress, signerAddress}: TokenBalanceHead): Promise<AccountTokenBalance> => {
   const balance = await getContractBalance(signerAddress, contractAddress, abi);
+  const signers = await query<{address: string}>(`SELECT address FROM account WHERE evm_address = '${signerAddress}';`)
+  ensure(signers.length > 0, `Signer with evm address: ${signerAddress} is not present in table!`)
   return {
     decimals,
     balance,
-    accountAddress: signerAddress,
-    contractAddress
+    contractAddress,
+    signer: signers[0].address,
+    accountEvmAddress: signerAddress,
   }
 }
