@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS contract (
   CONSTRAINT fk_signer
     FOREIGN KEY (signer)
       REFERENCES account(address)
+      ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS contract_signer ON contract (signer);
