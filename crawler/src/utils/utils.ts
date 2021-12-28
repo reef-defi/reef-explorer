@@ -3,6 +3,11 @@ import { APP_CONFIG } from "../config";
 export const wait = async (ms: number): Promise<void> => 
   new Promise((res) => setTimeout(res, ms));
 
+export const ensure = (condition: boolean, message: string): void => {
+  if (!condition) {
+    throw new Error(message)
+  }
+}
 
 export const min = (...args: number[]): number => {
   if (args.length === 0) { 
