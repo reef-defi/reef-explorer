@@ -8,7 +8,7 @@ export const network = {
   nodeWs: 'wss://rpc-testnet.reefscan.com/ws',
   backendWs: 'wss://dev.reef.polkastats.io/api/v3',
   backendHttp: 'https://dev.reef.polkastats.io/api/v3',
-  verificatorApi: 'https://dev.reef.polkastats.io/api/verificator',
+  verificatorApi: 'https://testnet.reefscan.com/api/verificator/submit-verification',
   googleAnalytics: '',
   theme: '@/assets/scss/themes/reef.scss',
 }

@@ -130,7 +130,6 @@ export const contractVerificationInsert = async ({address, name, filename, sourc
 };
 
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
-  await delay(4000);
   const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
   const {abi, fullAbi} = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
