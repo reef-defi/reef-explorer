@@ -63,26 +63,19 @@ export const extrinsicBodyToTransfer = ({
   const amount: string = BigNumber.from(
     extrinsic.method.section === "currencies" ? args[2] : args[1]
   ).toString();
-
-  const tokenAddress =
-    extrinsic.method.section === "balances"
-      ? "0x0000000000000000000000000000000001000000"
-      : "";
-
-  if (tokenAddress === "") {
-    throw new Error("currencies transfer");
-  }
+  const feeAmount = BigNumber.from(signedData!.fee.partialFee).toString();
+  const tokenAddress = "0x0000000000000000000000000000000001000000";
 
   return {
     denom,
     amount,
     blockId,
+    feeAmount,
     toAddress,
     fromAddress,
     tokenAddress,
     extrinsicId: id,
     success: status.type === "success",
-    feeAmount: BigNumber.from(signedData!.fee.partialFee).toString(),
     errorMessage: status.type === "error" ? status.message : "",
   };
 };
