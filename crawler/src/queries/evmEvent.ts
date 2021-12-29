@@ -55,7 +55,7 @@ export const insertEvmCalls = async (evmCalls: EVMCall[]): Promise<void> => {
   }
   await insert(`
     INSERT INTO unverified_evm_call
-      (extrinsic_id, signer_address, contract_address, data, gas_limit, storage_limit, status, error_message)
+      (extrinsic_id, signer, contract_address, data, gas_limit, storage_limit, status, error_message)
     VALUES
       ${evmCalls.map(evmCallToValue).join(",\n")};
   `);

@@ -76,7 +76,7 @@ const transferToValue = ({
 }: Transfer): string =>
   `(${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', '${tokenAddress}', ${
     amount === "" ? "0" : amount
-  }, ${feeAmount === "" ? "0" : amount}, '${success}', '${errorMessage}')`;
+  }, ${feeAmount === "" ? "0" : feeAmount}, '${success}', '${errorMessage}')`;
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   if (transfers.length === 0) {
