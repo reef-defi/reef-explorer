@@ -1,5 +1,5 @@
 import { resolveSigner } from "./extrinsic";
-import { ExtrinsicBody, Event, Contract, EVMCall } from "./types";
+import { ExtrinsicBody, Event, Contract, EVMCall, AccountHead } from "./types";
 
 const preprocessBytecode = (bytecode: string) => {
   const start = bytecode.indexOf("6080604052");
@@ -26,11 +26,23 @@ export const isExtrinsicEVMCreate = ({
   method.method === "create" &&
   !!findContractEvent(events);
 
+export const isExtrinsicEvmClaimAccount = ({
+  extrinsic: {
+    method: { section, method },
+  },
+}: ExtrinsicBody): boolean =>
+  section === "evmAccounts" && method === "claimDefaultAccount";
+
 export const isExtrinsicEVMCall = ({
   extrinsic: { method },
 }: ExtrinsicBody): boolean => {
   return method.section === "evm" && method.method === "call";
 };
+
+export const extrinsicToEvmClaimAccount = ({events, blockId}: ExtrinsicBody): AccountHead[] => {
+  const [address] = events[0].event.data;
+  return [{blockId, address: address.toString(), active: true}]
+}
 
 export const extrinsicToContract = ({
   extrinsic,

@@ -47,7 +47,9 @@ import {
 import {
   extrinsicToContract,
   extrinsicToEVMCall,
+  extrinsicToEvmClaimAccount,
   isExtrinsicEVMCall,
+  isExtrinsicEvmClaimAccount,
   isExtrinsicEVMCreate,
 } from "./evmEvent";
 import {
@@ -268,6 +270,10 @@ export const processBlocks = async (
   let allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
+  allAccounts.push(...extrinsics
+    .filter(isExtrinsicEvmClaimAccount)
+    .map(extrinsicToEvmClaimAccount)
+  );
 
   // Accounts
   logger.info("Extracting, compressing and dropping duplicate accounts");
