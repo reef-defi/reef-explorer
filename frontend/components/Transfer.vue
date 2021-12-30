@@ -6,8 +6,8 @@
       <Row>
         <Cell>Block number</Cell>
         <Cell
-          ><nuxt-link :to="`/block?blockNumber=${transfer.block_number}`">
-            # {{ formatNumber(transfer.block_number) }}
+          ><nuxt-link :to="`/block?blockNumber=${transfer.block_id}`">
+            # {{ formatNumber(transfer.block_id) }}
           </nuxt-link>
         </Cell>
       </Row>
@@ -24,12 +24,10 @@
         <Cell>Extrinsic</Cell>
         <Cell>
           <nuxt-link
-            :to="`/extrinsic/${transfer.block_number}/${transfer.extrinsic_index}`"
+            :to="`/extrinsic/${transfer.block_id}/${transfer.index}`"
             title="Check extrinsic information"
           >
-            # {{ formatNumber(transfer.block_number) }}-{{
-              transfer.extrinsic_index
-            }}
+            # {{ formatNumber(transfer.block_id) }}-{{ transfer.index }}
           </nuxt-link>
         </Cell>
       </Row>
@@ -58,29 +56,25 @@
       <Row class="transfer-details__to">
         <Cell>To</Cell>
         <Cell>
-          <div v-if="JSON.parse(transfer.args)[0].id">
+          <div v-if="transfer.args[0].id">
             <ReefIdenticon
-              :key="JSON.parse(transfer.args)[0].id"
-              :address="JSON.parse(transfer.args)[0].id"
+              :key="transfer.args[0].id"
+              :address="transfer.args[0].id"
               :size="20"
             />
-            <nuxt-link :to="`/account/${JSON.parse(transfer.args)[0].id}`">
-              {{ JSON.parse(transfer.args)[0].id }}
+            <nuxt-link :to="`/account/${transfer.args[0].id}`">
+              {{ transfer.args[0].id }}
             </nuxt-link>
           </div>
-          <div v-if="JSON.parse(transfer.args)[0].address20">
+          <div v-if="transfer.args[0].address20">
             <eth-identicon
-              :address="
-                toChecksumAddress(JSON.parse(transfer.args)[0].address20)
-              "
+              :address="toChecksumAddress(transfer.args[0].address20)"
               :size="20"
             />
             <nuxt-link
-              :to="`/account/${toChecksumAddress(
-                JSON.parse(transfer.args)[0].address20
-              )}`"
+              :to="`/account/${toChecksumAddress(transfer.args[0].address20)}`"
             >
-              {{ toChecksumAddress(JSON.parse(transfer.args)[0].address20) }}
+              {{ toChecksumAddress(transfer.args[0].address20) }}
             </nuxt-link>
           </div>
         </Cell>
@@ -91,8 +85,8 @@
         <Cell>{{
           formatAmount(
             transfer.section === 'currencies'
-              ? JSON.parse(transfer.args)[2]
-              : JSON.parse(transfer.args)[1]
+              ? transfer.args[2]
+              : transfer.args[1]
           )
         }}</Cell>
       </Row>
@@ -100,8 +94,8 @@
       <Row class="transfer-details__fee">
         <Cell>Fee</Cell>
         <Cell>
-          <div v-if="transfer.fee_info">
-            {{ formatAmount(JSON.parse(transfer.fee_info).partialFee) }}
+          <div v-if="transfer.signed_data && transfer.signed_data.fee">
+            {{ formatAmount(transfer.signed_data.fee.partialFee) }}
           </div>
         </Cell>
       </Row>
@@ -110,17 +104,17 @@
         <Cell>Status</Cell>
         <Cell>
           <font-awesome-icon
-            v-if="transfer.success"
+            v-if="transfer.type === 'signed'"
             icon="check"
             class="text-success"
           />
           <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="!transfer.success">
+          <template v-if="!transfer.type === 'signed'">
             <Promised
               :promise="
                 getExtrinsicFailedFriendlyError(
-                  transfer.block_number,
-                  transfer.extrinsic_index,
+                  transfer.block_id,
+                  transfer.index,
                   $apollo.provider.defaultClient
                 )
               "
@@ -169,6 +163,7 @@ export default {
 
         a {
           background: linear-gradient(90deg, #a93185, #5531a9);
+          //noinspection CssInvalidPropertyValue
           background-clip: text;
           -webkit-text-fill-color: transparent;
           position: relative;

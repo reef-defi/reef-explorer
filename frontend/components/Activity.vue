@@ -21,7 +21,7 @@
       <Table>
         <THead>
           <Cell :sortable="['hash', activeSort]">Hash</Cell>
-          <Cell :sortable="['block_number', activeSort]">Block</Cell>
+          <Cell :sortable="['block_id', activeSort]">Block</Cell>
           <Cell :sortable="['timestamp', activeSort, true]">Date</Cell>
           <Cell :sortable="['signed', activeSort]">Signer</Cell>
           <Cell>Extrinsic</Cell>
@@ -35,16 +35,16 @@
 
           <Cell
             :link="{
-              url: `/block?blockNumber=${item.block_number}`,
+              url: `/block?blockNumber=${item.block_id}`,
               fill: false,
             }"
           >
-            # {{ formatNumber(item.block_number) }}
+            # {{ formatNumber(item.block_id) }}
           </Cell>
 
           <Cell class="list-view__age">
             <font-awesome-icon :icon="['far', 'clock']" />
-            <span>{{ fromDateNow(item.timestamp) }}</span>
+            <span>{{ fromNow(item.timestamp) }}</span>
           </Cell>
 
           <Cell
@@ -154,6 +154,7 @@ export default {
               where: { signed: { _eq: $signer } }
             ) {
               id
+              block_id
               signed
               hash
               section

@@ -58,7 +58,7 @@
 
           <Cell class="list-view__age">
             <font-awesome-icon :icon="['far', 'clock']" />
-            <span>{{ fromDateNow(item.timestamp) }}</span>
+            <span>{{ fromNow(item.timestamp) }}</span>
           </Cell>
 
           <Cell

@@ -148,42 +148,42 @@
 
             <Row>
               <Cell>{{ $t('details.account.total_balance') }}</Cell>
-              <Cell>
+              <Cell class="amount">
                 {{ formatAmount(parsedAccount.free_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.available_balance') }}</Cell>
-              <Cell>
+              <Cell class="amount">
                 {{ formatAmount(parsedAccount.available_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.locked_balance') }}</Cell>
-              <Cell>
+              <Cell class="amount">
                 {{ formatAmount(parsedAccount.locked_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.reserved_balance') }}</Cell>
-              <Cell>
+              <Cell class="amount">
                 {{ formatAmount(parsedAccount.reserved_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.vested_balance') }}</Cell>
-              <Cell>
+              <Cell class="amount">
                 {{ formatAmount(parsedAccount.vested_balance) }}
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.account.voting_balance') }}</Cell>
-              <Cell>
+              <Cell class="amount">
                 {{ formatAmount(parsedAccount.voting_balance) }}
               </Cell>
             </Row>
@@ -240,7 +240,7 @@ export default {
     tokens: 'Tokens',
     activity: 'Activity',
     rewards: 'Rewards',
-    slashes: 'Slashes',
+    // slashes: 'Slashes',
   },
   data() {
     return {
@@ -338,7 +338,9 @@ export default {
     .table-cell__content {
       font-weight: 600;
       background: linear-gradient(90deg, #a93185, #5531a9);
-      //background-clip: text;
+      //noinspection CssInvalidPropertyValue
+      background-clip: text;
+      -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
   }

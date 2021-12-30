@@ -22,8 +22,8 @@ const defaultValidator: Validator = (_) => {};
 const addressValidator: Validator = (value) => 
   ensure(utils.isAddress(value as string), "Input element is not address");
 
-const boolValidator: Validator = (value) => 
-  ensure(value === "true" || value === "false", "Input element is not boolean");
+// const boolValidator: Validator = (value) => 
+//   ensure(value === "true" || value === "false", "Input element is not boolean");
 
 const arrayValidator = (validator: Validator): Validator => (value) => {
   ensure(Array.isArray(value), "Input element is not array");
@@ -32,8 +32,8 @@ const arrayValidator = (validator: Validator): Validator => (value) => {
 
 const validateParameter = (type: string): Validator => {
   switch (type) {
-    case "bool": return boolValidator;
-    case "bool[]": return arrayValidator(boolValidator);
+    // case "bool": return boolValidator;
+    // case "bool[]": return arrayValidator(boolValidator);
     case "address": return addressValidator;
     case "address[]": return arrayValidator(addressValidator);
     default: return defaultValidator;
@@ -42,7 +42,7 @@ const validateParameter = (type: string): Validator => {
 
 const parseParameter = ({type, value}: ParamererInput): any => {
   switch (type) {
-    case "bool": return value === "true";
+    case "bool": return value;
     default: return value;
   }
 }

@@ -7,6 +7,15 @@ import moment from 'moment'
 import { network } from '@/frontend.config.js'
 import { reefChainErrors } from '@/reef-chain-errors.js'
 
+const isTimestamp = (timestampOrDateString) => {
+  return !timestampOrDateString.toString().includes('-')
+}
+const toMomentDate = (timestampOrDateString) => {
+  return isTimestamp(timestampOrDateString)
+    ? moment.unix(timestampOrDateString)
+    : moment(timestampOrDateString)
+}
+
 export default {
   methods: {
     shortAddress(address) {
@@ -161,20 +170,14 @@ export default {
     fromNow: (timestamp) => {
       moment.relativeTimeThreshold('s', 60)
       moment.relativeTimeThreshold('ss', 0)
-      const date = moment.unix(timestamp)
-      return moment(date).fromNow()
-    },
-    fromDateNow: (dateString) => {
-      moment.relativeTimeThreshold('s', 60)
-      moment.relativeTimeThreshold('ss', 0)
-      const date = moment(dateString)
+      const date = toMomentDate(timestamp)
       return moment(date).fromNow()
     },
     formatTimestamp: (timestamp) => {
-      return moment.unix(timestamp).format('YYYY/MM/DD HH:mm:ss')
+      return toMomentDate(timestamp).format('YYYY/MM/DD HH:mm:ss')
     },
     getAge(timestamp) {
-      const date = moment.unix(timestamp)
+      const date = toMomentDate(timestamp)
       let diff = moment().diff(date, 'seconds')
 
       if (diff === 0) diff = 1

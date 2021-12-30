@@ -30,8 +30,8 @@
                 shortHash(item.hash)
               }}</Cell>
 
-              <Cell :link="`/block?blockNumber=${item.block_number}`"
-                ># {{ formatNumber(item.block_number) }}</Cell
+              <Cell :link="`/block?blockNumber=${item.block_id}`"
+                ># {{ formatNumber(item.block_id) }}</Cell
               >
 
               <Cell class="list-view__age">
@@ -135,6 +135,49 @@ export default {
             extrinsic(
               limit: $perPage
               offset: $offset
+              order_by: { block_id: desc, index: desc }
+              where: {
+                _or: [
+                  {
+                    section: { _eq: "currencies" }
+                    method: { _like: "transfer" }
+                    block_id: { _eq: $blockNumber }
+                    hash: { _eq: $extrinsicHash }
+                    signed: { _eq: $fromAddress }
+                  }
+                  {
+                    section: { _eq: "balances" }
+                    method: { _like: "transfer%" }
+                    block_id: { _eq: $blockNumber }
+                    hash: { _eq: $extrinsicHash }
+                    signed: { _eq: $fromAddress }
+                  }
+                ]
+              }
+            ) {
+              block_id
+              section
+              signed
+              hash
+              args
+              status
+              timestamp
+            }
+          }
+        `,
+
+        /*
+        query: gql`
+          subscription extrinsic(
+            $blockNumber: bigint
+            $extrinsicHash: String
+            $fromAddress: String
+            $perPage: Int!
+            $offset: Int!
+          ) {
+            extrinsic(
+              limit: $perPage
+              offset: $offset
               where: {
                 _or: [
                   {
@@ -164,7 +207,7 @@ export default {
               timestamp
             }
           }
-        `,
+        `, */
         variables() {
           return {
             blockNumber: this.isBlockNumber(this.filter)
@@ -179,24 +222,24 @@ export default {
         result({ data }) {
           this.transfers = data.extrinsic.map((transfer) => {
             return {
-              block_number: transfer.block_number,
+              block_id: transfer.block_id,
               hash: transfer.hash,
-              from: transfer.signer,
-              to: JSON.parse(transfer.args)[0].address20
-                ? JSON.parse(transfer.args)[0].address20
-                : JSON.parse(transfer.args)[0].id,
+              from: transfer.signed,
+              to: transfer.args[0].address20
+                ? transfer.args[0].address20
+                : transfer.args[0].id,
               amount:
                 transfer.section === 'currencies'
-                  ? JSON.parse(transfer.args)[2]
-                  : JSON.parse(transfer.args)[1],
-              success: transfer.success,
+                  ? transfer.args[2]
+                  : transfer.args[1],
+              success: transfer.status === 'success',
               timestamp: transfer.timestamp,
             }
           })
           this.loading = false
         },
       },
-      count: {
+      /* count: {
         query: gql`
           subscription count(
             $blockNumber: bigint
@@ -204,22 +247,22 @@ export default {
             $fromAddress: String
             $toAddress: String
           ) {
-            extrinsic_aggregate(
+            extrinsic(
               where: {
                 _or: [
                   {
                     section: { _eq: "currencies" }
                     method: { _like: "transfer" }
-                    block_number: { _eq: $blockNumber }
+                    block_id: { _eq: $blockNumber }
                     hash: { _eq: $extrinsicHash }
-                    signer: { _eq: $fromAddress }
+                    signed: { _eq: $fromAddress }
                   }
                   {
                     section: { _eq: "balances" }
                     method: { _like: "transfer%" }
-                    block_number: { _eq: $blockNumber }
+                    block_id: { _eq: $blockNumber }
                     hash: { _eq: $extrinsicHash }
-                    signer: { _eq: $fromAddress }
+                    signed: { _eq: $fromAddress }
                   }
                 ]
               }
@@ -242,7 +285,7 @@ export default {
         result({ data }) {
           this.totalRows = data.extrinsic_aggregate.aggregate.count
         },
-      },
+      }, */
     },
   },
 }

@@ -5,7 +5,7 @@ import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
 import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
 import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import {Vec} from "@polkadot/types"
-import {ABI, ABIS, AccountHead, AccountTokenBalance, Event, EventBody, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData} from "./types";
+import {ABI, ABIS, AccountHead, AccountTokenBalance, Event, EventBody, EventHead, ExtrinsicBody, ExtrinsicHead, SignedExtrinsicData, Transfer} from "./types";
 import { InsertExtrinsicBody, insertExtrinsics, insertTransfers, nextFreeIds } from "../queries/extrinsic";
 import { insertAccounts, insertEvents } from "../queries/event";
 import { accountHeadToBody, accountNewOrKilled } from "./event";
@@ -113,6 +113,15 @@ const eventToBody = (nextFreeId: number) =>  (event: EventHead, index: number): 
   ...event
 });
 
+// Assigning that the account is active is a temporary solution!
+// The correct way would be to first query db if account exists
+// If it does not and if transfer has failed then the account is not active.
+// The query can be skipped if we would have complete list available in function (dynamic programming)
+const extractTransferAccounts = ({fromAddress, toAddress, blockId}: Transfer): AccountHead[] => [
+  {blockId, address: fromAddress, active: true},
+  {blockId, address: toAddress, active: true}
+];
+
 const isEventStakingReward = ({event: {event}}: EventHead): boolean => 
   getProvider().api.events.staking.Rewarded.is(event)
   
@@ -163,9 +172,21 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   logger.info("Inserting events");
   await insertEvents(events);
 
+  // Transfers
+  logger.info("Extracting transfers");
+  let transfers = extrinsics
+    .filter(isExtrinsicTransfer)
+    .map(extrinsicBodyToTransfer);
+
+  logger.info("Compressing transfer and event accounts");
+  let allAccounts: AccountHead[][] = [];
+  allAccounts.push(...transfers.map(extractTransferAccounts));
+  allAccounts.push(...events.map(accountNewOrKilled))
+
   // Accounts
   logger.info("Extracting, compressing and dropping duplicate accounts");
-  let insertOrDeleteAccount = dropDuplicates(compress(events.map(accountNewOrKilled)), 'address')
+  let insertOrDeleteAccount = dropDuplicates(compress(allAccounts), 'address')
+    .filter(({address}) => address.length === 48);
   
   logger.info("Retrieving used account info");
   transactions += insertOrDeleteAccount.length;
@@ -185,10 +206,6 @@ export const processBlocks = async (fromId: number, toId: number): Promise<numbe
   await insertStakingReward(events.filter(isEventStakingReward));
     
   // Transfers 
-  logger.info("Extracting transfers");
-  let transfers = extrinsics
-    .filter(isExtrinsicTransfer)
-    .map(extrinsicBodyToTransfer);
 
   logger.info("Inserting transfers");
   await insertTransfers(transfers);

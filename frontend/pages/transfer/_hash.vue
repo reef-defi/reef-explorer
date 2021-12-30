@@ -50,18 +50,16 @@ export default {
       query: gql`
         query extrinsic($hash: String!) {
           extrinsic(where: { hash: { _eq: $hash } }) {
-            block_number
-            extrinsic_index
-            is_signed
-            signer
+            block_id
+            index
+            type
+            signed
+            signed_data
             section
             method
             args
             hash
-            doc
-            fee_info
-            fee_details
-            success
+            docs
             timestamp
           }
         }
@@ -75,7 +73,11 @@ export default {
         }
       },
       result({ data }) {
-        this.transfer = data.extrinsic[0]
+        if (data && data.extrinsic) {
+          this.transfer = data.extrinsic[0]
+          // TODO remove when signer
+          this.transfer.signer = this.transfer?.signed
+        }
         this.loading = false
       },
     },

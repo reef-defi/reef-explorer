@@ -59,11 +59,11 @@ export default {
       block: {
         query: gql`
           subscription block($block_hash: String!) {
-            block(where: { block_hash: { _eq: $block_hash } }) {
+            block(where: { block_id: { _eq: $block_hash } }) {
               block_author
               finalized
               block_author_name
-              block_hash
+              block_id
               block_number
               extrinsics_root
               parent_hash
@@ -81,7 +81,7 @@ export default {
         },
         result({ data }) {
           if (data.block[0]) {
-            this.blockNumber = data.block[0].block_number
+            this.blockNumber = data.block[0].block_id
             this.parsedBlock = data.block[0]
           }
           this.loading = false

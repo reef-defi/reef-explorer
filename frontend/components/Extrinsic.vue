@@ -77,7 +77,7 @@
       <Row class="extrinsic-details__arguments">
         <Cell>Arguments</Cell>
         <Cell>
-          <pre>{{ JSON.stringify(JSON.parse(extrinsic.args), null, 2) }}</pre>
+          <pre>{{ JSON.stringify(extrinsic.args, null, 2) }}</pre>
         </Cell>
       </Row>
 
@@ -109,15 +109,15 @@
       </Row> -->
 
       <Row>
-        <Cell>Status</Cell>
+        <Cell>Signed</Cell>
         <Cell>
           <font-awesome-icon
-            v-if="extrinsic.type === 'success'"
+            v-if="extrinsic.type === 'signed'"
             icon="check"
             class="text-success"
           />
           <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="extrinsic.type !== 'success'">
+          <template v-if="extrinsic.type !== 'signed'">
             <Promised
               :promise="
                 getExtrinsicFailedFriendlyError(

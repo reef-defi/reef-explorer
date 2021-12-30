@@ -41,20 +41,29 @@ yarn
 ```
 
 ### Backend
+The `reef-explorer` stack is containerised using docker and is run using a 
+container orchestration tool.  We have provided a docker-compose manifest to run
+the stack.  Operation using `Makefile` can be see below:
 
-Before build dockers be sure to edit `HASURA_GRAPHQL_ADMIN_SECRET` environmment variable in the proper docker-compose file `backend/docker/docker-compose-reef-mainnet.yml` or `backend/docker/docker-compose-reef-testnet.yml`.
-
-Mainnet:
-
+To start:
 ```
-yarn workspace backend docker:mainnet
+make env=dev up
 ```
 
-Or Testnet:
+To stop:
+```
+make env=dev down
+```
 
+To purge data:
 ```
-yarn workspace backend docker:testnet
+make env=dev purge
 ```
+
+env can take the following options:
+- dev
+- testnet
+- mainnet
 
 That will build and start all the required dockers:
 
@@ -66,7 +75,7 @@ That will build and start all the required dockers:
 
 ### Hasura console
 
-After that you can access Hasura console at http://server_ip_address:8082
+After that you can access Hasura console at http://server_ip_address:8080
 
 ### Nginx configuration
 
