@@ -78,8 +78,8 @@ export default {
   apollo: {
     clientConfigs: {
       default: {
-        httpEndpoint: network.backendHttp,
-        wsEndpoint: network.backendWs,
+        httpEndpoint: network.gqlHttp || network.backendHttp,
+        wsEndpoint: network.gqlWs || network.backendWs,
         websocketsOnly: true,
       },
     },

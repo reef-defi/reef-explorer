@@ -75,6 +75,7 @@ export const getProvider = (): Provider => {
 export const initializeProviders = async (): Promise<void> => {
   logger.info("Connecting to node...")
   await initializeNodeProvider();
+  logger.info("... connected")
   logger.info("Syncing node...");
   await syncNode();
   logger.info("Syncing complete");
