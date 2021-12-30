@@ -20,18 +20,18 @@
               <Cell>Age</Cell>
               <Cell>Status</Cell>
               <Cell>Hash</Cell>
-              <Cell align="center">Extrinsics</Cell>
-              <Cell align="center">Events</Cell>
+              <!--              <Cell align="center">Extrinsics</Cell>
+              <Cell align="center">Events</Cell>-->
             </THead>
 
             <Row v-for="(item, index) in blocks" :key="index">
-              <Cell :link="`/block/${item.block_hash}`"
-                ># {{ formatNumber(item.block_number) }}</Cell
+              <Cell :link="`/block/${item.hash}`"
+                ># {{ formatNumber(item.id) }}</Cell
               >
 
               <Cell class="list-view__age">
                 <font-awesome-icon :icon="['far', 'clock']" />
-                <span>{{ getAge(item.timestamp) }}</span>
+                <span>{{ getAge(item.timestamp + 'Z') }}</span>
                 <span>({{ formatTimestamp(item.timestamp) }})</span>
               </Cell>
 
@@ -48,11 +48,11 @@
                 <span>{{ item.finalized ? 'Finalized' : 'Processing' }}</span>
               </Cell>
 
-              <Cell>{{ shortHash(item.block_hash) }}</Cell>
+              <Cell>{{ shortHash(item.hash) }}</Cell>
 
-              <Cell align="center">{{ item.total_extrinsics }}</Cell>
+              <!--              <Cell align="center">{{ item.total_extrinsics }}</Cell>
 
-              <Cell align="center">{{ item.total_events }}</Cell>
+              <Cell align="center">{{ item.total_events }}</Cell>-->
             </Row>
           </Table>
 
@@ -107,14 +107,12 @@ export default {
             block(
               limit: $perPage
               offset: $offset
-              where: { block_number: { _eq: $blockNumber } }
-              order_by: { block_number: desc }
+              where: { id: { _eq: $blockNumber } }
+              order_by: { id: desc }
             ) {
-              block_number
+              id
               finalized
-              block_hash
-              total_extrinsics
-              total_events
+              hash
               timestamp
             }
           }
@@ -134,7 +132,8 @@ export default {
           this.loading = false
         },
       },
-      totalBlocks: {
+      /* totalBlocks: {
+        // TODO when chain_info is in gql
         query: gql`
           subscription total {
             total(where: { name: { _eq: "blocks" } }, limit: 1) {
@@ -147,7 +146,7 @@ export default {
             this.totalRows = data.total[0].count
           }
         },
-      },
+      }, */
     },
   },
 }
