@@ -52,25 +52,19 @@ export default {
   apollo: {
     extrinsic: {
       query: gql`
-        query extrinsic($block_number: bigint!, $extrinsic_index: Int!) {
+        query extrinsic($block_id: bigint!, $index: Int!) {
           extrinsic(
-            where: {
-              block_number: { _eq: $block_number }
-              extrinsic_index: { _eq: $extrinsic_index }
-            }
+            where: { block_id: { _eq: $block_id }, index: { _eq: $index } }
           ) {
-            block_number
-            extrinsic_index
-            is_signed
+            block_id
+            index
             signer
             section
             method
             args
             hash
-            doc
-            fee_info
-            fee_details
-            success
+            docs
+            type
             timestamp
           }
         }
@@ -80,8 +74,8 @@ export default {
       },
       variables() {
         return {
-          block_number: this.blockNumber,
-          extrinsic_index: this.extrinsicIndex,
+          block_id: this.blockNumber,
+          index: this.extrinsicIndex,
         }
       },
       result({ data }) {

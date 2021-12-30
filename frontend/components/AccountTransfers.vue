@@ -24,11 +24,11 @@
       <Table>
         <THead>
           <Cell width="10" />
-          <Cell :sortable="['hash', activeSort]">Hash</Cell>
-          <Cell :sortable="['block_number', activeSort]">Block</Cell>
+          <Cell :sortable="['extrinsic_hash', activeSort]">Hash</Cell>
+          <Cell :sortable="['block_id', activeSort]">Block</Cell>
           <Cell :sortable="['timestamp', activeSort, true]">Date</Cell>
-          <Cell :sortable="['source', activeSort]">From</Cell>
-          <Cell :sortable="['destination', activeSort]">To</Cell>
+          <Cell :sortable="['from_address', activeSort]">From</Cell>
+          <Cell :sortable="['to_address', activeSort]">To</Cell>
           <Cell :sortable="['amount', activeSort]" align="right">Amount</Cell>
           <Cell :sortable="['fee_amount', activeSort]" align="right">Fee</Cell>
           <Cell :sortable="['success', activeSort]" align="center" width="10"
@@ -42,18 +42,18 @@
             class="account-transfers__indicator"
             :class="{
               'account-transfers__indicator--reverse':
-                item.source !== accountId,
+                item.from_address !== accountId,
             }"
           >
             <font-awesome-icon :icon="['fas', 'arrow-up']" />
           </Cell>
 
-          <Cell :link="`/transfer/${item.hash}`">{{
-            shortHash(item.hash)
+          <Cell :link="`/transfer/${item.extrinsic.hash}`">{{
+            shortHash(item.extrinsic_hash)
           }}</Cell>
 
-          <Cell :link="`/block?blockNumber=${item.block_number}`"
-            ># {{ formatNumber(item.block_number) }}</Cell
+          <Cell :link="`/block?blockNumber=${item.block_id}`"
+            ># {{ formatNumber(item.block_id) }}</Cell
           >
 
           <Cell class="list-view__age">
@@ -62,27 +62,27 @@
           </Cell>
 
           <Cell
-            :link="{ url: `/account/${item.source}`, fill: false }"
+            :link="{ url: `/account/${item.from_address}`, fill: false }"
             :title="$t('pages.accounts.account_details')"
           >
             <ReefIdenticon
-              :key="item.source"
-              :address="item.source"
+              :key="item.from_address"
+              :address="item.from_address"
               :size="20"
             />
-            <span>{{ shortAddress(item.source) }}</span>
+            <span>{{ shortAddress(item.from_address) }}</span>
           </Cell>
 
           <Cell
-            :link="{ url: `/account/${item.destination}`, fill: false }"
+            :link="{ url: `/account/${item.to_address}`, fill: false }"
             :title="$t('pages.accounts.account_details')"
           >
             <ReefIdenticon
-              :key="item.destination"
-              :address="item.destination"
+              :key="item.to_address"
+              :address="item.to_address"
               :size="20"
             />
-            <span>{{ shortAddress(item.destination) }}</span>
+            <span>{{ shortAddress(item.to_address) }}</span>
           </Cell>
 
           <Cell align="right">{{ formatAmount(item.amount) }}</Cell>
@@ -151,17 +151,16 @@ export default {
   computed: {
     searchResults() {
       const list = this.transfers || []
-
       if (!this.filter) return list
 
       return list.filter((item) => {
         const filter = this.filter.toLowerCase()
-        const hash = item.hash ? item.hash.toLowerCase() : ''
-        const block = item.block_number
-          ? String(item.block_number).toLowerCase()
+        const hash = item.extrinsic.hash
+          ? item.extrinsic.hash.toLowerCase()
           : ''
-        const from = item.source ? item.source.toLowerCase() : ''
-        const to = item.destination ? item.destination.toLowerCase() : ''
+        const block = item.block_id ? String(item.block_id).toLowerCase() : ''
+        const from = item.from_address ? item.from_address.toLowerCase() : ''
+        const to = item.to_address ? item.to_address.toLowerCase() : ''
         return (
           hash.includes(filter) ||
           block.includes(filter) ||
@@ -190,21 +189,23 @@ export default {
         query: gql`
           subscription transfer($accountId: String!) {
             transfer(
-              order_by: { block_number: desc }
+              order_by: { block_id: desc }
               where: {
                 _or: [
-                  { source: { _eq: $accountId } }
-                  { destination: { _eq: $accountId } }
+                  { to_address: { _eq: $accountId } }
+                  { from_address: { _eq: $accountId } }
                 ]
               }
             ) {
-              block_number
-              extrinsic_index
-              section
-              method
-              hash
-              source
-              destination
+              block_id
+              extrinsic {
+                index
+                section
+                method
+                hash
+              }
+              from_address
+              to_address
               amount
               denom
               fee_amount
@@ -223,7 +224,9 @@ export default {
           return !this.accountId
         },
         result({ data }) {
-          this.transfers = data.transfer
+          this.transfers = data.transfer.map(
+            (t) => (t.extrinsic_hash = t.extrinsic.hash) && t
+          )
           this.totalRows = this.transfers.length
           this.loading = false
         },

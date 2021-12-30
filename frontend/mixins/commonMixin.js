@@ -7,6 +7,15 @@ import moment from 'moment'
 import { network } from '@/frontend.config.js'
 import { reefChainErrors } from '@/reef-chain-errors.js'
 
+const isTimestamp = (timestampOrDateString) => {
+  return !timestampOrDateString.toString().includes('-')
+}
+const toMomentDate = (timestampOrDateString) => {
+  return isTimestamp(timestampOrDateString)
+    ? moment.unix(timestampOrDateString)
+    : moment(timestampOrDateString)
+}
+
 export default {
   methods: {
     shortAddress(address) {
@@ -17,7 +26,7 @@ export default {
     shortHash(hash) {
       return `${hash.substr(0, 6)}…${hash.substr(hash.length - 4, 4)}`
     },
-    formatNumber(number) {
+    formatNumber(number = '') {
       if (isHex(number)) {
         return parseInt(number, 16)
           .toString()
@@ -157,17 +166,18 @@ export default {
       }
       return ''
     },
+    // TODO gql returns date string so this might not be needed - check
     fromNow: (timestamp) => {
       moment.relativeTimeThreshold('s', 60)
       moment.relativeTimeThreshold('ss', 0)
-      const date = moment.unix(timestamp)
+      const date = toMomentDate(timestamp)
       return moment(date).fromNow()
     },
     formatTimestamp: (timestamp) => {
-      return moment.unix(timestamp).format('YYYY/MM/DD HH:mm:ss')
+      return toMomentDate(timestamp).format('YYYY/MM/DD HH:mm:ss')
     },
     getAge(timestamp) {
-      const date = moment.unix(timestamp)
+      const date = toMomentDate(timestamp)
       let diff = moment().diff(date, 'seconds')
 
       if (diff === 0) diff = 1

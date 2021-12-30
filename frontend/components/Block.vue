@@ -2,7 +2,7 @@
   <Card class="list-view block-details">
     <Headline>
       {{ $t('details.block.block') }} #
-      {{ formatNumber(parsedBlock.block_number) }}
+      {{ formatNumber(parsedBlock.id) }}
     </Headline>
 
     <Data>
@@ -44,11 +44,8 @@
       <Row>
         <Cell>{{ $t('details.block.parent_hash') }}</Cell>
         <Cell>
-          <span v-if="parsedBlock.block_number === 0"> -- </span>
-          <nuxt-link
-            v-else
-            :to="`/block?blockNumber=${parsedBlock.block_number - 1}`"
-          >
+          <span v-if="parsedBlock.id === 0"> -- </span>
+          <nuxt-link v-else :to="`/block?blockNumber=${parsedBlock.id - 1}`">
             {{ parsedBlock.parent_hash }}
           </nuxt-link>
         </Cell>
@@ -77,9 +74,8 @@
         v-for="(extrinsic, index) in parsedExtrinsics"
         :key="'extrinsic-' + index"
       >
-        <Cell
-          :link="`/extrinsic/${extrinsic.block_number}/${extrinsic.extrinsic_index}`"
-          >{{ extrinsic.block_number }}-{{ extrinsic.extrinsic_index }}</Cell
+        <Cell :link="`/extrinsic/${extrinsic.id}/${extrinsic.index}`"
+          >{{ extrinsic.id }}-{{ extrinsic.index }}</Cell
         >
         <Cell>{{ shortHash(extrinsic.hash) }}</Cell>
         <Cell

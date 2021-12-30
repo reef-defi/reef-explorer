@@ -47,8 +47,8 @@
                 >
                   <b-form-select
                     id="compiler-version"
-                    class="input-height"
                     v-model="$v.compilerVersion.$model"
+                    class="input-height"
                     :options="nightly ? compilerVersions : compilerAllVersions"
                     :state="validateState('compilerVersion')"
                   ></b-form-select>
@@ -140,15 +140,14 @@
                 >
                   <b-form-select
                     id="license"
-                    class="input-height"
                     v-model="$v.license.$model"
+                    class="input-height"
                     :options="licenses"
                     :state="validateState('license')"
                   ></b-form-select>
                 </b-form-group>
               </div>
               <div class="col-md-6">
-
                 <b-form-group
                   v-if="$v.optimization.$model"
                   id="input-group-optimization-runs"
@@ -159,8 +158,8 @@
                 >
                   <b-form-input
                     id="optimization-runs"
-                    class="input-height"
                     v-model="$v.runs.$model"
+                    class="input-height"
                     type="number"
                     :state="validateState('runs')"
                   ></b-form-input>
@@ -169,67 +168,74 @@
             </div>
             <div>
               <div class="d-flex justify-content-lg-between">
-                <label class="d-block font-weight-bolder my-auto">Sources:</label>
+                <label class="d-block font-weight-bolder my-auto"
+                  >Sources:</label
+                >
                 <div>
                   <b-button
                     class="btn-sm btn-danger px-3 mt-0"
-                    v-on:click="removeLastSource"
-                  >-</b-button>
+                    @click="removeLastSource"
+                    >-</b-button
+                  >
                   <b-button
                     class="btn-sm btn-success px-3 mt-0"
-                    v-on:click="addSource"
-                  >+</b-button>
+                    @click="addSource"
+                    >+</b-button
+                  >
                 </div>
               </div>
               <div class="row">
                 <div
+                  v-for="(source, index) in source"
                   :key="index"
                   class="col-md-12 pb-3"
-                  v-for="(source, index) in source"
                 >
                   <b-form-input
-                    class="content-source-filename"
                     v-model="source.filename"
+                    class="content-source-filename"
                     placeholder="Contract source filepath"
                   />
                   <div
                     v-if="source.content === null"
                     class="d-flex flex-column"
                   >
-                  <div class="d-flex justify-content-center ">
-                    <b-form-file
-                      accept=".sol"
-                      class="text-center radius-0"
-                      placeholder="Please select contract source file..."
-                      drop-placeholder="Drop contract source file here..."
-                      aria-describedby="source-help"
-                      @change="(event) => onFileChange(event, index)"
-                    />
+                    <div class="d-flex justify-content-center">
+                      <b-form-file
+                        accept=".sol"
+                        class="text-center radius-0"
+                        placeholder="Please select contract source file..."
+                        drop-placeholder="Drop contract source file here..."
+                        aria-describedby="source-help"
+                        @change="(event) => onFileChange(event, index)"
+                      />
+                    </div>
+                    <div class="d-flex justify-content-center">
+                      <b-button
+                        class="w-100 mt-0 content-source empty-source-btn"
+                        @click="() => emptySource(index)"
+                      >
+                        Or create an empty source file
+                      </b-button>
+                    </div>
                   </div>
-                  <div class="d-flex justify-content-center">
-                    <b-button
-                      class="w-100 mt-0 content-source empty-source-btn"
-                      v-on:click="() => emptySource(index)"
-                    >
-                      Or create an empty source file
-                    </b-button>
-                  </div>
-                </div>
-                <b-form-textarea
-                  class="content-source"
-                  v-if="source.content !== null"
-                  v-model="source.content"
-                  placeholder="Source code"
-                  rows="7"
-                />
+                  <b-form-textarea
+                    v-if="source.content !== null"
+                    v-model="source.content"
+                    class="content-source"
+                    placeholder="Source code"
+                    rows="7"
+                  />
                 </div>
               </div>
             </div>
             <b-alert show>
-              Providing contract filesources is crutial for contract verification! <br/>
+              Providing contract filesources is crutial for contract
+              verification! <br />
               Here user shoudl create a project file-map to verify its contract.
-              It is best to use exact filepaths like in project directory. <br/>
-              I.E. `contract/Storage.sol` should be used in Contract source filepath <br/>
+              It is best to use exact filepaths like in project directory.
+              <br />
+              I.E. `contract/Storage.sol` should be used in Contract source
+              filepath <br />
             </b-alert>
             <b-form-group
               id="input-group-arguments"
@@ -240,13 +246,12 @@
             >
               <b-form-input
                 id="arguments"
-                class="input-height"
                 v-model="$v.args.$model"
+                class="input-height"
                 placeholder="Enter encoded constructor arguments..."
                 rows="6"
               ></b-form-input>
             </b-form-group>
-
 
             <recaptcha />
             <b-alert
@@ -295,9 +300,7 @@ export default {
       requestId: null,
       requestIds: [],
       requests: [],
-      source: [
-        {filename: '', content: null},
-      ],
+      source: [{ filename: '', content: null }],
       sourceContent: null,
       uploadPercentage: 0,
       address: '',
@@ -420,31 +423,39 @@ export default {
       return $dirty ? !$error : null
     },
     async onSubmit(evt) {
-      evt.preventDefault();
+      evt.preventDefault()
       const ensure = (condition, message) => {
         if (!condition) {
-          throw new Error(message);
+          throw new Error(message)
         }
       }
       try {
         // generate recaptcha token
         const token = await this.$recaptcha.getResponse()
-        ensure(this.contractName !== "", "Contract name must not be empty");
-        ensure(this.contractFilename !== "", "Contract filename must not be empty");
-        ensure(this.address.length === 42, "Contract address is missing or it is not in correct form");
+        ensure(this.contractName !== '', 'Contract name must not be empty')
+        ensure(
+          this.contractFilename !== '',
+          'Contract filename must not be empty'
+        )
+        ensure(
+          this.address.length === 42,
+          'Contract address is missing or it is not in correct form'
+        )
 
-        this.source
-          .forEach(({filename, content}) => {
-            ensure(filename !== "", "Source filename is missing");
-            ensure(content !== "" && content !== null, "Source filename is missing");
-          });
-        ensure(this.compilerVersion !== null, "Compiler version is missing");
+        this.source.forEach(({ filename, content }) => {
+          ensure(filename !== '', 'Source filename is missing')
+          ensure(
+            content !== '' && content !== null,
+            'Source filename is missing'
+          )
+        })
+        ensure(this.compilerVersion !== null, 'Compiler version is missing')
 
         //   // call manual verification api
-        const sourceObj = this.source
-          .reduce((prev, {filename, content}) =>
-            ({...prev, [filename]: content}),
-          {});
+        const sourceObj = this.source.reduce(
+          (prev, { filename, content }) => ({ ...prev, [filename]: content }),
+          {}
+        )
 
         const body = {
           token,
@@ -458,19 +469,19 @@ export default {
           source: JSON.stringify(sourceObj),
           optimization: `${this.optimization}`,
           compilerVersion: this.compilerVersion,
-        };
-        await this.$axios.post(network.verificatorApi, body);
+        }
+        await this.$axios.post(network.verificatorApi, body)
         // at the end you need to reset recaptcha
-        await this.$recaptcha.reset();
-        this.requestStatus = "Verified";
+        await this.$recaptcha.reset()
+        this.requestStatus = 'Verified'
       } catch (error) {
         // eslint-disable-next-line no-console
         if (error.response) {
-          this.requestStatus = error.response.data.message;
+          this.requestStatus = error.response.data.message
         } else if (error.message) {
-          this.requestStatus = error.message;
+          this.requestStatus = error.message
         } else {
-          this.requestStatus = 'Recaptcha token is missing';
+          this.requestStatus = 'Recaptcha token is missing'
           console.log('recaptcha error:', error)
         }
       }
@@ -488,15 +499,17 @@ export default {
       reader.readAsText(file)
     },
     addSource() {
-      this.source.push({filename: "", content: null})
+      this.source.push({ filename: '', content: null })
     },
     removeLastSource() {
-      if (this.source.length <= 1) { return; }
-      this.source = this.source.slice(0, this.source.length-1);
+      if (this.source.length <= 1) {
+        return
+      }
+      this.source = this.source.slice(0, this.source.length - 1)
     },
     emptySource(index) {
-      this.source[index].content = "";
-    }
+      this.source[index].content = ''
+    },
   },
 }
 </script>

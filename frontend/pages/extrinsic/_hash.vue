@@ -50,18 +50,15 @@ export default {
       query: gql`
         query extrinsic($hash: String!) {
           extrinsic(where: { hash: { _eq: $hash } }) {
-            block_number
-            extrinsic_index
-            is_signed
-            signer
+            block_id
+            index
+            signed
             section
             method
             args
             hash
-            doc
-            fee_info
-            fee_details
-            success
+            docs
+            type
             timestamp
           }
         }

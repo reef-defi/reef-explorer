@@ -57,25 +57,38 @@ export default {
     $subscribe: {
       block: {
         query: gql`
-          subscription block($block_number: bigint!) {
-            block(where: { block_number: { _eq: $block_number } }) {
+          subscription block($id: bigint!) {
+            block(where: { id: { _eq: $id } }) {
+              finalized
+              hash
+              id
+              extrinsic_root
+              parent_hash
+              state_root
+              timestamp
+              author
+            }
+          }
+        `,
+        /*
+        query: gql`
+          subscription block($id: bigint!) {
+            block(where: { id: { _eq: $id } }) {
               block_author
               finalized
               block_author_name
               block_hash
-              block_number
+              id
               extrinsics_root
               parent_hash
               state_root
               timestamp
-              total_events
-              total_extrinsics
             }
           }
-        `,
+        `, */
         variables() {
           return {
-            block_number: this.$route.query.blockNumber,
+            id: this.$route.query.blockNumber,
           }
         },
         result({ data }) {
@@ -87,9 +100,9 @@ export default {
       },
       event: {
         query: gql`
-          subscription event($block_number: bigint!) {
-            event(where: { block_number: { _eq: $block_number } }) {
-              block_number
+          subscription event($block_id: bigint!) {
+            event(where: { block_id: { _eq: $block_id } }) {
+              block_id
               data
               event_index
               method
@@ -100,7 +113,7 @@ export default {
         `,
         variables() {
           return {
-            block_number: this.$route.query.blockNumber,
+            block_id: this.$route.query.blockNumber,
           }
         },
         result({ data }) {
@@ -109,9 +122,9 @@ export default {
       },
       extrinsic: {
         query: gql`
-          subscription extrinsic($block_number: bigint!) {
-            extrinsic(where: { block_number: { _eq: $block_number } }) {
-              block_number
+          subscription extrinsic($block_id: bigint!) {
+            extrinsic(where: { block_id: { _eq: $block_id } }) {
+              block_id
               extrinsic_index
               is_signed
               signer
@@ -126,7 +139,7 @@ export default {
         `,
         variables() {
           return {
-            block_number: this.$route.query.blockNumber,
+            block_id: this.$route.query.blockNumber,
           }
         },
         result({ data }) {

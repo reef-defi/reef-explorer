@@ -20,7 +20,7 @@
               <Cell>Extrinsic</Cell>
               <Cell>Age</Cell>
               <Cell>Section/Method</Cell>
-              <Cell align="center">Success</Cell>
+              <Cell align="center">Signed</Cell>
             </THead>
 
             <Row v-for="(item, index) in extrinsics" :key="index">
@@ -50,7 +50,7 @@
 
               <Cell align="center">
                 <font-awesome-icon
-                  v-if="item.type === 'success'"
+                  v-if="item.type === 'signed'"
                   icon="check"
                   class="text-success"
                 />
