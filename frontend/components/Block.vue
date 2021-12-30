@@ -32,13 +32,13 @@
       </Row>
 
       <Row>
-        <Cell>{{ $t('details.block.block_hash') }}</Cell>
-        <Cell>{{ parsedBlock.block_hash }}</Cell>
+        <Cell>{{ $t('details.block.hash') }}</Cell>
+        <Cell>{{ parsedBlock.hash }}</Cell>
       </Row>
 
       <Row>
         <Cell>{{ $t('details.block.extrinsic_root') }}</Cell>
-        <Cell>{{ parsedBlock.extrinsics_root }}</Cell>
+        <Cell>{{ parsedBlock.extrinsic_root }}</Cell>
       </Row>
 
       <Row>
