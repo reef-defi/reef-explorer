@@ -69,7 +69,6 @@
         <Cell>{{ $t('details.block.args') }}</Cell>
         <Cell align="center">{{ $t('details.block.success') }}</Cell>
       </THead>
-
       <Row
         v-for="(extrinsic, index) in parsedExtrinsics"
         :key="'extrinsic-' + index"
