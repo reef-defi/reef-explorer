@@ -125,15 +125,15 @@ export default {
           subscription extrinsic($block_id: bigint!) {
             extrinsic(where: { block_id: { _eq: $block_id } }) {
               block_id
-              extrinsic_index
+              index
               is_signed
-              signer
+              signed
               section
               method
               args
               hash
               doc
-              success
+              type
             }
           }
         `,

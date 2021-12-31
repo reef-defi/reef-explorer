@@ -52,13 +52,13 @@ export default {
   apollo: {
     extrinsic: {
       query: gql`
-        query extrinsic($block_id: bigint!, $index: Int!) {
+        query extrinsic($block_id: bigint!, $index: bigint!) {
           extrinsic(
             where: { block_id: { _eq: $block_id }, index: { _eq: $index } }
           ) {
             block_id
             index
-            signer
+            signed
             section
             method
             args

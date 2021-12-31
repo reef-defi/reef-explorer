@@ -52,15 +52,12 @@ export default {
   apollo: {
     event: {
       query: gql`
-        query event($block_number: bigint!, $event_index: Int!) {
+        query event($block_id: bigint!, $index: bigint!) {
           event(
-            where: {
-              block_number: { _eq: $block_number }
-              event_index: { _eq: $event_index }
-            }
+            where: { block_id: { _eq: $block_id }, index: { _eq: $index } }
           ) {
-            block_number
-            event_index
+            block_id
+            index
             data
             method
             phase
@@ -74,8 +71,8 @@ export default {
       },
       variables() {
         return {
-          block_number: parseInt(this.blockNumber),
-          event_index: parseInt(this.eventIndex),
+          block_id: parseInt(this.blockNumber),
+          index: parseInt(this.eventIndex),
         }
       },
       result({ data }) {

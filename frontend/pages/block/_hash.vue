@@ -59,18 +59,15 @@ export default {
       block: {
         query: gql`
           subscription block($block_hash: String!) {
-            block(where: { block_id: { _eq: $block_hash } }) {
-              block_author
+            block(where: { hash: { _eq: $block_hash } }) {
+              author
               finalized
-              block_author_name
-              block_id
-              block_number
-              extrinsics_root
+              id
+              hash
               parent_hash
               state_root
+              extrinsic_root
               timestamp
-              total_events
-              total_extrinsics
             }
           }
         `,
@@ -89,11 +86,11 @@ export default {
       },
       event: {
         query: gql`
-          subscription event($block_number: bigint!) {
-            event(where: { block_number: { _eq: $block_number } }) {
-              block_number
+          subscription event($block_id: bigint!) {
+            event(where: { block_id: { _eq: $block_id } }) {
+              block_id
               data
-              event_index
+              index
               method
               phase
               section
@@ -105,7 +102,7 @@ export default {
         },
         variables() {
           return {
-            block_number: this.blockNumber,
+            block_id: this.blockNumber,
           }
         },
         result({ data }) {
@@ -114,9 +111,9 @@ export default {
       },
       extrinsic: {
         query: gql`
-          subscription extrinsic($block_number: bigint!) {
-            extrinsic(where: { block_number: { _eq: $block_number } }) {
-              block_number
+          subscription extrinsic($block_id: bigint!) {
+            extrinsic(where: { block_id: { _eq: $block_id } }) {
+              block_id
               extrinsic_index
               is_signed
               signer
@@ -134,7 +131,7 @@ export default {
         },
         variables() {
           return {
-            block_number: this.blockNumber,
+            block_id: this.blockNumber,
           }
         },
         result({ data }) {

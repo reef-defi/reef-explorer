@@ -35,29 +35,32 @@
         <Cell>Signed</Cell>
         <Cell>
           <font-awesome-icon
-            v-if="extrinsic.signed"
+            v-if="extrinsic.type === 'signed'"
             icon="check"
             class="text-success"
           />
-          <font-awesome-icon v-else icon="times" class="text-danger" />
+          <div v-else>
+            <font-awesome-icon icon="times" class="text-danger" />
+            <small>({{ extrinsic.type }})</small>
+          </div>
         </Cell>
       </Row>
 
-      <!-- <Row class="extrinsic-details__signer">
+      <Row class="extrinsic-details__signer">
         <Cell>Signer</Cell>
         <Cell>
-          <div v-if="extrinsic.signer">
+          <div v-if="extrinsic.signed">
             <ReefIdenticon
-              :key="extrinsic.signer"
-              :address="extrinsic.signer"
+              :key="extrinsic.signed"
+              :address="extrinsic.signed"
               :size="20"
             />
-            <nuxt-link :to="`/account/${extrinsic.signer}`">
-              {{ shortAddress(extrinsic.signer) }}
+            <nuxt-link :to="`/account/${extrinsic.signed}`">
+              {{ shortAddress(extrinsic.signed) }}
             </nuxt-link>
           </div>
         </Cell>
-      </Row> -->
+      </Row>
 
       <Row>
         <Cell>Section and method</Cell>
@@ -109,7 +112,7 @@
       </Row> -->
 
       <Row>
-        <Cell>Signed</Cell>
+        <Cell>Description</Cell>
         <Cell>
           <font-awesome-icon
             v-if="extrinsic.type === 'signed'"

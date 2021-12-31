@@ -24,14 +24,12 @@
             </THead>
 
             <Row v-for="(item, index) in events" :key="index">
-              <Cell :link="`/event/${item.block_number}/${item.event_index}`"
-                ># {{ formatNumber(item.block_number) }}-{{
-                  item.event_index
-                }}</Cell
+              <Cell :link="`/event/${item.block_id}/${item.index}`"
+                ># {{ formatNumber(item.block_id) }}-{{ item.index }}</Cell
               >
 
-              <Cell :link="`/block?blockNumber=${item.block_number}`"
-                ># {{ formatNumber(item.block_number) }}</Cell
+              <Cell :link="`/block?blockNumber=${item.block_id}`"
+                ># {{ formatNumber(item.block_id) }}</Cell
               >
 
               <Cell class="list-view__age">
@@ -96,11 +94,11 @@ export default {
             event(
               limit: $perPage
               offset: $offset
-              where: { block_number: { _eq: $blockNumber } }
-              order_by: { block_number: desc, event_index: desc }
+              where: { block_id: { _eq: $blockNumber } }
+              order_by: { block_id: desc, index: desc }
             ) {
-              block_number
-              event_index
+              block_id
+              index
               data
               method
               phase
@@ -124,7 +122,8 @@ export default {
           this.loading = false
         },
       },
-      totalEvents: {
+      /* TODO
+          totalEvents: {
         query: gql`
           subscription total {
             total(where: { name: { _eq: "events" } }, limit: 1) {
@@ -137,7 +136,7 @@ export default {
             this.totalRows = data.total[0].count
           }
         },
-      },
+      }, */
     },
   },
 }
