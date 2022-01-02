@@ -8,22 +8,30 @@
         <NotFound v-else-if="!contract" text="Contract not found" />
         <Card v-else class="contract-details">
           <div class="contract-details__identicon">
-            <eth-identicon :address="contractId" :size="80" />
+            <eth-identicon :address="address" :size="80" />
           </div>
 
-          <Headline>{{ contract.name || shortHash(contractId) }}</Headline>
+          <Headline>{{
+            contract.verified_contract
+              ? contract.verified_contract.name
+              : '' || shortHash(address)
+          }}</Headline>
 
           <h4 class="text-center mb-4">
             <p class="mt-3">
               <b-badge
-                v-if="contract.is_erc20"
-                :to="`/token/${contract.contract_id}`"
+                v-if="contract.type === 'ERC20'"
+                :to="`/token/${contract.address}`"
                 class="ml-2"
                 variant="info"
               >
                 ERC-20 token
               </b-badge>
-              <b-badge v-if="contract.verified" class="ml-2" variant="success">
+              <b-badge
+                v-if="contract.verified_contract"
+                class="ml-2"
+                variant="success"
+              >
                 Verified source
                 <font-awesome-icon icon="check" />
               </b-badge>
@@ -42,8 +50,8 @@
             <Row>
               <Cell>Contract address</Cell>
               <Cell>
-                <eth-identicon :address="contractId" :size="20" />
-                <span>{{ contractId }}</span>
+                <eth-identicon :address="address" :size="20" />
+                <span>{{ address }}</span>
               </Cell>
             </Row>
 
@@ -51,8 +59,10 @@
               <Cell>{{ $t('details.contract.verified') }}</Cell>
               <Cell>
                 <font-awesome-icon
-                  :icon="contract.verified ? 'check' : 'times'"
-                  :class="contract.verified ? 'text-success' : 'text-danger'"
+                  :icon="contract.verified_contract ? 'check' : 'times'"
+                  :class="
+                    contract.verified_contract ? 'text-success' : 'text-danger'
+                  "
                 />
               </Cell>
             </Row>
@@ -60,12 +70,14 @@
             <Row>
               <Cell>Created at block</Cell>
               <Cell>
-                <nuxt-link :to="`/block?blockNumber=${contract.block_height}`">
-                  # {{ formatNumber(contract.block_height) }}
+                <nuxt-link
+                  :to="`/block?blockNumber=${contract.extrinsic.block_id}`"
+                >
+                  # {{ formatNumber(contract.extrinsic.block_id) }}
                 </nuxt-link>
               </Cell>
             </Row>
-
+            <!--TODO Ziga - can .owner be empty?-->
             <Row>
               <Cell>{{ $t('details.contract.signer') }}</Cell>
               <Cell>
@@ -84,30 +96,30 @@
                 </nuxt-link>
               </Cell>
             </Row>
-
+            <!--TODO Ziga
             <Row v-if="contract.value">
               <Cell>{{ $t('details.contract.value') }}</Cell>
               <Cell>{{ contract.value }}</Cell>
-            </Row>
-
+            </Row>-->
+            <!--TODO Ziga
             <Row v-if="contract.gas_limit">
               <Cell>{{ $t('details.contract.gas_limit') }}</Cell>
               <Cell>{{ contract.gas_limit }}</Cell>
-            </Row>
-
+            </Row>-->
+            <!--TODO Ziga
             <Row v-if="contract.storage_limit">
               <Cell>{{ $t('details.contract.storage_limit') }}</Cell>
               <Cell>{{ contract.storage_limit }}</Cell>
-            </Row>
+            </Row>-->
 
             <!-- <Row v-if="contract.bytecode">
               <Cell>{{ $t('details.contract.bytecode') }}</Cell>
               <Cell wrap>{{ contract.bytecode }}</Cell>
             </Row> -->
 
-            <Row v-if="contract.deployment_bytecode">
-              <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
-              <Cell wrap>{{ contract.deployment_bytecode }}</Cell>
+            <Row v-if="contract.bytecode">
+              <Cell>{{ $t('details.contract.bytecode') }}</Cell>
+              <Cell wrap>{{ contract.bytecode }}</Cell>
             </Row>
 
             <Row v-if="contract.arguments">
@@ -166,31 +178,35 @@
           <!-- Developer -->
 
           <Data v-if="tab === 'developer'">
-            <Row>
+            <Row v-if="contract.verified_contract">
               <Cell>{{ $t('details.contract.compiler_version') }}</Cell>
-              <Cell>{{ contract.compiler_version }}</Cell>
+              <Cell>{{ contract.verified_contract.compiler_version }}</Cell>
             </Row>
 
-            <Row>
+            <Row v-if="contract.verified_contract">
               <Cell>{{ $t('details.contract.optimization') }}</Cell>
               <Cell>
                 <font-awesome-icon
-                  :icon="contract.optimization ? 'check' : 'times'"
+                  :icon="
+                    contract.verified_contract.optimization ? 'check' : 'times'
+                  "
                   :class="
-                    contract.optimization ? 'text-success' : 'text-danger'
+                    contract.verified_contract.optimization
+                      ? 'text-success'
+                      : 'text-danger'
                   "
                 />
               </Cell>
             </Row>
 
-            <Row>
+            <Row v-if="contract.verified_contract">
               <Cell>{{ $t('details.contract.runs') }}</Cell>
-              <Cell>{{ contract.runs }}</Cell>
+              <Cell>{{ contract.verified_contract.runs }}</Cell>
             </Row>
 
-            <Row>
+            <Row v-if="contract.verified_contract">
               <Cell>{{ $t('details.contract.target') }}</Cell>
-              <Cell>{{ contract.target }}</Cell>
+              <Cell>{{ contract.verified_contract.target }}</Cell>
             </Row>
 
             <Row>
@@ -202,7 +218,7 @@
           <!-- Verified Source -->
 
           <pre v-if="tab === 'source'" class="contract-details__source">{{
-            contract.source
+            contract.verified_contract.source
           }}</pre>
 
           <!-- ABI -->
@@ -213,15 +229,15 @@
 
           <ContractTransactions
             v-if="tab === 'transactions'"
-            :contract-id="contractId"
+            :contract-id="address"
           />
 
           <!-- Execute -->
 
           <ContractExecute
             v-if="tab === 'execute'"
-            :contract-id="contractId"
-            :contract-name="contract.name"
+            :contract-id="address"
+            :contract-name="contract.verified_contract.name"
             :contract-abi="contract.abi"
           />
         </Card>
@@ -233,7 +249,7 @@
 import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
 import { ethers } from 'ethers'
-import cbor from 'cbor'
+// import cbor from 'cbor'
 import Hash from 'ipfs-only-hash'
 import { Promised } from 'vue-promised'
 import ContractTransactions from '../../components/ContractTransactions.vue'
@@ -257,14 +273,14 @@ export default {
     return {
       network,
       loading: true,
-      contractId: this.$route.params.id,
+      address: this.$route.params.id,
       contract: undefined,
       tab: 'general',
     }
   },
   computed: {
     tabs() {
-      if (this.contract?.verified) {
+      if (this.contract?.verified_contract) {
         return {
           general: 'General',
           developer: 'Developer',
@@ -281,7 +297,11 @@ export default {
       }
     },
     decodedArguments() {
-      if (this.contract.abi && this.contract.bytecode_arguments) {
+      if (
+        this.contract.abi &&
+        this.contract.abi.length &&
+        this.contract.bytecode_arguments
+      ) {
         // get constructor arguments types array
         const constructorTypes = this.contract.abi
           .find(({ type }) => type === 'constructor')
@@ -298,20 +318,21 @@ export default {
       return null
     },
     decodedMetadata() {
-      if (this.contract.bytecode_metadata) {
+      /* TODO Ziga
+      if (this.contract.bytecode_context) {
         let encodedMetadata = ''
         const endSeq1 = '0033'
-        const endSeqIndex1 = this.contract.bytecode_metadata.indexOf(endSeq1)
+        const endSeqIndex1 = this.contract.bytecode_context.indexOf(endSeq1)
         const endSeq2 = '0032'
-        const endSeqIndex2 = this.contract.bytecode_metadata.indexOf(endSeq2)
-        if (this.contract.bytecode_metadata.includes(endSeq1)) {
-          encodedMetadata = this.contract.bytecode_metadata.slice(
+        const endSeqIndex2 = this.contract.bytecode_context.indexOf(endSeq2)
+        if (this.contract.bytecode_context.includes(endSeq1)) {
+          encodedMetadata = this.contract.bytecode_context.slice(
             0,
             endSeqIndex1
           )
         }
-        if (this.contract.bytecode_metadata.includes(endSeq2)) {
-          encodedMetadata = this.contract.bytecode_metadata.slice(
+        if (this.contract.bytecode_context.includes(endSeq2)) {
+          encodedMetadata = this.contract.bytecode_context.slice(
             0,
             endSeqIndex2
           )
@@ -319,7 +340,7 @@ export default {
         // metadata is CBOR encoded (http://cbor.me/)
         const decodedMetadata = cbor.decode(encodedMetadata)
         return decodedMetadata
-      }
+      } */
       return null
     },
     decodedSolcVersion() {
@@ -332,46 +353,55 @@ export default {
   },
   watch: {
     $route() {
-      this.contractId = this.$route.params.id
+      this.address = this.$route.params.id
     },
   },
   apollo: {
     $subscribe: {
       contract: {
         query: gql`
-          subscription contract($contract_id: String!) {
-            contract(where: { contract_id: { _eq: $contract_id } }) {
-              contract_id
-              name
-              deployment_bytecode
-              bytecode_metadata
+          subscription contract($address: String!) {
+            contract(where: { address: { _eq: $address } }) {
+              address
+              verified_contract {
+                name
+                args
+                source
+                compiler_version
+                compiled_data
+                optimization
+                runs
+                target
+              }
+              bytecode
+              bytecode_context
               bytecode_arguments
-              arguments
-              value
-              gas_limit
-              storage_limit
               owner
-              block_height
-              verified
-              source
-              compiler_version
-              compiler_data
-              optimization
-              runs
-              target
+              extrinsic {
+                block_id
+              }
               timestamp
             }
           }
         `,
         variables() {
           return {
-            contract_id: this.contractId,
+            address: this.address,
           }
         },
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
-            this.contract.abi = data.contract[0].compiler_data.flat()
+            this.contract.abi = data.contract[0].verified_contract
+              ? data.contract[0].verified_contract.compiled_data.flat()
+              : []
+            if (
+              this.contract.bytecode_context &&
+              !this.contract.bytecode_context.startsWith('0x')
+            ) {
+              this.contract.bytecode_context =
+                '0x' + this.contract.bytecode_context
+            }
           }
           this.loading = false
         },

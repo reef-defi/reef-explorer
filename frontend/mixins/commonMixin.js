@@ -104,9 +104,9 @@ export default {
       if (timestamp === 0) {
         return `--`
       }
-      const newDate = new Date()
-      newDate.setTime(timestamp * 1000)
-      return newDate.toUTCString()
+
+      const newDate = toMomentDate(timestamp)
+      return newDate.toString()
     },
     isValidAddressPolkadotAddress: (address) => {
       try {

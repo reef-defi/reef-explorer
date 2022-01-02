@@ -31,35 +31,43 @@
           </div>
           <Table v-else>
             <THead>
-              <Cell>Name</Cell>
               <Cell>Contract Address</Cell>
+              <Cell>Name</Cell>
               <Cell>Created at Block</Cell>
               <Cell align="center">Verified</Cell>
             </THead>
 
             <Row v-for="(item, index) in contracts" :key="index">
-              <Cell v-if="item.name" :link="`/contract/${item.contract_id}`">{{
-                item.name
-              }}</Cell>
-              <Cell v-else />
-
-              <Cell :link="{ url: `/token/${item.contract_id}`, fill: false }">
-                <eth-identicon :address="item.contract_id" :size="20" />
-                <span>{{ shortHash(item.contract_id) }}</span>
+              <Cell
+                v-if="!!item.verified_contract"
+                :link="{ url: `/token/${item.address}`, fill: false }"
+              >
+                <eth-identicon :address="item.address" :size="20" />
+                <span>{{ shortHash(item.address) }}</span>
               </Cell>
+              <Cell v-else :link="`/contract/${item.address}`">{{
+                shortHash(item.address)
+              }}</Cell>
+
+              <Cell
+                v-if="!!item.verified_contract"
+                :link="`/contract/${item.address}`"
+                >{{ item.verified_contract.name }}</Cell
+              >
+              <Cell v-else />
 
               <Cell
                 :link="{
-                  url: `/block?blockNumber=${item.block_height}`,
+                  url: `/block?blockNumber=${item.extrinsic.block_id}`,
                   fill: false,
                 }"
               >
-                # {{ formatNumber(item.block_height) }}
+                # {{ formatNumber(item.extrinsic.block_id) }}
               </Cell>
 
               <Cell align="center">
                 <font-awesome-icon
-                  v-if="item.verified"
+                  v-if="item.verified_contract"
                   icon="check"
                   class="text-success"
                 />
@@ -120,16 +128,21 @@ export default {
               limit: $perPage
               offset: $offset
               where: {
-                block_height: { _eq: $blockHeight }
-                contract_id: { _eq: $contractId }
+                extrinsic: { block_id: { _eq: $blockHeight } }
+                address: { _eq: $contractId }
               }
-              order_by: { block_height: desc }
+              order_by: { extrinsic: { block_id: desc } }
             ) {
-              contract_id
-              name
-              block_height
+              address
+              extrinsic {
+                block_id
+              }
               timestamp
-              verified
+              verified_contract {
+                address
+                name
+                type
+              }
             }
           }
         `,
@@ -153,6 +166,7 @@ export default {
           this.loading = false
         },
       },
+      /* TODO
       totalContracts: {
         query: gql`
           subscription total {
@@ -166,7 +180,7 @@ export default {
             this.totalRows = data.total[0].count
           }
         },
-      },
+      }, */
     },
   },
 }

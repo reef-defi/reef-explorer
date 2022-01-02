@@ -9,17 +9,17 @@
       <Cell>Status</Cell>
       <Cell>
         <font-awesome-icon
-          v-if="extrinsic.success"
+          v-if="extrinsic.type === 'signed'"
           icon="check"
           class="text-success"
         />
         <font-awesome-icon v-else icon="times" class="text-danger" />
-        <template v-if="!extrinsic.success">
+        <template v-if="!extrinsic.type === 'signed'">
           <Promised
             :promise="
               getExtrinsicFailedFriendlyError(
-                extrinsic.block_number,
-                extrinsic.extrinsic_index,
+                extrinsic.block_id,
+                extrinsic.index,
                 $apollo.provider.defaultClient
               )
             "
@@ -35,14 +35,14 @@
     <Row class="contract-transaction__identicon-link">
       <Cell>Signer</Cell>
       <Cell>
-        <div v-if="extrinsic.signer">
+        <div v-if="extrinsic.signed">
           <ReefIdenticon
-            :key="extrinsic.signer"
-            :address="extrinsic.signer"
+            :key="extrinsic.signed"
+            :address="extrinsic.signed"
             :size="20"
           />
-          <nuxt-link :to="`/account/${extrinsic.signer}`">
-            {{ extrinsic.signer }}
+          <nuxt-link :to="`/account/${extrinsic.signed}`">
+            {{ extrinsic.signed }}
           </nuxt-link>
         </div>
       </Cell>
@@ -53,7 +53,7 @@
       <Cell>
         <div v-if="evmAddress">
           <eth-identicon :address="evmAddress" :size="16" />
-          <nuxt-link :to="`/account/${extrinsic.signer}`">
+          <nuxt-link :to="`/account/${extrinsic.signed}`">
             {{ evmAddress }}
           </nuxt-link>
         </div>
@@ -64,9 +64,9 @@
       <Cell>Contract</Cell>
       <Cell>
         <div>
-          <eth-identicon :address="contract.contract_id" :size="16" />
-          <nuxt-link :to="`/contract/${contract.contract_id}`">
-            {{ contract.contract_id }}
+          <eth-identicon :address="contract.address" :size="16" />
+          <nuxt-link :to="`/contract/${contract.address}`">
+            {{ contract.address }}
           </nuxt-link>
         </div>
       </Cell>
@@ -75,8 +75,8 @@
     <Row>
       <Cell>Block number</Cell>
       <Cell>
-        <nuxt-link :to="`/block?blockNumber=${extrinsic.block_number}`">
-          # {{ formatNumber(extrinsic.block_number) }}
+        <nuxt-link :to="`/block?blockNumber=${extrinsic.block_id}`">
+          # {{ formatNumber(extrinsic.block_id) }}
         </nuxt-link>
       </Cell>
     </Row>
@@ -95,12 +95,10 @@
       <Cell>
         <nuxt-link
           v-b-tooltip.hover
-          :to="`/extrinsic/${extrinsic.block_number}/${extrinsic.extrinsic_index}`"
+          :to="`/extrinsic/${extrinsic.block_id}/${extrinsic.index}`"
           title="Check extrinsic information"
         >
-          # {{ formatNumber(extrinsic.block_number) }}-{{
-            extrinsic.extrinsic_index
-          }}
+          # {{ formatNumber(extrinsic.block_id) }}-{{ extrinsic.index }}
         </nuxt-link>
       </Cell>
     </Row>
@@ -111,7 +109,7 @@
         <pre>{{
           JSON.stringify(
             parseMessage(
-              JSON.parse(extrinsic.args)[1],
+              extrinsic.args[1],
               contract.verified ? JSON.parse(contract.abi) : erc20Abi
             ),
             null,
@@ -123,22 +121,23 @@
 
     <Row>
       <Cell>Message</Cell>
-      <Cell>{{ JSON.parse(extrinsic.args)[1] }}</Cell>
+      <Cell>{{ extrinsic.args[1] }}</Cell>
     </Row>
 
     <Row>
       <Cell>Value</Cell>
-      <Cell>{{ JSON.parse(extrinsic.args)[2] }}</Cell>
+      <Cell>{{ extrinsic.args[2] }}</Cell>
     </Row>
 
     <Row>
       <Cell>Gas limit</Cell>
-      <Cell>{{ JSON.parse(extrinsic.args)[3] }}</Cell>
+      <Cell>{{ extrinsic.args[3] }}</Cell>
     </Row>
 
     <Row>
       <Cell>Weight</Cell>
       <Cell>
+        <!--        TODO Ziga - fee_info things below -->
         <div v-if="extrinsic.fee_info">
           {{ formatNumber(JSON.parse(extrinsic.fee_info).weight) }}
         </div>
@@ -191,7 +190,7 @@ export default {
     }
   },
   async created() {
-    this.evmAddress = await this.getEVMAddress(this.extrinsic.signer)
+    this.evmAddress = await this.getEVMAddress(this.extrinsic.signed)
   },
   methods: {
     parseMessage(message, abi) {
@@ -213,7 +212,7 @@ export default {
       const client = this.$apolloProvider.defaultClient
       const query = gql`
           query account {
-            account(where: {account_id: {_eq: "${accountId}"}}) {
+            account(where: {address: {_eq: "${accountId}"}}) {
               evm_address
             }
           }
@@ -245,6 +244,7 @@ export default {
 
         a {
           background: linear-gradient(90deg, #a93185, #5531a9);
+          //noinspection CssInvalidPropertyValue
           background-clip: text;
           -webkit-text-fill-color: transparent;
           position: relative;
