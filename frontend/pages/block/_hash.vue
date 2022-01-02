@@ -78,7 +78,7 @@ export default {
         },
         result({ data }) {
           if (data.block[0]) {
-            this.blockNumber = data.block[0].block_id
+            this.blockNumber = data.block[0].id
             this.parsedBlock = data.block[0]
           }
           this.loading = false
@@ -114,15 +114,14 @@ export default {
           subscription extrinsic($block_id: bigint!) {
             extrinsic(where: { block_id: { _eq: $block_id } }) {
               block_id
-              extrinsic_index
-              is_signed
-              signer
+              index
+              signed
               section
               method
               args
               hash
-              doc
-              success
+              docs
+              type
             }
           }
         `,

@@ -13,8 +13,8 @@
           <Headline>Contract Transaction</Headline>
           <contract-transaction :contract="contract" :extrinsic="extrinsic" />
           <extrinsic-events
-            :block-number="parseInt(extrinsic.block_number)"
-            :extrinsic-index="parseInt(extrinsic.extrinsic_index)"
+            :block-number="parseInt(extrinsic.block_id)"
+            :extrinsic-index="parseInt(extrinsic.index)"
           />
         </Card>
       </b-container>
@@ -22,7 +22,6 @@
   </div>
 </template>
 <script>
-import { toChecksumAddress } from 'web3-utils'
 import { gql } from 'graphql-tag'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
@@ -39,7 +38,7 @@ export default {
       loading: true,
       extrinsicHash: this.$route.params.hash,
       extrinsic: undefined,
-      contractId: undefined,
+      contractAddress: undefined,
       contract: undefined,
     }
   },
@@ -65,18 +64,15 @@ export default {
       query: gql`
         query extrinsic($hash: String!) {
           extrinsic(where: { hash: { _eq: $hash } }) {
-            block_number
-            extrinsic_index
-            is_signed
-            signer
+            block_id
+            index
+            type
+            signed
             section
             method
             args
             hash
-            doc
-            fee_info
-            fee_details
-            success
+            docs
             timestamp
           }
         }
@@ -91,33 +87,35 @@ export default {
       },
       result({ data }) {
         this.extrinsic = data.extrinsic[0]
-        this.contractId = toChecksumAddress(JSON.parse(this.extrinsic.args)[0])
+        this.contractAddress = this.extrinsic.args[0].toLowerCase()
       },
     },
     contract: {
       query: gql`
-        query contract($contractId: String!) {
-          contract(where: { contract_id: { _eq: $contractId } }) {
-            contract_id
-            verified
-            abi
-            is_erc20
-            token_name
-            token_symbol
-            token_decimals
+        query contract($contractAddress: String!) {
+          contract(where: { address: { _eq: $contractAddress } }) {
+            address
+            verified_contract {
+              type
+              name
+              contract_data
+            }
           }
         }
       `,
       skip() {
-        return !this.contractId
+        return !this.contractAddress
       },
       variables() {
         return {
-          contractId: this.contractId,
+          contractAddress: this.contractAddress,
         }
       },
       result({ data }) {
         this.contract = data.contract[0]
+        this.contract.abi = data.contract[0].verified_contract
+          ? data.contract[0].verified_contract.compiled_data.flat()
+          : []
         this.loading = false
       },
     },

@@ -9,29 +9,37 @@
 
         <Card v-else class="token-details">
           <div class="token-details__identicon">
-            <eth-identicon :address="contractId" :size="80" />
+            <eth-identicon :address="address" :size="80" />
           </div>
 
           <Headline>
             <font-awesome-icon
-              v-if="contract.token_validated"
+              v-if="contract.verified_contract"
               v-b-tooltip.hover
               icon="check"
               class="text-success"
               title="Validated token"
             />
             <img
-              v-if="contract.token_icon_url"
-              :src="contract.token_icon_url"
+              v-if="contract.verified_contract.token_icon_url"
+              :src="contract.verified_contract.token_icon_url"
               style="width: 32px; height: 32px"
             />
-            <span>{{ contract.name || shortHash(contractId) }}</span>
+            <span>{{
+              contract.verified_contract
+                ? contract.verified_contract.name
+                : '' || shortHash(address)
+            }}</span>
           </Headline>
 
           <h4 class="text-center mb-4">
             <p class="mt-3">
               <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
-              <b-badge v-if="contract.verified" class="ml-2" variant="success">
+              <b-badge
+                v-if="contract.verified_contract"
+                class="ml-2"
+                variant="success"
+              >
                 Verified source
                 <font-awesome-icon icon="check" />
               </b-badge>
@@ -50,28 +58,28 @@
             <Row>
               <Cell>Contract address</Cell>
               <Cell>
-                <eth-identicon :address="contractId" :size="16" />
-                <nuxt-link :to="`/contract/${contractId}`">
-                  {{ contractId }}
+                <eth-identicon :address="address" :size="16" />
+                <nuxt-link :to="`/contract/${address}`">
+                  {{ address }}
                 </nuxt-link>
               </Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.token.token_name') }}</Cell>
-              <Cell>{{ contract.token_name }}</Cell>
+              <Cell>{{ contract.verified_contract.name }}</Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.token.token_symbol') }}</Cell>
-              <Cell>{{ contract.token_symbol }}</Cell>
+              <Cell>{{ contract.verified_contract.symbol }}</Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.token.token_decimals') }}</Cell>
-              <Cell>{{ contract.token_decimals }}</Cell>
+              <Cell>{{ contract.verified_contract.decimals }}</Cell>
             </Row>
-
+            <!--            TODO Ziga
             <Row>
               <Cell>{{ $t('details.token.token_total_supply') }}</Cell>
               <Cell class="token-details__amount">
@@ -83,28 +91,30 @@
                   )
                 }}
               </Cell>
-            </Row>
+            </Row>-->
 
             <Row>
               <Cell>Created at block</Cell>
               <Cell>
-                <nuxt-link :to="`/block?blockNumber=${contract.block_height}`">
-                  # {{ formatNumber(contract.block_height) }}
+                <nuxt-link
+                  :to="`/block?blockNumber=${contract.extrinsic.block_id}`"
+                >
+                  # {{ formatNumber(contract.extrinsic.block_id) }}
                 </nuxt-link>
               </Cell>
             </Row>
 
-            <Row v-if="contract.signer">
+            <Row v-if="contract.extrinsic.signed">
               <Cell>{{ $t('details.token.created') }}</Cell>
               <Cell>
                 <ReefIdenticon
-                  :key="contract.signer"
-                  :address="contract.signer"
+                  :key="contract.extrinsic.signed"
+                  :address="contract.extrinsic.signed"
                   :size="20"
                   class="token-details__account-identicon"
                 />
-                <nuxt-link :to="`/account/${contract.signer}`">
-                  {{ shortAddress(contract.signer) }}
+                <nuxt-link :to="`/account/${contract.extrinsic.signed}`">
+                  {{ shortAddress(contract.extrinsic.signed) }}
                 </nuxt-link>
               </Cell>
             </Row>
@@ -115,8 +125,8 @@
           <TokenHolders
             v-if="tab === 'holders'"
             :holders="contract.holders"
-            :decimals="contract.token_decimals"
-            :symbol="contract.token_symbol"
+            :decimals="contract.verified_contract.decimals"
+            :symbol="contract.verified_contract.symbol"
           />
 
           <!-- Developer -->
@@ -124,16 +134,20 @@
           <Data v-if="tab === 'developer'">
             <Row>
               <Cell>{{ $t('details.token.compiler_version') }}</Cell>
-              <Cell>{{ contract.compiler_version }}</Cell>
+              <Cell>{{ contract.verified_contract.compiler_version }}</Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.token.optimization') }}</Cell>
               <Cell>
                 <font-awesome-icon
-                  :icon="contract.optimization ? 'check' : 'times'"
+                  :icon="
+                    contract.verified_contract.optimization ? 'check' : 'times'
+                  "
                   :class="
-                    contract.optimization ? 'text-success' : 'text-danger'
+                    contract.verified_contract.optimization
+                      ? 'text-success'
+                      : 'text-danger'
                   "
                 />
               </Cell>
@@ -141,33 +155,38 @@
 
             <Row>
               <Cell>{{ $t('details.token.runs') }}</Cell>
-              <Cell>{{ contract.runs }}</Cell>
+              <Cell>{{ contract.verified_contract.runs }}</Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.token.target') }}</Cell>
-              <Cell>{{ contract.target }}</Cell>
+              <Cell>{{ contract.verified_contract.target }}</Cell>
             </Row>
-
+            <!--            TODO Ziga
             <Row>
               <Cell>{{ $t('details.token.license') }}</Cell>
-              <Cell>{{ contract.license }}</Cell>
-            </Row>
+              <Cell>{{ contract.verified_contract.license }}</Cell>
+            </Row>-->
 
-            <Row v-if="contract.bytecode">
+            <Row
+              v-if="
+                contract.verified_contract &&
+                contract.verified_contract.bytecode
+              "
+            >
               <Cell>{{ $t('details.token.bytecode') }}</Cell>
-              <Cell wrap>{{ contract.bytecode }}</Cell>
+              <Cell wrap>{{ contract.verified_contract.bytecode }}</Cell>
             </Row>
-
-            <Row v-if="contract.deployment_bytecode">
+            <!--            TODO Ziga
+            <Row v-if="contract.verified_contract.deployment_bytecode">
               <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
-              <Cell wrap>{{ contract.deployment_bytecode }}</Cell>
-            </Row>
+              <Cell wrap>{{ contract.verified_contract.deployment_bytecode }}</Cell>
+            </Row>-->
 
             <Row v-if="contract.abi">
               <Cell>{{ $t('details.token.abi') }}</Cell>
               <Cell class="table-json" wrap>
-                <vue-json-pretty :data="JSON.parse(contract.abi)" />
+                <vue-json-pretty :data="contract.abi" />
               </Cell>
             </Row>
           </Data>
@@ -175,23 +194,23 @@
           <!-- Source -->
 
           <pre v-if="tab === 'source'" class="token-details__source">{{
-            contract.source
+            contract.verified_contract.source
           }}</pre>
 
           <!-- Transactions -->
 
           <ContractTransactions
             v-if="tab === 'transactions'"
-            :contract-id="contractId"
+            :contract-id="address"
           />
 
           <!-- Execute -->
 
           <contract-execute
             v-if="tab === 'execute'"
-            :contract-id="contractId"
-            :contract-name="contract.name"
-            :contract-abi="JSON.parse(contract.abi)"
+            :contract-id="address"
+            :contract-name="contract.verified_contract.name"
+            :contract-abi="contract.abi"
           />
         </Card>
       </b-container>
@@ -221,14 +240,14 @@ export default {
     return {
       network,
       loading: true,
-      contractId: this.$route.params.id,
+      address: this.$route.params.id,
       contract: undefined,
       tab: 'info',
     }
   },
   computed: {
     tabs() {
-      if (this.contract?.verified) {
+      if (this.contract?.verified_contract) {
         return {
           info: 'Token Info',
           holders: 'Holders',
@@ -248,60 +267,61 @@ export default {
   },
   watch: {
     $route() {
-      this.contractId = this.$route.params.id
+      this.address = this.$route.params.id
     },
   },
   apollo: {
     $subscribe: {
       contract: {
+        /* TODO Ziga - where can we get these in query
+        holders {
+          holder_account_id
+          holder_evm_address
+          balance
+        }
+        holders_aggregate {
+          aggregate {
+            count(columns: holder_account_id)
+          }
+        } */
         query: gql`
-          subscription contract($contract_id: String!) {
-            contract(where: { contract_id: { _eq: $contract_id } }) {
-              contract_id
-              name
-              deployment_bytecode
+          subscription contract($address: String!) {
+            contract(where: { address: { _eq: $address } }) {
+              address
               bytecode
-              value
-              gas_limit
-              storage_limit
-              signer
-              block_height
-              verified
-              source
-              compiler_version
-              optimization
-              runs
-              target
-              abi
-              license
-              token_name
-              token_symbol
-              token_decimals
-              token_total_supply
-              token_icon_url
-              token_validated
+              extrinsic {
+                signed
+                block_id
+              }
+              verified_contract {
+                address
+                name
+                args
+                source
+                compiler_version
+                compiled_data
+                optimization
+                runs
+                target
+                type
+              }
               timestamp
-              holders {
-                holder_account_id
-                holder_evm_address
-                balance
-              }
-              holders_aggregate {
-                aggregate {
-                  count(columns: holder_account_id)
-                }
-              }
             }
           }
         `,
         variables() {
           return {
-            contract_id: this.contractId,
+            address: this.address,
           }
         },
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
+            this.contract.abi =
+              data.contract[0].verified_contract &&
+              data.contract[0].verified_contract.compiled_data.flat
+                ? data.contract[0].verified_contract.compiled_data.flat()
+                : []
           }
           this.loading = false
         },

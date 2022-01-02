@@ -18,20 +18,24 @@
             <THead>
               <Cell>Name</Cell>
               <Cell>Contract Address</Cell>
+              <!--              TODO Ziga
               <Cell align="right">Total supply</Cell>
-              <Cell align="right">Holders</Cell>
+              <Cell align="right">Holders</Cell>-->
             </THead>
 
             <Row v-for="(item, index) in tokens" :key="index">
-              <Cell v-if="item.name" :link="`/token/${item.contract_id}`">
+              <Cell
+                v-if="item.verified_contract && item.verified_contract.name"
+                :link="`/token/${item.address}`"
+              >
                 <img
-                  v-if="item.token_icon_url"
-                  :src="item.token_icon_url"
+                  v-if="item.verified_contract.token_icon_url"
+                  :src="item.verified_contract.token_icon_url"
                   class="identicon"
                 />
-                <span>{{ item.name }}</span>
+                <span>{{ item.verified_contract.name }}</span>
                 <font-awesome-icon
-                  v-if="item.token_validated"
+                  v-if="item.verified_contract"
                   v-b-tooltip.hover
                   icon="check"
                   class="validated"
@@ -41,16 +45,17 @@
 
               <Cell v-else />
 
-              <Cell :link="{ url: `/token/${item.contract_id}`, fill: false }">
-                <eth-identicon :address="item.contract_id" :size="20" />
-                <span>{{ shortHash(item.contract_id) }}</span>
+              <Cell :link="{ url: `/token/${item.address}`, fill: false }">
+                <eth-identicon :address="item.address" :size="20" />
+                <span>{{ shortHash(item.address) }}</span>
               </Cell>
 
+              <!-- TODO Ziga
               <Cell align="right">{{ getItemSupply(item) }}</Cell>
 
               <Cell align="right">
                 {{ item.holders_aggregate.aggregate.count }}
-              </Cell>
+              </Cell>-->
             </Row>
           </Table>
 
@@ -95,10 +100,17 @@ export default {
   apollo: {
     $subscribe: {
       tokens: {
+        /* TODO Ziga - missing holders_aggregate in query
+
+        holders_aggregate {
+          aggregate {
+            count(columns: holder_account_id)
+          }
+        } */
         query: gql`
           subscription contract(
             $blockHeight: bigint
-            $contractId: String
+            $contractAddress: String
             $perPage: Int!
             $offset: Int!
           ) {
@@ -106,25 +118,26 @@ export default {
               limit: $perPage
               offset: $offset
               where: {
-                block_height: { _eq: $blockHeight }
-                contract_id: { _eq: $contractId }
-                is_erc20: { _eq: true }
+                extrinsic: { block_id: { _eq: $blockHeight } }
+                address: { _eq: $contractAddress }
+                verified_contract: { type: { _eq: "ERC20" } }
               }
-              order_by: { token_validated: desc, block_height: desc }
+              order_by: { extrinsic: { block_id: desc } }
             ) {
-              contract_id
-              name
-              token_name
-              token_symbol
-              token_decimals
-              token_total_supply
-              token_icon_url
-              timestamp
-              holders_aggregate {
-                aggregate {
-                  count(columns: holder_account_id)
-                }
+              address
+              verified_contract {
+                address
+                name
+                args
+                source
+                compiler_version
+                compiled_data
+                optimization
+                runs
+                target
+                type
               }
+              timestamp
             }
           }
         `,
@@ -133,7 +146,7 @@ export default {
             blockHeight: this.isBlockNumber(this.filter)
               ? parseInt(this.filter)
               : undefined,
-            contractId: this.isContractId(this.filter)
+            contractAddress: this.isContractId(this.filter)
               ? this.filter
               : undefined,
             perPage: this.perPage,
@@ -141,13 +154,17 @@ export default {
           }
         },
         result({ data }) {
-          this.tokens = data.contract
-          if (this.filter) {
-            this.totalRows = this.tokens.length
+          console.log('dddd=', data)
+          if (data && data.contract) {
+            this.tokens = data.contract
+            if (this.filter) {
+              this.totalRows = this.tokens.length
+            }
           }
           this.loading = false
         },
       },
+      /* TODO Ziga
       totaltokens: {
         query: gql`
           query contract_aggregate {
@@ -163,7 +180,7 @@ export default {
             this.totalRows = data.contract_aggregate.aggregate.count
           }
         },
-      },
+      }, */
     },
   },
   methods: {

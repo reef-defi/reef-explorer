@@ -73,21 +73,21 @@
         v-for="(extrinsic, index) in parsedExtrinsics"
         :key="'extrinsic-' + index"
       >
-        <Cell :link="`/extrinsic/${extrinsic.id}/${extrinsic.index}`"
-          >{{ extrinsic.id }}-{{ extrinsic.index }}</Cell
+        <Cell :link="`/extrinsic/${extrinsic.block_id}/${extrinsic.index}`"
+          >{{ extrinsic.block_id }}-{{ extrinsic.index }}</Cell
         >
         <Cell>{{ shortHash(extrinsic.hash) }}</Cell>
         <Cell
-          v-if="extrinsic.signer"
-          :link="{ url: `/account/${extrinsic.signer}`, fill: false }"
+          v-if="extrinsic.signed"
+          :link="{ url: `/account/${extrinsic.signed}`, fill: false }"
           :title="$t('details.block.account_details')"
         >
           <ReefIdenticon
-            :key="extrinsic.signer"
-            :address="extrinsic.signer"
+            :key="extrinsic.signed"
+            :address="extrinsic.signed"
             :size="20"
           />
-          <span>{{ shortAddress(extrinsic.signer) }}</span>
+          <span>{{ shortAddress(extrinsic.signed) }}</span>
         </Cell>
         <Cell v-else />
         <Cell>{{ extrinsic.section }}</Cell>
@@ -95,11 +95,14 @@
         <Cell>{{ extrinsic.args }}</Cell>
         <Cell align="center">
           <font-awesome-icon
-            v-if="extrinsic.success"
+            v-if="extrinsic.type === 'signed'"
             icon="check"
             class="text-success"
           />
-          <font-awesome-icon v-else icon="times" class="text-danger" />
+          <div v-else>
+            <font-awesome-icon icon="times" class="text-danger" />
+            <small>({{ extrinsic.type }})</small>
+          </div>
         </Cell>
       </Row>
     </Table>
@@ -121,33 +124,33 @@
             v-if="event.section === `balances` && event.method === `Transfer`"
           >
             <ReefIdenticon
-              :key="JSON.parse(event.data)[0]"
-              :address="JSON.parse(event.data)[0]"
+              :key="event.data[0]"
+              :address="event.data[0]"
               :size="20"
             />
             <nuxt-link
               v-b-tooltip.hover
-              :to="`/account/${JSON.parse(event.data)[0]}`"
+              :to="`/account/${event.data[0]}`"
               :title="$t('details.block.account_details')"
             >
-              {{ shortAddress(JSON.parse(event.data)[0]) }}
+              {{ shortAddress(event.data[0]) }}
             </nuxt-link>
             <font-awesome-icon icon="arrow-right" />
             <ReefIdenticon
-              :key="JSON.parse(event.data)[1]"
-              :address="JSON.parse(event.data)[1]"
+              :key="event.data[1]"
+              :address="event.data[1]"
               :size="20"
             />
             <nuxt-link
               v-b-tooltip.hover
-              :to="`/account/${JSON.parse(event.data)[1]}`"
+              :to="`/account/${event.data[1]}`"
               :title="$t('details.block.account_details')"
             >
-              {{ shortAddress(JSON.parse(event.data)[1]) }}
+              {{ shortAddress(event.data[1]) }}
             </nuxt-link>
             <font-awesome-icon icon="arrow-right" />
             <span class="amount">
-              {{ formatAmount(JSON.parse(event.data)[2]) }}
+              {{ formatAmount(event.data[2]) }}
             </span>
           </template>
           <template v-else>

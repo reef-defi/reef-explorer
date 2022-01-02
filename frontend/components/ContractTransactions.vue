@@ -34,29 +34,27 @@
 
           <Cell
             :link="{
-              url: `/extrinsic/${item.block_number}/${item.extrinsic_index}`,
+              url: `/extrinsic/${item.block_id}/${item.index}`,
               fill: false,
             }"
-            ># {{ formatNumber(item.block_number) }}-{{
-              item.extrinsic_index
-            }}</Cell
+            ># {{ formatNumber(item.block_id) }}-{{ item.index }}</Cell
           >
 
           <Cell
-            :link="{ url: `/account/${item.signer}`, fill: false }"
+            :link="{ url: `/account/${item.signed}`, fill: false }"
             :title="$t('pages.accounts.account_details')"
           >
             <ReefIdenticon
-              :key="item.signer"
-              :address="item.signer"
+              :key="item.signed"
+              :address="item.signed"
               :size="20"
             />
-            <span>{{ shortAddress(item.signer) }}</span>
+            <span>{{ shortAddress(item.signed) }}</span>
           </Cell>
 
           <Cell align="center">
             <font-awesome-icon
-              v-if="item.success"
+              v-if="item.type === 'signed'"
               icon="check"
               class="text-success"
             />
@@ -92,30 +90,30 @@ export default {
     $subscribe: {
       extrinsic: {
         query: gql`
-          subscription extrinsics($contractId: String!) {
+          subscription extrinsics($contractId: [json!]) {
             extrinsic(
-              order_by: { block_number: desc }
+              order_by: { block_id: desc }
               where: {
                 section: { _eq: "evm" }
                 method: { _eq: "call" }
-                args: { _like: $contractId }
+                args: { _in: $contractId }
               }
               limit: 10
             ) {
-              block_number
-              extrinsic_index
+              block_id
+              index
               hash
-              is_signed
-              signer
+              signed
               args
-              success
+              type
               timestamp
             }
           }
         `,
         variables() {
           return {
-            contractId: `["${this.contractId.toLowerCase()}",%`,
+            // TODO Ziga - how to query json
+            // contractId: `["${this.contractId.toLowerCase()}",%`,
           }
         },
         result({ data }) {
