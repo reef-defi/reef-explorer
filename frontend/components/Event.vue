@@ -8,8 +8,8 @@
       <Row>
         <Cell>Block number</Cell>
         <Cell
-          ><nuxt-link :to="`/block?blockNumber=${event.block_number}`">
-            # {{ formatNumber(event.block_number) }}
+          ><nuxt-link :to="`/block?blockNumber=${event.block_id}`">
+            # {{ formatNumber(event.block_id) }}
           </nuxt-link>
         </Cell>
       </Row>
@@ -23,7 +23,7 @@
 
       <Row>
         <Cell>Event Index</Cell>
-        <Cell>{{ event.event_index }}</Cell>
+        <Cell>{{ event.index }}</Cell>
       </Row>
 
       <Row>
@@ -42,7 +42,7 @@
       <Row class="event-details__data">
         <Cell>Data</Cell>
         <Cell>
-          <pre>{{ JSON.stringify(JSON.parse(event.data), null, 2) }}</pre>
+          <pre>{{ JSON.stringify(event.data, null, 2) }}</pre>
         </Cell>
       </Row>
     </Data>

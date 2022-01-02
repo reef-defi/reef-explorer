@@ -164,23 +164,6 @@ export default {
             }
           }
         `,
-        /* TODO remove
-            query: gql`
-          subscription extrinsic($signer: String!) {
-            extrinsic(
-              order_by: { block_number: desc }
-              where: { signer: { _eq: $signer } }
-            ) {
-              block_number
-              signer
-              hash
-              section
-              method
-              success
-              timestamp
-            }
-          }
-        `, */
         variables() {
           return {
             signer: this.accountId,

@@ -70,22 +70,6 @@ export default {
             }
           }
         `,
-        /*
-        query: gql`
-          subscription block($id: bigint!) {
-            block(where: { id: { _eq: $id } }) {
-              block_author
-              finalized
-              block_author_name
-              block_hash
-              id
-              extrinsics_root
-              parent_hash
-              state_root
-              timestamp
-            }
-          }
-        `, */
         variables() {
           return {
             id: this.$route.query.blockNumber,
@@ -104,7 +88,7 @@ export default {
             event(where: { block_id: { _eq: $block_id } }) {
               block_id
               data
-              event_index
+              index
               method
               phase
               section
@@ -125,15 +109,14 @@ export default {
           subscription extrinsic($block_id: bigint!) {
             extrinsic(where: { block_id: { _eq: $block_id } }) {
               block_id
-              extrinsic_index
-              is_signed
-              signer
+              index
+              signed
               section
               method
               args
               hash
-              doc
-              success
+              docs
+              type
             }
           }
         `,
@@ -143,6 +126,7 @@ export default {
           }
         },
         result({ data }) {
+          console.log('EXXRTTT=', data)
           this.parsedExtrinsics = data.extrinsic
         },
       },
