@@ -76,6 +76,7 @@ export const getProvider = (): Provider => {
 export const initializeProviders = async (): Promise<void> => {
   logger.info("Connecting to node...");
   await initializeNodeProvider();
+  logger.info("... connected")
   logger.info("Syncing node...");
   await syncNode();
   logger.info("Syncing complete");
@@ -100,5 +101,6 @@ export const insert = async (statement: string): Promise<void> => {
   await dbProvider.query(statement);
 };
 
-export const query = async <Res>(statement: string): Promise<Res[]> =>
-  dbProvider.query<Res>(statement).then((res) => res.rows);
+export const query = async <Res,>(statement: string): Promise<Res[]> => dbProvider
+  .query<Res>(statement)
+  .then((res: any) => res.rows)
