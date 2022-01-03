@@ -2,6 +2,23 @@ import { AnyTuple } from "@polkadot/types/types";
 import { GenericExtrinsic } from "@polkadot/types/extrinsic";
 import { FrameSystemEventRecord } from "@polkadot/types/lookup";
 import { JsonFragment } from "@ethersproject/abi";
+import type { BlockHash as BH } from "@polkadot/types/interfaces/chain";
+import type { SignedBlock } from "@polkadot/types/interfaces/runtime";
+import type { HeaderExtended } from "@polkadot/api-derive/type/types";
+import { Vec } from "@polkadot/types";
+
+export interface BlockHash {
+  id: number;
+  hash: BH;
+}
+
+export interface BlockBody extends BlockHash {
+  signedBlock: SignedBlock;
+  extendedHeader?: HeaderExtended;
+  events: Vec<Event>;
+  timestamp: number;
+}
+
 
 export type Extrinsic = GenericExtrinsic<AnyTuple>;
 export type Event = FrameSystemEventRecord;

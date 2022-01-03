@@ -1,7 +1,6 @@
 import {
   getProvider,
   nodeQuery,
-  query,
   setResolvingBlocksTillId,
 } from "../utils/connector";
 import { insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
@@ -11,15 +10,13 @@ import {
   isExtrinsicTransfer,
   resolveSigner,
 } from "./extrinsic";
-import type { BlockHash as BH } from "@polkadot/types/interfaces/chain";
-import type { SignedBlock } from "@polkadot/types/interfaces/runtime";
-import type { HeaderExtended } from "@polkadot/api-derive/type/types";
-import { Vec } from "@polkadot/types";
 import {
   ABI,
   ABIS,
   AccountHead,
   AccountTokenBalance,
+  BlockBody,
+  BlockHash,
   Event,
   EventBody,
   EventHead,
@@ -63,17 +60,6 @@ import { utils, Contract } from "ethers";
 import { logger } from "../utils/logger";
 import { insertStaking } from "../queries/staking";
 
-interface BlockHash {
-  id: number;
-  hash: BH;
-}
-
-interface BlockBody extends BlockHash {
-  signedBlock: SignedBlock;
-  extendedHeader?: HeaderExtended;
-  events: Vec<Event>;
-}
-
 const blockHash = async (id: number): Promise<BlockHash> => {
   const hash = await nodeQuery((provider) =>
     provider.api.rpc.chain.getBlockHash(id)
@@ -82,12 +68,13 @@ const blockHash = async (id: number): Promise<BlockHash> => {
 };
 
 const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
-  const [signedBlock, extendedHeader, events] = await Promise.all([
+  const [signedBlock, extendedHeader, events, timestamp] = await Promise.all([
     nodeQuery((provider) => provider.api.rpc.chain.getBlock(hash)),
     nodeQuery((provider) => provider.api.derive.chain.getHeader(hash)),
     nodeQuery((provider) => provider.api.query.system.events.at(hash)),
+    nodeQuery((provider) => provider.api.query.timestamp.now.at(hash))
   ]);
-  return { id, hash, signedBlock, extendedHeader, events };
+  return { id, hash, signedBlock, extendedHeader, events, timestamp: timestamp.toJSON() };
 };
 
 const blockBodyToInsert = ({
@@ -95,8 +82,10 @@ const blockBodyToInsert = ({
   hash,
   extendedHeader,
   signedBlock,
+  timestamp,
 }: BlockBody) => ({
   id,
+  timestamp,
   finalized: true,
   hash: hash.toString(),
   author: extendedHeader?.author?.toString() || "",

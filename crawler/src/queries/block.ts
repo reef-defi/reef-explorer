@@ -9,6 +9,7 @@ interface InsertInitialBlock {
   hash: string;
   author: string;
   stateRoot: string;
+  timestamp: number;
   parentHash: string;
   extrinsicRoot: string;
 }
@@ -31,15 +32,16 @@ const blockValuesStatement = ({
   stateRoot,
   parentHash,
   extrinsicRoot,
+  timestamp
 }: InsertInitialBlock): string =>
-  `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', false)`;
+  `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', false, '${(new Date(timestamp)).toUTCString()}')`;
 
 export const insertMultipleBlocks = async (
   data: InsertInitialBlock[]
 ): Promise<void> =>
   insert(`
 INSERT INTO block
-    (id, hash, author, state_root, parent_hash, extrinsic_root, finalized)
+    (id, hash, author, state_root, parent_hash, extrinsic_root, finalized, timestamp)
   VALUES
     ${data.map(blockValuesStatement).join(",\n")}
   ON CONFLICT DO NOTHING;
