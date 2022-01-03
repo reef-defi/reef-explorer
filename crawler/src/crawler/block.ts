@@ -42,6 +42,7 @@ import {
   dropDuplicatesMultiKey,
   ensure,
   range,
+  removeUndefinedItem,
   resolvePromisesAsChunks,
 } from "../utils/utils";
 import {
@@ -214,7 +215,6 @@ export const processBlocks = async (
   fromId: number,
   toId: number
 ): Promise<number> => {
-  // console.log(`Processing blocks from ${fromId} to ${toId}`);
   let transactions = 0;
   const blockIds = range(fromId, toId);
   setResolvingBlocksTillId(toId - 1);
@@ -225,8 +225,6 @@ export const processBlocks = async (
   logger.info("Retrieving block bodies");
   let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
 
-  // Free memory
-  hashes = [];
   // Insert blocks
   logger.info("Inserting initial blocks in DB");
   await insertMultipleBlocks(blocks.map(blockBodyToInsert));
@@ -270,9 +268,10 @@ export const processBlocks = async (
   let allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
-  allAccounts.push(...extrinsics
-    .filter(isExtrinsicEvmClaimAccount)
-    .map(extrinsicToEvmClaimAccount)
+  allAccounts.push(
+    ...extrinsics
+      .filter(isExtrinsicEvmClaimAccount)
+      .map(extrinsicToEvmClaimAccount)
   );
 
   // Accounts
@@ -339,8 +338,8 @@ export const processBlocks = async (
   const tokenTransferEvents = dropDuplicatesMultiKey(
     compress(
       evmLogs
-        .filter((e) => e !== null)
-        .map((e) => decodeEvmLog(e!))
+        .filter(removeUndefinedItem)
+        .map(decodeEvmLog)
         .filter(({ decodedEvent }) => decodedEvent.name === "Transfer")
         .map(erc20TransferEvent)
     ),
@@ -353,7 +352,8 @@ export const processBlocks = async (
     tokenTransferEvents.map(extractTokenBalance)
   );
   logger.info("Inserting token balances");
-  await insertAccountTokenBalances(tokenBalances);
+  const tokens = tokenBalances.filter(removeUndefinedItem);
+  await insertAccountTokenBalances(tokens);
 
   evmCalls = [];
 
@@ -395,10 +395,10 @@ const getContractBalance = (
     return await contract.balanceOf(address);
   });
 
-const extractEvmLog = async (event: BytecodeLog): Promise<EvmLog | null> => {
+const extractEvmLog = async (event: BytecodeLog): Promise<EvmLog | undefined> => {
   const result = await findErc20TokenDB(event.address);
   if (result.length === 0) {
-    return null;
+    return undefined;
   }
 
   return {
@@ -442,20 +442,23 @@ const extractTokenBalance = async ({
   abi,
   contractAddress,
   signerAddress,
-}: TokenBalanceHead): Promise<AccountTokenBalance> => {
-  const balance = await getContractBalance(signerAddress, contractAddress, abi);
-  const signers = await query<{ address: string }>(
-    `SELECT address FROM account WHERE evm_address = '${signerAddress}';`
-  );
-  ensure(
-    signers.length > 0,
-    `Signer with evm address: ${signerAddress} is not present in table!`
-  );
+}: TokenBalanceHead): Promise<AccountTokenBalance|undefined> => {
+  const [balance, signerAddr] = await Promise.all([
+    getContractBalance(signerAddress, contractAddress, abi),
+    nodeQuery((provider) => provider.api.query.evmAccounts.accounts(signerAddress))
+  ]);
+
+  const addr = signerAddr.toJSON() as string;
+
+  if (addr === "null") {
+    return undefined;
+  }
+
   return {
-    decimals,
     balance,
+    decimals,
     contractAddress,
-    signer: signers[0].address,
     accountEvmAddress: signerAddress,
+    signer: addr,
   };
 };
