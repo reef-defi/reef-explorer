@@ -62,7 +62,7 @@ export default {
         const query = gql`
           query block {
             block(limit: 1, where: {block_hash: {_eq: "${input}"}}) {
-              block_number
+              block_id
             }
           }
         `
@@ -78,7 +78,7 @@ export default {
         const query = gql`
           query extrinsic {
             extrinsic(limit: 1, where: {hash: {_eq: "${input}"}}) {
-              block_number
+              block_id
             }
           }
         `
@@ -143,8 +143,8 @@ export default {
           event(
             limit: 1
             where: {
-              block_number: { _eq: "${blockNumber}" }
-              event_index: { _eq: "${extrinsicIndex}" }
+              block_id: { _eq: "${blockNumber}" }
+              index: { _eq: "${extrinsicIndex}" }
               method: { _eq: "ExtrinsicFailed" }
             }
           ) {
@@ -153,7 +153,7 @@ export default {
         }
       `
       const response = await apolloClient.query({ query })
-      const jsonData = JSON.parse(response.data.event[0].data)
+      const jsonData = response.data.event[0].data
       if (jsonData[0]?.badOrigin === null) {
         return 'Bad origin'
       } else if (jsonData[0]?.other === null) {

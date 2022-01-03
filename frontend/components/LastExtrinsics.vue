@@ -17,10 +17,8 @@
         <Cell>Extrinsic</Cell>
       </THead>
       <Row v-for="(item, index) in extrinsics" :key="'item-' + index">
-        <Cell :link="`/extrinsic/${item.block_number}/${item.extrinsic_index}`"
-          ># {{ formatNumber(item.block_number) }}-{{
-            item.extrinsic_index
-          }}</Cell
+        <Cell :link="`/extrinsic/${item.block_id}/${item.index}`"
+          ># {{ formatNumber(item.block_id) }}-{{ item.index }}</Cell
         >
 
         <Cell>{{ shortHash(item.hash) }}</Cell>
@@ -46,15 +44,15 @@ export default {
       extrinsic: {
         query: gql`
           subscription extrinsics {
-            extrinsic(order_by: { block_number: desc }, where: {}, limit: 10) {
-              block_number
-              extrinsic_index
-              is_signed
-              signer
+            extrinsic(order_by: { block_id: desc }, where: {}, limit: 10) {
+              block_id
+              index
+              type
+              signed
               section
               method
               hash
-              doc
+              docs
             }
           }
         `,
