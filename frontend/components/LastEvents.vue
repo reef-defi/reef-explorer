@@ -16,8 +16,8 @@
         <Cell>Event</Cell>
       </THead>
       <Row v-for="(item, index) in events" :key="'item-' + index">
-        <Cell :link="`/event/${item.block_number}/${item.event_index}`"
-          ># {{ formatNumber(item.block_number) }}-{{ item.event_index }}</Cell
+        <Cell :link="`/event/${item.block_id}/${item.index}`"
+          ># {{ formatNumber(item.block_id) }}-{{ item.index }}</Cell
         >
 
         <Cell>{{ item.section }} ➡ {{ item.method }}</Cell>
@@ -43,9 +43,9 @@ export default {
       event: {
         query: gql`
           subscription events {
-            event(order_by: { block_number: desc }, where: {}, limit: 10) {
-              block_number
-              event_index
+            event(order_by: { block_id: desc }, where: {}, limit: 10) {
+              block_id
+              index
               data
               method
               phase

@@ -126,7 +126,6 @@ export default {
           }
         },
         result({ data }) {
-          console.log('EXXRTTT=', data)
           this.parsedExtrinsics = data.extrinsic
         },
       },

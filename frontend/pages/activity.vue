@@ -30,26 +30,24 @@
             </b-row>
             <div class="table-responsive">
               <b-table striped hover :fields="fields" :items="extrinsics">
-                <template #cell(block_number)="data">
+                <template #cell(block_id)="data">
                   <p class="mb-0">
                     <nuxt-link
-                      :to="`/extrinsic/${data.item.block_number}/${data.item.extrinsic_index}`"
+                      :to="`/extrinsic/${data.item.block_id}/${data.item.index}`"
                     >
-                      {{ data.item.block_number }}-{{
-                        data.item.extrinsic_index
-                      }}
+                      {{ data.item.block_id }}-{{ data.item.index }}
                     </nuxt-link>
                   </p>
                 </template>
-                <template #cell(signer)="data">
+                <template #cell(signed)="data">
                   <p class="mb-0">
                     <ReefIdenticon
-                      :key="data.item.signer"
-                      :address="data.item.signer"
+                      :key="data.item.signed"
+                      :address="data.item.signed"
                       :size="20"
                     />
-                    <nuxt-link :to="`/account/${data.item.signer}`">
-                      {{ shortAddress(data.item.signer) }}
+                    <nuxt-link :to="`/account/${data.item.signed}`">
+                      {{ shortAddress(data.item.signed) }}
                     </nuxt-link>
                   </p>
                 </template>
@@ -62,10 +60,10 @@
                     {{ data.item.method }}
                   </p>
                 </template>
-                <template #cell(success)="data">
+                <template #cell(type)="data">
                   <p class="mb-0">
                     <font-awesome-icon
-                      v-if="data.item.success"
+                      v-if="data.item.type === 'signed'"
                       icon="check"
                       class="text-success"
                     />
@@ -154,12 +152,12 @@ export default {
       totalRows: 1,
       fields: [
         {
-          key: 'block_number',
+          key: 'block_id',
           label: 'Extrinsic',
           sortable: true,
         },
         {
-          key: 'signer',
+          key: 'signed',
           label: 'Signer',
           sortable: true,
         },
@@ -174,7 +172,7 @@ export default {
           sortable: true,
         },
         {
-          key: 'success',
+          key: 'type',
           label: 'Success',
           sortable: true,
         },
@@ -202,21 +200,20 @@ export default {
               limit: $perPage
               offset: $offset
               where: {
-                block_number: { _eq: $blockNumber }
+                block_id: { _eq: $blockNumber }
                 hash: { _eq: $extrinsicHash }
-                is_signed: { _eq: true }
-                signer: { _eq: $signer }
+                type: { _eq: "signed" }
+                signed: { _eq: $signer }
               }
-              order_by: { block_number: desc, extrinsic_index: desc }
+              order_by: { block_id: desc, index: desc }
             ) {
-              block_number
-              extrinsic_index
-              is_signed
-              signer
+              block_id
+              index
+              type
+              signed
               section
               method
               hash
-              success
             }
           }
         `,
@@ -245,10 +242,10 @@ export default {
           ) {
             extrinsic_aggregate(
               where: {
-                block_number: { _eq: $blockNumber }
+                block_id: { _eq: $blockNumber }
                 hash: { _eq: $extrinsicHash }
-                is_signed: { _eq: true }
-                signer: { _eq: $signer }
+                type: { _eq: "signed" }
+                signed: { _eq: $signer }
               }
             ) {
               aggregate {

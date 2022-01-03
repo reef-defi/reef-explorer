@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import Table from '@/components/Table/Table'
+import Table from '@/components/Table/TableComp'
 
 export default {
   name: 'Data',

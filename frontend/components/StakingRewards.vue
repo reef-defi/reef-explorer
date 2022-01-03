@@ -141,20 +141,6 @@ export default {
             }
           }
         `,
-        /* TODO remove
-        query: gql`
-          subscription staking_reward($accountId: String!) {
-            staking_reward(
-              order_by: { block_number: desc }
-              where: { account_id: { _eq: $accountId } }
-            ) {
-              block_number
-              event_index
-              amount
-              timestamp
-            }
-          }
-        `, */
         variables() {
           return {
             accountId: this.accountId,
@@ -164,13 +150,13 @@ export default {
           return !this.accountId
         },
         result({ data }) {
-          this.stakingRewards = data.staking.map((event) => {
-            const timestamp = new Date(event.timestamp).getTime() / 1000
+          this.stakingRewards = data.staking.map((stakeEv) => {
+            const timestamp = new Date(stakeEv.timestamp).getTime() / 1000
             return {
-              block_id: event.block_id,
+              block_id: stakeEv.event.block_id,
               timestamp,
               timeago: timestamp,
-              amount: event.amount,
+              amount: stakeEv.amount,
             }
           })
           this.totalRows = this.stakingRewards.length
