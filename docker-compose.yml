@@ -45,7 +45,7 @@ services:
     networks:
       - reefscan
 
-  graphql-engine:
+  graphql:
     image: hasura/graphql-engine:v2.1.1.cli-migrations-v3
     ports:
       - 8080:8080
@@ -104,6 +104,18 @@ services:
       - substrate-node
     networks:
       - reefscan
+
+  frontend:
+    build: ./frontend
+    image: frontend
+    volumes:
+      - /usr/app/node_modules
+      - ./frontend:/usr/app/
+    ports:
+      - ${FE_PORT}:${FE_PORT}
+    networks:
+      - reefscan
+    
 
 # Persistent volumes
 volumes:
