@@ -100,3 +100,6 @@ export const resolvePromisesAsChunks = async <T>(
   chunks.push(...resolvedChunk);
   return chunks;
 };
+
+export const removeUndefinedItem = <Type,>(item: (Type|undefined)): item is Type => 
+  item !== undefined;
