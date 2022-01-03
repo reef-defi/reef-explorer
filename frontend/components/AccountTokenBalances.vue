@@ -146,25 +146,7 @@ export default {
               token_address
             }
           }
-        ` /* TODO remove
-        query: gql`
-          subscription token_holder($accountId: String!) {
-            token_holder(
-              order_by: { balance: desc }
-              where: { holder_account_id: { _eq: $accountId } }
-            ) {
-              contract_id
-              holder_account_id
-              holder_evm_address
-              balance
-              contract {
-                token_decimals
-                token_name
-                token_symbol
-              }
-            }
-          }
-        `, */,
+        `,
         variables() {
           return {
             accountId: this.accountId,

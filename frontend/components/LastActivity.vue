@@ -2,22 +2,22 @@
   <div class="last-activity">
     <div class="table-responsive">
       <b-table striped hover :fields="fields" :items="extrinsics">
-        <template #cell(block_number)="data">
+        <template #cell(block_id)="data">
           <p class="mb-0">
-            <nuxt-link :to="`/block?blockNumber=${data.item.block_number}`">
-              #{{ formatNumber(data.item.block_number) }}
+            <nuxt-link :to="`/block?blockNumber=${data.item.block_id}`">
+              #{{ formatNumber(data.item.block_id) }}
             </nuxt-link>
           </p>
         </template>
-        <template #cell(signer)="data">
+        <template #cell(signed)="data">
           <p class="mb-0 d-inline-block">
             <ReefIdenticon
-              :key="data.item.signer"
-              :address="data.item.signer"
+              :key="data.item.signed"
+              :address="data.item.signed"
               :size="20"
             />
-            <nuxt-link :to="`/account/${data.item.signer}`">
-              {{ shortAddress(data.item.signer) }}
+            <nuxt-link :to="`/account/${data.item.signed}`">
+              {{ shortAddress(data.item.signed) }}
             </nuxt-link>
           </p>
         </template>
@@ -43,12 +43,12 @@ export default {
       extrinsics: [],
       fields: [
         {
-          key: 'block_number',
+          key: 'block_id',
           label: 'Id',
           sortable: true,
         },
         {
-          key: 'signer',
+          key: 'signed',
           label: 'Signer',
           class: 'd-none d-sm-none d-md-none d-lg-block d-xl-block',
           sortable: true,
@@ -67,18 +67,18 @@ export default {
         query: gql`
           subscription extrinsics {
             extrinsic(
-              order_by: { block_number: desc }
-              where: { is_signed: { _eq: true } }
+              order_by: { block_id: desc }
+              where: { type: { _eq: "signed" } }
               limit: 10
             ) {
-              block_number
-              extrinsic_index
-              is_signed
-              signer
+              block_id
+              index
+              type
+              signed
               section
               method
               hash
-              doc
+              docs
             }
           }
         `,

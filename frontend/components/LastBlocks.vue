@@ -15,15 +15,15 @@
         <Cell>Block</Cell>
         <Cell>Hash</Cell>
         <Cell>Status</Cell>
-        <Cell align="center">Extrinsics</Cell>
-        <Cell align="center">Events</Cell>
+        <!--        <Cell align="center">Extrinsics</Cell>
+        <Cell align="center">Events</Cell>-->
       </THead>
       <Row v-for="(item, index) in blocks" :key="'item-' + index">
-        <Cell :link="`/block?blockNumber=${item.block_number}`"
-          ># {{ formatNumber(item.block_number) }}</Cell
+        <Cell :link="`/block?blockNumber=${item.id}`"
+          ># {{ formatNumber(item.id) }}</Cell
         >
 
-        <Cell>{{ shortHash(item.block_hash) }}</Cell>
+        <Cell>{{ shortHash(item.hash) }}</Cell>
 
         <Cell>
           <font-awesome-icon
@@ -36,9 +36,9 @@
           <span>{{ item.finalized ? 'Finalized' : 'Processing' }}</span>
         </Cell>
 
-        <Cell align="center">{{ item.total_extrinsics }}</Cell>
+        <!--        <Cell align="center">{{ item.total_extrinsics }}</Cell>
 
-        <Cell align="center">{{ item.total_events }}</Cell>
+        <Cell align="center">{{ item.total_events }}</Cell>-->
       </Row>
     </Table>
   </div>
@@ -61,12 +61,10 @@ export default {
       block: {
         query: gql`
           subscription blocks {
-            block(order_by: { block_number: desc }, where: {}, limit: 10) {
-              block_number
+            block(order_by: { id: desc }, where: {}, limit: 10) {
+              id
               finalized
-              block_hash
-              total_extrinsics
-              total_events
+              hash
             }
           }
         `,

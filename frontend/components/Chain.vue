@@ -28,7 +28,8 @@
         </nuxt-link>
       </div>
     </div>
-    <div class="card">
+    <!-- TODO Ziga
+<div class="card">
       <div class="card-body">
         <h4 class="mb-3">Total extrinsics</h4>
         <nuxt-link
@@ -41,15 +42,16 @@
           </h6>
         </nuxt-link>
       </div>
-    </div>
-    <div class="card">
+    </div>-->
+    <!--  TODO Ziga
+  <div class="card">
       <div class="card-body">
         <h4 class="mb-3">Total events</h4>
         <nuxt-link v-b-tooltip.hover to="/events" title="Click to see events!">
           <h6 class="d-inline-block">{{ formatNumber(totalEvents) }}</h6>
         </nuxt-link>
       </div>
-    </div>
+    </div>-->
     <div class="card">
       <div class="card-body">
         <h4 class="mb-3">{{ $t('components.network.accounts') }}</h4>
@@ -64,7 +66,8 @@
         </nuxt-link>
       </div>
     </div>
-    <div class="card">
+    <!--   TODO Ziga
+ <div class="card">
       <div class="card-body">
         <h4 class="mb-3">
           {{ $t('components.network.transfers') }}
@@ -104,6 +107,7 @@
         </h6>
       </div>
     </div>
+    -->
   </div>
 </template>
 
@@ -133,15 +137,14 @@ export default {
       block: {
         query: gql`
           subscription blocks {
-            block(order_by: { block_number: desc }, where: {}, limit: 1) {
-              block_number
-              total_issuance
+            block(order_by: { id: desc }, where: {}, limit: 1) {
+              id
             }
           }
         `,
         result({ data }) {
-          this.lastBlock = data.block[0].block_number
-          this.totalIssuance = data.block[0].total_issuance
+          this.lastBlock = data.block[0].id
+          // this.totalIssuance = data.block[0].total_issuance
         },
       },
       finalized: {
@@ -149,17 +152,18 @@ export default {
           subscription blocks {
             block(
               limit: 1
-              order_by: { block_number: desc }
+              order_by: { id: desc }
               where: { finalized: { _eq: true } }
             ) {
-              block_number
+              id
             }
           }
         `,
         result({ data }) {
-          this.lastFinalizedBlock = data.block[0].block_number
+          this.lastFinalizedBlock = data.block[0].id
         },
       },
+      /* TODO Ziga
       total: {
         query: gql`
           subscription total {
@@ -179,7 +183,7 @@ export default {
           this.totalContracts =
             data.total.find((row) => row.name === 'contracts').count || 0
         },
-      },
+      }, */
       accounts: {
         query: gql`
           subscription account_aggregate {

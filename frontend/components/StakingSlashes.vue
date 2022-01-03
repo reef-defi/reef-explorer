@@ -23,15 +23,15 @@
       </div>
       <Table>
         <THead>
-          <Cell :sortable="['block_number', activeSort]">Block Number</Cell>
+          <Cell :sortable="['block_id', activeSort]">Block Number</Cell>
           <Cell :sortable="['timestamp', activeSort]">Date</Cell>
           <Cell :sortable="['timeago', activeSort, true]">Time Ago</Cell>
           <Cell :sortable="['amount', activeSort]" align="right">Slash</Cell>
         </THead>
 
         <Row v-for="(item, index) in list" :key="index">
-          <Cell :link="`/block?blockNumber=${item.block_number}`">
-            # {{ formatNumber(item.block_number) }}
+          <Cell :link="`/block?blockNumber=${item.block_id}`">
+            # {{ formatNumber(item.block_id) }}
           </Cell>
 
           <Cell>{{ getDateFromTimestamp(item.timestamp) }}</Cell>
@@ -96,9 +96,7 @@ export default {
 
       return list.filter((item) => {
         const filter = this.filter.toLowerCase()
-        const block = item.block_number
-          ? String(item.block_number).toLowerCase()
-          : ''
+        const block = item.block_id ? String(item.block_id).toLowerCase() : ''
         return block.includes(filter)
       })
     },
@@ -116,10 +114,10 @@ export default {
         query: gql`
           subscription staking_slash($accountId: String!) {
             staking_slash(
-              order_by: { block_number: desc }
+              order_by: { block_id: desc }
               where: { account_id: { _eq: $accountId } }
             ) {
-              block_number
+              block_id
               event_index
               amount
               timestamp
@@ -137,7 +135,7 @@ export default {
         result({ data }) {
           this.stakingSlashes = data.staking_slash.map((event) => {
             return {
-              block_number: event.block_number,
+              block_id: event.block_id,
               timestamp: event.timestamp,
               timeago: event.timestamp,
               amount: event.amount,

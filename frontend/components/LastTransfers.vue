@@ -77,7 +77,7 @@ export default {
         query: gql`
           subscription extrinsic {
             extrinsic(
-              order_by: { block_number: desc }
+              order_by: { block_id: desc }
               where: {
                 _or: [
                   {
@@ -92,9 +92,9 @@ export default {
               }
               limit: 10
             ) {
-              block_number
+              block_id
               section
-              signer
+              signed
               hash
               args
             }
@@ -103,19 +103,19 @@ export default {
         result({ data }) {
           this.transfers = data.extrinsic.map((transfer) => {
             return {
-              block_number: transfer.block_number,
+              block_id: transfer.block_id,
               hash: transfer.hash,
-              from: transfer.signer,
-              to: JSON.parse(transfer.args)[0].address20
-                ? JSON.parse(transfer.args)[0].address20
-                : JSON.parse(transfer.args)[0].id,
+              from: transfer.signed,
+              to: transfer.args[0].address20
+                ? transfer.args[0].address20
+                : transfer.args[0].id,
               amount:
                 transfer.section === 'currencies'
-                  ? JSON.parse(transfer.args)[2]
-                  : JSON.parse(transfer.args)[1],
+                  ? transfer.args[2]
+                  : transfer.args[1],
               token:
                 transfer.section === 'currencies'
-                  ? JSON.parse(transfer.args)[1].token
+                  ? transfer.args[1].token
                   : network.tokenSymbol,
             }
           })
