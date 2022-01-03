@@ -154,7 +154,6 @@ export default {
           }
         },
         result({ data }) {
-          console.log('dddd=', data)
           if (data && data.contract) {
             this.tokens = data.contract
             if (this.filter) {
