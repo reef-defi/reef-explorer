@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS token_holder (
   balance NUMERIC(80,0) NOT NULL,
   decimals INT NOT NULL,
 
-  UNIQUE (signer, token_address),
+  UNIQUE (signer, contract_holder_address, token_address),
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (token_address)
       REFERENCES contract(address)
@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS token_holder (
       ON DELETE NO ACTION
 );
 
-CREATE INDEX IF NOT EXISTS token_holder_balance_balance ON token_holder_balance(balance);
-CREATE INDEX IF NOT EXISTS token_holder_balance_decimals ON token_holder_balance(decimals);
-CREATE INDEX IF NOT EXISTS token_holder_balance_token_address ON token_holder_balance(token_address);
-CREATE INDEX IF NOT EXISTS token_holder_balance_account_address ON token_holder_balance(signer);
+CREATE INDEX IF NOT EXISTS token_holder_signer ON token_holder(signer);
+CREATE INDEX IF NOT EXISTS token_holder_balance ON token_holder(balance);
+CREATE INDEX IF NOT EXISTS token_holder_decimals ON token_holder(decimals);
+CREATE INDEX IF NOT EXISTS token_holder_token_address ON token_holder(token_address);
+CREATE INDEX IF NOT EXISTS token_holder_contract_address ON token_holder(contract_holder_address);
