@@ -11,10 +11,7 @@ import {
   resolveSigner,
 } from "./extrinsic";
 import {
-  ABI,
-  ABIS,
   AccountHead,
-  AccountTokenBalance,
   BlockBody,
   BlockHash,
   Event,
@@ -36,27 +33,27 @@ import { accountHeadToBody, accountNewOrKilled } from "./event";
 import {
   compress,
   dropDuplicates,
-  dropDuplicatesMultiKey,
-  ensure,
   range,
   removeUndefinedItem,
   resolvePromisesAsChunks,
 } from "../utils/utils";
 import {
+  extractEvmLogHeaders,
+  extractTokenBalance,
+  extractTokenTransferEvents,
   extrinsicToContract,
   extrinsicToEVMCall,
   extrinsicToEvmClaimAccount,
   isExtrinsicEVMCall,
   isExtrinsicEvmClaimAccount,
   isExtrinsicEVMCreate,
+  tokenHolderToAccount,
 } from "./evmEvent";
 import {
-  findErc20TokenDB,
   insertAccountTokenBalances,
   insertContracts,
   insertEvmCalls,
 } from "../queries/evmEvent";
-import { utils, Contract } from "ethers";
 import { logger } from "../utils/logger";
 import { insertStaking } from "../queries/staking";
 
@@ -253,10 +250,33 @@ export const processBlocks = async (
     .filter(isExtrinsicTransfer)
     .map(extrinsicBodyToTransfer);
 
-  logger.info("Compressing transfer and event accounts");
+  // EVM Calls
+  logger.info("Extracting evm calls");
+  const extrinsicEvmCalls = extrinsics.filter(isExtrinsicEVMCall);
+  let evmCalls = extrinsicEvmCalls.map(extrinsicToEVMCall);
+
+  // Token balance
+  logger.info("Retrieving EVM log if contract is ERC20 token");
+  const evmLogHeaders = extractEvmLogHeaders(extrinsicEvmCalls);
+
+  transactions += evmLogHeaders.length;
+  let evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
+
+  logger.info("Extracting ERC20 transfer events");
+  const tokenTransferEvents = extractTokenTransferEvents(evmLogs);
+  
+  logger.info("Retrieving ERC20 account token balances");
+  transactions += tokenTransferEvents.length;
+  const tokenBalances = await resolvePromisesAsChunks(
+    tokenTransferEvents.map(extractTokenBalance)
+  );
+  const tokenHolders = tokenBalances.filter(removeUndefinedItem);
+
+  logger.info("Compressing transfer, event accounts, evm claim account");
   let allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
+  allAccounts.push(...tokenHolders.map(tokenHolderToAccount));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
@@ -294,6 +314,9 @@ export const processBlocks = async (
   await insertTransfers(transfers);
   transfers = [];
 
+  logger.info("Inserting evm calls");
+  await insertEvmCalls(evmCalls);
+
   // Contracts
   logger.info("Extracting new contracts");
   let contracts = extrinsics
@@ -303,46 +326,8 @@ export const processBlocks = async (
   await insertContracts(contracts);
   contracts = [];
 
-  // EVM Calls
-  logger.info("Extracting evm calls");
-  const extrinsicEvmCalls = extrinsics.filter(isExtrinsicEVMCall);
-  let evmCalls = extrinsicEvmCalls.map(extrinsicToEVMCall);
-
-  logger.info("Inserting evm calls");
-  await insertEvmCalls(evmCalls);
-
-  // Token balance
-  logger.info("Retrieving EVM log if contract is ERC20 token");
-  const evmLogHeaders = compress(extrinsicEvmCalls.map(({ events }) => events))
-    .filter(
-      ({ event: { method, section } }) => method === "Log" && section === "evm"
-    )
-    .map(({ event }): BytecodeLog => (event.data.toJSON() as any)[0])
-    .map(extractEvmLog);
-
-  transactions += evmLogHeaders.length;
-  let evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
-
-  logger.info("Extracting ERC20 transfer events");
-  const tokenTransferEvents = dropDuplicatesMultiKey(
-    compress(
-      evmLogs
-        .filter(removeUndefinedItem)
-        .map(decodeEvmLog)
-        .filter(({ decodedEvent }) => decodedEvent.name === "Transfer")
-        .map(erc20TransferEvent)
-    ),
-    ["signerAddress", "contractAddress"]
-  );
-
-  logger.info("Retrieving ERC20 account token balances");
-  transactions += tokenTransferEvents.length;
-  const tokenBalances = await resolvePromisesAsChunks(
-    tokenTransferEvents.map(extractTokenBalance)
-  );
   logger.info("Inserting token balances");
-  const tokens = tokenBalances.filter(removeUndefinedItem);
-  await insertAccountTokenBalances(tokens);
+  await insertAccountTokenBalances(tokenHolders);
 
   evmCalls = [];
 
@@ -351,103 +336,3 @@ export const processBlocks = async (
   return transactions;
 };
 
-interface BytecodeLog {
-  address: string;
-  data: string;
-  topics: string[];
-}
-
-interface EvmLog extends BytecodeLog {
-  name: string;
-  abis: ABIS;
-  decimals: number;
-}
-
-interface EvmLogWithDecodedEvent extends EvmLog {
-  decodedEvent: utils.LogDescription;
-}
-
-interface TokenBalanceHead {
-  contractAddress: string;
-  signerAddress: string;
-  decimals: number;
-  abi: ABI;
-}
-
-const getContractBalance = (
-  address: string,
-  contractAddress: string,
-  abi: ABI
-) =>
-  nodeQuery(async (provider): Promise<string> => {
-    const contract = new Contract(contractAddress, abi, provider);
-    return await contract.balanceOf(address);
-  });
-
-const extractEvmLog = async (event: BytecodeLog): Promise<EvmLog | undefined> => {
-  const result = await findErc20TokenDB(event.address);
-  if (result.length === 0) {
-    return undefined;
-  }
-
-  return {
-    ...event,
-    name: result[0].name,
-    abis: result[0].compiled_data,
-    decimals: result[0].contract_data.decimals,
-  };
-};
-
-const decodeEvmLog = (event: EvmLog): EvmLogWithDecodedEvent => {
-  const { abis, data, name, topics } = event!;
-  const abi = new utils.Interface(abis[name]);
-  const result = abi.parseLog({ topics, data });
-  return { ...event, decodedEvent: result };
-};
-
-const erc20TransferEvent = ({
-  address,
-  decimals,
-  decodedEvent,
-  abis,
-  name,
-}: EvmLogWithDecodedEvent): TokenBalanceHead[] => [
-  {
-    contractAddress: address,
-    signerAddress: decodedEvent.args[0],
-    decimals,
-    abi: abis[name],
-  },
-  {
-    contractAddress: address,
-    signerAddress: decodedEvent.args[1],
-    decimals,
-    abi: abis[name],
-  },
-];
-
-const extractTokenBalance = async ({
-  decimals,
-  abi,
-  contractAddress,
-  signerAddress,
-}: TokenBalanceHead): Promise<AccountTokenBalance|undefined> => {
-  const [balance, signerAddr] = await Promise.all([
-    getContractBalance(signerAddress, contractAddress, abi),
-    nodeQuery((provider) => provider.api.query.evmAccounts.accounts(signerAddress))
-  ]);
-
-  const addr = signerAddr.toJSON() as string;
-
-  if (addr === null) {
-    return undefined;
-  }
-
-  return {
-    balance,
-    decimals,
-    contractAddress,
-    accountEvmAddress: signerAddress,
-    signer: addr,
-  };
-};

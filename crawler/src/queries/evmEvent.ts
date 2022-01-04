@@ -73,7 +73,7 @@ const accountTokenBalanceToValue = ({
   contractAddress,
   decimals,
 }: AccountTokenBalance): string =>
-  `('${signer.toLowerCase()}', '${contractAddress.toLowerCase()}', ${balance}, ${decimals})`;
+  `('${signer}', '${contractAddress}', ${balance}, ${decimals})`;
 
 export const insertAccountTokenBalances = async (
   accountTokenBalances: AccountTokenBalance[]

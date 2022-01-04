@@ -6,6 +6,7 @@ import type { BlockHash as BH } from "@polkadot/types/interfaces/chain";
 import type { SignedBlock } from "@polkadot/types/interfaces/runtime";
 import type { HeaderExtended } from "@polkadot/api-derive/type/types";
 import { Vec } from "@polkadot/types";
+import { utils } from "ethers";
 
 export interface BlockHash {
   id: number;
@@ -123,9 +124,9 @@ export interface EVMCall {
 }
 
 export interface AccountTokenHead {
-  accountEvmAddress: string;
+  blockId: number;
   contractAddress: string;
-  // accountEvmAddress: string;
+  accountEvmAddress: string;
 }
 
 export interface AccountTokenBalance extends AccountTokenHead {
@@ -149,4 +150,33 @@ export type ABI = JsonFragment[];
 
 export interface ABIS {
   [name: string]: ABI;
+}
+
+export interface BytecodeLog {
+  data: string;
+  address: string;
+  topics: string[];
+}
+
+export interface BytecodeLogWithBlockId extends BytecodeLog {
+  blockId: number;
+}
+
+export interface EvmLog extends BytecodeLog {
+  abis: ABIS;
+  name: string;
+  blockId: number;
+  decimals: number;
+}
+
+export interface EvmLogWithDecodedEvent extends EvmLog {
+  decodedEvent: utils.LogDescription;
+}
+
+export interface TokenBalanceHead {
+  abi: ABI;
+  blockId: number;
+  decimals: number;
+  signerAddress: string;
+  contractAddress: string;
 }
