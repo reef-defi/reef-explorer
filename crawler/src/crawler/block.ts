@@ -69,7 +69,7 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
     nodeQuery((provider) => provider.api.rpc.chain.getBlock(hash)),
     nodeQuery((provider) => provider.api.derive.chain.getHeader(hash)),
     nodeQuery((provider) => provider.api.query.system.events.at(hash)),
-    nodeQuery((provider) => provider.api.query.timestamp.now.at(hash))
+    nodeQuery((provider) => provider.api.query.timestamp.now.at(hash)),
   ]);
   return { id, hash, signedBlock, extendedHeader, events, timestamp: timestamp.toJSON() };
 };
