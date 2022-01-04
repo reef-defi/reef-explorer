@@ -87,29 +87,6 @@ CREATE INDEX IF NOT EXISTS verification_request_address ON verification_request 
 CREATE INDEX IF NOT EXISTS verification_request_success ON verification_request (success);
 CREATE INDEX IF NOT EXISTS verification_request_filename ON verification_request (filename);
 
-
-CREATE TABLE IF NOT EXISTS account_token_balance (
-  token_address VARCHAR,
-  signer VARCHAR,
-  balance NUMERIC(80,0) NOT NULL,
-  decimals INT NOT NULL,
-
-  UNIQUE (signer, token_address),
-  CONSTRAINT fk_verified_contract
-    FOREIGN KEY (token_address)
-      REFERENCES contract(address)
-      ON DELETE NO ACTION,
-  CONSTRAINT fk_signer
-    FOREIGN KEY (signer)
-      REFERENCES account(address)
-      ON DELETE NO ACTION
-);
-
-CREATE INDEX IF NOT EXISTS account_token_balance_balance ON account_token_balance(balance);
-CREATE INDEX IF NOT EXISTS account_token_balance_decimals ON account_token_balance(decimals);
-CREATE INDEX IF NOT EXISTS account_token_balance_token_address ON account_token_balance(token_address);
-CREATE INDEX IF NOT EXISTS account_token_balance_account_address ON account_token_balance(signer);
-
 -- Genisis contract insert
 INSERT INTO contract
   (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
