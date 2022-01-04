@@ -8,7 +8,7 @@ import {
   AccountHead,
   ABI,
   EvmLog,
-  AccountTokenBalance,
+  TokenHolder,
   EvmLogWithDecodedEvent,
   TokenBalanceHead,
   BytecodeLog,
@@ -190,7 +190,7 @@ export const extractTokenBalance = async ({
   contractAddress,
   signerAddress,
   blockId
-}: TokenBalanceHead): Promise<AccountTokenBalance | undefined> => {
+}: TokenBalanceHead): Promise<TokenHolder | undefined> => {
   const [balance, signerAddr] = await Promise.all([
     getContractBalance(signerAddress, contractAddress, abi),
     nodeQuery((provider) =>
@@ -200,17 +200,14 @@ export const extractTokenBalance = async ({
 
   const addr = signerAddr.toJSON() as string;
 
-  if (addr === null) {
-    return undefined;
-  }
-
   return {
     balance,
     decimals,
     contractAddress,
-    accountEvmAddress: signerAddress,
+    evmAddress: signerAddress,
     signer: addr,
-    blockId
+    blockId,
+    type: addr === null ? "Contract" : "Account"
   };
 };
 
@@ -239,6 +236,6 @@ export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]) =>
     ["signerAddress", "contractAddress"]
   );
 
-export const tokenHolderToAccount = ({signer, blockId}: AccountTokenBalance): AccountHead[] => [
+export const tokenHolderToAccount = ({signer, blockId}: TokenHolder): AccountHead[] => [
   {active: true, address: signer, blockId}
 ];

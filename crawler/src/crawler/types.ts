@@ -123,13 +123,14 @@ export interface EVMCall {
   status: ExtrinsicStatus;
 }
 
-export interface AccountTokenHead {
+export interface TokenHolderHead {
   blockId: number;
+  evmAddress: string;
   contractAddress: string;
-  accountEvmAddress: string;
 }
 
-export interface AccountTokenBalance extends AccountTokenHead {
+export interface TokenHolder extends TokenHolderHead {
+  type: "Contract" | "Account",
   balance: string;
   decimals: number;
   signer: string;

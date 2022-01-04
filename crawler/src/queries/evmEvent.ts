@@ -1,5 +1,5 @@
 import {
-  AccountTokenBalance,
+  TokenHolder,
   Contract,
   ERC20Token,
   EVMCall,
@@ -72,21 +72,23 @@ const accountTokenBalanceToValue = ({
   balance,
   contractAddress,
   decimals,
-}: AccountTokenBalance): string =>
-  `('${signer}', '${contractAddress}', ${balance}, ${decimals})`;
+  evmAddress,
+  type
+}: TokenHolder): string =>
+  `('${signer}', '${evmAddress}', '${type}', '${contractAddress}', ${balance}, ${decimals})`;
 
 export const insertAccountTokenBalances = async (
-  accountTokenBalances: AccountTokenBalance[]
+  accountTokenBalances: TokenHolder[]
 ): Promise<void> => {
   if (accountTokenBalances.length === 0) {
     return;
   }
   await insert(`
-    INSERT INTO account_token_balance
-      (signer, token_address, balance, decimals)
+    INSERT INTO token_holder
+      (signer, contract_holder_address, type, token_address, balance, decimals)
     VALUES
       ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")}
-    ON CONFLICT (signer, token_address) DO UPDATE SET
+    ON CONFLICT (signer, contract_holder_address, token_address) DO UPDATE SET
       balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;
   `);
