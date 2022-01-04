@@ -439,7 +439,7 @@ const extractTokenBalance = async ({
 
   const addr = signerAddr.toJSON() as string;
 
-  if (addr === "null") {
+  if (addr === null) {
     return undefined;
   }
 
