@@ -3,7 +3,7 @@ CREATE TYPE ContractType AS ENUM ('ERC20', 'ERC721', 'other');
 CREATE TABLE IF NOT EXISTS contract (
   address VARCHAR(48),
   extrinsic_id BIGINT,
-  owner VARCHAR,
+  signer VARCHAR,
 
   bytecode TEXT NOT NULL,
   bytecode_context TEXT NOT NULL,
@@ -18,12 +18,13 @@ CREATE TABLE IF NOT EXISTS contract (
     FOREIGN KEY (extrinsic_id)
       REFERENCES extrinsic(id)
       ON DELETE CASCADE,
-  CONSTRAINT fk_owner
-    FOREIGN KEY (owner)
+  CONSTRAINT fk_signer
+    FOREIGN KEY (signer)
       REFERENCES account(address)
+      ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS contract_owner ON contract (owner);
+CREATE INDEX IF NOT EXISTS contract_signer ON contract (signer);
 CREATE INDEX IF NOT EXISTS contract_extrinsic_id ON contract (extrinsic_id);
 
 CREATE TABLE IF NOT EXISTS verified_contract (
@@ -81,33 +82,37 @@ CREATE TABLE IF NOT EXISTS verification_request (
   PRIMARY KEY (id)
 );
 
-CREATE INDEX IF NOT EXISTS verified_contract_name ON verification_request (name);
-CREATE INDEX IF NOT EXISTS verified_contract_address ON verification_request (address);
-CREATE INDEX IF NOT EXISTS verified_contract_success ON verification_request (success);
-CREATE INDEX IF NOT EXISTS verified_contract_filename ON verification_request (filename);
+CREATE INDEX IF NOT EXISTS verification_request_name ON verification_request (name);
+CREATE INDEX IF NOT EXISTS verification_request_address ON verification_request (address);
+CREATE INDEX IF NOT EXISTS verification_request_success ON verification_request (success);
+CREATE INDEX IF NOT EXISTS verification_request_filename ON verification_request (filename);
 
 
 CREATE TABLE IF NOT EXISTS account_token_balance (
   token_address VARCHAR,
-  account_address VARCHAR, -- This is EVM address!
+  signer VARCHAR,
   balance NUMERIC(80,0) NOT NULL,
   decimals INT NOT NULL,
 
-  UNIQUE (account_address, token_address),
+  UNIQUE (signer, token_address),
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (token_address)
       REFERENCES contract(address)
+      ON DELETE NO ACTION,
+  CONSTRAINT fk_signer
+    FOREIGN KEY (signer)
+      REFERENCES account(address)
       ON DELETE NO ACTION
 );
 
 CREATE INDEX IF NOT EXISTS account_token_balance_balance ON account_token_balance(balance);
 CREATE INDEX IF NOT EXISTS account_token_balance_decimals ON account_token_balance(decimals);
 CREATE INDEX IF NOT EXISTS account_token_balance_token_address ON account_token_balance(token_address);
-CREATE INDEX IF NOT EXISTS account_token_balance_account_address ON account_token_balance(account_address);
+CREATE INDEX IF NOT EXISTS account_token_balance_account_address ON account_token_balance(signer);
 
 -- Genisis contract insert
 INSERT INTO contract
-  (address, extrinsic_id, owner, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
+  (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
 VALUES
 -- REEF
   (

@@ -83,10 +83,10 @@ const userTokenBalanceToValue = ({tokenAddress, evm_address, balance, decimals}:
 export const insertAccountTokenBalances = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   await queryDb(`
     INSERT INTO account_token_balance 
-      (token_address, account_address, balance, decimals)
+      (token_address, signer, balance, decimals)
     VALUES
       ${accountTokenBalances.map(userTokenBalanceToValue).join(",\n")}
-    ON CONFLICT (token_address, account_address) DO UPDATE SET
+    ON CONFLICT (token_address, signer) DO UPDATE SET
       balance = EXCLUDED.balance
       decimals = EXCLUDED.decimals;
   `)

@@ -1,19 +1,45 @@
-import {AnyTuple} from "@polkadot/types/types"
-import {GenericExtrinsic} from "@polkadot/types/extrinsic"
-import {FrameSystemEventRecord} from "@polkadot/types/lookup"
+import { AnyTuple } from "@polkadot/types/types";
+import { GenericExtrinsic } from "@polkadot/types/extrinsic";
+import { FrameSystemEventRecord } from "@polkadot/types/lookup";
 import { JsonFragment } from "@ethersproject/abi";
+import type { BlockHash as BH } from "@polkadot/types/interfaces/chain";
+import type { SignedBlock } from "@polkadot/types/interfaces/runtime";
+import type { HeaderExtended } from "@polkadot/api-derive/type/types";
+import { Vec } from "@polkadot/types";
+
+export interface BlockHash {
+  id: number;
+  hash: BH;
+}
+
+export interface BlockBody extends BlockHash {
+  signedBlock: SignedBlock;
+  extendedHeader?: HeaderExtended;
+  events: Vec<Event>;
+  timestamp: number;
+}
+
 
 export type Extrinsic = GenericExtrinsic<AnyTuple>;
 export type Event = FrameSystemEventRecord;
 
-export interface ExtrinsicHead {
-  blockId: number;
-  extrinsic: Extrinsic;
-  events: Event[];
-  status: ExtrinsicStatus;
+interface ExtrinsicUnknown {
+  type: "unknown";
 }
-export interface ExtrinsicHeadV2 {
-  id: number;
+interface ExtrinsicSuccess {
+  type: "success";
+}
+interface ExtrinsicError {
+  type: "error";
+  message: string;
+}
+
+export type ExtrinsicStatus =
+  | ExtrinsicError
+  | ExtrinsicSuccess
+  | ExtrinsicUnknown;
+
+export interface ExtrinsicHead {
   blockId: number;
   extrinsic: Extrinsic;
   events: Event[];
@@ -29,10 +55,6 @@ export interface ExtrinsicBody extends ExtrinsicHead {
   id: number;
   signedData?: SignedExtrinsicData;
 }
-export interface ExtrinsicBodyPromise extends ExtrinsicHead {
-  id: number;
-  signedData?: Promise<SignedExtrinsicData>;
-}
 
 export interface EventHead {
   event: Event;
@@ -43,20 +65,6 @@ export interface EventHead {
 export interface EventBody extends EventHead {
   id: number;
 }
-
-interface ExtrinsicUnknown {
-  type: "unknown";
-}
-interface ExtrinsicSuccess {
-  type: "success";
-}
-interface ExtrinsicError {
-  type: "error";
-  message: string;
-}
-
-export type ExtrinsicStatus = ExtrinsicError | ExtrinsicSuccess | ExtrinsicUnknown;
-
 
 export interface AccountHead {
   address: string;
@@ -73,7 +81,7 @@ export interface AccountBody extends AccountHead {
   votingBalance: string;
   reservedBalance: string;
   nonce: string;
-  evmNonce: string|null;
+  evmNonce: string | null;
 }
 
 export interface Transfer {
@@ -83,6 +91,7 @@ export interface Transfer {
   denom: string;
   toAddress: string;
   fromAddress: string;
+  tokenAddress: string;
   amount: string;
   feeAmount: string;
 
@@ -90,17 +99,10 @@ export interface Transfer {
   errorMessage: string;
 }
 
-export interface OldContract {
-  blockId: number;
-  extrinsic: Extrinsic;
-  extrinsicId: number;
-  extrinsicEvents: Event[];
-  status: ExtrinsicStatus;
-}
-
 export interface Contract {
   address: string;
   extrinsicId: number;
+  signer: string;
 
   bytecode: string;
   bytecodeContext: string;
@@ -120,17 +122,8 @@ export interface EVMCall {
   status: ExtrinsicStatus;
 }
 
-export interface ResolveSection {
-  blockId: number;
-  extrinsicId: number;
-  extrinsic: Extrinsic;
-  status: ExtrinsicStatus;
-  extrinsicEvents: Event[];
-  signedData: SignedExtrinsicData;
-}
-
 export interface AccountTokenHead {
-  accountAddress: string;
+  accountEvmAddress: string;
   contractAddress: string;
   // accountEvmAddress: string;
 }
@@ -138,8 +131,8 @@ export interface AccountTokenHead {
 export interface AccountTokenBalance extends AccountTokenHead {
   balance: string;
   decimals: number;
+  signer: string;
 }
-
 
 export interface ERC20Token {
   name: string;
@@ -155,5 +148,5 @@ export interface ERC20Token {
 export type ABI = JsonFragment[];
 
 export interface ABIS {
-  [name: string]: ABI
+  [name: string]: ABI;
 }
