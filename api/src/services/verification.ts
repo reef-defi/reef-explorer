@@ -4,7 +4,7 @@ import { verifyContract } from "./contract-compiler/compiler";
 import { checkIfContractIsERC20, extractERC20ContractData } from "./contract-compiler/erc-checkers";
 import { ABI, AutomaticContractVerificationReq, ERC20Data, License, Target, User, UserTokenBalance } from "../utils/types";
 import { delay, ensure } from "../utils/utils";
-import { getAllUsersWithEvmAddress } from "./account";
+import { getAllUsersWithEvmAddress, insertAccountTokenBalances } from "./account";
 import { Contract } from "ethers";
 
 interface Bytecode {
@@ -87,22 +87,7 @@ const findContractBytecode = async (address: string): Promise<string> => {
 }
 
 
-const accountTokenBalanceToValue = ({evm_address, balance, tokenAddress, decimals}: UserTokenBalance): string => 
-  `('${evm_address.toLowerCase()}', '${tokenAddress.toLowerCase()}', ${balance}, ${decimals})`;
-
-export const insertAccountTokenBalances = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
-  if (accountTokenBalances.length === 0) { return; }
-  await queryDb(`
-    INSERT INTO account_token_balance
-      (account_address, token_address, balance, decimals)
-    VALUES
-      ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")}
-    ON CONFLICT (account_address, token_address) DO UPDATE SET
-      balance = EXCLUDED.balance,
-      decimals = EXCLUDED.decimals;
-  `)
-}
-
+// const accountTokenBal
 const insertVerifiedContract = async ({address, name, filename, source, optimization, compilerVersion, abi, args, runs, target, type, data}: UpdateContract): Promise<void> => {
   await query(
     INSERT_VERIFIED_CONTRACT, 
