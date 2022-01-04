@@ -12,7 +12,7 @@ select_permissions:
     - block_id
     - id
     - index
-    - signed
+    - signer
     - args
     - inherent_data
     - signed_data

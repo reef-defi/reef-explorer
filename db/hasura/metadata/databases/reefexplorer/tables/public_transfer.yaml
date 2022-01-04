@@ -5,6 +5,9 @@ object_relationships:
 - name: account
   using:
     foreign_key_constraint_on: from_address
+- name: account
+  using:
+    foreign_key_constraint_on: to_address
 - name: block
   using:
     foreign_key_constraint_on: block_id
