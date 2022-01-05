@@ -1,0 +1,20 @@
+table:
+  name: account_token_balance
+  schema: public
+object_relationships:
+- name: contract
+  using:
+    foreign_key_constraint_on: token_address
+- name: account
+  using:
+    foreign_key_constraint_on: signer
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - token_address
+    - signer
+    - balance
+    - decimals
+    filter: {}
+  role: public

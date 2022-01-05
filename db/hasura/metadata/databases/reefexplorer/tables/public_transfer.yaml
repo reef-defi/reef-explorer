@@ -2,9 +2,12 @@ table:
   name: transfer
   schema: public
 object_relationships:
-- name: account
+- name: from_account
   using:
     foreign_key_constraint_on: from_address
+- name: to_account
+  using:
+    foreign_key_constraint_on: to_address
 - name: block
   using:
     foreign_key_constraint_on: block_id

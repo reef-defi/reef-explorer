@@ -78,16 +78,16 @@
         >
         <Cell>{{ shortHash(extrinsic.hash) }}</Cell>
         <Cell
-          v-if="extrinsic.signed"
-          :link="{ url: `/account/${extrinsic.signed}`, fill: false }"
+          v-if="extrinsic.signer"
+          :link="{ url: `/account/${extrinsic.signer}`, fill: false }"
           :title="$t('details.block.account_details')"
         >
           <ReefIdenticon
-            :key="extrinsic.signed"
-            :address="extrinsic.signed"
+            :key="extrinsic.signer"
+            :address="extrinsic.signer"
             :size="20"
           />
-          <span>{{ shortAddress(extrinsic.signed) }}</span>
+          <span>{{ shortAddress(extrinsic.signer) }}</span>
         </Cell>
         <Cell v-else />
         <Cell>{{ extrinsic.section }}</Cell>

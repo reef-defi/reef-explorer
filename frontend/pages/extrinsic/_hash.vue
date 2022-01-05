@@ -52,7 +52,7 @@ export default {
           extrinsic(where: { hash: { _eq: $hash } }) {
             block_id
             index
-            signed
+            signer
             section
             method
             args
