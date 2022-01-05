@@ -52,10 +52,16 @@ export default {
       return s.charAt(0).toUpperCase() + s.slice(1)
     },
     isBlockNumber(input) {
+      if (!input.toString()) {
+        return false
+      }
       const polkadotRegexp = /^[0-9]*$/
       return polkadotRegexp.test(input)
     },
     async isBlockHash(input) {
+      if (!input.toString()) {
+        return false
+      }
       // 0xadb2179b1666fef3b56a5762c3db0152b2a0a7f3d4b47737a355262609d867b9
       if (input.length === 66 && input.startsWith('0x')) {
         const client = this.$apollo.provider.defaultClient
@@ -72,6 +78,9 @@ export default {
       return false
     },
     async isExtrinsicHash(input) {
+      if (!input.toString()) {
+        return false
+      }
       // 0x3eab8af8321eb77e425396d029486739b7563965a4052211d5076a9e80f6010e
       if (input.length === 66 && input.startsWith('0x')) {
         const client = this.$apollo.provider.defaultClient
@@ -88,6 +97,9 @@ export default {
       return false
     },
     isHash(input) {
+      if (!input.toString()) {
+        return false
+      }
       // 0x3eab8af8321eb77e425396d029486739b7563965a4052211d5076a9e80f6010e
       if (input) {
         if (input.length === 66 && input.startsWith('0x')) {
@@ -97,6 +109,9 @@ export default {
       return false
     },
     isAddress(input) {
+      if (!input.toString()) {
+        return false
+      }
       const polkadotRegexp = /^(([0-9a-zA-Z]{47})|([0-9a-zA-Z]{48}))$/
       return polkadotRegexp.test(input)
     },
@@ -109,6 +124,9 @@ export default {
       return newDate.toString()
     },
     isValidAddressPolkadotAddress: (address) => {
+      if (!address.toString()) {
+        return false
+      }
       try {
         encodeAddress(
           isHex(address) ? hexToU8a(address.toString()) : decodeAddress(address)

@@ -132,18 +132,22 @@ export default {
           subscription account_token_balance($accountId: String!) {
             account_token_balance(
               order_by: { balance: desc }
-              where: { account_address: { _eq: $accountId } }
+              where: { signer: { _eq: $accountId } }
             ) {
-              account_address
+              signer
               balance
+              decimals
+              token_address
               contract {
                 address
                 verified_contract {
                   name
+                  contract_data
                 }
               }
-              decimals
-              token_address
+              account {
+                evm_address
+              }
             }
           }
         `,
@@ -158,12 +162,13 @@ export default {
         result({ data }) {
           this.balances = data.account_token_balance.map((balance) => ({
             contract_id: balance.contract.address,
-            holder_account_id: balance.account_address,
-            holder_evm_address: balance.holder_evm_address, // TODO
+            holder_account_id: balance.signer,
+            holder_evm_address: balance.account.evm_address,
             balance: balance.balance,
             token_decimals: balance.decimals,
             token_name: balance.contract.verified_contract.name,
-            token_symbol: balance.contract.verified_contract.token_symbol, // TODO
+            token_symbol:
+              balance.contract.verified_contract.contract_data.symbol, // TODO check
           }))
           this.totalRows = this.balances.length
           this.loading = false

@@ -4,7 +4,7 @@ table:
 object_relationships:
 - name: account
   using:
-    foreign_key_constraint_on: owner
+    foreign_key_constraint_on: signer
 - name: extrinsic
   using:
     foreign_key_constraint_on: extrinsic_id
@@ -21,7 +21,7 @@ select_permissions:
     columns:
     - address
     - extrinsic_id
-    - owner
+    - signer
     - bytecode
     - bytecode_context
     - bytecode_arguments

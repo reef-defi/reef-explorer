@@ -126,9 +126,9 @@ export default {
       extrinsic: {
         query: gql`
           subscription extrinsic(
-            $blockNumber: bigint
-            $extrinsicHash: String
-            $fromAddress: String
+            $blockNumber: bigint_comparison_exp
+            $extrinsicHash: String_comparison_exp
+            $fromAddress: String_comparison_exp
             $perPage: Int!
             $offset: Int!
           ) {
@@ -141,23 +141,23 @@ export default {
                   {
                     section: { _eq: "currencies" }
                     method: { _like: "transfer" }
-                    block_id: { _eq: $blockNumber }
-                    hash: { _eq: $extrinsicHash }
-                    signed: { _eq: $fromAddress }
+                    block_id: $blockNumber
+                    hash: $extrinsicHash
+                    signer: $fromAddress
                   }
                   {
                     section: { _eq: "balances" }
                     method: { _like: "transfer%" }
-                    block_id: { _eq: $blockNumber }
-                    hash: { _eq: $extrinsicHash }
-                    signed: { _eq: $fromAddress }
+                    block_id: $blockNumber
+                    hash: $extrinsicHash
+                    signer: $fromAddress
                   }
                 ]
               }
             ) {
               block_id
               section
-              signed
+              signer
               hash
               args
               status
@@ -165,56 +165,15 @@ export default {
             }
           }
         `,
-
-        /*
-        query: gql`
-          subscription extrinsic(
-            $blockNumber: bigint
-            $extrinsicHash: String
-            $fromAddress: String
-            $perPage: Int!
-            $offset: Int!
-          ) {
-            extrinsic(
-              limit: $perPage
-              offset: $offset
-              where: {
-                _or: [
-                  {
-                    section: { _eq: "currencies" }
-                    method: { _like: "transfer" }
-                    block_number: { _eq: $blockNumber }
-                    hash: { _eq: $extrinsicHash }
-                    signer: { _eq: $fromAddress }
-                  }
-                  {
-                    section: { _eq: "balances" }
-                    method: { _like: "transfer%" }
-                    block_number: { _eq: $blockNumber }
-                    hash: { _eq: $extrinsicHash }
-                    signer: { _eq: $fromAddress }
-                  }
-                ]
-              }
-              order_by: { block_number: desc, extrinsic_index: desc }
-            ) {
-              block_number
-              section
-              signer
-              hash
-              args
-              success
-              timestamp
-            }
-          }
-        `, */
         variables() {
           return {
             blockNumber: this.isBlockNumber(this.filter)
-              ? parseInt(this.filter)
-              : undefined,
-            extrinsicHash: this.isHash(this.filter) ? this.filter : undefined,
-            fromAddress: this.isAddress(this.filter) ? this.filter : undefined,
+              ? { _eq: parseInt(this.filter) }
+              : {},
+            extrinsicHash: this.isHash(this.filter) ? { _eq: this.filter } : {},
+            fromAddress: this.isAddress(this.filter)
+              ? { _eq: this.filter }
+              : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
@@ -224,7 +183,7 @@ export default {
             return {
               block_id: transfer.block_id,
               hash: transfer.hash,
-              from: transfer.signed,
+              from: transfer.signer,
               to: transfer.args[0].address20
                 ? transfer.args[0].address20
                 : transfer.args[0].id,
@@ -255,14 +214,14 @@ export default {
                     method: { _like: "transfer" }
                     block_id: { _eq: $blockNumber }
                     hash: { _eq: $extrinsicHash }
-                    signed: { _eq: $fromAddress }
+                    signer: { _eq: $fromAddress }
                   }
                   {
                     section: { _eq: "balances" }
                     method: { _like: "transfer%" }
                     block_id: { _eq: $blockNumber }
                     hash: { _eq: $extrinsicHash }
-                    signed: { _eq: $fromAddress }
+                    signer: { _eq: $fromAddress }
                   }
                 ]
               }
