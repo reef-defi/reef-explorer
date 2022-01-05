@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS token_holder (
   balance NUMERIC(80,0) NOT NULL,
   decimals INT NOT NULL,
 
-  UNIQUE (signer, evm_address, token_address),
+  UNIQUE (token_address, evm_address),
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (token_address)
       REFERENCES contract(address)

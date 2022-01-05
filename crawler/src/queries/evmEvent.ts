@@ -89,7 +89,8 @@ export const insertAccountTokenBalances = async (
       (signer, evm_address, type, token_address, balance, decimals)
     VALUES
       ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")}
-    ON CONFLICT (signer, evm_address, token_address) DO UPDATE SET
+    ON CONFLICT (evm_address, token_address) DO UPDATE SET
+      signer = EXCLUDED.signer,
       balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;
   `);
