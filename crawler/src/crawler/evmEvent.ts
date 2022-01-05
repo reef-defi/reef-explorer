@@ -207,7 +207,7 @@ export const extractTokenBalance = async ({
     contractAddress,
     evmAddress: signerAddress,
     type: address === null ? "Contract" : "Account",
-    signer: address === null ? "deleted" : address as string,
+    signer: `${address}`,
   };
 };
 
