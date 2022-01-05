@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-import Table from './TableComp.vue'
+import Table from './Table.vue'
 import THead from './THead.vue'
 import Row from './Row.vue'
 import Cell from './Cell.vue'
