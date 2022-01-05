@@ -3,7 +3,7 @@ CREATE TYPE ContractType AS ENUM ('ERC20', 'ERC721', 'other');
 CREATE TABLE IF NOT EXISTS contract (
   address VARCHAR(48),
   extrinsic_id BIGINT,
-  signer VARCHAR,
+  signer VARCHAR NOT NULL,
 
   bytecode TEXT NOT NULL,
   bytecode_context TEXT NOT NULL,
