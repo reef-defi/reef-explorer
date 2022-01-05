@@ -119,18 +119,15 @@ export default {
       contracts: {
         query: gql`
           subscription contract(
-            $blockHeight: bigint
-            $contractId: String
+            $blockHeight: extrinsic_bool_exp
+            $contractId: String_comparison_exp
             $perPage: Int!
             $offset: Int!
           ) {
             contract(
               limit: $perPage
               offset: $offset
-              where: {
-                extrinsic: { block_id: { _eq: $blockHeight } }
-                address: { _eq: $contractId }
-              }
+              where: { extrinsic: $blockHeight, address: $contractId }
               order_by: { extrinsic: { block_id: desc } }
             ) {
               address
@@ -147,16 +144,18 @@ export default {
           }
         `,
         variables() {
-          return {
+          const newVar = {
             blockHeight: this.isBlockNumber(this.filter)
-              ? parseInt(this.filter)
-              : undefined,
+              ? { block_id: { _eq: parseInt(this.filter) } }
+              : {},
             contractId: this.isContractId(this.filter)
-              ? this.filter
-              : undefined,
+              ? { _eq: this.filter }
+              : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
+          console.log('nnnn=', newVar)
+          return newVar
         },
         result({ data }) {
           this.contracts = data.contract

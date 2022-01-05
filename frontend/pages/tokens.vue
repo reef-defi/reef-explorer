@@ -109,8 +109,8 @@ export default {
         } */
         query: gql`
           subscription contract(
-            $blockHeight: bigint
-            $contractAddress: String
+            $blockHeight: extrinsic_bool_exp
+            $contractAddress: String_comparison_exp
             $perPage: Int!
             $offset: Int!
           ) {
@@ -118,8 +118,8 @@ export default {
               limit: $perPage
               offset: $offset
               where: {
-                extrinsic: { block_id: { _eq: $blockHeight } }
-                address: { _eq: $contractAddress }
+                extrinsic: $blockHeight
+                address: $contractAddress
                 verified_contract: { type: { _eq: "ERC20" } }
               }
               order_by: { extrinsic: { block_id: desc } }
@@ -142,13 +142,15 @@ export default {
           }
         `,
         variables() {
+          const bHeight = this.isBlockNumber(this.filter)
+            ? parseInt(this.filter)
+            : undefined
+          const cAddress = this.isContractId(this.filter)
+            ? this.filter
+            : undefined
           return {
-            blockHeight: this.isBlockNumber(this.filter)
-              ? parseInt(this.filter)
-              : undefined,
-            contractAddress: this.isContractId(this.filter)
-              ? this.filter
-              : undefined,
+            blockHeight: bHeight ? { block_id: { _eq: bHeight } } : {},
+            contractAddress: cAddress ? { _eq: cAddress } : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }

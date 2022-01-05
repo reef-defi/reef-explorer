@@ -102,19 +102,19 @@ export default {
       extrinsic: {
         query: gql`
           subscription extrinsics(
-            $blockNumber: bigint
+            $blockNumber: bigint_comparison_exp
             $perPage: Int!
             $offset: Int!
           ) {
             extrinsic(
               limit: $perPage
               offset: $offset
-              where: { block_id: { _eq: $blockNumber } }
+              where: { block_id: $blockNumber }
               order_by: { block_id: desc, index: desc }
             ) {
               block_id
               index
-              signed
+              signer
               section
               method
               hash
@@ -125,7 +125,7 @@ export default {
         `,
         variables() {
           return {
-            blockNumber: this.filter ? parseInt(this.filter) : undefined,
+            blockNumber: this.filter ? { _eq: parseInt(this.filter) } : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
