@@ -35,14 +35,14 @@
     <Row class="contract-transaction__identicon-link">
       <Cell>Signer</Cell>
       <Cell>
-        <div v-if="extrinsic.signed">
+        <div v-if="extrinsic.signer">
           <ReefIdenticon
-            :key="extrinsic.signed"
-            :address="extrinsic.signed"
+            :key="extrinsic.signer"
+            :address="extrinsic.signer"
             :size="20"
           />
-          <nuxt-link :to="`/account/${extrinsic.signed}`">
-            {{ extrinsic.signed }}
+          <nuxt-link :to="`/account/${extrinsic.signer}`">
+            {{ extrinsic.signer }}
           </nuxt-link>
         </div>
       </Cell>
@@ -53,7 +53,7 @@
       <Cell>
         <div v-if="evmAddress">
           <eth-identicon :address="evmAddress" :size="16" />
-          <nuxt-link :to="`/account/${extrinsic.signed}`">
+          <nuxt-link :to="`/account/${extrinsic.signer}`">
             {{ evmAddress }}
           </nuxt-link>
         </div>
@@ -190,7 +190,7 @@ export default {
     }
   },
   async created() {
-    this.evmAddress = await this.getEVMAddress(this.extrinsic.signed)
+    this.evmAddress = await this.getEVMAddress(this.extrinsic.signer)
   },
   methods: {
     parseMessage(message, abi) {
