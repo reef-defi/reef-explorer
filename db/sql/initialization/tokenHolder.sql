@@ -1,7 +1,7 @@
 CREATE TYPE TokenHolderType AS ENUM ('Account', 'Contract');
 
 CREATE TABLE IF NOT EXISTS token_holder (
-  token_address VARCHAR,
+  token_address VARCHAR NOT NULL,
 
   signer VARCHAR,
   evm_address VARCHAR,
