@@ -85,7 +85,9 @@ export const extrinsicToContract = ({
 
   const { context: bytecodeContext, args: bytecodeArguments } =
     preprocessBytecode(bytecode);
-
+  console.log(args);
+  events.forEach((e) => console.log(e.toJSON()));
+  process.exit();
   return {
     address,
     bytecode,
@@ -190,7 +192,7 @@ export const extractTokenBalance = async ({
   contractAddress,
   signerAddress,
   blockId
-}: TokenBalanceHead): Promise<TokenHolder | undefined> => {
+}: TokenBalanceHead): Promise<TokenHolder> => {
   const [balance, signerAddr] = await Promise.all([
     getContractBalance(signerAddress, contractAddress, abi),
     nodeQuery((provider) =>
@@ -198,16 +200,16 @@ export const extractTokenBalance = async ({
     ),
   ]);
 
-  const addr = signerAddr.toJSON() as string;
+  const address = signerAddr.toJSON();
 
   return {
     balance,
+    blockId,
     decimals,
     contractAddress,
     evmAddress: signerAddress,
-    signer: addr,
-    blockId,
-    type: addr === null ? "Contract" : "Account"
+    type: address === null ? "Contract" : "Account",
+    signer: address === null ? "deleted" : address as string,
   };
 };
 
@@ -224,7 +226,7 @@ export const extractEvmLogHeaders = (
     })
     .map(extractEvmLog);
 
-export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]) =>
+export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]): TokenBalanceHead[] =>
   dropDuplicatesMultiKey(
     compress(
       evmLogs
