@@ -4,25 +4,21 @@ CREATE TABLE IF NOT EXISTS token_holder (
   token_address VARCHAR,
 
   signer VARCHAR,
-  contract_holder_address VARCHAR,
+  evm_address VARCHAR,
   type TokenHolderType NOT NULL,
 
   balance NUMERIC(80,0) NOT NULL,
   decimals INT NOT NULL,
 
-  UNIQUE (signer, contract_holder_address, token_address),
+  UNIQUE (signer, evm_address, token_address),
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (token_address)
       REFERENCES contract(address)
-      ON DELETE NO ACTION,
+      ON DELETE CASCADE,
   CONSTRAINT fk_signer
     FOREIGN KEY (signer)
       REFERENCES account(address)
-      ON DELETE NO ACTION,
-  CONSTRAINT fk_contract_address
-    FOREIGN KEY (contract_holder_address)
-      REFERENCES contract(address)
-      ON DELETE NO ACTION
+      ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS token_holder_signer ON token_holder(signer);
