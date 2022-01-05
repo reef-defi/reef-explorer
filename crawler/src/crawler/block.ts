@@ -267,10 +267,9 @@ export const processBlocks = async (
   
   logger.info("Retrieving ERC20 account token balances");
   transactions += tokenTransferEvents.length;
-  const tokenBalances = await resolvePromisesAsChunks(
+  const tokenHolders = await resolvePromisesAsChunks(
     tokenTransferEvents.map(extractTokenBalance)
   );
-  const tokenHolders = tokenBalances.filter(removeUndefinedItem);
 
   logger.info("Compressing transfer, event accounts, evm claim account");
   let allAccounts: AccountHead[][] = [];
@@ -295,6 +294,7 @@ export const processBlocks = async (
   let accounts = await resolvePromisesAsChunks(
     insertOrDeleteAccount.map(accountHeadToBody)
   );
+  
   logger.info("Inserting or updating accounts");
   await insertAccounts(accounts);
   // Free memory
@@ -314,8 +314,8 @@ export const processBlocks = async (
   await insertTransfers(transfers);
   transfers = [];
 
-  logger.info("Inserting evm calls");
-  await insertEvmCalls(evmCalls);
+  // logger.info("Inserting evm calls");
+  // await insertEvmCalls(evmCalls);
 
   // Contracts
   logger.info("Extracting new contracts");
