@@ -58,7 +58,7 @@ export default {
           ) {
             block_id
             index
-            signed
+            signer
             section
             method
             args

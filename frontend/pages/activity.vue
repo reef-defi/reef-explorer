@@ -30,14 +30,12 @@
             </b-row>
             <div class="table-responsive">
               <b-table striped hover :fields="fields" :items="extrinsics">
-                <template #cell(block_number)="data">
+                <template #cell(block_id)="data">
                   <p class="mb-0">
                     <nuxt-link
-                      :to="`/extrinsic/${data.item.block_number}/${data.item.extrinsic_index}`"
+                      :to="`/extrinsic/${data.item.block_id}/${data.item.index}`"
                     >
-                      {{ data.item.block_number }}-{{
-                        data.item.extrinsic_index
-                      }}
+                      {{ data.item.block_id }}-{{ data.item.index }}
                     </nuxt-link>
                   </p>
                 </template>
@@ -154,7 +152,7 @@ export default {
       totalRows: 1,
       fields: [
         {
-          key: 'block_number',
+          key: 'block_id',
           label: 'Extrinsic',
           sortable: true,
         },
@@ -202,15 +200,15 @@ export default {
               limit: $perPage
               offset: $offset
               where: {
-                block_number: { _eq: $blockNumber }
+                block_id: { _eq: $blockNumber }
                 hash: { _eq: $extrinsicHash }
-                is_signed: { _eq: true }
+                type: { _eq: "signed" }
                 signer: { _eq: $signer }
               }
-              order_by: { block_number: desc, extrinsic_index: desc }
+              order_by: { block_id: desc, index: desc }
             ) {
-              block_number
-              extrinsic_index
+              block_id
+              index
               is_signed
               signer
               section
@@ -245,9 +243,9 @@ export default {
           ) {
             extrinsic_aggregate(
               where: {
-                block_number: { _eq: $blockNumber }
+                block_id: { _eq: $blockNumber }
                 hash: { _eq: $extrinsicHash }
-                is_signed: { _eq: true }
+                type: { _eq: "signed" }
                 signer: { _eq: $signer }
               }
             ) {

@@ -110,7 +110,7 @@ export default {
             extrinsic(where: { block_id: { _eq: $block_id } }) {
               block_id
               index
-              signed
+              signer
               section
               method
               args
