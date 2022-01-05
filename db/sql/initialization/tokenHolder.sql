@@ -24,5 +24,5 @@ CREATE TABLE IF NOT EXISTS token_holder (
 CREATE INDEX IF NOT EXISTS token_holder_signer ON token_holder(signer);
 CREATE INDEX IF NOT EXISTS token_holder_balance ON token_holder(balance);
 CREATE INDEX IF NOT EXISTS token_holder_decimals ON token_holder(decimals);
+CREATE INDEX IF NOT EXISTS token_holder_evm_address ON token_holder(evm_address);
 CREATE INDEX IF NOT EXISTS token_holder_token_address ON token_holder(token_address);
-CREATE INDEX IF NOT EXISTS token_holder_contract_address ON token_holder(contract_holder_address);

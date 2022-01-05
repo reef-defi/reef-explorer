@@ -47,7 +47,6 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   CONSTRAINT fk_address
     FOREIGN KEY (address)
       REFERENCES contract(address)
-      ON DELETE NO ACTION
 );
 
 CREATE INDEX IF NOT EXISTS verified_contract_name ON verified_contract (name);
