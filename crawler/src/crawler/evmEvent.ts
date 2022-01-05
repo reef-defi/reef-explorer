@@ -1,4 +1,4 @@
-import { nodeQuery } from "../utils/connector";
+import { getProvider, nodeQuery } from "../utils/connector";
 import { resolveSigner } from "./extrinsic";
 import {
   ExtrinsicBody,
@@ -73,22 +73,21 @@ export const extrinsicToContract = ({
   events,
   id,
 }: ExtrinsicBody): Contract => {
-  const { args, signer } = extrinsic;
+  const { args } = extrinsic;
   const event = events.find(
     ({ event }) => event.section === "evm" && event.method === "Created"
   )!;
   const address = event.event.data[0].toString();
-
+  const reserveEvent = events.find((evn) => getProvider().api.events.balances.Reserved.is(evn.event))!;
+  const signer = reserveEvent.event.data[0].toString();
   const bytecode = args[0].toString();
   const gasLimit = args[2].toString();
   const storageLimit = args[3].toString();
 
   const { context: bytecodeContext, args: bytecodeArguments } =
     preprocessBytecode(bytecode);
-  console.log(args);
-  events.forEach((e) => console.log(e.toJSON()));
-  process.exit();
   return {
+    signer,
     address,
     bytecode,
     gasLimit,
@@ -96,7 +95,6 @@ export const extrinsicToContract = ({
     bytecodeContext,
     extrinsicId: id,
     bytecodeArguments,
-    signer: signer.toString(),
   };
 };
 

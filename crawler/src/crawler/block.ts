@@ -314,8 +314,8 @@ export const processBlocks = async (
   await insertTransfers(transfers);
   transfers = [];
 
-  // logger.info("Inserting evm calls");
-  // await insertEvmCalls(evmCalls);
+  logger.info("Inserting evm calls");
+  await insertEvmCalls(evmCalls);
 
   // Contracts
   logger.info("Extracting new contracts");
