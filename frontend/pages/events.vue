@@ -87,14 +87,14 @@ export default {
       event: {
         query: gql`
           subscription events(
-            $blockNumber: bigint
+            $blockNumber: bigint_comparison_exp
             $perPage: Int!
             $offset: Int!
           ) {
             event(
               limit: $perPage
               offset: $offset
-              where: { block_id: { _eq: $blockNumber } }
+              where: { block_id: $blockNumber }
               order_by: { block_id: desc, index: desc }
             ) {
               block_id
@@ -109,7 +109,7 @@ export default {
         `,
         variables() {
           return {
-            blockNumber: this.filter ? parseInt(this.filter) : undefined,
+            blockNumber: this.filter ? { _eq: parseInt(this.filter) } : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }

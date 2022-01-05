@@ -53,7 +53,7 @@ export default {
             block_id
             index
             type
-            signed
+            signer
             signed_data
             section
             method
@@ -75,8 +75,6 @@ export default {
       result({ data }) {
         if (data && data.extrinsic) {
           this.transfer = data.extrinsic[0]
-          // TODO remove when signer
-          this.transfer.signer = this.transfer?.signed
         }
         this.loading = false
       },

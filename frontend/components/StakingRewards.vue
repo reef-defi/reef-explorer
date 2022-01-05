@@ -128,10 +128,10 @@ export default {
           subscription staking($accountId: String!) {
             staking(
               order_by: { id: desc }
-              where: { account: { _eq: $accountId } }
+              where: { signer: { _eq: $accountId } }
             ) {
               id
-              account
+              signer
               amount
               event {
                 index

@@ -9,15 +9,15 @@
             </nuxt-link>
           </p>
         </template>
-        <template #cell(signed)="data">
+        <template #cell(signer)="data">
           <p class="mb-0 d-inline-block">
             <ReefIdenticon
-              :key="data.item.signed"
-              :address="data.item.signed"
+              :key="data.item.signer"
+              :address="data.item.signer"
               :size="20"
             />
-            <nuxt-link :to="`/account/${data.item.signed}`">
-              {{ shortAddress(data.item.signed) }}
+            <nuxt-link :to="`/account/${data.item.signer}`">
+              {{ shortAddress(data.item.signer) }}
             </nuxt-link>
           </p>
         </template>
@@ -48,7 +48,7 @@ export default {
           sortable: true,
         },
         {
-          key: 'signed',
+          key: 'signer',
           label: 'Signer',
           class: 'd-none d-sm-none d-md-none d-lg-block d-xl-block',
           sortable: true,
@@ -74,7 +74,7 @@ export default {
               block_id
               index
               type
-              signed
+              signer
               section
               method
               hash

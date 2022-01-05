@@ -203,14 +203,14 @@ export default {
                 block_id: { _eq: $blockNumber }
                 hash: { _eq: $extrinsicHash }
                 type: { _eq: "signed" }
-                signed: { _eq: $signer }
+                signer: { _eq: $signer }
               }
               order_by: { block_id: desc, index: desc }
             ) {
               block_id
               index
               type
-              signed
+              signer
               section
               method
               hash
@@ -245,7 +245,7 @@ export default {
                 block_id: { _eq: $blockNumber }
                 hash: { _eq: $extrinsicHash }
                 type: { _eq: "signed" }
-                signed: { _eq: $signer }
+                signer: { _eq: $signer }
               }
             ) {
               aggregate {

@@ -72,12 +72,20 @@
 
             <Row>
               <Cell>{{ $t('details.token.token_symbol') }}</Cell>
-              <Cell>{{ contract.verified_contract.symbol }}</Cell>
+              <Cell>{{
+                contract.verified_contract.contract_data
+                  ? contract.verified_contract.contract_data.symbol
+                  : ''
+              }}</Cell>
             </Row>
 
             <Row>
               <Cell>{{ $t('details.token.token_decimals') }}</Cell>
-              <Cell>{{ contract.verified_contract.decimals }}</Cell>
+              <Cell>{{
+                contract.verified_contract.contract_data
+                  ? contract.verified_contract.contract_data.decimals
+                  : ''
+              }}</Cell>
             </Row>
             <!--            TODO Ziga
             <Row>
@@ -104,30 +112,30 @@
               </Cell>
             </Row>
 
-            <Row v-if="contract.extrinsic.signed">
+            <Row v-if="contract.extrinsic.signer">
               <Cell>{{ $t('details.token.created') }}</Cell>
               <Cell>
                 <ReefIdenticon
-                  :key="contract.extrinsic.signed"
-                  :address="contract.extrinsic.signed"
+                  :key="contract.extrinsic.signer"
+                  :address="contract.extrinsic.signer"
                   :size="20"
                   class="token-details__account-identicon"
                 />
-                <nuxt-link :to="`/account/${contract.extrinsic.signed}`">
-                  {{ shortAddress(contract.extrinsic.signed) }}
+                <nuxt-link :to="`/account/${contract.extrinsic.signer}`">
+                  {{ shortAddress(contract.extrinsic.signer) }}
                 </nuxt-link>
               </Cell>
             </Row>
           </Data>
 
           <!-- Holders -->
-
+          <!--TODO query account_token_balance for holders
           <TokenHolders
             v-if="tab === 'holders'"
             :holders="contract.holders"
-            :decimals="contract.verified_contract.decimals"
-            :symbol="contract.verified_contract.symbol"
-          />
+            :decimals="contract.verified_contract.contract_data.decimals"
+            :symbol="contract.verified_contract.contract_data.symbol"
+          />-->
 
           <!-- Developer -->
 
@@ -220,19 +228,18 @@
 <script>
 import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
-import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
-import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
-import commonMixin from '@/mixins/commonMixin.js'
+import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
+import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
   components: {
     ReefIdenticon,
     Loading,
     VueJsonPretty,
-    ContractTransactions,
+    // TODO add back- ContractTransactions,
     ContractExecute,
   },
   mixins: [commonMixin],
@@ -250,18 +257,18 @@ export default {
       if (this.contract?.verified_contract) {
         return {
           info: 'Token Info',
-          holders: 'Holders',
+          // TODO add back- holders: 'Holders',
           developer: 'Developer',
           source: 'Verified Source',
-          transactions: 'Transactions',
-          execute: 'Execute',
+          // TODO add back- transactions: 'Transactions',
+          // TODO add back- execute: 'Execute',
         }
       }
 
       return {
         info: 'Token Info',
-        holders: 'Holders',
-        transactions: 'Transactions',
+        // TODO add back- holders: 'Holders',
+        // TODO add back- transactions: 'Transactions',
       }
     },
   },
@@ -290,7 +297,7 @@ export default {
               address
               bytecode
               extrinsic {
-                signed
+                signer
                 block_id
               }
               verified_contract {
@@ -300,6 +307,7 @@ export default {
                 source
                 compiler_version
                 compiled_data
+                contract_data
                 optimization
                 runs
                 target

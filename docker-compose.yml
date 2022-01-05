@@ -60,7 +60,7 @@ services:
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       HASURA_GRAPHQL_UNAUTHORIZED_ROLE: ${GQL_UNAUTHORIZED_ROLE} #public
       HASURA_GRAPHQL_ADMIN_SECRET: ${GQL_ADMIN_PW} #myadminsecretkey
-      HASURA_GRAPHQL_V1_BOOLEAN_NULL_COLLAPSE: true
+      HASURA_GRAPHQL_V1_BOOLEAN_NULL_COLLAPSE: "true"
     networks:
       - reefscan
 

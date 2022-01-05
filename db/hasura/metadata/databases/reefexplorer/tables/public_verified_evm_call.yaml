@@ -4,7 +4,7 @@ table:
 object_relationships:
 - name: account
   using:
-    foreign_key_constraint_on: signer_address
+    foreign_key_constraint_on: signer
 - name: extrinsic
   using:
     foreign_key_constraint_on: extrinsic_id
@@ -17,7 +17,7 @@ select_permissions:
     columns:
     - id
     - extrinsic_id
-    - signer_address
+    - signer
     - contract_address
     - event_name
     - event_args

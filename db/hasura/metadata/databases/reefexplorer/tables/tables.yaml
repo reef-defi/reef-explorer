@@ -1,4 +1,5 @@
 - "!include public_account.yaml"
+- "!include public_account_token_balance.yaml"
 - "!include public_block.yaml"
 - "!include public_contract.yaml"
 - "!include public_event.yaml"
@@ -8,3 +9,4 @@
 - "!include public_verification_request.yaml"
 - "!include public_verified_contract.yaml"
 - "!include public_verified_evm_call.yaml"
+- "!include public_staking.yaml"

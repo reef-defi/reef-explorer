@@ -41,15 +41,15 @@
           >
 
           <Cell
-            :link="{ url: `/account/${item.signed}`, fill: false }"
+            :link="{ url: `/account/${item.signer}`, fill: false }"
             :title="$t('pages.accounts.account_details')"
           >
             <ReefIdenticon
-              :key="item.signed"
-              :address="item.signed"
+              :key="item.signer"
+              :address="item.signer"
               :size="20"
             />
-            <span>{{ shortAddress(item.signed) }}</span>
+            <span>{{ shortAddress(item.signer) }}</span>
           </Cell>
 
           <Cell align="center">
@@ -90,20 +90,20 @@ export default {
     $subscribe: {
       extrinsic: {
         query: gql`
-          subscription extrinsics($contractId: [json!]) {
+          subscription extrinsics($contractId: json_comparison_exp) {
             extrinsic(
               order_by: { block_id: desc }
               where: {
                 section: { _eq: "evm" }
                 method: { _eq: "call" }
-                args: { _in: $contractId }
+                args: $contractId
               }
               limit: 10
             ) {
               block_id
               index
               hash
-              signed
+              signer
               args
               type
               timestamp
@@ -113,7 +113,8 @@ export default {
         variables() {
           return {
             // TODO Ziga - how to query json
-            // contractId: `["${this.contractId.toLowerCase()}",%`,
+            // old string qry- contractId: `["${this.contractId.toLowerCase()}",%`,
+            contractId: {}, // { _in: [`"${this.contractId.toLowerCase()}"`] },
           }
         },
         result({ data }) {

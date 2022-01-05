@@ -23,7 +23,7 @@
           <Cell :sortable="['hash', activeSort]">Hash</Cell>
           <Cell :sortable="['block_id', activeSort]">Block</Cell>
           <Cell :sortable="['timestamp', activeSort, true]">Date</Cell>
-          <Cell :sortable="['signed', activeSort]">Signer</Cell>
+          <Cell :sortable="['signer', activeSort]">Signer</Cell>
           <Cell>Extrinsic</Cell>
           <Cell :sortable="['status', activeSort]" align="center">Success</Cell>
         </THead>
@@ -48,15 +48,15 @@
           </Cell>
 
           <Cell
-            :link="{ url: `/account/${item.signed}`, fill: false }"
+            :link="{ url: `/account/${item.signer}`, fill: false }"
             :title="$t('pages.accounts.account_details')"
           >
             <ReefIdenticon
-              :key="item.signed"
-              :address="item.signed"
+              :key="item.signer"
+              :address="item.signer"
               :size="20"
             />
-            <span>{{ shortAddress(item.signed) }}</span>
+            <span>{{ shortAddress(item.signer) }}</span>
           </Cell>
 
           <Cell>
@@ -151,11 +151,11 @@ export default {
           subscription extrinsic($signer: String!) {
             extrinsic(
               order_by: { block_id: desc }
-              where: { signed: { _eq: $signer } }
+              where: { signer: { _eq: $signer } }
             ) {
               id
               block_id
-              signed
+              signer
               hash
               section
               method
