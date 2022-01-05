@@ -48,7 +48,7 @@ export default {
               block_id
               index
               type
-              signed
+              signer
               section
               method
               hash

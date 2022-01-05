@@ -94,7 +94,7 @@ export default {
             ) {
               block_id
               section
-              signed
+              signer
               hash
               args
             }
@@ -105,7 +105,7 @@ export default {
             return {
               block_id: transfer.block_id,
               hash: transfer.hash,
-              from: transfer.signed,
+              from: transfer.signer,
               to: transfer.args[0].address20
                 ? transfer.args[0].address20
                 : transfer.args[0].id,

@@ -49,14 +49,14 @@
       <Row class="extrinsic-details__signer">
         <Cell>Signer</Cell>
         <Cell>
-          <div v-if="extrinsic.signed">
+          <div v-if="extrinsic.signer">
             <ReefIdenticon
-              :key="extrinsic.signed"
-              :address="extrinsic.signed"
+              :key="extrinsic.signer"
+              :address="extrinsic.signer"
               :size="20"
             />
-            <nuxt-link :to="`/account/${extrinsic.signed}`">
-              {{ shortAddress(extrinsic.signed) }}
+            <nuxt-link :to="`/account/${extrinsic.signer}`">
+              {{ shortAddress(extrinsic.signer) }}
             </nuxt-link>
           </div>
         </Cell>
