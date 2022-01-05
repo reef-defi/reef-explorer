@@ -14,8 +14,9 @@ export const resolveSigner = (extrinsic: Extrinsic): string =>
 
 const extractErrorMessage = (error: SpRuntimeDispatchError): string => {
   if (error.isModule) {
-    const decoded = getProvider().api.registry.findMetaError(error.asModule);
-    return `${decoded.section}.${decoded.name}`;
+    const errorModule = error.asModule;
+    const { docs, name, section } = errorModule.registry.findMetaError(errorModule);
+    return `${section}.${name}: ${docs}`;
   } else {
     return error.toString();
   }
