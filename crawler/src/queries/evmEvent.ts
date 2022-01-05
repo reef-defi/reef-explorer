@@ -14,8 +14,9 @@ const contractToValues = ({
   bytecodeArguments,
   gasLimit,
   storageLimit,
+  signer
 }: Contract): string =>
-  `('${address}', ${extrinsicId}, '${bytecode}', '${bytecodeContext}', '${bytecodeArguments}', ${gasLimit}, ${storageLimit})`;
+  `('${address}', ${extrinsicId}, '${signer}', '${bytecode}', '${bytecodeContext}', '${bytecodeArguments}', ${gasLimit}, ${storageLimit})`;
 
 const evmCallToValue = ({
   extrinsicId,
@@ -36,7 +37,7 @@ export const insertContracts = async (contracts: Contract[]): Promise<void> => {
   }
   await insert(`
     INSERT INTO contract
-      (address, extrinsic_id, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
+      (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
     VALUES
       ${contracts.map(contractToValues).join(",\n")}
     ON CONFLICT (address) DO UPDATE
@@ -75,7 +76,7 @@ const accountTokenBalanceToValue = ({
   evmAddress,
   type
 }: TokenHolder): string =>
-  `('${signer}', '${evmAddress}', '${type}', '${contractAddress}', ${balance}, ${decimals})`;
+  `('${signer}', '${evmAddress.toLowerCase()}', '${type}', '${contractAddress.toLowerCase()}', ${balance}, ${decimals})`;
 
 export const insertAccountTokenBalances = async (
   accountTokenBalances: TokenHolder[]
@@ -85,10 +86,10 @@ export const insertAccountTokenBalances = async (
   }
   await insert(`
     INSERT INTO token_holder
-      (signer, contract_holder_address, type, token_address, balance, decimals)
+      (signer, evm_address, type, token_address, balance, decimals)
     VALUES
       ${accountTokenBalances.map(accountTokenBalanceToValue).join(",\n")}
-    ON CONFLICT (signer, contract_holder_address, token_address) DO UPDATE SET
+    ON CONFLICT (signer, evm_address, token_address) DO UPDATE SET
       balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;
   `);
