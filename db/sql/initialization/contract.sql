@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS contract (
   gas_limit BIGINT NOT NULL,
   storage_limit BIGINT NOT NULL,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (address),
   CONSTRAINT fk_extrinsic
@@ -42,6 +42,8 @@ CREATE TABLE IF NOT EXISTS verified_contract (
 
   type ContractType DEFAULT 'other',
   contract_data JSON,
+
+  timestamp timestamptz default current_timestamp,
 
   UNIQUE (address),
   CONSTRAINT fk_address
@@ -77,6 +79,8 @@ CREATE TABLE IF NOT EXISTS verification_request (
 
   success BOOLEAN NOT NULL,
   message TEXT,
+
+  timestamp timestamptz default current_timestamp,
 
   PRIMARY KEY (id)
 );

@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS block (
   extrinsic_root TEXT NOT NULL,
   finalized BOOLEAN NOT NULL,
 
-  timestamp timestamp NOT NULL,
-  crawler_timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
+  crawler_timestamp timestamptz default current_timestamp,
 
   PRIMARY KEY (id)
 );

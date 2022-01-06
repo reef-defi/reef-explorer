@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS unverified_evm_call (
 
   gas_limit BIGINT NOT NULL,
   storage_limit BIGINT NOT NULL,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_extrinsic
@@ -45,6 +46,7 @@ CREATE TABLE IF NOT EXISTS verified_evm_call (
   gas_limit BIGINT,
   storage_limit BIGINT,
   fee BIGINT,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_extrinsic

@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS staking (
   type StakingType NOT NULL,
   amount NUMERIC(80,0) NOT NULL,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_signer
