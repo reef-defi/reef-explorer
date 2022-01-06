@@ -1,5 +1,5 @@
 table:
-  name: account_token_balance
+  name: token_holder
   schema: public
 object_relationships:
 - name: contract
@@ -16,5 +16,6 @@ select_permissions:
     - signer
     - balance
     - decimals
+    - type
     filter: {}
   role: public

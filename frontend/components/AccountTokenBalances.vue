@@ -127,10 +127,10 @@ export default {
   },
   apollo: {
     $subscribe: {
-      account_token_balance: {
+      token_holder: {
         query: gql`
-          subscription account_token_balance($accountId: String!) {
-            account_token_balance(
+          subscription token_holder($accountId: String!) {
+            token_holder(
               order_by: { balance: desc }
               where: { signer: { _eq: $accountId } }
             ) {
@@ -160,7 +160,7 @@ export default {
           return !this.accountId
         },
         result({ data }) {
-          this.balances = data.account_token_balance.map((balance) => ({
+          this.balances = data.token_holder.map((balance) => ({
             contract_id: balance.contract.address,
             holder_account_id: balance.signer,
             holder_evm_address: balance.account.evm_address,
