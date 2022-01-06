@@ -100,6 +100,8 @@ services:
       - POSTGRES_DATABASE=${DB_NAME}
       - POSTGRES_PASSWORD=${DB_PW}
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
+    ports:
+      - ${API_PORT}:${API_PORT}
     depends_on:
       - postgres
       - substrate-node
