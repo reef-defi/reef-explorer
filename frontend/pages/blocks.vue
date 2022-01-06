@@ -31,7 +31,7 @@
 
               <Cell class="list-view__age">
                 <font-awesome-icon :icon="['far', 'clock']" />
-                <span>{{ getAge(item.timestamp + 'Z') }}</span>
+                <span>{{ getAge(item.timestamp) }}</span>
                 <span>({{ formatTimestamp(item.timestamp) }})</span>
               </Cell>
 
