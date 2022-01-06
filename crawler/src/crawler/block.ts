@@ -317,7 +317,8 @@ export const processBlocks = async (
 
   // Transfers
   logger.info("Inserting transfers");
-  await insertTransfers(transfers);
+  await insertTransfers(transfers)
+
   transfers = [];
 
   logger.info("Inserting evm calls");

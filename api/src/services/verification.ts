@@ -53,12 +53,16 @@ const FIND_CONTRACT_BYTECODE = `SELECT bytecode FROM contract WHERE address = $1
 // WHERE address = $1`;
 
 const INSERT_VERIFIED_CONTRACT = `INSERT INTO verified_contract
-(address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`
+  (address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
+VALUES 
+  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+ON CONFLICT DO NOTHING;`
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO verification_request
-(address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`;
+  (address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
+VALUES
+  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+ON CONFLICT DO NOTHING;`;
 
 // const INSERT_ERC20_TOKEN = `
 // INSERT INTO erc20 
