@@ -36,7 +36,7 @@ export default {
     prop: 'value',
   },
   props: {
-    value: { default: '' },
+    value: { type: String, default: '' },
     label: { type: String, default: '' },
     infoMsg: { type: String, default: '' },
     placeholder: { type: String, default: '' },
@@ -109,7 +109,7 @@ export default {
   }
 
   @media only screen and (max-width: 576px) {
-    padding: 35px 10px 5px 10px;
+    padding: 35px 20px 5px 20px;
 
     .search-section__label-section {
       flex-flow: column nowrap;

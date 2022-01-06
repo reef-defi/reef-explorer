@@ -1,9 +1,15 @@
 <template>
   <div>
-    <Header />
+    <Header
+      :mobile-menu-open="mobileMenuOpen"
+      @toggle-mobile-menu="mobileMenuOpen = $event"
+    />
     <Nuxt />
     <Footer />
-    <NavPanel />
+    <NavPanel
+      :mobile-menu-open="mobileMenuOpen"
+      @toggle-mobile-menu="mobileMenuOpen = $event"
+    />
   </div>
 </template>
 
@@ -18,6 +24,11 @@ export default {
     Header,
     Footer,
     NavPanel,
+  },
+  data() {
+    return {
+      mobileMenuOpen: false,
+    }
   },
 }
 </script>

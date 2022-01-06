@@ -44,10 +44,10 @@ export default {
   components: { Item },
   props: {
     items: { type: Array, default: () => [] },
+    moreOpen: { type: Boolean, default: false },
   },
   data() {
     return {
-      moreOpen: false,
       network,
     }
   },
@@ -82,11 +82,11 @@ export default {
   },
   methods: {
     openMore() {
-      this.moreOpen = true
+      this.$emit('toggle-more', true)
       document.body.style.overflow = 'hidden'
     },
     closeMore() {
-      this.moreOpen = false
+      this.$emit('toggle-more', false)
       document.body.style.overflow = null
     },
   },
