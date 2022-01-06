@@ -12,6 +12,7 @@ export interface InsertExtrinsic {
   signed: string;
   status: string;
   error_message: string;
+  timestamp: string;
 }
 
 export interface InsertExtrinsicBody extends InsertExtrinsic {

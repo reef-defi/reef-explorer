@@ -71,7 +71,7 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
     nodeQuery((provider) => provider.api.query.system.events.at(hash)),
     nodeQuery((provider) => provider.api.query.timestamp.now.at(hash)),
   ]);
-  return { id, hash, signedBlock, extendedHeader, events, timestamp: timestamp.toJSON() };
+  return { id, hash, signedBlock, extendedHeader, events, timestamp: (new Date(timestamp.toJSON())).toUTCString() };
 };
 
 const blockBodyToInsert = ({
@@ -100,9 +100,11 @@ const blockToExtrinsicsHeader = ({
   id,
   signedBlock,
   events,
+  timestamp
 }: BlockBody): ExtrinsicHead[] =>
   signedBlock.block.extrinsics.map((extrinsic, index) => ({
     extrinsic,
+    timestamp,
     blockId: id,
     events: events.filter(isExtrinsicEvent(index)),
     status: extrinsicStatus(events),
@@ -138,7 +140,7 @@ const extrinsicBody =
   });
 
 const extrinsicToInsert = (
-  { id, extrinsic, signedData, blockId, events }: ExtrinsicBody,
+  { id, extrinsic, signedData, blockId, events, timestamp }: ExtrinsicBody,
   index: number
 ): InsertExtrinsicBody => {
   const status = extrinsicStatus(events);
@@ -148,6 +150,7 @@ const extrinsicToInsert = (
     index,
     blockId,
     signedData,
+    timestamp,
     status: status.type,
     hash: hash.toString(),
     method: method.method,
@@ -163,12 +166,14 @@ const extrinsicToEventHeader = ({
   id,
   blockId,
   events,
+  timestamp
 }: ExtrinsicBody): EventHead[] =>
   events.map((event, index) => ({
-    blockId,
-    index,
-    extrinsicId: id,
     event,
+    index,
+    blockId,
+    timestamp,
+    extrinsicId: id,
   }));
 
 const eventToBody =

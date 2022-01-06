@@ -9,7 +9,7 @@ interface InsertInitialBlock {
   hash: string;
   author: string;
   stateRoot: string;
-  timestamp: number;
+  timestamp: string;
   parentHash: string;
   extrinsicRoot: string;
 }
@@ -34,7 +34,7 @@ const blockValuesStatement = ({
   extrinsicRoot,
   timestamp
 }: InsertInitialBlock): string =>
-  `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', false, '${(new Date(timestamp)).toUTCString()}')`;
+  `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', false, '${timestamp}')`;
 
 export const insertMultipleBlocks = async (
   data: InsertInitialBlock[]

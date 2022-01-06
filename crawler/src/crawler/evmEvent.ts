@@ -72,6 +72,7 @@ export const extrinsicToContract = ({
   extrinsic,
   events,
   id,
+  timestamp,
 }: ExtrinsicBody): Contract => {
   const { args } = extrinsic;
   const event = events.find(
@@ -91,6 +92,7 @@ export const extrinsicToContract = ({
     address,
     bytecode,
     gasLimit,
+    timestamp,
     storageLimit,
     bytecodeContext,
     extrinsicId: id,
@@ -102,6 +104,7 @@ export const extrinsicToEVMCall = ({
   extrinsic,
   status,
   id: extrinsicId,
+  timestamp
 }: ExtrinsicBody): EVMCall => {
   const account = resolveSigner(extrinsic);
   const args: any[] = extrinsic.args.map((arg) => arg.toJSON());
@@ -115,6 +118,7 @@ export const extrinsicToEVMCall = ({
     status,
     account,
     gasLimit,
+    timestamp,
     extrinsicId,
     storageLimit,
     contractAddress,
@@ -166,11 +170,13 @@ const erc20TransferEvent = ({
   decodedEvent,
   abis,
   name,
-  blockId
+  blockId,
+  timestamp,
 }: EvmLogWithDecodedEvent): TokenBalanceHead[] => [
   {
     blockId,
     decimals,
+    timestamp,
     abi: abis[name],
     contractAddress: address,
     signerAddress: decodedEvent.args[0],
@@ -178,6 +184,7 @@ const erc20TransferEvent = ({
   {
     blockId,
     decimals,
+    timestamp,
     abi: abis[name],
     contractAddress: address,
     signerAddress: decodedEvent.args[1],
@@ -189,7 +196,8 @@ export const extractTokenBalance = async ({
   abi,
   contractAddress,
   signerAddress,
-  blockId
+  blockId,
+  timestamp,
 }: TokenBalanceHead): Promise<TokenHolder> => {
   const [balance, signerAddr] = await Promise.all([
     getContractBalance(signerAddress, contractAddress, abi),
@@ -204,6 +212,7 @@ export const extractTokenBalance = async ({
     balance,
     blockId,
     decimals,
+    timestamp,
     contractAddress,
     evmAddress: signerAddress,
     type: address === null ? "Contract" : "Account",
@@ -214,13 +223,13 @@ export const extractTokenBalance = async ({
 export const extractEvmLogHeaders = (
   extrinsicEvmCalls: ExtrinsicBody[]
 ): Promise<EvmLog | undefined>[] =>
-  compress(extrinsicEvmCalls.map(({ events, blockId }) => events.map((event) => ({event, blockId}))))
+  compress(extrinsicEvmCalls.map(({ events, blockId, timestamp }) => events.map((event) => ({event, blockId, timestamp}))))
     .filter(
       ({ event: {event: { method, section } } }) => method === "Log" && section === "evm"
     )
-    .map(({ event, blockId }): BytecodeLogWithBlockId => {
+    .map(({ event, blockId, timestamp }): BytecodeLogWithBlockId => {
       const a = (event.event.data.toJSON() as any)[0]
-      return {...a, blockId};
+      return {...a, timestamp, blockId};
     })
     .map(extractEvmLog);
 

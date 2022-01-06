@@ -47,10 +47,11 @@ export const isExtrinsicTransfer = ({ extrinsic }: ExtrinsicBody): boolean =>
   extrinsic.method.section === "currencies";
 
 export const extrinsicBodyToTransfer = ({
-  extrinsic,
+  id,
   status,
   blockId,
-  id,
+  extrinsic,
+  timestamp,
   signedData,
 }: ExtrinsicBody): Transfer => {
   const args: any = extrinsic.args.map((arg) => arg.toJSON());
@@ -71,6 +72,7 @@ export const extrinsicBodyToTransfer = ({
     amount,
     blockId,
     feeAmount,
+    timestamp,
     toAddress,
     fromAddress,
     tokenAddress,
