@@ -1,5 +1,5 @@
 - "!include public_account.yaml"
-- "!include public_account_token_balance.yaml"
+- "!include public_token_holder.yaml"
 - "!include public_block.yaml"
 - "!include public_contract.yaml"
 - "!include public_event.yaml"
