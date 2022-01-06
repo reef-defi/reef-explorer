@@ -4,7 +4,7 @@ import { verifyContract } from "./contract-compiler/compiler";
 import { checkIfContractIsERC20, extractERC20ContractData } from "./contract-compiler/erc-checkers";
 import { ABI, AutomaticContractVerificationReq, ERC20Data, License, Target, User, UserTokenBalance } from "../utils/types";
 import { delay, ensure } from "../utils/utils";
-import { getAllUsersWithEvmAddress, insertAccountTokenBalances } from "./account";
+import { getAllUsersWithEvmAddress, insertTokenHolder } from "./account";
 import { Contract } from "ethers";
 
 interface Bytecode {
@@ -53,12 +53,16 @@ const FIND_CONTRACT_BYTECODE = `SELECT bytecode FROM contract WHERE address = $1
 // WHERE address = $1`;
 
 const INSERT_VERIFIED_CONTRACT = `INSERT INTO verified_contract
-(address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);`
+  (address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
+VALUES 
+  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+ON CONFLICT DO NOTHING;`
 
 const INSERT_CONTRACT_VERIFICATION = `INSERT INTO verification_request
-(address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`;
+  (address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
+VALUES
+  ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+ON CONFLICT DO NOTHING;`;
 
 // const INSERT_ERC20_TOKEN = `
 // INSERT INTO erc20 
@@ -120,13 +124,15 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
   let type: ContractType = "other";
   let data: ERC20Data | undefined;
+  let userBalances: UserTokenBalance[] = [];
   if (checkIfContractIsERC20(abi)) {
     data = await extractERC20ContractData(verification.address, abi);
     type = "ERC20";
-    await updateUserBalances(abi, verification.address, data.decimals);
+    userBalances = await updateUserBalances(abi, verification.address, data.decimals);
   }
   await insertVerifiedContract({...verification, abi: fullAbi, optimization: verification.optimization === "true", args: verification.arguments, type, data: data ? JSON.stringify(data) : "null"});
   await contractVerificationInsert({...verification, success: true, optimization: verification.optimization === "true", args: verification.arguments})
+  await insertTokenHolder(userBalances);
 }
 
 export const contractVerificationStatus = async (id: string): Promise<boolean> => {
@@ -137,7 +143,7 @@ export const contractVerificationStatus = async (id: string): Promise<boolean> =
 export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => 
   query<ContracVerificationInsert>(`SELECT * FROM verified_contract WHERE address = $1`, [address]);
 
-const updateUserBalances = async (abi: ABI, address: string, decimals: number) => {
+const updateUserBalances = async (abi: ABI, address: string, decimals: number): Promise<UserTokenBalance[]> => {
   const users = await getAllUsersWithEvmAddress();
   const contract = new Contract(address, abi, getProvider());
   const balances = await Promise.all(
@@ -146,5 +152,5 @@ const updateUserBalances = async (abi: ABI, address: string, decimals: number) =
     )
   );
   const accountBalances: UserTokenBalance[] = users.map((user, index) => ({...user, decimals, balance: balances[index], tokenAddress: address}));
-  await insertAccountTokenBalances(accountBalances);
+  return accountBalances;
 }

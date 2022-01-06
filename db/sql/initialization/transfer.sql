@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS transfer (
   error_message TEXT,
   success BOOLEAN NOT NULL,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_block

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS account (
   nonce BIGINT NOT NULL,
   evm_nonce BIGINT NOT NULL,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (address),
   CONSTRAINT fk_block
@@ -31,7 +31,7 @@ CREATE INDEX IF NOT EXISTS account_evm_address ON account (evm_address);
 
 -- Inserting chain account
 INSERT INTO account 
-  (block_id, evm_address, address, active, available_balance, free_balance, locked_balance, reserved_balance, vested_balance, voting_balance, nonce, evm_nonce)
+  (block_id, evm_address, address, active, available_balance, free_balance, locked_balance, reserved_balance, vested_balance, voting_balance, nonce, evm_nonce, timestamp)
 VALUES
-  (-1, '0x', '0x', true, 0, 0, 0, 0, 0, 0, 0, 0),
-  (-1, 'deleted', 'deleted', true, 0, 0, 0, 0, 0, 0, 0, 0);
+  (-1, '0x', '0x', true, 0, 0, 0, 0, 0, 0, 0, 0, '2020-10-01 00:00:00'),
+  (-1, 'deleted', 'deleted', true, 0, 0, 0, 0, 0, 0, 0, 0, '2020-10-01 00:00:00');

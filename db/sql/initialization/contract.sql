@@ -3,7 +3,7 @@ CREATE TYPE ContractType AS ENUM ('ERC20', 'ERC721', 'other');
 CREATE TABLE IF NOT EXISTS contract (
   address VARCHAR(48),
   extrinsic_id BIGINT,
-  signer VARCHAR,
+  signer VARCHAR NOT NULL,
 
   bytecode TEXT NOT NULL,
   bytecode_context TEXT NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS contract (
   gas_limit BIGINT NOT NULL,
   storage_limit BIGINT NOT NULL,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (address),
   CONSTRAINT fk_extrinsic
@@ -43,11 +43,12 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   type ContractType DEFAULT 'other',
   contract_data JSON,
 
+  timestamp timestamptz default current_timestamp,
+
   UNIQUE (address),
   CONSTRAINT fk_address
     FOREIGN KEY (address)
       REFERENCES contract(address)
-      ON DELETE NO ACTION
 );
 
 CREATE INDEX IF NOT EXISTS verified_contract_name ON verified_contract (name);
@@ -79,6 +80,8 @@ CREATE TABLE IF NOT EXISTS verification_request (
   success BOOLEAN NOT NULL,
   message TEXT,
 
+  timestamp timestamptz default current_timestamp,
+
   PRIMARY KEY (id)
 );
 
@@ -87,32 +90,9 @@ CREATE INDEX IF NOT EXISTS verification_request_address ON verification_request 
 CREATE INDEX IF NOT EXISTS verification_request_success ON verification_request (success);
 CREATE INDEX IF NOT EXISTS verification_request_filename ON verification_request (filename);
 
-
-CREATE TABLE IF NOT EXISTS account_token_balance (
-  token_address VARCHAR,
-  signer VARCHAR,
-  balance NUMERIC(80,0) NOT NULL,
-  decimals INT NOT NULL,
-
-  UNIQUE (signer, token_address),
-  CONSTRAINT fk_verified_contract
-    FOREIGN KEY (token_address)
-      REFERENCES contract(address)
-      ON DELETE NO ACTION,
-  CONSTRAINT fk_signer
-    FOREIGN KEY (signer)
-      REFERENCES account(address)
-      ON DELETE NO ACTION
-);
-
-CREATE INDEX IF NOT EXISTS account_token_balance_balance ON account_token_balance(balance);
-CREATE INDEX IF NOT EXISTS account_token_balance_decimals ON account_token_balance(decimals);
-CREATE INDEX IF NOT EXISTS account_token_balance_token_address ON account_token_balance(token_address);
-CREATE INDEX IF NOT EXISTS account_token_balance_account_address ON account_token_balance(signer);
-
 -- Genisis contract insert
 INSERT INTO contract
-  (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
+  (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit, timestamp)
 VALUES
 -- REEF
   (
@@ -123,7 +103,8 @@ VALUES
     '',
     'a2646970667358221220ca5c764db385f7a72f31e6e1a0ed4e18a4de5062832e0e616ba8b7d30cc6398964736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- RUSD
   (
@@ -134,7 +115,8 @@ VALUES
     '',
     'a2646970667358221220a6949233ed4c6693d0c8c97f7d7a9f7ffaab104485faefa710afebe9ea7b166f64736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- StateRent
   (
@@ -145,7 +127,8 @@ VALUES
     '',
     'a26469706673582212208f9fcccb00b243a8a1ca97eba7bec39378123acbc541f72ad47c56ca7b6073e764736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- Oracle
   (
@@ -156,7 +139,8 @@ VALUES
     '',
     'a26469706673582212200ab4066d46955f90fc2882320523757ba3fbb9ae3cb2ba76fef520dc50c2552364736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- Schedule
   (
@@ -167,7 +151,8 @@ VALUES
     '',
     'a26469706673582212208cb1aaf45825063deccbd79372e77cc77abb5031b261cce27c89766e6fd7f2e164736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- DEX
   (
@@ -178,7 +163,8 @@ VALUES
     '',
     'a26469706673582212203320fbc23d712e9537ae08f7e2655ceecce971fb8d224e37c1aa527fa73b7c8264736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   );
 
 INSERT INTO verified_contract 

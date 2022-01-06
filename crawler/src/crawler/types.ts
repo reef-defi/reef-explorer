@@ -6,6 +6,7 @@ import type { BlockHash as BH } from "@polkadot/types/interfaces/chain";
 import type { SignedBlock } from "@polkadot/types/interfaces/runtime";
 import type { HeaderExtended } from "@polkadot/api-derive/type/types";
 import { Vec } from "@polkadot/types";
+import { utils } from "ethers";
 
 export interface BlockHash {
   id: number;
@@ -16,7 +17,7 @@ export interface BlockBody extends BlockHash {
   signedBlock: SignedBlock;
   extendedHeader?: HeaderExtended;
   events: Vec<Event>;
-  timestamp: number;
+  timestamp: string;
 }
 
 
@@ -44,6 +45,7 @@ export interface ExtrinsicHead {
   extrinsic: Extrinsic;
   events: Event[];
   status: ExtrinsicStatus;
+  timestamp: string;
 }
 
 export interface SignedExtrinsicData {
@@ -59,6 +61,7 @@ export interface ExtrinsicBody extends ExtrinsicHead {
 export interface EventHead {
   event: Event;
   blockId: number;
+  timestamp: string;
   extrinsicId: number;
   index: number;
 }
@@ -70,6 +73,7 @@ export interface AccountHead {
   address: string;
   blockId: number;
   active: boolean;
+  timestamp: string;
 }
 export interface AccountBody extends AccountHead {
   identity: string;
@@ -97,6 +101,8 @@ export interface Transfer {
 
   success: boolean;
   errorMessage: string;
+
+  timestamp: string;
 }
 
 export interface Contract {
@@ -110,28 +116,33 @@ export interface Contract {
 
   gasLimit: string;
   storageLimit: string;
+
+  timestamp: string;
 }
 
 export interface EVMCall {
   data: string;
   account: string;
   gasLimit: string;
+  timestamp: string;
   extrinsicId: number;
   storageLimit: string;
   contractAddress: string;
   status: ExtrinsicStatus;
 }
 
-export interface AccountTokenHead {
-  accountEvmAddress: string;
+export interface TokenHolderHead {
+  blockId: number;
+  evmAddress: string;
   contractAddress: string;
-  // accountEvmAddress: string;
 }
 
-export interface AccountTokenBalance extends AccountTokenHead {
+export interface TokenHolder extends TokenHolderHead {
+  type: "Contract" | "Account",
+  signer: string;
   balance: string;
   decimals: number;
-  signer: string;
+  timestamp: string;
 }
 
 export interface ERC20Token {
@@ -149,4 +160,36 @@ export type ABI = JsonFragment[];
 
 export interface ABIS {
   [name: string]: ABI;
+}
+
+export interface BytecodeLog {
+  data: string;
+  address: string;
+  topics: string[];
+}
+
+export interface BytecodeLogWithBlockId extends BytecodeLog {
+  blockId: number;
+  timestamp: string;
+}
+
+export interface EvmLog extends BytecodeLog {
+  abis: ABIS;
+  name: string;
+  blockId: number;
+  decimals: number;
+  timestamp: string;
+}
+
+export interface EvmLogWithDecodedEvent extends EvmLog {
+  decodedEvent: utils.LogDescription;
+}
+
+export interface TokenBalanceHead {
+  abi: ABI;
+  blockId: number;
+  decimals: number;
+  timestamp: string;
+  signerAddress: string;
+  contractAddress: string;
 }

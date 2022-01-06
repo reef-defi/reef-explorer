@@ -2,15 +2,15 @@ import { getProvider, nodeQuery } from "../utils/connector";
 import { AccountBody, AccountHead, EventHead } from "./types";
 
 const eventToAccountHead = (
-  { blockId, event }: EventHead,
+  { blockId, event, timestamp }: EventHead,
   active = true
 ): AccountHead[] => {
   const address = event.event.data[0].toString();
-  return [{ blockId, address, active }];
+  return [{ blockId, address, active, timestamp }];
 };
 
 export const accountNewOrKilled = (eventHead: EventHead): AccountHead[] => {
-  const { event, blockId } = eventHead;
+  const { event, blockId, timestamp } = eventHead;
   if (getProvider().api.events.balances.Endowed.is(event.event)) {
     return eventToAccountHead(eventHead);
   } else if (getProvider().api.events.staking.Rewarded.is(event.event)) {
@@ -24,8 +24,8 @@ export const accountNewOrKilled = (eventHead: EventHead): AccountHead[] => {
   } else if (getProvider().api.events.balances.Transfer.is(event.event)) {
     const res: any = event.event.data.toJSON();
     return [
-      { blockId: blockId, address: res[0], active: true },
-      { blockId: blockId, address: res[1], active: true },
+      { blockId: blockId, address: res[0], active: true, timestamp },
+      { blockId: blockId, address: res[1], active: true, timestamp },
     ];
   }
   return [];

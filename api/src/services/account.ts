@@ -77,17 +77,19 @@ export const findUserContracts = async (address: string): Promise<Contract[]> =>
   queryDb<Contract>(`SELECT address FROM contract WHERE owner='${address}'`);
 
 
-const userTokenBalanceToValue = ({tokenAddress, evm_address, balance, decimals}: UserTokenBalance): string => 
-`('${tokenAddress}', '${evm_address}', ${balance}, ${decimals})`;
+const userTokenBalanceToValue = ({tokenAddress, address, evm_address, balance, decimals}: UserTokenBalance): string => 
+`('${tokenAddress.toLowerCase()}', '${address}', '${evm_address}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
 
-export const insertAccountTokenBalances = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
+export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
+  if (accountTokenBalances.length === 0) { return; }
   await queryDb(`
-    INSERT INTO account_token_balance 
-      (token_address, signer, balance, decimals)
+    INSERT INTO token_holder 
+      (token_address, signer, evm_address, type, balance, decimals, timestamp)
     VALUES
       ${accountTokenBalances.map(userTokenBalanceToValue).join(",\n")}
-    ON CONFLICT (token_address, signer) DO UPDATE SET
-      balance = EXCLUDED.balance
+    ON CONFLICT (token_address, evm_address) DO UPDATE SET
+      signer = EXCLUDED.signer,
+      balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;
   `)
 }

@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS extrinsic (
   signed_data JSON,
   inherent_data JSON,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_block
@@ -36,6 +36,6 @@ CREATE INDEX IF NOT EXISTS extrinsic_section ON extrinsic (section);
 CREATE INDEX IF NOT EXISTS extrinsic_block_id ON extrinsic (block_id);
 
 INSERT INTO extrinsic
-  (id, block_id, index, hash, args, docs, method, section, signer, status, type)
+  (id, block_id, index, hash, args, docs, method, section, signer, status, type, timestamp)
 VALUES
-  (-1, -1, 0, '', '[]', '', '', '', '0x', 'success', 'unsigned');
+  (-1, -1, 0, '', '[]', '', '', '', '0x', 'success', 'unsigned', '2020-10-01 00:00:00');

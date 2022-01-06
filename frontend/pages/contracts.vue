@@ -45,13 +45,13 @@
                 <eth-identicon :address="item.address" :size="20" />
                 <span>{{ shortHash(item.address) }}</span>
               </Cell>
-              <Cell v-else :link="`/contract/${item.address}`">{{
+              <Cell v-else :link="`/token/${item.address}`">{{
                 shortHash(item.address)
               }}</Cell>
 
               <Cell
                 v-if="!!item.verified_contract"
-                :link="`/contract/${item.address}`"
+                :link="`/token/${item.address}`"
                 >{{ item.verified_contract.name }}</Cell
               >
               <Cell v-else />

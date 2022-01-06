@@ -145,6 +145,32 @@ CREATE TRIGGER contract_count_trunc AFTER TRUNCATE ON contract
 UPDATE chain_info SET count = (SELECT count(*) FROM contract) WHERE name = 'contracts';
 COMMIT;
 
+-- Transfers
+START TRANSACTION;
+CREATE FUNCTION transfer_count() RETURNS trigger LANGUAGE plpgsql AS
+$$BEGIN
+  IF TG_OP = 'INSERT' THEN
+    UPDATE chain_info SET count = count + 1 WHERE name = 'transfers';
+    RETURN NEW;
+  ELSIF TG_OP = 'DELETE' THEN
+    UPDATE chain_info SET count = count - 1 WHERE name = 'transfers';
+    RETURN OLD;
+  ELSE
+    UPDATE chain_info SET count = 0 WHERE name = 'transfers';
+    RETURN NULL;
+  END IF;
+END;$$;
+CREATE CONSTRAINT TRIGGER transfer_count_mod
+  AFTER INSERT OR DELETE ON contract
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW EXECUTE PROCEDURE transfer_count();
+-- TRUNCATE triggers must be FOR EACH STATEMENT
+CREATE TRIGGER transfer_count_trunc AFTER TRUNCATE ON transfer
+  FOR EACH STATEMENT EXECUTE PROCEDURE transfer_count();
+-- initialize the counter table
+UPDATE chain_info SET count = (SELECT count(*) FROM transfer) WHERE name = 'transfers';
+COMMIT;
+
 
 -- -- Contracts
 -- START TRANSACTION;
