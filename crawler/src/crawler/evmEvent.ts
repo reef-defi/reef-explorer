@@ -63,9 +63,10 @@ export const isExtrinsicEVMCall = ({
 export const extrinsicToEvmClaimAccount = ({
   events,
   blockId,
+  timestamp
 }: ExtrinsicBody): AccountHead[] => {
   const [address] = events[0].event.data;
-  return [{ blockId, address: address.toString(), active: true }];
+  return [{ blockId, address: address.toString(), active: true, timestamp }];
 };
 
 export const extrinsicToContract = ({
@@ -245,6 +246,6 @@ export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]): Tok
     ["signerAddress", "contractAddress"]
   );
 
-export const tokenHolderToAccount = ({signer, blockId}: TokenHolder): AccountHead[] => [
-  {active: true, address: signer, blockId}
+export const tokenHolderToAccount = ({signer, blockId, timestamp}: TokenHolder): AccountHead[] => [
+  {active: true, address: signer, blockId, timestamp}
 ];
