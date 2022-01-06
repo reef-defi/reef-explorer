@@ -17,7 +17,7 @@ export interface BlockBody extends BlockHash {
   signedBlock: SignedBlock;
   extendedHeader?: HeaderExtended;
   events: Vec<Event>;
-  timestamp: number;
+  timestamp: string;
 }
 
 
@@ -45,6 +45,7 @@ export interface ExtrinsicHead {
   extrinsic: Extrinsic;
   events: Event[];
   status: ExtrinsicStatus;
+  timestamp: string;
 }
 
 export interface SignedExtrinsicData {
@@ -60,6 +61,7 @@ export interface ExtrinsicBody extends ExtrinsicHead {
 export interface EventHead {
   event: Event;
   blockId: number;
+  timestamp: string;
   extrinsicId: number;
   index: number;
 }
@@ -98,6 +100,8 @@ export interface Transfer {
 
   success: boolean;
   errorMessage: string;
+
+  timestamp: string;
 }
 
 export interface Contract {
@@ -111,12 +115,15 @@ export interface Contract {
 
   gasLimit: string;
   storageLimit: string;
+
+  timestamp: string;
 }
 
 export interface EVMCall {
   data: string;
   account: string;
   gasLimit: string;
+  timestamp: string;
   extrinsicId: number;
   storageLimit: string;
   contractAddress: string;
@@ -131,9 +138,10 @@ export interface TokenHolderHead {
 
 export interface TokenHolder extends TokenHolderHead {
   type: "Contract" | "Account",
+  signer: string;
   balance: string;
   decimals: number;
-  signer: string;
+  timestamp: string;
 }
 
 export interface ERC20Token {
@@ -161,6 +169,7 @@ export interface BytecodeLog {
 
 export interface BytecodeLogWithBlockId extends BytecodeLog {
   blockId: number;
+  timestamp: string;
 }
 
 export interface EvmLog extends BytecodeLog {
@@ -168,6 +177,7 @@ export interface EvmLog extends BytecodeLog {
   name: string;
   blockId: number;
   decimals: number;
+  timestamp: string;
 }
 
 export interface EvmLogWithDecodedEvent extends EvmLog {
@@ -178,6 +188,7 @@ export interface TokenBalanceHead {
   abi: ABI;
   blockId: number;
   decimals: number;
+  timestamp: string;
   signerAddress: string;
   contractAddress: string;
 }
