@@ -3,3 +3,4 @@ node_modules
 api/dist/
 crawler/dist/
 crawler/reef-explorer.log
+/.idea/
