@@ -77,22 +77,22 @@
                 </nuxt-link>
               </Cell>
             </Row>
-            <!--TODO Ziga - can .owner be empty?-->
+
             <Row>
               <Cell>{{ $t('details.contract.signer') }}</Cell>
               <Cell>
                 <ReefIdenticon
-                  v-if="contract.owner"
-                  :key="contract.owner"
+                  v-if="contract.signer"
+                  :key="contract.signer"
                   class="contract-details__account-identicon"
-                  :address="contract.owner"
+                  :address="contract.signer"
                   :size="20"
                 />
                 <nuxt-link
-                  v-if="contract.owner"
-                  :to="`/account/${contract.owner}`"
+                  v-if="contract.signer"
+                  :to="`/account/${contract.signer}`"
                 >
-                  {{ shortAddress(contract.owner) }}
+                  {{ shortAddress(contract.signer) }}
                 </nuxt-link>
               </Cell>
             </Row>
@@ -376,7 +376,7 @@ export default {
               bytecode
               bytecode_context
               bytecode_arguments
-              owner
+              signer
               extrinsic {
                 block_id
               }
