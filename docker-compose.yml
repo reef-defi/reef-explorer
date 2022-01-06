@@ -31,6 +31,7 @@ services:
       - './db/sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/06_evmEvent.sql'
       - './db/sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/07_transfer.sql'
       - './db/sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
+      - './db/sql/initialization/tokenHolder.sql:/docker-entrypoint-initdb.d/08_tokenHolder.sql'
       - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/09_chainInfo.sql'
     ports:
       - 5432:5432
