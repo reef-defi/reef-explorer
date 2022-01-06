@@ -65,7 +65,7 @@ ON CONFLICT (address) DO UPDATE SET
   voting_balance = EXCLUDED.voting_balance,
   reserved_balance = EXCLUDED.reserved_balance,
   available_balance = EXCLUDED.available_balance,
-  timestamp = EXCLUDED.timestmap,
+  timestamp = EXCLUDED.timestamp,
   nonce = EXCLUDED.nonce,
   evm_nonce = EXCLUDED.evm_nonce,
   identity = EXCLUDED.identity;

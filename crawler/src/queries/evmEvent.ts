@@ -44,12 +44,12 @@ export const insertContracts = async (contracts: Contract[]): Promise<void> => {
       ${contracts.map(contractToValues).join(",\n")}
     ON CONFLICT (address) DO UPDATE
       SET extrinsic_id = EXCLUDED.extrinsic_id,
-          bytecode = EXCLUDED.bytecode,
-          gas_limit = EXCLUDED.gas_limit,
-          timestamp = EXCLUDED.timestamp,
-          storage_limit = EXCLUDED.storage_limit;
-          bytecode_context = EXCLUDED.bytecode_context,
-          bytecode_arguments = EXCLUDED.bytecode_arguments,
+        bytecode = EXCLUDED.bytecode,
+        gas_limit = EXCLUDED.gas_limit,
+        timestamp = EXCLUDED.timestamp,
+        storage_limit = EXCLUDED.storage_limit,
+        bytecode_context = EXCLUDED.bytecode_context,
+        bytecode_arguments = EXCLUDED.bytecode_arguments;
   `);
 };
 

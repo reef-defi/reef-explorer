@@ -92,7 +92,7 @@ CREATE INDEX IF NOT EXISTS verification_request_filename ON verification_request
 
 -- Genisis contract insert
 INSERT INTO contract
-  (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit)
+  (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit, timestamp)
 VALUES
 -- REEF
   (
@@ -103,7 +103,8 @@ VALUES
     '',
     'a2646970667358221220ca5c764db385f7a72f31e6e1a0ed4e18a4de5062832e0e616ba8b7d30cc6398964736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- RUSD
   (
@@ -114,7 +115,8 @@ VALUES
     '',
     'a2646970667358221220a6949233ed4c6693d0c8c97f7d7a9f7ffaab104485faefa710afebe9ea7b166f64736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- StateRent
   (
@@ -125,7 +127,8 @@ VALUES
     '',
     'a26469706673582212208f9fcccb00b243a8a1ca97eba7bec39378123acbc541f72ad47c56ca7b6073e764736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- Oracle
   (
@@ -136,7 +139,8 @@ VALUES
     '',
     'a26469706673582212200ab4066d46955f90fc2882320523757ba3fbb9ae3cb2ba76fef520dc50c2552364736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- Schedule
   (
@@ -147,7 +151,8 @@ VALUES
     '',
     'a26469706673582212208cb1aaf45825063deccbd79372e77cc77abb5031b261cce27c89766e6fd7f2e164736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   ),
 -- DEX
   (
@@ -158,7 +163,8 @@ VALUES
     '',
     'a26469706673582212203320fbc23d712e9537ae08f7e2655ceecce971fb8d224e37c1aa527fa73b7c8264736f6c63430006000033',
     0,
-    0
+    0,
+    '2020-10-01 00:00:00'
   );
 
 INSERT INTO verified_contract 

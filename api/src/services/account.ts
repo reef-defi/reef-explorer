@@ -78,16 +78,17 @@ export const findUserContracts = async (address: string): Promise<Contract[]> =>
 
 
 const userTokenBalanceToValue = ({tokenAddress, address, evm_address, balance, decimals}: UserTokenBalance): string => 
-`('${tokenAddress.toLowerCase()}', '${address}', '${evm_address}', 'Account', ${balance}, ${decimals})`;
+`('${tokenAddress.toLowerCase()}', '${address}', '${evm_address}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }
   await queryDb(`
     INSERT INTO token_holder 
-      (token_address, signer, evm_address, type, balance, decimals)
+      (token_address, signer, evm_address, type, balance, decimals, timestamp)
     VALUES
       ${accountTokenBalances.map(userTokenBalanceToValue).join(",\n")}
-    ON CONFLICT (token_address, evm_address, signer) DO UPDATE SET
+    ON CONFLICT (token_address, evm_address) DO UPDATE SET
+      signer = EXCLUDED.signer,
       balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;
   `)
