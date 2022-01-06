@@ -2,9 +2,15 @@
   <div class="header__wrapper">
     <div class="header">
       <div class="header__content">
-        <nuxt-link to="/" class="header__logo">
-          <Logo />
-        </nuxt-link>
+        <div class="logo__wrapper">
+          <Hamburger
+            :value="mobileMenuOpen"
+            @input="$emit('toggle-mobile-menu', $event)"
+          />
+          <nuxt-link to="/" class="header__logo">
+            <Logo />
+          </nuxt-link>
+        </div>
 
         <div class="header__links">
           <nuxt-link to="/" exact>Explore</nuxt-link>
@@ -37,11 +43,6 @@
         </div>
 
         <ReefPrice />
-
-        <Hamburger
-          :value="mobileMenuOpen"
-          @input="$emit('toggle-mobile-menu', $event)"
-        />
       </div>
     </div>
   </div>
@@ -110,32 +111,38 @@ export default {
       align-items: center;
       height: 100%;
 
-      .header__logo {
+      .logo__wrapper {
         display: flex;
-        flex-flow: row nowrap;
-        justify-content: flex-start;
-        align-items: flex-end;
+        grid-gap: 1em;
 
-        svg {
-          height: 44px;
-        }
+        .header__logo {
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: flex-start;
+          align-items: center;
 
-        &::after {
-          content: 'Scan';
-          text-transform: uppercase;
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 1px;
-          transform: translate(-1px, -4px);
-          color: #a93185;
-          background: linear-gradient(225deg, #a93185, #5531a9);
-          opacity: 0.85;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
+          svg {
+            height: 44px;
+          }
 
-        &:hover {
-          text-decoration: none;
+          &::after {
+            content: 'Scan';
+            text-transform: uppercase;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transform: translate(4px, -4px);
+            color: #a93185;
+            background: linear-gradient(225deg, #a93185, #5531a9);
+            opacity: 0.85;
+            //noinspection CssInvalidPropertyValue
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+
+          &:hover {
+            text-decoration: none;
+          }
         }
       }
 
@@ -170,6 +177,7 @@ export default {
           &:active {
             color: #a93185;
             background: linear-gradient(225deg, #a93185, #5531a9) !important;
+            //noinspection CssInvalidPropertyValue
             background-clip: text !important;
             -webkit-text-fill-color: transparent;
           }
@@ -227,6 +235,7 @@ export default {
           .nuxt-link-active {
             color: #a93185;
             background: linear-gradient(225deg, #a93185, #5531a9) !important;
+            //noinspection CssInvalidPropertyValue
             background-clip: text !important;
             -webkit-text-fill-color: transparent;
           }

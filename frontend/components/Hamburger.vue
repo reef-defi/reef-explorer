@@ -46,17 +46,15 @@ export default {
 
   div:nth-child(1) {
     margin-top: 0;
-    width: 70%;
   }
 
   div:nth-child(2) {
-    margin-top: 3px;
+    margin-top: 5px;
   }
 
   div:nth-child(3) {
-    margin-top: 3px;
+    margin-top: 5px;
     float: right;
-    width: 70%;
   }
 
   &:hover {
