@@ -191,9 +191,10 @@ const extractTransferAccounts = ({
   fromAddress,
   toAddress,
   blockId,
+  timestamp
 }: Transfer): AccountHead[] => [
-  { blockId, address: fromAddress, active: true },
-  { blockId, address: toAddress, active: true },
+  { blockId, address: fromAddress, active: true, timestamp },
+  { blockId, address: toAddress, active: true, timestamp },
 ];
 
 const isEventStakingReward = ({ event: { event } }: EventHead): boolean =>

@@ -73,6 +73,7 @@ export interface AccountHead {
   address: string;
   blockId: number;
   active: boolean;
+  timestamp: string;
 }
 export interface AccountBody extends AccountHead {
   identity: string;

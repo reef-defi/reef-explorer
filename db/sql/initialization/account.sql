@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS account (
   nonce BIGINT NOT NULL,
   evm_nonce BIGINT NOT NULL,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (address),
   CONSTRAINT fk_block
