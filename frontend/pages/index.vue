@@ -3,7 +3,6 @@
     <section>
       <Search
         v-model="search"
-        info-msg="Reef indexing system is getting major upgrade. Some data on this site is currently not updated."
         label="Reef Blockchain Explorer"
         placeholder="Search by block number, block hash, extrinsic hash or account address"
         show-stats

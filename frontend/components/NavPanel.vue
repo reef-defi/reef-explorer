@@ -1,5 +1,10 @@
 <template>
-  <Panel class="nav-panel" :items="items" />
+  <Panel
+    class="nav-panel"
+    :items="items"
+    :more-open="mobileMenuOpen"
+    @toggle-more="$emit('toggle-mobile-menu', $event)"
+  />
 </template>
 
 <script>
@@ -7,6 +12,9 @@ import Panel from '@/components/Panel'
 
 export default {
   components: { Panel },
+  props: {
+    mobileMenuOpen: { type: Boolean, default: false },
+  },
   computed: {
     items() {
       const items = []

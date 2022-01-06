@@ -2,8 +2,14 @@
   <!-- Filter -->
   <div>
     <b-row class="mb-4 search-section">
-      <div v-if="!!infoMsg" class="info-message container">{{ infoMsg }}</div>
-      <div class="container top-margin">
+      <div class="search-section__alert container">
+        <div class="search-section__alert-message">
+          Reef indexing system is getting major upgrade. Some data on this site
+          is currently not updated.
+        </div>
+      </div>
+
+      <div class="container">
         <div v-if="label || $slots.label" class="search-section__label-section">
           <label v-if="label" class="search-section__label" v-html="label" />
           <slot name="label" />
@@ -36,7 +42,7 @@ export default {
     prop: 'value',
   },
   props: {
-    value: { default: '' },
+    value: { type: String, default: '' },
     label: { type: String, default: '' },
     infoMsg: { type: String, default: '' },
     placeholder: { type: String, default: '' },
@@ -51,17 +57,23 @@ export default {
   background: linear-gradient(130deg, #a51863, #3c127b);
   margin: 0 !important;
 
-  .info-message {
-    text-align: center;
-    color: #efa3d2;
-    background: rgba(104, 28, 255, 0.55);
-    border-radius: 1em;
-    margin-top: 1em;
-    padding-top: 0.1em;
-  }
+  .search-section__alert {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 0 35px 0;
 
-  .top-margin {
-    padding: 70px 0 0 0;
+    .search-section__alert-message {
+      text-align: center;
+      border-radius: 99px;
+      background: lighten(#a51863, 5%);
+      padding: 9px 17px;
+      color: white;
+      font-size: 0.875rem;
+      line-height: 1.35;
+    }
   }
 
   .search-section__label-section {
@@ -109,7 +121,12 @@ export default {
   }
 
   @media only screen and (max-width: 576px) {
-    padding: 35px 10px 5px 10px;
+    padding: 0 5px 5px 5px;
+
+    .search-section__alert {
+      padding-left: 15px;
+      padding-right: 15px;
+    }
 
     .search-section__label-section {
       flex-flow: column nowrap;

@@ -37,6 +37,11 @@
         </div>
 
         <ReefPrice />
+
+        <Hamburger
+          :value="mobileMenuOpen"
+          @input="$emit('toggle-mobile-menu', $event)"
+        />
       </div>
     </div>
   </div>
@@ -44,6 +49,7 @@
 
 <script>
 import Logo from '@/assets/Logo'
+import Hamburger from '@/components/Hamburger'
 import ReefPrice from '@/components/ReefPrice'
 import { network } from '@/frontend.config.js'
 
@@ -51,10 +57,15 @@ export default {
   components: {
     Logo,
     ReefPrice,
+    Hamburger,
+  },
+  props: {
+    mobileMenuOpen: { type: Boolean, default: false },
   },
   data() {
     return {
       network,
+      test: false,
     }
   },
   created() {
@@ -292,13 +303,17 @@ export default {
   @media only screen and (max-width: 576px) {
     .header {
       .header__content {
-        padding: 0 25px;
+        padding: 0 20px;
         max-width: 100%;
 
         .header__logo {
           svg {
             height: 40px;
           }
+        }
+
+        .reef-price {
+          margin-left: auto;
         }
       }
     }
