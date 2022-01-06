@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS extrinsic (
   signed_data JSON,
   inherent_data JSON,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_block

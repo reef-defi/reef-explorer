@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS event (
   method TEXT NOT NULL,
   data JSON NOT NULL,
 
-  timestamp timestamp default current_timestamp,
+  timestamp timestamptz NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_block
