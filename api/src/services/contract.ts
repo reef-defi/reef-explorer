@@ -150,4 +150,4 @@ interface TokenBalace {
 }
 
 export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => 
-  queryDb<TokenBalace>(`SELECT balance, decimals FROM account_token_balance WHERE token_address='${contractAddress}' AND signer='${accountAddress}';`);
+  queryDb<TokenBalace>(`SELECT balance, decimals FROM token_holder WHERE token_address='${contractAddress}' AND signer='${accountAddress}';`);
