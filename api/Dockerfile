@@ -1,10 +1,11 @@
 FROM node:fermium
 
-WORKDIR /usr/app/api
+WORKDIR /usr/app
 
-COPY . .
+ADD package.json yarn.lock /usr/app/
 
 RUN yarn 
 
 EXPOSE 8000
-CMD ["yarn", "start"]
+
+CMD ["yarn", "dev"]

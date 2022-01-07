@@ -1,11 +1,9 @@
 FROM node:fermium
 
-WORKDIR /usr/app/crawler
+WORKDIR /usr/app
 
-COPY package.json /usr/app/crawler/
+ADD package.json yarn.lock /usr/app/
 
 RUN yarn
 
-COPY . /usr/app/crawler/
-
-CMD ["yarn", "prod"]
+CMD ["yarn", "dev"]
