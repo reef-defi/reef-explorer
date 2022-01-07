@@ -1,9 +1,9 @@
-import { Provider } from "@reef-defi/evm-provider";
-import { WsProvider } from "@polkadot/api";
-import { Pool } from "pg";
-import { max, wait } from "./utils";
-import { APP_CONFIG } from "../config";
-import { logger } from "./logger";
+import { Provider } from '@reef-defi/evm-provider';
+import { WsProvider } from '@polkadot/api';
+import { Pool } from 'pg';
+import { max, wait } from './utils';
+import APP_CONFIG from '../config';
+import logger from './logger';
 
 let selectedProvider = 0;
 let resolvingBlocksUntil = -1;
@@ -18,7 +18,7 @@ export const setResolvingBlocksTillId = (id: number) => {
 };
 
 export const nodeQuery = async <T>(
-  fun: (provider: Provider) => Promise<T>
+  fun: (provider: Provider) => Promise<T>,
 ): Promise<T> => {
   selectedProvider = (selectedProvider + 1) % nodeProviders.length;
   while (providersLastBlockId[selectedProvider] < resolvingBlocksUntil) {
@@ -44,50 +44,54 @@ export const syncNode = async (): Promise<void> => {
   }
 };
 
+const updateProviderLastBlock = (index: number, blockNumber: number): void => {
+  providersLastBlockId[index] = blockNumber;
+  lastBlockId = max(...providersLastBlockId);
+}
+
 const initializeNodeProvider = async (): Promise<void> => {
   if (APP_CONFIG.nodeUrls.length <= 0) {
-    throw new Error("Minimum number of providers is 1!");
+    throw new Error('Minimum number of providers is 1!');
   }
 
-  for (const url of APP_CONFIG.nodeUrls) {
+  APP_CONFIG.nodeUrls.forEach(async (url) => {
     const provider = new Provider({
       provider: new WsProvider(url),
     });
     await provider.api.isReadyOrError;
     nodeProviders.push(provider);
     providersLastBlockId.push(-1);
-  }
+  })
 
-  for (let index = 0; index < nodeProviders.length; index++) {
+  for (let index = 0; index < nodeProviders.length; index+=1) {
     nodeProviders[index].api.rpc.chain.subscribeNewHeads(async (header) => {
-      providersLastBlockId[index] = header.number.toNumber();
-      lastBlockId = max(...providersLastBlockId);
+      updateProviderLastBlock(index, header.number.toNumber());
     });
   }
 };
 
 export const getProvider = (): Provider => {
   if (nodeProviders.length === 0) {
-    throw new Error("Non provider ");
+    throw new Error('Non provider ');
   }
   return nodeProviders[0];
 };
 
 export const initializeProviders = async (): Promise<void> => {
-  logger.info("Connecting to node...");
+  logger.info('Connecting to node...');
   await initializeNodeProvider();
-  logger.info("... connected")
-  logger.info("Syncing node...");
+  logger.info('... connected');
+  logger.info('Syncing node...');
   await syncNode();
-  logger.info("Syncing complete");
+  logger.info('Syncing complete');
 };
 
 export const closeProviders = async (): Promise<void> => {
-  logger.info("Closing providers");
+  logger.info('Closing providers');
 
-  for (const provider of nodeProviders) {
+  nodeProviders.forEach(async (provider) => {
     await provider.api.disconnect();
-  }
+  });
   nodeProviders = [];
   providersLastBlockId = [];
 };
@@ -101,6 +105,6 @@ export const insert = async (statement: string): Promise<void> => {
   await dbProvider.query(statement);
 };
 
-export const query = async <Res,>(statement: string): Promise<Res[]> => dbProvider
+export const query = async <Res, >(statement: string): Promise<Res[]> => dbProvider
   .query<Res>(statement)
-  .then((res: any) => res.rows)
+  .then((res: any) => res.rows);

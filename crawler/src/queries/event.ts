@@ -1,5 +1,5 @@
-import { AccountBody, EventBody } from "../crawler/types";
-import { insert } from "../utils/connector";
+import { AccountBody, EventBody } from '../crawler/types';
+import { insert } from '../utils/connector';
 
 const toEventValue = ({
   id,
@@ -10,10 +10,10 @@ const toEventValue = ({
     event: { method, section, data },
     phase,
   },
-  timestamp
+  timestamp,
 }: EventBody): string => `
   (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(
-  phase
+  phase,
 )}', '${timestamp}')`;
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
@@ -22,7 +22,7 @@ export const insertEvents = async (events: EventBody[]): Promise<void> => {
 INSERT INTO event
   (id, block_id, extrinsic_id, index, section, method, data, phase, timestamp)
 VALUES
-  ${events.map(toEventValue).join(",\n")};
+  ${events.map(toEventValue).join(',\n')};
 `);
   }
 };
@@ -42,19 +42,19 @@ const accountToInsertValue = ({
   identity,
   nonce,
   evmNonce,
-  timestamp
+  timestamp,
 }: AccountBody): string => `
   ('${address}', '${evmAddress}', ${blockId}, ${active}, ${freeBalance}, ${lockedBalance}, ${availableBalance}, ${reservedBalance}, ${votingBalance}, ${vestedBalance}, '${identity}', ${nonce}, ${evmNonce}, '${timestamp}')`;
 
 export const insertAccounts = async (
-  accounts: AccountBody[]
+  accounts: AccountBody[],
 ): Promise<void> => {
   if (accounts.length > 0) {
     await insert(`
 INSERT INTO account
   (address, evm_address, block_id, active, free_balance, locked_balance, available_balance, reserved_balance, voting_balance, vested_balance, identity, nonce, evm_nonce, timestamp)
 VALUES
-  ${accounts.map(accountToInsertValue).join(",")}
+  ${accounts.map(accountToInsertValue).join(',')}
 ON CONFLICT (address) DO UPDATE SET
   active = EXCLUDED.active,
   block_id = EXCLUDED.block_id,
