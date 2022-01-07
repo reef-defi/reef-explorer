@@ -1,51 +1,46 @@
-import { SpRuntimeDispatchError } from "@polkadot/types/lookup";
-import { BigNumber } from "ethers";
+import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import { BigNumber } from 'ethers';
 import {
   Extrinsic,
   Event,
   ExtrinsicStatus,
   ExtrinsicBody,
   Transfer,
-} from "./types";
-import { getProvider } from "../utils/connector";
+} from './types';
+import { getProvider } from '../utils/connector';
 
-export const resolveSigner = (extrinsic: Extrinsic): string =>
-  extrinsic.signer?.toString() || "deleted";
+export const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
 const extractErrorMessage = (error: SpRuntimeDispatchError): string => {
   if (error.isModule) {
     const errorModule = error.asModule;
     const { docs, name, section } = errorModule.registry.findMetaError(errorModule);
     return `${section}.${name}: ${docs}`;
-  } else {
-    return error.toString();
   }
+  return error.toString();
 };
 
-export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus =>
-  extrinsicEvents.reduce(
-    (prev, { event }) => {
-      if (
-        prev.type === "unknown" &&
-        getProvider().api.events.system.ExtrinsicSuccess.is(event)
-      ) {
-        return { type: "success" };
-      } else if (getProvider().api.events.system.ExtrinsicFailed.is(event)) {
-        const [dispatchedError] = event.data;
-        return {
-          type: "error",
-          message: extractErrorMessage(dispatchedError),
-        };
-      } else {
-        return prev;
-      }
-    },
-    { type: "unknown" } as ExtrinsicStatus
-  );
+export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => extrinsicEvents.reduce(
+  (prev, { event }) => {
+    if (
+      prev.type === 'unknown'
+        && getProvider().api.events.system.ExtrinsicSuccess.is(event)
+    ) {
+      return { type: 'success' };
+    } if (getProvider().api.events.system.ExtrinsicFailed.is(event)) {
+      const [dispatchedError] = event.data;
+      return {
+        type: 'error',
+        message: extractErrorMessage(dispatchedError),
+      };
+    }
+    return prev;
+  },
+    { type: 'unknown' } as ExtrinsicStatus,
+);
 
-export const isExtrinsicTransfer = ({ extrinsic }: ExtrinsicBody): boolean =>
-  extrinsic.method.section === "balances" ||
-  extrinsic.method.section === "currencies";
+export const isExtrinsicTransfer = ({ extrinsic }: ExtrinsicBody): boolean => extrinsic.method.section === 'balances'
+  || extrinsic.method.section === 'currencies';
 
 export const extrinsicBodyToTransfer = ({
   id,
@@ -57,16 +52,15 @@ export const extrinsicBodyToTransfer = ({
 }: ExtrinsicBody): Transfer => {
   const args: any = extrinsic.args.map((arg) => arg.toJSON());
 
-  const toAddress = args[0]?.id || "deleted";
+  const toAddress = args[0]?.id || 'deleted';
   const fromAddress = resolveSigner(extrinsic);
 
-  const denom: string =
-    extrinsic.method.section === "currencies" ? args[1].token : "REEF";
+  const denom: string = extrinsic.method.section === 'currencies' ? args[1].token : 'REEF';
   const amount: string = BigNumber.from(
-    extrinsic.method.section === "currencies" ? args[2] : args[1]
+    extrinsic.method.section === 'currencies' ? args[2] : args[1],
   ).toString();
   const feeAmount = BigNumber.from(signedData!.fee.partialFee).toString();
-  const tokenAddress = "0x0000000000000000000000000000000001000000";
+  const tokenAddress = '0x0000000000000000000000000000000001000000';
 
   return {
     denom,
@@ -78,7 +72,7 @@ export const extrinsicBodyToTransfer = ({
     fromAddress,
     tokenAddress,
     extrinsicId: id,
-    success: status.type === "success",
-    errorMessage: status.type === "error" ? status.message : "",
+    success: status.type === 'success',
+    errorMessage: status.type === 'error' ? status.message : '',
   };
 };
