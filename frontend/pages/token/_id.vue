@@ -327,6 +327,7 @@ export default {
             this.contract = data.contract[0]
             this.contract.abi =
               data.contract[0].verified_contract &&
+              data.contract[0].verified_contract.compiled_data &&
               data.contract[0].verified_contract.compiled_data.flat
                 ? data.contract[0].verified_contract.compiled_data.flat()
                 : []
