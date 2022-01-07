@@ -35,23 +35,18 @@
               <Cell>Name</Cell>
               <Cell>Created at Block</Cell>
               <Cell align="center">Verified</Cell>
+              <Cell align="center">Type</Cell>
             </THead>
 
             <Row v-for="(item, index) in contracts" :key="index">
-              <Cell
-                v-if="!!item.verified_contract"
-                :link="{ url: `/token/${item.address}`, fill: false }"
-              >
+              <Cell :link="{ url: `/contract/${item.address}`, fill: false }">
                 <eth-identicon :address="item.address" :size="20" />
                 <span>{{ shortHash(item.address) }}</span>
               </Cell>
-              <Cell v-else :link="`/token/${item.address}`">{{
-                shortHash(item.address)
-              }}</Cell>
 
               <Cell
                 v-if="!!item.verified_contract"
-                :link="`/token/${item.address}`"
+                :link="`/contract/${item.address}`"
                 >{{ item.verified_contract.name }}</Cell
               >
               <Cell v-else />
@@ -72,6 +67,17 @@
                   class="text-success"
                 />
                 <font-awesome-icon v-else icon="times" class="text-danger" />
+              </Cell>
+              <Cell align="center">
+                <a
+                  v-if="
+                    !!item.verified_contract &&
+                    item.verified_contract.type === 'ERC20'
+                  "
+                  :href="`/token/${item.address}`"
+                  >Token</a
+                >
+                <span v-else></span>
               </Cell>
             </Row>
           </Table>

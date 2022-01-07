@@ -28,8 +28,7 @@
         </nuxt-link>
       </div>
     </div>
-    <!-- TODO Ziga
-<div class="card">
+    <div class="card">
       <div class="card-body">
         <h4 class="mb-3">Total extrinsics</h4>
         <nuxt-link
@@ -42,16 +41,16 @@
           </h6>
         </nuxt-link>
       </div>
-    </div>-->
-    <!--  TODO Ziga
-  <div class="card">
+    </div>
+
+    <div class="card">
       <div class="card-body">
         <h4 class="mb-3">Total events</h4>
         <nuxt-link v-b-tooltip.hover to="/events" title="Click to see events!">
           <h6 class="d-inline-block">{{ formatNumber(totalEvents) }}</h6>
         </nuxt-link>
       </div>
-    </div>-->
+    </div>
     <div class="card">
       <div class="card-body">
         <h4 class="mb-3">{{ $t('components.network.accounts') }}</h4>
@@ -66,8 +65,8 @@
         </nuxt-link>
       </div>
     </div>
-    <!--   TODO Ziga
- <div class="card">
+
+    <div class="card">
       <div class="card-body">
         <h4 class="mb-3">
           {{ $t('components.network.transfers') }}
@@ -97,6 +96,7 @@
         </nuxt-link>
       </div>
     </div>
+    <!--   TODO Ziga
     <div class="card">
       <div class="card-body">
         <h4 class="mb-3">
@@ -163,27 +163,62 @@ export default {
           this.lastFinalizedBlock = data.block[0].id
         },
       },
-      /* TODO Ziga
-      total: {
+      transfers: {
         query: gql`
-          subscription total {
-            total {
-              name
-              count
+          subscription transfers {
+            transfer_aggregate {
+              aggregate {
+                count
+              }
             }
           }
         `,
         result({ data }) {
-          this.totalExtrinsics =
-            data.total.find((row) => row.name === 'extrinsics').count || 0
-          this.totalTransfers =
-            data.total.find((row) => row.name === 'transfers').count || 0
-          this.totalEvents =
-            data.total.find((row) => row.name === 'events').count || 0
-          this.totalContracts =
-            data.total.find((row) => row.name === 'contracts').count || 0
+          this.totalTransfers = data.transfer_aggregate.aggregate.count
         },
-      }, */
+      },
+      extrinsic: {
+        query: gql`
+          subscription extrinsic {
+            extrinsic_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalExtrinsics = data.extrinsic_aggregate.aggregate.count
+        },
+      },
+      evemt: {
+        query: gql`
+          subscription event {
+            event_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalEvents = data.event_aggregate.aggregate.count
+        },
+      },
+      contract: {
+        query: gql`
+          subscription contract {
+            contract_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalContracts = data.contract_aggregate.aggregate.count
+        },
+      },
       accounts: {
         query: gql`
           subscription account_aggregate {

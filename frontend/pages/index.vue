@@ -9,11 +9,16 @@
         @keydown="doSearch"
       />
       <b-container class="main py-5 dashboard">
-        <LastBlocks />
-        <LastTransfers />
+        <div class="row">
+          <div class="col-md-6 mb-4"><LastBlocks /></div>
+          <div class="col-md-6 mb-4"><LastExtrinsics /></div>
+        </div>
+        <div class="row">
+          <div class="col"><LastTransfers /></div>
+        </div>
         <div class="row" style="margin-top: 50px">
           <div class="col-md-6 mb-4">
-            <LastExtrinsics />
+            <LastAccounts />
           </div>
           <div class="col-md-6 mb-4">
             <LastEvents />
@@ -31,9 +36,11 @@ import LastEvents from '@/components/LastEvents.vue'
 import Search from '@/components/Search.vue'
 import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
+import LastAccounts from '@/components/LastAccounts'
 
 export default {
   components: {
+    LastAccounts,
     LastBlocks,
     LastTransfers,
     LastExtrinsics,

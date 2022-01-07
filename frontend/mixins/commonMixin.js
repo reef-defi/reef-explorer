@@ -24,6 +24,9 @@ export default {
       )
     },
     shortHash(hash) {
+      if (!hash) {
+        return ''
+      }
       return `${hash.substr(0, 6)}…${hash.substr(hash.length - 4, 4)}`
     },
     formatNumber(number = '') {

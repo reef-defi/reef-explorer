@@ -392,9 +392,12 @@ export default {
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
-            this.contract.abi = data.contract[0].verified_contract
-              ? data.contract[0].verified_contract.compiled_data.flat()
-              : []
+            this.contract.abi =
+              data.contract[0].verified_contract &&
+              data.contract[0].verified_contract.compiled_data &&
+              data.contract[0].verified_contract.compiled_data.flat
+                ? data.contract[0].verified_contract.compiled_data.flat()
+                : []
             if (
               this.contract.bytecode_context &&
               !this.contract.bytecode_context.startsWith('0x')
