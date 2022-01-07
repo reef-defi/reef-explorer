@@ -109,4 +109,4 @@ export const insert = async (statement: string): Promise<void> => {
 
 export const query = async <Res, >(statement: string): Promise<Res[]> => dbProvider
   .query<Res>(statement)
-  .then((res: any) => res.rows);
+  .then((res) => res.rows);
