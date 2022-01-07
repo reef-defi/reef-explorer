@@ -287,7 +287,7 @@ export default {
           source: 'Verified Source',
           abi: 'ABI',
           transactions: 'Transactions',
-          execute: 'Execute',
+          // TODO add back- execute: 'Execute',
         }
       }
 
