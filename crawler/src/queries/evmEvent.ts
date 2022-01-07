@@ -75,7 +75,7 @@ const accountTokenBalanceToValue = ({
   evmAddress,
   type,
   timestamp,
-}: TokenHolder): string => `(${signer === 'null' ? signer : `\'${signer}\'`}, '${evmAddress.toLowerCase()}', '${type}', '${contractAddress.toLowerCase()}', ${balance}, ${decimals}, '${timestamp}')`;
+}: TokenHolder): string => `(${signer === 'null' ? signer : `'${signer}'`}, '${evmAddress.toLowerCase()}', '${type}', '${contractAddress.toLowerCase()}', ${balance}, ${decimals}, '${timestamp}')`;
 
 export const insertAccountTokenBalances = async (
   accountTokenBalances: TokenHolder[],

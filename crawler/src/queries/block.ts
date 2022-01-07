@@ -50,8 +50,8 @@ export const insertInitialBlock = async (
   data: InsertInitialBlock,
 ): Promise<void> => insertMultipleBlocks([data]);
 
-export const updateBlockFinalized = async (fromID: number, toID: number) => await query(
+export const updateBlockFinalized = async (fromID: number, toID: number) => query(
   `UPDATE block SET finalized = true WHERE id >= ${fromID} AND id < ${toID};`,
 );
 
-export const deleteUnfinishedBlocks = async () => await query('DELETE FROM block WHERE finalized = false;');
+export const deleteUnfinishedBlocks = async () => query('DELETE FROM block WHERE finalized = false;');

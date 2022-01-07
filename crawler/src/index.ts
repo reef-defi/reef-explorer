@@ -5,14 +5,15 @@ import processBlocks from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import {
   closeProviders,
+  getLastBlocId,
   initializeProviders,
-  lastBlockId,
 } from './utils/connector';
 import { min, wait } from './utils/utils';
 import logger from './utils/logger';
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // import * as Tracing from "@sentry/tracing";
 
+/* eslint "no-underscore-dangle": "off" */
 Sentry.init({
   dsn: 'https://b297f1e10e8040f693bbc66c9696f5d9@sentry.ilol.si/6', // TODO put this out! process.env.SENTRY_DSN
   tracesSampleRate: 1.0,
@@ -29,8 +30,8 @@ let currentBlockIndex = -1;
 console.warn = () => {};
 
 const processNextBlock = async () => {
-  while (currentBlockIndex < lastBlockId) {
-    const difference = min(lastBlockId - currentBlockIndex, BLOCKS_PER_STEP);
+  while (currentBlockIndex < getLastBlocId()) {
+    const difference = min(getLastBlocId() - currentBlockIndex, BLOCKS_PER_STEP);
     const from = currentBlockIndex + 1;
     const to = from + difference;
 
