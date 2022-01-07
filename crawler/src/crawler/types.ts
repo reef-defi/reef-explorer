@@ -13,15 +13,15 @@ export interface BlockHash {
   hash: BH;
 }
 
+export type Extrinsic = GenericExtrinsic<AnyTuple>;
+export type Event = FrameSystemEventRecord;
+
 export interface BlockBody extends BlockHash {
   signedBlock: SignedBlock;
   extendedHeader?: HeaderExtended;
   events: Vec<Event>;
   timestamp: string;
 }
-
-export type Extrinsic = GenericExtrinsic<AnyTuple>;
-export type Event = FrameSystemEventRecord;
 
 interface ExtrinsicUnknown {
   type: 'unknown';
@@ -144,6 +144,12 @@ export interface TokenHolder extends TokenHolderHead {
   timestamp: string;
 }
 
+export type ABI = JsonFragment[];
+
+export interface ABIS {
+  [name: string]: ABI;
+}
+
 export interface ERC20Token {
   name: string;
   address: string;
@@ -153,12 +159,6 @@ export interface ERC20Token {
     symbol: string;
     decimals: number;
   };
-}
-
-export type ABI = JsonFragment[];
-
-export interface ABIS {
-  [name: string]: ABI;
 }
 
 export interface BytecodeLog {

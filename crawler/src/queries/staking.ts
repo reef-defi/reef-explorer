@@ -14,7 +14,7 @@ const eventToStakingValue = (
   type: StakingType,
 ): string => `(${id}, '${data[0]}', ${data[1]}, '${type}', '${timestamp}')`;
 
-export const insertStaking = async (
+export default async (
   events: EventBody[],
   type: StakingType,
 ): Promise<void> => {

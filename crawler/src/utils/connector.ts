@@ -5,18 +5,20 @@ import { max, wait } from './utils';
 import APP_CONFIG from '../config';
 import logger from './logger';
 
+let lastBlockId = -1;
 let selectedProvider = 0;
 let resolvingBlocksUntil = -1;
 let nodeProviders: Provider[] = [];
 let providersLastBlockId: number[] = [];
 const dbProvider: Pool = new Pool({ ...APP_CONFIG.postgresConfig });
 
-export let lastBlockId = -1;
-
 export const setResolvingBlocksTillId = (id: number) => {
   resolvingBlocksUntil = id;
 };
 
+export const getLastBlocId = (): number => lastBlockId;
+
+/* eslint "no-unused-vars": "off" */
 export const nodeQuery = async <T>(
   fun: (provider: Provider) => Promise<T>,
 ): Promise<T> => {
@@ -29,8 +31,8 @@ export const nodeQuery = async <T>(
 };
 
 const areNodesSyncing = async () => {
-  for (const provider of nodeProviders) {
-    const node = await provider.api.rpc.system.health();
+  for (let index = 0; index < nodeProviders.length; index += 1) {
+    const node = await nodeProviders[index].api.rpc.system.health();
     if (node.isSyncing.eq(true)) {
       return true;
     }
@@ -47,7 +49,7 @@ export const syncNode = async (): Promise<void> => {
 const updateProviderLastBlock = (index: number, blockNumber: number): void => {
   providersLastBlockId[index] = blockNumber;
   lastBlockId = max(...providersLastBlockId);
-}
+};
 
 const initializeNodeProvider = async (): Promise<void> => {
   if (APP_CONFIG.nodeUrls.length <= 0) {
@@ -61,9 +63,9 @@ const initializeNodeProvider = async (): Promise<void> => {
     await provider.api.isReadyOrError;
     nodeProviders.push(provider);
     providersLastBlockId.push(-1);
-  })
+  });
 
-  for (let index = 0; index < nodeProviders.length; index+=1) {
+  for (let index = 0; index < nodeProviders.length; index += 1) {
     nodeProviders[index].api.rpc.chain.subscribeNewHeads(async (header) => {
       updateProviderLastBlock(index, header.number.toNumber());
     });

@@ -11,7 +11,7 @@ export interface InsertExtrinsic {
   section: string;
   signed: string;
   status: string;
-  error_message: string;
+  errorMessage: string;
   timestamp: string;
 }
 
@@ -30,7 +30,7 @@ const extrinsicToValue = ({
   method,
   section,
   status,
-  error_message,
+  errorMessage,
   signed,
   signedData,
   timestamp,
@@ -39,7 +39,7 @@ const extrinsicToValue = ({
   /'/g,
   "''",
 )}', '${method}', 
-  '${section}', '${signed}', '${status}', '${error_message}', 
+  '${section}', '${signed}', '${status}', '${errorMessage}', 
   ${signedData ? "'signed'" : "'unsigned'"}, ${
   signedData ? `'${JSON.stringify(signedData)}'` : 'null'
 }, '${timestamp}'
@@ -106,4 +106,4 @@ export const freeExtrinsicId = async () => nextFreeTableId('extrinsic');
 type EventId = number;
 type ExtrinsicId = number;
 
-export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => await Promise.all([freeEventId(), freeExtrinsicId()]);
+export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => Promise.all([freeEventId(), freeExtrinsicId()]);

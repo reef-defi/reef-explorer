@@ -54,7 +54,7 @@ import {
   insertEvmCalls,
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
-import { insertStaking } from '../queries/staking';
+import insertStaking from '../queries/staking';
 
 const blockHash = async (id: number): Promise<BlockHash> => {
   const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
@@ -153,7 +153,7 @@ const extrinsicToInsert = (
     signed: resolveSigner(extrinsic),
     args: JSON.stringify(args),
     docs: meta.docs.toLocaleString(),
-    error_message: status.type === 'error' ? status.message : '',
+    errorMessage: status.type === 'error' ? status.message : '',
   };
 };
 

@@ -72,10 +72,10 @@ export const extrinsicToContract = ({
   timestamp,
 }: ExtrinsicBody): Contract => {
   const { args } = extrinsic;
-  const event = events.find(
+  const contractEvent = events.find(
     ({ event }) => event.section === 'evm' && event.method === 'Created',
   )!;
-  const address = event.event.data[0].toString();
+  const address = contractEvent.event.data[0].toString();
   const reserveEvent = events.find((evn) => getProvider().api.events.balances.Reserved.is(evn.event))!;
   const signer = reserveEvent.event.data[0].toString();
   const bytecode = args[0].toString();
@@ -131,7 +131,7 @@ const getContractBalance = (
   abi: ABI,
 ) => nodeQuery(async (provider): Promise<string> => {
   const contract = new EthContract(contractAddress, abi, provider);
-  return await contract.balanceOf(address);
+  return contract.balanceOf(address);
 });
 
 const extractEvmLog = async (
