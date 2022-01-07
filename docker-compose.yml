@@ -69,6 +69,9 @@ services:
     image: crawler
     build:
       context: ./crawler
+    volumes:
+      - /usr/app/node_modules
+      - ./crawler:/usr/app/
     restart: always
     environment:
       - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
@@ -91,6 +94,9 @@ services:
     image: api
     build:
       context: ./api
+    volumes:
+      - /usr/app/node_modules
+      - ./api:/usr/app/
     restart: always
     environment:
       - PORT=${API_PORT} #8000
