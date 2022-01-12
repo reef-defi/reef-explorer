@@ -70,7 +70,7 @@ services:
     build:
       context: ./crawler
     volumes:
-      - /usr/app/node_modules
+      - crawler-modules:/usr/app/node_modules
       - ./crawler:/usr/app/
     restart: always
     environment:
@@ -95,7 +95,7 @@ services:
     build:
       context: ./api
     volumes:
-      - /usr/app/node_modules
+      - api-modules:/usr/app/node_modules
       - ./api:/usr/app/
     restart: always
     environment:
@@ -119,7 +119,7 @@ services:
     build: ./frontend
     image: frontend
     volumes:
-      - /usr/app/node_modules
+      - frontend-modules:/usr/app/node_modules
       - ./frontend:/usr/app/
     ports:
       - ${FE_PORT}:${FE_PORT}
@@ -131,6 +131,9 @@ services:
 volumes:
   db-data: {}
   substrate-data: {}
+  crawler-modules: {}
+  api-modules: {}
+  frontend-modules: {}
 
 networks:
   reefscan:

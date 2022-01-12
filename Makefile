@@ -12,5 +12,6 @@ up:
 down:
 	docker-compose -p reef-explorer-$(env) down
 
+VOLUMES = db-data crawler-modules api-modules frontend-modules
 purge:
-	docker volume rm reef-explorer-$(env)_substrate-data && docker volume rm reef-explorer-$(env)_db-data
+	$(foreach volume,$(VOLUMES),docker volume rm reef-explorer-$(env)_$(volume);)
