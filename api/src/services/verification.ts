@@ -104,7 +104,7 @@ const updateUserBalances = async (abi: ABI, address: string, decimals: number): 
   const users = await getAllUsersWithEvmAddress();
   const contract = new Contract(address, abi, getProvider());
   const balances = await Promise.all(
-    users.map(async ({ evmAddress }): Promise<string> => contract.balanceOf(evmAddress)),
+    users.map(async ({ evmaddress }): Promise<string> => contract.balanceOf(evmaddress)),
   );
   const accountBalances: UserTokenBalance[] = users.map((user, index) => ({
     ...user, decimals, balance: balances[index], tokenAddress: address,
