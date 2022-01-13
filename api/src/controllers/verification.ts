@@ -1,8 +1,10 @@
-import { Response } from "express";
-import { authenticationToken } from "../services/utils";
-import { contractVerificationInsert, contractVerificationStatus, findVeririedContract, verify } from "../services/verification";
-import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from "../utils/types";
-import { ensureObjectKeys, errorStatus, ensure } from "../utils/utils";
+import { Response } from 'express';
+import { authenticationToken } from '../services/utils';
+import {
+  contractVerificationInsert, contractVerificationStatus, findVeririedContract, verify,
+} from '../services/verification';
+import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from '../utils/types';
+import { ensureObjectKeys, errorStatus, ensure } from '../utils/utils';
 
 interface ContractVerificationID {
   id: string;
@@ -10,30 +12,34 @@ interface ContractVerificationID {
 
 export const submitVerification = async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", "arguments", "address", "target"]);
+    ensureObjectKeys(req.body, ['address', 'name', 'runs', 'filename', 'source', 'compilerVersion', 'optimization', 'arguments', 'address', 'target']);
     await verify(req.body);
-    res.send("Verified");
+    res.send('Verified');
   } catch (err) {
     console.log(err);
     if (err.status === 404) {
-      await contractVerificationInsert({...req.body, success: false, optimization: req.body.optimization === "true", args: req.body.arguments, errorMessage: err.message})
+      await contractVerificationInsert({
+        ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
+      });
     }
-    res.status(errorStatus(err)).send({message: err.message});
+    res.status(errorStatus(err)).send({ message: err.message });
   }
 };
 
 export const formVerification = async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
   try {
-    ensureObjectKeys(req.body, ["address", "name", "runs", "filename", "source", "compilerVersion", "optimization", 'token', "arguments", "address", "target"]);
-    
+    ensureObjectKeys(req.body, ['address', 'name', 'runs', 'filename', 'source', 'compilerVersion', 'optimization', 'token', 'arguments', 'address', 'target']);
+
     const isAuthenticated = await authenticationToken(req.body.token);
-    ensure(isAuthenticated, "Google Token Authentication failed!", 404);
-    
+    ensure(isAuthenticated, 'Google Token Authentication failed!', 404);
+
     await verify(req.body);
-    res.send("Verified");
+    res.send('Verified');
   } catch (err) {
     if (err.status === 404) {
-      await contractVerificationInsert({...req.body, success: false, optimization: req.body.optimization === "true", args: req.body.arguments, errorMessage: err.message})
+      await contractVerificationInsert({
+        ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
+      });
     }
     res.status(errorStatus(err)).send(err.message);
   }
@@ -41,7 +47,7 @@ export const formVerification = async (req: AppRequest<ManualContractVerificatio
 
 export const verificationStatus = async (req: AppRequest<ContractVerificationID>, res: Response) => {
   try {
-    ensure(!!req.body.id, "Parameter id is missing");
+    ensure(!!req.body.id, 'Parameter id is missing');
     const status = await contractVerificationStatus(req.body.id);
     res.send(status);
   } catch (err) {
@@ -51,11 +57,11 @@ export const verificationStatus = async (req: AppRequest<ContractVerificationID>
 
 export const getVerifiedContract = async (req: AppRequest<{}>, res: Response) => {
   try {
-    ensure(!!req.params.address, "Url paramter address is missing");
+    ensure(!!req.params.address, 'Url paramter address is missing');
     const contracts = await findVeririedContract(req.params.address.toLowerCase());
     ensure(contracts.length > 0, 'Contract does not exist');
     res.send(contracts[0]);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
-}
+};

@@ -1,6 +1,6 @@
-import { query, queryDb } from "../utils/connector";
-import { PoolDB, Pool, Target } from "../utils/types";
-import { ensure } from "../utils/utils";
+import { query, queryDb } from '../utils/connector';
+import { PoolDB, Pool, Target } from '../utils/types';
+import { ensure } from '../utils/utils';
 
 interface TokenInfoDefault {
   name: string;
@@ -18,12 +18,6 @@ interface TokenInfo extends TokenInfoDefault {
   compilerData: string;
 }
 
-interface TokenInfoDB extends TokenInfoDefault {
-  compiler_data: string;
-  compiler_version: string;
-}
-
-
 interface StakingRewardDB {
   data: string;
   phase: string;
@@ -34,7 +28,7 @@ interface StakingRewardDB {
   block_number: number;
 }
 
-const FIND_TOKEN_INFO = `SELECT name, owner, verified, bytecode, compiler_data, source, compiler_version, optimization, runs, target
+const FIND_TOKEN_INFO = `SELECT name, owner, verified, bytecode, compiler_data as compilerData, source, compiler_version as compilerVersion, optimization, runs, target
 FROM verified_contract
 WHERE address = $1`;
 
@@ -60,36 +54,28 @@ const FIND_STAKING_REWARDS = `SELECT
 FROM event
 WHERE section = 'staking' AND method = 'Reward'`;
 
-
-const toTokenInfo = ({compiler_data, compiler_version, verified, bytecode, owner, name, runs, target, source, optimization}: TokenInfoDB): TokenInfo => ({
-  name, runs, target, owner, source, optimization, verified, bytecode,
-  compilerData: compiler_data,
-  compilerVersion: compiler_version,
-});
-
-export const findTokenInfo = async (address: string): Promise<TokenInfo[]> => {
-  const results = await query<TokenInfoDB>(
+export const findTokenInfo = async (address: string): Promise<TokenInfo> => {
+  const results = await query<TokenInfo>(
     FIND_TOKEN_INFO,
-    [address]
+    [address],
   );
   ensure(results.length > 0, `Contract with address: ${address}, does not exist`);
-  return results.map(toTokenInfo);
-}
+  return results[0];
+};
 
-export const findStakingRewards = async (): Promise<StakingRewardDB[]> => 
-  query<StakingRewardDB>(FIND_STAKING_REWARDS, []);
-
+export const findStakingRewards = async (): Promise<StakingRewardDB[]> => query<StakingRewardDB>(FIND_STAKING_REWARDS, []);
 
 export const findPoolQuery = async (tokenAddress1: string, tokenAddress2: string): Promise<Pool> => {
   const pools = await query<PoolDB>(FIND_POOL, [tokenAddress1, tokenAddress2]);
   ensure(pools.length > 0, 'Pool does not exist', 404);
 
-  return {...pools[0],
+  return {
+    ...pools[0],
     totalSupply: pools[0].total_supply,
     minimumLiquidity: pools[0].minimum_liquidity,
-    userPoolBalance: "0",
-  }
-}
+    userPoolBalance: '0',
+  };
+};
 
 interface FindContractDB {
   address: string;
@@ -98,7 +84,7 @@ interface FindContractDB {
 
 export const findContractDB = async (address: string) => query<FindContractDB>(
   'SELECT address, bytecode FROM contract WHERE address = $1',
-  [address]
+  [address],
 );
 
 interface VerifiedContractBase {
@@ -113,41 +99,41 @@ interface ERC20Token extends VerifiedContractBase {
 }
 
 interface GetERC20 extends VerifiedContractBase {
-  contract_data: string;
+  contractData: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
 }
 
 export const findERC20Token = async (address: string): Promise<ERC20Token> => {
-  const res = await queryDb<GetERC20>(`SELECT contract_data, name, address FROM verified_contract WHERE type='ERC20' AND address='${address}';`);
+  const res = await queryDb<GetERC20>(`SELECT contract_data as contractData, name, address FROM verified_contract WHERE type='ERC20' AND address='${address}';`);
   ensure(res.length > 0, 'Token does not exist');
-  const data = JSON.parse(res[0].contract_data);
+  const data = res[0].contractData;
   return {
     name: res[0].name,
     address: res[0].address,
-    decimals: data["decimals"],
-    tokenName: data["name"],
-    tokenSymbol: data["symbol"],
-  }
-}
+    decimals: data.decimals,
+    tokenName: data.name,
+    tokenSymbol: data.symbol,
+  };
+};
 
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => {
-  const res = await queryDb<GetERC20>("SELECT address, name, contract_data FROM verified_contract WHERE type='ERC20';");
+  const res = await queryDb<GetERC20>("SELECT address, name, contract_data as contractData FROM verified_contract WHERE type='ERC20';");
   return res
-  .map(({address, name, contract_data}) => {
-    const data = JSON.parse(contract_data);
-    return {
+    .map(({ address, name, contractData }) => ({
       name,
       address,
-      decimals: data["decimals"],
-      tokenName: data["name"],
-      tokenSymbol: data['symbol'],
-    };
-  });
-}
+      decimals: contractData.decimals,
+      tokenName: contractData.name,
+      tokenSymbol: contractData.symbol,
+    }));
+};
 
 interface TokenBalace {
   balance: string;
-  decimals: string; 
+  decimals: string;
 }
 
-export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => 
-  queryDb<TokenBalace>(`SELECT balance, decimals FROM token_holder WHERE token_address='${contractAddress}' AND signer='${accountAddress}';`);
+export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => queryDb<TokenBalace>(`SELECT balance, decimals FROM token_holder WHERE token_address='${contractAddress}' AND signer='${accountAddress}';`);
