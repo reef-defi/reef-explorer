@@ -30,8 +30,8 @@ interface Contract {
 export const findUserContracts = async (address: string): Promise<Contract[]> => queryDb<Contract>(`SELECT address FROM contract WHERE signer='${address}'`);
 
 const userTokenBalanceToValue = ({
-  tokenAddress, address, evmAddress, balance, decimals,
-}: UserTokenBalance): string => `('${tokenAddress.toLowerCase()}', '${address}', '${evmAddress}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
+  tokenAddress, address, evmaddress, balance, decimals,
+}: UserTokenBalance): string => `('${tokenAddress.toLowerCase()}', '${address}', '${evmaddress}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }

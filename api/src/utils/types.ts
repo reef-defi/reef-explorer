@@ -99,10 +99,10 @@ export interface ERC20Data {
 
 export interface User {
   address: string;
-  evmAddress: string;
-  freeBalance: string;
-  lockedBalance: string;
-  availableBalance: string;
+  evmaddress: string;
+  freebalance: string;
+  lockedbalance: string;
+  availablebalance: string;
 }
 export interface UserTokenBalance extends User {
   tokenAddress: string;
