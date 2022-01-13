@@ -5,13 +5,14 @@ const toNumber = (defaultValue: number, value?: string): number => {
   return parseInt(value, 10);
 };
 
+// new Array(100).map(() => "ws://0.0.0.0:9944")
 const defaultNodeUrls = [
-  "ws://0.0.0.0:9944",
+  'ws://0.0.0.0:9944',
   // "ws://0.0.0.0:9945",
   // "ws://0.0.0.0:9946",
   // "ws://0.0.0.0:9948",
   // "ws://0.0.0.0:9947",
-];//new Array(100).map(() => "ws://0.0.0.0:9944")
+];
 
 export default {
   nodeUrls: process.env.NODE_PROVIDER_URLS ? JSON.parse(process.env.NODE_PROVIDER_URLS) as string[] : defaultNodeUrls,
