@@ -118,7 +118,7 @@ export const findERC20Token = async (address: string): Promise<ERC20Token> => {
 
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => {
   const res = await queryDb<GetERC20>("SELECT address, name, contract_data as contractdata FROM verified_contract WHERE type='ERC20';");
-  console.log(res)
+  console.log(res);
   return res
     .map(({ address, name, contractdata }) => ({
       name,

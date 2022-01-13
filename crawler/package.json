@@ -8,6 +8,7 @@
   "scripts": {
     "prod": "tsc -p tsconfig.production.json && node --max-old-space-size=16384 ./dist/index.js",
     "dev": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/index.ts",
+    "test": "echo skip",
     "lint": "eslint --fix --ext .ts ./src/"
   },
   "devDependencies": {
