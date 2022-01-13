@@ -55,7 +55,7 @@ const initializeNodeProvider = async (): Promise<void> => {
   if (APP_CONFIG.nodeUrls.length <= 0) {
     throw new Error('Minimum number of providers is 1!');
   }
-
+  logger.info(`Initializing ${APP_CONFIG.nodeUrls.length} providers`);
   APP_CONFIG.nodeUrls.forEach(async (url) => {
     const provider = new Provider({
       provider: new WsProvider(url),
@@ -80,7 +80,7 @@ export const getProvider = (): Provider => {
 };
 
 export const initializeProviders = async (): Promise<void> => {
-  logger.info('Connecting to node...');
+  logger.info('Connecting to nodes...');
   await initializeNodeProvider();
   logger.info('... connected');
   logger.info('Syncing node...');
