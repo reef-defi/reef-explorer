@@ -66,7 +66,7 @@ Promise.resolve()
   })
   .then(processNextBlock)
   .catch((error) => {
-    console.error(error);
+    logger.error(error);
     Sentry.captureException(error);
     process.exit(-1);
   })
