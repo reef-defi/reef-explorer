@@ -56,14 +56,16 @@ const initializeNodeProvider = async (): Promise<void> => {
     throw new Error('Minimum number of providers is 1!');
   }
   logger.info(`Initializing ${APP_CONFIG.nodeUrls.length} providers`);
-  APP_CONFIG.nodeUrls.forEach(async (url) => {
+
+  for(let index = 0; index < APP_CONFIG.nodeUrls.length; index += 1) {
+    const url = APP_CONFIG.nodeUrls[index];
     const provider = new Provider({
       provider: new WsProvider(url),
     });
     await provider.api.isReadyOrError;
     nodeProviders.push(provider);
     providersLastBlockId.push(-1);
-  });
+  }
 
   for (let index = 0; index < nodeProviders.length; index += 1) {
     nodeProviders[index].api.rpc.chain.subscribeNewHeads(async (header) => {

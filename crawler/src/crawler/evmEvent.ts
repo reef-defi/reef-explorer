@@ -72,9 +72,7 @@ export const extrinsicToContract = ({
   timestamp,
 }: ExtrinsicBody): Contract => {
   const { args } = extrinsic;
-  const contractEvent = events.find(
-    ({ event }) => event.section === 'evm' && event.method === 'Created',
-  )!;
+  const contractEvent = findContractEvent(events)!;
   const address = contractEvent.event.data[0].toString();
   const reserveEvent = events.find((evn) => getProvider().api.events.balances.Reserved.is(evn.event))!;
   const signer = reserveEvent.event.data[0].toString();
