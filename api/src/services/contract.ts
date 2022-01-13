@@ -5,17 +5,14 @@ import { ensure } from '../utils/utils';
 interface TokenInfoDefault {
   name: string;
   runs: number;
-  owner: string;
   source: string;
   target: Target;
-  verified: string;
-  bytecode: string;
   optimization: boolean;
 }
 
 interface TokenInfo extends TokenInfoDefault {
-  compilerVersion: string;
-  compilerData: string;
+  compilerversion: string;
+  compileddata: string;
 }
 
 interface StakingRewardDB {
@@ -28,7 +25,7 @@ interface StakingRewardDB {
   block_number: number;
 }
 
-const FIND_TOKEN_INFO = `SELECT name, owner, verified, bytecode, compiler_data as compilerData, source, compiler_version as compilerVersion, optimization, runs, target
+const FIND_TOKEN_INFO = `SELECT name, compiled_data as compileddata, source, compiler_version as compilerversion, optimization, runs, target
 FROM verified_contract
 WHERE address = $1`;
 
@@ -99,7 +96,7 @@ interface ERC20Token extends VerifiedContractBase {
 }
 
 interface GetERC20 extends VerifiedContractBase {
-  contractData: {
+  contractdata: {
     name: string;
     symbol: string;
     decimals: number;
@@ -109,7 +106,7 @@ interface GetERC20 extends VerifiedContractBase {
 export const findERC20Token = async (address: string): Promise<ERC20Token> => {
   const res = await queryDb<GetERC20>(`SELECT contract_data as contractData, name, address FROM verified_contract WHERE type='ERC20' AND address='${address}';`);
   ensure(res.length > 0, 'Token does not exist');
-  const data = res[0].contractData;
+  const data = res[0].contractdata;
   return {
     name: res[0].name,
     address: res[0].address,
@@ -120,14 +117,15 @@ export const findERC20Token = async (address: string): Promise<ERC20Token> => {
 };
 
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => {
-  const res = await queryDb<GetERC20>("SELECT address, name, contract_data as contractData FROM verified_contract WHERE type='ERC20';");
+  const res = await queryDb<GetERC20>("SELECT address, name, contract_data as contractdata FROM verified_contract WHERE type='ERC20';");
+  console.log(res)
   return res
-    .map(({ address, name, contractData }) => ({
+    .map(({ address, name, contractdata }) => ({
       name,
       address,
-      decimals: contractData.decimals,
-      tokenName: contractData.name,
-      tokenSymbol: contractData.symbol,
+      decimals: contractdata.decimals,
+      tokenName: contractdata.name,
+      tokenSymbol: contractdata.symbol,
     }));
 };
 

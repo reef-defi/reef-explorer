@@ -24,8 +24,8 @@ export const accountTokens = async (req: AppRequest<AccountAddress>, res: Respon
 export const accountOwnedContracts = async (req: Request, res: Response) => {
   try {
     ensure(!!req.params.address, 'Url paramter account address is missing');
-    const tokens = await findUserContracts(req.params.address);
-    res.send({ tokens: [...tokens] });
+    const contracts = await findUserContracts(req.params.address);
+    res.send({ contracts: [...contracts] });
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }

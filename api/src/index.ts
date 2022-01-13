@@ -31,7 +31,7 @@ app.get('/api/price/reef', async (_, res: Response) => {
   }
 });
 
-app.get('/crawler/status', async (_, res: Response) => {
+app.get('/api/crawler/status', async (_, res: Response) => {
   try {
     const result = await getLastBlock();
     res.send({ ...result });
