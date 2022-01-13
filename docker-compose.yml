@@ -66,9 +66,11 @@ services:
       - reefscan
 
   crawler:
-    image: crawler
+    image: reef-explorer-crawler
     build:
-      context: ./crawler
+      context: .
+      args:
+        COMPONENT: crawler
     volumes:
       - crawler-modules:/usr/app/node_modules
       - ./crawler:/usr/app/
@@ -91,9 +93,11 @@ services:
       - reefscan
 
   api:
-    image: api
+    image: reef-explorer-api
     build:
-      context: ./api
+      context: .
+      args: 
+        COMPONENT: api
     volumes:
       - api-modules:/usr/app/node_modules
       - ./api:/usr/app/
@@ -116,13 +120,18 @@ services:
       - reefscan
 
   frontend:
-    build: ./frontend
-    image: frontend
+    build: 
+      context: .
+      args:
+        COMPONENT: frontend
+    image: reef-explorer-frontend
     volumes:
       - frontend-modules:/usr/app/node_modules
       - ./frontend:/usr/app/
     ports:
       - ${FE_PORT}:${FE_PORT}
+    environment:
+      - HOST=0.0.0.0
     networks:
       - reefscan
 

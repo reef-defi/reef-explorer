@@ -18,6 +18,6 @@
     "url": "https://github.com/reef-defi/reef-explorer/issues"
   },
   "homepage": "https://github.com/reef-defi/reef-explorer#readme",
-  "workspaces": ["api","backend", "db"],
+  "workspaces": ["api","backend", "frontend"],
   "scripts": {}
  }
