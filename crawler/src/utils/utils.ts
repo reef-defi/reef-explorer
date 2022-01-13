@@ -80,7 +80,7 @@ export const resolvePromisesAsChunks = async <T>(
   const chunks: T[] = [];
   let currentChunks: Promise<T>[] = [];
 
-  for(let index = 0; index < requests.length; index += 1) {
+  for (let index = 0; index < requests.length; index += 1) {
     currentChunks.push(requests[index]);
 
     if (currentChunks.length === APP_CONFIG.chunkSize) {
@@ -88,7 +88,7 @@ export const resolvePromisesAsChunks = async <T>(
       chunks.push(...resolvedChunk);
       currentChunks = [];
     }
-  };
+  }
 
   const resolvedChunk = await Promise.all(currentChunks);
   chunks.push(...resolvedChunk);

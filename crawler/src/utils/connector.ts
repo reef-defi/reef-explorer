@@ -57,7 +57,7 @@ const initializeNodeProvider = async (): Promise<void> => {
   }
   logger.info(`Initializing ${APP_CONFIG.nodeUrls.length} providers`);
 
-  for(let index = 0; index < APP_CONFIG.nodeUrls.length; index += 1) {
+  for (let index = 0; index < APP_CONFIG.nodeUrls.length; index += 1) {
     const url = APP_CONFIG.nodeUrls[index];
     const provider = new Provider({
       provider: new WsProvider(url),
