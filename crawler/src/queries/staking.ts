@@ -1,7 +1,7 @@
-import { EventBody } from "../crawler/types";
-import { query } from "../utils/connector";
+import { EventBody } from '../crawler/types';
+import { query } from '../utils/connector';
 
-type StakingType = "Slash" | "Reward";
+type StakingType = 'Slash' | 'Reward';
 
 const eventToStakingValue = (
   {
@@ -9,14 +9,14 @@ const eventToStakingValue = (
     event: {
       event: { data },
     },
-    timestamp
+    timestamp,
   }: EventBody,
-  type: StakingType
+  type: StakingType,
 ): string => `(${id}, '${data[0]}', ${data[1]}, '${type}', '${timestamp}')`;
 
-export const insertStaking = async (
+export default async (
   events: EventBody[],
-  type: StakingType
+  type: StakingType,
 ): Promise<void> => {
   if (events.length === 0) {
     return;
@@ -25,6 +25,6 @@ export const insertStaking = async (
     INSERT INTO staking
       (event_id, signer, amount, type, timestamp)
     VALUES
-      ${events.map((e) => eventToStakingValue(e, type)).join(",\n\t")};
+      ${events.map((e) => eventToStakingValue(e, type)).join(',\n\t')};
   `);
 };

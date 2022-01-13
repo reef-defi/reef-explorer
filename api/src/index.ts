@@ -1,11 +1,11 @@
-import { APP_CONFIGURATION } from './utils/config';
-import express, { Response } from "express";
+import express, { Response } from 'express';
 import morgan from 'morgan';
+import config from './utils/config';
 import accountRouter from './routes/account';
-import contractRouter from "./routes/contract";
-import verificationRouter from "./routes/verification";
-import { getLastBlock, getReefPrice } from "./services/utils";
-import { errorStatus } from "./utils/utils";
+import contractRouter from './routes/contract';
+import verificationRouter from './routes/verification';
+import { getLastBlock, getReefPrice } from './services/utils';
+import { errorStatus } from './utils/utils';
 import { getProvider } from './utils/connector';
 
 const cors = require('cors');
@@ -13,7 +13,7 @@ const cors = require('cors');
 const app = express();
 
 // Parse incoming requests with JSON payloads
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 app.use(morgan('dev'));
@@ -25,21 +25,20 @@ app.use('/api/verificator', verificationRouter);
 app.get('/api/price/reef', async (_, res: Response) => {
   try {
     const price = await getReefPrice();
-    res.send(price);    
+    res.send(price);
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }
 });
 
-app.get('/crawler/status', async (_, res: Response) => {
+app.get('/api/crawler/status', async (_, res: Response) => {
   try {
     const result = await getLastBlock();
-    res.send({...result});
+    res.send({ ...result });
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
-  } 
+  }
 });
-
 
 // TODO db testing
 // app.get('/api/test/erc20-contracts', async (_, res) => {
@@ -79,7 +78,7 @@ app.get('/crawler/status', async (_, res: Response) => {
 //   }
 // })
 
-app.listen(APP_CONFIGURATION.httpPort, async () => {
+app.listen(config.httpPort, async () => {
   await getProvider().api.isReadyOrError;
-  console.log(`Reef explorer API is running on port ${APP_CONFIGURATION.httpPort}.`);
+  console.log(`Reef explorer API is running on port ${config.httpPort}.`);
 });

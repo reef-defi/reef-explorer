@@ -1,5 +1,5 @@
-import { SignedExtrinsicData, Transfer } from "../crawler/types";
-import { insert, query } from "../utils/connector";
+import { SignedExtrinsicData, Transfer } from '../crawler/types';
+import { insert, query } from '../utils/connector';
 
 export interface InsertExtrinsic {
   blockId: number;
@@ -11,7 +11,7 @@ export interface InsertExtrinsic {
   section: string;
   signed: string;
   status: string;
-  error_message: string;
+  errorMessage: string;
   timestamp: string;
 }
 
@@ -30,38 +30,37 @@ const extrinsicToValue = ({
   method,
   section,
   status,
-  error_message,
+  errorMessage,
   signed,
   signedData,
-  timestamp
-}: InsertExtrinsicBody): string =>
-  `(
+  timestamp,
+}: InsertExtrinsicBody): string => `(
   ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(
-    /'/g,
-    "''"
-  )}', '${method}', 
-  '${section}', '${signed}', '${status}', '${error_message}', 
+  /'/g,
+  "''",
+)}', '${method}', 
+  '${section}', '${signed}', '${status}', '${errorMessage}', 
   ${signedData ? "'signed'" : "'unsigned'"}, ${
-    signedData ? `'${JSON.stringify(signedData)}'` : "null"
-  }, '${timestamp}'
+  signedData ? `'${JSON.stringify(signedData)}'` : 'null'
+}, '${timestamp}'
 )`;
 
 export const insertExtrinsics = async (
-  extrinsics: InsertExtrinsicBody[]
+  extrinsics: InsertExtrinsicBody[],
 ): Promise<void> => {
   if (extrinsics.length > 0) {
     await insert(`
 INSERT INTO extrinsic
   (id, block_id, index, hash, args, docs, method, section, signer, status, error_message, type, signed_data, timestamp)
 VALUES
-${extrinsics.map(extrinsicToValue).join(",")}
+${extrinsics.map(extrinsicToValue).join(',')}
 ON CONFLICT DO NOTHING;
 `);
   }
 };
 
 export const insertExtrinsic = async (
-  extrinsic: InsertExtrinsicBody
+  extrinsic: InsertExtrinsicBody,
 ): Promise<void> => insertExtrinsics([extrinsic]);
 
 const transferToValue = ({
@@ -75,11 +74,10 @@ const transferToValue = ({
   feeAmount,
   success,
   errorMessage,
-  timestamp
-}: Transfer): string =>
-  `(${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', '${tokenAddress}', ${
-    amount === "" ? "0" : amount
-  }, ${feeAmount === "" ? "0" : feeAmount}, '${success}', '${errorMessage}', '${timestamp}')`;
+  timestamp,
+}: Transfer): string => `(${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', '${tokenAddress}', ${
+  amount === '' ? '0' : amount
+}, ${feeAmount === '' ? '0' : feeAmount}, '${success}', '${errorMessage}', '${timestamp}')`;
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   if (transfers.length === 0) {
@@ -89,7 +87,7 @@ export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
     INSERT INTO transfer
       (block_id, extrinsic_id, denom, to_address, from_address, token_address, amount, fee_amount, success, error_message, timestamp)
     VALUES
-      ${transfers.map(transferToValue).join(",\n")}
+      ${transfers.map(transferToValue).join(',\n')}
   `);
 };
 
@@ -102,11 +100,10 @@ const nextFreeTableId = async (table: string): Promise<number> => {
   return result.length > 0 ? parseInt(result[0].id, 10) + 1 : 0;
 };
 
-export const freeEventId = async () => nextFreeTableId("event");
-export const freeExtrinsicId = async () => nextFreeTableId("extrinsic");
+export const freeEventId = async () => nextFreeTableId('event');
+export const freeExtrinsicId = async () => nextFreeTableId('extrinsic');
 
 type EventId = number;
 type ExtrinsicId = number;
 
-export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> =>
-  await Promise.all([freeEventId(), freeExtrinsicId()]);
+export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => Promise.all([freeEventId(), freeExtrinsicId()]);

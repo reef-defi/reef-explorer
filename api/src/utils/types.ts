@@ -1,37 +1,36 @@
-import { Request } from "express";
-import { Fragment, JsonFragment } from "@ethersproject/abi";
+import { Request } from 'express';
+import { Fragment, JsonFragment } from '@ethersproject/abi';
 
 export interface AppRequest <T> extends Request {
   body: T
-};
+}
 
 // Basic types
-export type Target = 
-  | "london"
-  | "berlin"
-  | "istanbul"
-  | "petersburg"
-  | "constantinople"
-  | "byzantium"
-  | "spuriousDragon"
-  | "homestead"
-  | "tangerineWhistle";
+export type Target =
+  | 'london'
+  | 'berlin'
+  | 'istanbul'
+  | 'petersburg'
+  | 'constantinople'
+  | 'byzantium'
+  | 'spuriousDragon'
+  | 'homestead'
+  | 'tangerineWhistle';
 
-export type License = 
-  | "none"
-  | "unlicense"
-  | "MIT"
-  | "GNU GPLv2"
-  | "GNU GPLv3"
-  | "GNU LGPLv2.1"
-  | "GNU LGPLv3"
-  | "BSD-2-Clause"
-  | "BSD-3-Clause"
-  | "MPL-2.0"
-  | "OSL-3.0"
-  | "Apache-2.0"
-  | "GNU AGPLv3";
-
+export type License =
+  | 'none'
+  | 'unlicense'
+  | 'MIT'
+  | 'GNU GPLv2'
+  | 'GNU GPLv3'
+  | 'GNU LGPLv2.1'
+  | 'GNU LGPLv3'
+  | 'BSD-2-Clause'
+  | 'BSD-3-Clause'
+  | 'MPL-2.0'
+  | 'OSL-3.0'
+  | 'Apache-2.0'
+  | 'GNU AGPLv3';
 
 export type ABIFragment = Fragment | JsonFragment;
 export type ABI = ReadonlyArray<ABIFragment>;
@@ -83,7 +82,7 @@ interface DefaultPool {
 export interface PoolDB extends DefaultPool {
   balance: string;
   total_supply: string;
-  minimum_liquidity: string;  // TODO change to liquidity!
+  minimum_liquidity: string; // TODO change to liquidity!
 }
 
 export interface Pool extends DefaultPool {
@@ -98,13 +97,12 @@ export interface ERC20Data {
   decimals: number;
 }
 
-
 export interface User {
   address: string;
-  evm_address: string;
-  free_balance: string;
-  locked_balance: string;
-  available_balance: string;
+  evmaddress: string;
+  freebalance: string;
+  lockedbalance: string;
+  availablebalance: string;
 }
 export interface UserTokenBalance extends User {
   tokenAddress: string;

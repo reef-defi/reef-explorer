@@ -2,14 +2,14 @@ import {
   getProvider,
   nodeQuery,
   setResolvingBlocksTillId,
-} from "../utils/connector";
-import { insertMultipleBlocks, updateBlockFinalized } from "../queries/block";
+} from '../utils/connector';
+import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
 import {
   extrinsicBodyToTransfer,
   extrinsicStatus,
   isExtrinsicTransfer,
   resolveSigner,
-} from "./extrinsic";
+} from './extrinsic';
 import {
   AccountHead,
   BlockBody,
@@ -21,22 +21,21 @@ import {
   ExtrinsicHead,
   SignedExtrinsicData,
   Transfer,
-} from "./types";
+} from './types';
 import {
   InsertExtrinsicBody,
   insertExtrinsics,
   insertTransfers,
   nextFreeIds,
-} from "../queries/extrinsic";
-import { insertAccounts, insertEvents } from "../queries/event";
-import { accountHeadToBody, accountNewOrKilled } from "./event";
+} from '../queries/extrinsic';
+import { insertAccounts, insertEvents } from '../queries/event';
+import { accountHeadToBody, accountNewOrKilled } from './event';
 import {
   compress,
   dropDuplicates,
   range,
-  removeUndefinedItem,
   resolvePromisesAsChunks,
-} from "../utils/utils";
+} from '../utils/utils';
 import {
   extractEvmLogHeaders,
   extractTokenBalance,
@@ -48,19 +47,17 @@ import {
   isExtrinsicEvmClaimAccount,
   isExtrinsicEVMCreate,
   tokenHolderToAccount,
-} from "./evmEvent";
+} from './evmEvent';
 import {
   insertAccountTokenBalances,
   insertContracts,
   insertEvmCalls,
-} from "../queries/evmEvent";
-import { logger } from "../utils/logger";
-import { insertStaking } from "../queries/staking";
+} from '../queries/evmEvent';
+import logger from '../utils/logger';
+import insertStaking from '../queries/staking';
 
 const blockHash = async (id: number): Promise<BlockHash> => {
-  const hash = await nodeQuery((provider) =>
-    provider.api.rpc.chain.getBlockHash(id)
-  );
+  const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
   return { id, hash };
 };
 
@@ -71,7 +68,9 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
     nodeQuery((provider) => provider.api.query.system.events.at(hash)),
     nodeQuery((provider) => provider.api.query.timestamp.now.at(hash)),
   ]);
-  return { id, hash, signedBlock, extendedHeader, events, timestamp: (new Date(timestamp.toJSON())).toUTCString() };
+  return {
+    id, hash, signedBlock, extendedHeader, events, timestamp: (new Date(timestamp.toJSON())).toUTCString(),
+  };
 };
 
 const blockBodyToInsert = ({
@@ -85,39 +84,33 @@ const blockBodyToInsert = ({
   timestamp,
   finalized: true,
   hash: hash.toString(),
-  author: extendedHeader?.author?.toString() || "",
+  author: extendedHeader?.author?.toString() || '',
   parentHash: signedBlock.block.header.parentHash.toString(),
   stateRoot: signedBlock.block.header.stateRoot.toString(),
   extrinsicRoot: signedBlock.block.header.extrinsicsRoot.toString(),
 });
 
-const isExtrinsicEvent =
-  (extrinsicIndex: number) =>
-  ({ phase }: Event): boolean =>
-    phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(extrinsicIndex);
+const isExtrinsicEvent = (extrinsicIndex: number) => ({ phase }: Event): boolean => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(extrinsicIndex);
 
 const blockToExtrinsicsHeader = ({
   id,
   signedBlock,
   events,
-  timestamp
-}: BlockBody): ExtrinsicHead[] =>
-  signedBlock.block.extrinsics.map((extrinsic, index) => ({
-    extrinsic,
-    timestamp,
-    blockId: id,
-    events: events.filter(isExtrinsicEvent(index)),
-    status: extrinsicStatus(events),
-  }));
+  timestamp,
+}: BlockBody): ExtrinsicHead[] => signedBlock.block.extrinsics.map((extrinsic, index) => ({
+  extrinsic,
+  timestamp,
+  blockId: id,
+  events: events.filter(isExtrinsicEvent(index)),
+  status: extrinsicStatus(events),
+}));
 
 const getSignedExtrinsicData = async (
-  extrinsicHash: string
+  extrinsicHash: string,
 ): Promise<SignedExtrinsicData> => {
   const [fee, feeDetails] = await Promise.all([
     nodeQuery((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
-    nodeQuery((provider) =>
-      provider.api.rpc.payment.queryFeeDetails(extrinsicHash)
-    ),
+    nodeQuery((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
   ]);
 
   return {
@@ -126,25 +119,27 @@ const getSignedExtrinsicData = async (
   };
 };
 
-const extrinsicBody =
-  (nextFreeId: number) =>
-  async (
-    extrinsicHead: ExtrinsicHead,
-    index: number
-  ): Promise<ExtrinsicBody> => ({
-    ...extrinsicHead,
-    id: nextFreeId + index,
-    signedData: extrinsicHead.extrinsic.isSigned
-      ? await getSignedExtrinsicData(extrinsicHead.extrinsic.toHex())
-      : undefined,
-  });
+const extrinsicBody = (nextFreeId: number) => async (
+  extrinsicHead: ExtrinsicHead,
+  index: number,
+): Promise<ExtrinsicBody> => ({
+  ...extrinsicHead,
+  id: nextFreeId + index,
+  signedData: extrinsicHead.extrinsic.isSigned
+    ? await getSignedExtrinsicData(extrinsicHead.extrinsic.toHex())
+    : undefined,
+});
 
 const extrinsicToInsert = (
-  { id, extrinsic, signedData, blockId, events, timestamp }: ExtrinsicBody,
-  index: number
+  {
+    id, extrinsic, signedData, blockId, events, timestamp,
+  }: ExtrinsicBody,
+  index: number,
 ): InsertExtrinsicBody => {
   const status = extrinsicStatus(events);
-  const { hash, method, args, meta } = extrinsic;
+  const {
+    hash, method, args, meta,
+  } = extrinsic;
   return {
     id,
     index,
@@ -158,7 +153,7 @@ const extrinsicToInsert = (
     signed: resolveSigner(extrinsic),
     args: JSON.stringify(args),
     docs: meta.docs.toLocaleString(),
-    error_message: status.type === "error" ? status.message : "",
+    errorMessage: status.type === 'error' ? status.message : '',
   };
 };
 
@@ -166,180 +161,179 @@ const extrinsicToEventHeader = ({
   id,
   blockId,
   events,
-  timestamp
-}: ExtrinsicBody): EventHead[] =>
-  events.map((event, index) => ({
-    event,
-    index,
-    blockId,
-    timestamp,
-    extrinsicId: id,
-  }));
+  timestamp,
+}: ExtrinsicBody): EventHead[] => events.map((event, index) => ({
+  event,
+  index,
+  blockId,
+  timestamp,
+  extrinsicId: id,
+}));
 
-const eventToBody =
-  (nextFreeId: number) =>
-  (event: EventHead, index: number): EventBody => ({
-    id: nextFreeId + index,
-    ...event,
-  });
+const eventToBody = (nextFreeId: number) => (event: EventHead, index: number): EventBody => ({
+  id: nextFreeId + index,
+  ...event,
+});
 
 // Assigning that the account is active is a temporary solution!
 // The correct way would be to first query db if account exists
 // If it does not and if transfer has failed then the account is not active.
-// The query can be skipped if we would have complete list available in function (dynamic programming)
+// The query can be skipped if we would have complete
+// list available in function (dynamic programming)
 const extractTransferAccounts = ({
   fromAddress,
   toAddress,
   blockId,
-  timestamp
+  timestamp,
 }: Transfer): AccountHead[] => [
-  { blockId, address: fromAddress, active: true, timestamp },
-  { blockId, address: toAddress, active: true, timestamp },
+  {
+    blockId, address: fromAddress, active: true, timestamp,
+  },
+  {
+    blockId, address: toAddress, active: true, timestamp,
+  },
 ];
 
-const isEventStakingReward = ({ event: { event } }: EventHead): boolean =>
-  getProvider().api.events.staking.Rewarded.is(event);
+const isEventStakingReward = ({ event: { event } }: EventHead): boolean => getProvider().api.events.staking.Rewarded.is(event);
 
-const isEventStakingSlash = ({ event: { event } }: EventHead): boolean =>
-  getProvider().api.events.staking.Slashed.is(event);
+const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => getProvider().api.events.staking.Slashed.is(event);
 
-export const processBlocks = async (
+export default async (
   fromId: number,
-  toId: number
+  toId: number,
 ): Promise<number> => {
   let transactions = 0;
   const blockIds = range(fromId, toId);
   setResolvingBlocksTillId(toId - 1);
 
-  logger.info("Retrieving block hashes");
+  logger.info('Retrieving block hashes');
   transactions += blockIds.length * 2;
-  let hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
-  logger.info("Retrieving block bodies");
+  const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
+  logger.info('Retrieving block bodies');
   let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
 
   // Insert blocks
-  logger.info("Inserting initial blocks in DB");
+  logger.info('Inserting initial blocks in DB');
   await insertMultipleBlocks(blocks.map(blockBodyToInsert));
 
   // Extrinsics
-  logger.info("Extracting and compressing blocks extrinsics");
+  logger.info('Extracting and compressing blocks extrinsics');
   let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader));
 
-  logger.info("Retrieving next free extrinsic and event ids");
+  logger.info('Retrieving next free extrinsic and event ids');
   const [eid, feid] = await nextFreeIds();
 
-  logger.info("Retrieving neccessery extrinsic data");
+  logger.info('Retrieving neccessery extrinsic data');
   transactions += extrinsicHeaders.length;
-  let extrinsics = await resolvePromisesAsChunks(
-    extrinsicHeaders.map(extrinsicBody(feid))
+  const extrinsics = await resolvePromisesAsChunks(
+    extrinsicHeaders.map(extrinsicBody(feid)),
   );
 
   // Free memory
   blocks = [];
   extrinsicHeaders = [];
 
-  logger.info("Inserting extriniscs");
+  logger.info('Inserting extriniscs');
   await insertExtrinsics(extrinsics.map(extrinsicToInsert));
 
   // Events
-  logger.info("Extracting and compressing extrinisc events");
-  let events = compress(extrinsics.map(extrinsicToEventHeader)).map(
-    eventToBody(eid)
+  logger.info('Extracting and compressing extrinisc events');
+  const events = compress(extrinsics.map(extrinsicToEventHeader)).map(
+    eventToBody(eid),
   );
 
-  logger.info("Inserting events");
+  logger.info('Inserting events');
   await insertEvents(events);
 
   // Transfers
-  logger.info("Extracting transfers");
+  logger.info('Extracting transfers');
   let transfers = extrinsics
     .filter(isExtrinsicTransfer)
     .map(extrinsicBodyToTransfer);
 
   // EVM Calls
-  logger.info("Extracting evm calls");
+  logger.info('Extracting evm calls');
   const extrinsicEvmCalls = extrinsics.filter(isExtrinsicEVMCall);
   let evmCalls = extrinsicEvmCalls.map(extrinsicToEVMCall);
 
   // Token balance
-  logger.info("Retrieving EVM log if contract is ERC20 token");
+  logger.info('Retrieving EVM log if contract is ERC20 token');
   const evmLogHeaders = extractEvmLogHeaders(extrinsicEvmCalls);
 
   transactions += evmLogHeaders.length;
-  let evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
+  const evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
 
-  logger.info("Extracting ERC20 transfer events");
+  logger.info('Extracting ERC20 transfer events');
   const tokenTransferEvents = extractTokenTransferEvents(evmLogs);
-  
-  logger.info("Retrieving ERC20 account token balances");
+
+  logger.info('Retrieving ERC20 account token balances');
   transactions += tokenTransferEvents.length;
   const tokenHolders = await resolvePromisesAsChunks(
-    tokenTransferEvents.map(extractTokenBalance)
+    tokenTransferEvents.map(extractTokenBalance),
   );
 
-  logger.info("Compressing transfer, event accounts, evm claim account");
-  let allAccounts: AccountHead[][] = [];
+  logger.info('Compressing transfer, event accounts, evm claim account');
+  const allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
   allAccounts.push(...tokenHolders.map(tokenHolderToAccount));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
-      .map(extrinsicToEvmClaimAccount)
+      .map(extrinsicToEvmClaimAccount),
   );
 
   // Accounts
-  logger.info("Extracting, compressing and dropping duplicate accounts");
+  logger.info('Extracting, compressing and dropping duplicate accounts');
   let insertOrDeleteAccount = dropDuplicates(
     compress(allAccounts),
-    "address"
+    'address',
   ).filter(({ address }) => address.length === 48);
 
-  logger.info("Retrieving used account info");
+  logger.info('Retrieving used account info');
   transactions += insertOrDeleteAccount.length;
   let accounts = await resolvePromisesAsChunks(
-    insertOrDeleteAccount.map(accountHeadToBody)
+    insertOrDeleteAccount.map(accountHeadToBody),
   );
-  
-  logger.info("Inserting or updating accounts");
+
+  logger.info('Inserting or updating accounts');
   await insertAccounts(accounts);
   // Free memory
   accounts = [];
   insertOrDeleteAccount = [];
 
   // Staking Slash
-  logger.info("Inserting staking slashes");
-  await insertStaking(events.filter(isEventStakingSlash), "Slash");
+  logger.info('Inserting staking slashes');
+  await insertStaking(events.filter(isEventStakingSlash), 'Slash');
 
   // Staking Reward
-  logger.info("Inserting staking rewards");
-  await insertStaking(events.filter(isEventStakingReward), "Reward");
+  logger.info('Inserting staking rewards');
+  await insertStaking(events.filter(isEventStakingReward), 'Reward');
 
   // Transfers
-  logger.info("Inserting transfers");
-  await insertTransfers(transfers)
+  logger.info('Inserting transfers');
+  await insertTransfers(transfers);
 
   transfers = [];
 
-  logger.info("Inserting evm calls");
+  logger.info('Inserting evm calls');
   await insertEvmCalls(evmCalls);
 
   // Contracts
-  logger.info("Extracting new contracts");
+  logger.info('Extracting new contracts');
   let contracts = extrinsics
     .filter(isExtrinsicEVMCreate)
     .map(extrinsicToContract);
-  logger.info("Inserting contracts");
+  logger.info('Inserting contracts');
   await insertContracts(contracts);
   contracts = [];
 
-  logger.info("Inserting token balances");
+  logger.info('Inserting token balances');
   await insertAccountTokenBalances(tokenHolders);
 
   evmCalls = [];
 
-  logger.info("Finalizing blocks");
+  logger.info('Finalizing blocks');
   await updateBlockFinalized(fromId, toId);
   return transactions;
 };
-

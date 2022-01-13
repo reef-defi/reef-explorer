@@ -1,17 +1,20 @@
-import { AnyTuple } from "@polkadot/types/types";
-import { GenericExtrinsic } from "@polkadot/types/extrinsic";
-import { FrameSystemEventRecord } from "@polkadot/types/lookup";
-import { JsonFragment } from "@ethersproject/abi";
-import type { BlockHash as BH } from "@polkadot/types/interfaces/chain";
-import type { SignedBlock } from "@polkadot/types/interfaces/runtime";
-import type { HeaderExtended } from "@polkadot/api-derive/type/types";
-import { Vec } from "@polkadot/types";
-import { utils } from "ethers";
+import { AnyTuple } from '@polkadot/types/types';
+import { GenericExtrinsic } from '@polkadot/types/extrinsic';
+import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { JsonFragment } from '@ethersproject/abi';
+import type { BlockHash as BH } from '@polkadot/types/interfaces/chain';
+import type { SignedBlock } from '@polkadot/types/interfaces/runtime';
+import type { HeaderExtended } from '@polkadot/api-derive/type/types';
+import { Vec } from '@polkadot/types';
+import { utils } from 'ethers';
 
 export interface BlockHash {
   id: number;
   hash: BH;
 }
+
+export type Extrinsic = GenericExtrinsic<AnyTuple>;
+export type Event = FrameSystemEventRecord;
 
 export interface BlockBody extends BlockHash {
   signedBlock: SignedBlock;
@@ -20,18 +23,14 @@ export interface BlockBody extends BlockHash {
   timestamp: string;
 }
 
-
-export type Extrinsic = GenericExtrinsic<AnyTuple>;
-export type Event = FrameSystemEventRecord;
-
 interface ExtrinsicUnknown {
-  type: "unknown";
+  type: 'unknown';
 }
 interface ExtrinsicSuccess {
-  type: "success";
+  type: 'success';
 }
 interface ExtrinsicError {
-  type: "error";
+  type: 'error';
   message: string;
 }
 
@@ -138,11 +137,17 @@ export interface TokenHolderHead {
 }
 
 export interface TokenHolder extends TokenHolderHead {
-  type: "Contract" | "Account",
+  type: 'Contract' | 'Account',
   signer: string;
   balance: string;
   decimals: number;
   timestamp: string;
+}
+
+export type ABI = JsonFragment[];
+
+export interface ABIS {
+  [name: string]: ABI;
 }
 
 export interface ERC20Token {
@@ -154,12 +159,6 @@ export interface ERC20Token {
     symbol: string;
     decimals: number;
   };
-}
-
-export type ABI = JsonFragment[];
-
-export interface ABIS {
-  [name: string]: ABI;
 }
 
 export interface BytecodeLog {
