@@ -1,4 +1,3 @@
-
 class StatusError extends Error {
   status: number;
 
@@ -8,25 +7,23 @@ class StatusError extends Error {
   }
 }
 
-export const ensure = (condition: boolean, message: string, status=404): void => {
+export const ensure = (condition: boolean, message: string, status = 404): void => {
   if (!condition) {
     throw new StatusError(message, status);
   }
-}
+};
 
 export const ensureObjectKeys = <Object extends {}, K extends keyof Object> (obj: Object, keys: K[]): void => {
   keys
-    .forEach((key) => 
-      ensure(!!obj[key], `Parameter ${key} is missing`, 400)
-    );
-}
+    .forEach((key) => ensure(!!obj[key], `Parameter ${key} is missing`, 400));
+};
 
 export const errorStatus = (err: any): number => {
   if (err instanceof StatusError) {
     return err.status;
   }
   return 400;
-}
+};
 
 export const delay = (ms: number): Promise<void> => new Promise((resolve) => {
   setTimeout(resolve, ms);

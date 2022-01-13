@@ -1,5 +1,7 @@
-import { Router } from "express";
-import { accountTokenBalance, findContract, findToken, getAllERC20Tokens } from "../controllers/contract";
+import { Router } from 'express';
+import {
+  accountTokenBalance, findContract, findToken, getAllERC20Tokens,
+} from '../controllers/contract';
 
 const router = Router();
 
