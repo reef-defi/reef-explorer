@@ -15,13 +15,12 @@ interface UserTokenDB {
 }
 
 export const findUserTokens = async (address: string): Promise<UserTokenDB[]> => queryDb<UserTokenDB>(
-  `SELECT c.address as address, v.contract_data as contract_data FROM contract as c
+  `SELECT th.token_address as address, th.balance as balance, v.contract_data as contract_data FROM token_holder as th
       INNER JOIN verified_contract as v
-        ON c.address = v.address
-      WHERE c.signer='${address}' AND v.type='ERC20';
+        ON th.token_address = v.address
+      WHERE th.signer='${address}';
     `,
 );
-  // query(FIND_USER_TOKENS, [address]);
 
 interface Contract {
   address: string;
