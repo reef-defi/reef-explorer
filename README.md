@@ -47,23 +47,27 @@ the stack.  Operation using `Makefile` can be see below:
 
 To start:
 ```
-make env=dev up
+make net=testnet env=prod up
 ```
 
 To stop:
 ```
-make env=dev down
+make net=testnet env=prod down
 ```
 
 To purge data:
 ```
-make env=dev purge
+make net=testnet env=prod purge
 ```
 
-env can take the following options:
+net can take the following options:
 - dev
 - testnet
 - mainnet
+
+env can take the following options:
+- dev - provides hot reloading capabilties useful for development
+- prod - uses production ready patterns to generate images
 
 That will build and start all the required dockers:
 
