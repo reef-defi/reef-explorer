@@ -6,7 +6,8 @@
   "private": false,
   "main": "dist/index.js",
   "scripts": {
-    "prod": "tsc -p tsconfig.production.json && node --max-old-space-size=16384 ./dist/index.js",
+    "build": "tsc -p tsconfig.production.json",
+    "start": "node --max-old-space-size=16384 ./dist/index.js",
     "dev": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/index.ts",
     "test": "echo skip",
     "lint": "eslint --fix --ext .ts ./src/"

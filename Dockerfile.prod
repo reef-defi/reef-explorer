@@ -1,0 +1,21 @@
+FROM node:fermium
+
+ARG COMPONENT
+
+RUN apt-get update && apt-get -y upgrade
+
+RUN mkdir /app && chown -R node:node /app
+
+WORKDIR /app
+
+USER node
+
+COPY ${COMPONENT}/package.json yarn.lock ./
+
+RUN yarn install --frozen-lockfile
+
+COPY ${COMPONENT}/. ./
+
+RUN yarn run build
+
+ENTRYPOINT [ "yarn", "start" ]
