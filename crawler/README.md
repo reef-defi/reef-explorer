@@ -17,3 +17,15 @@ V2 is going to be a harvesting speed up to capture multiple blocks at once.
 ## Run crawler
 
 `yarn start`
+
+
+## Diagnose crawler
+Diagnose CPU and Memory usage through Clinic package. 
+
+```bash
+npm install -g clinic
+yarn tsc
+clinic doctor --on-port -- node --max-old-space-size=16384 ./dist/index.js
+# After ~10 min close script using Ctrl + C
+# Diagnostics will show in your default browser
+```

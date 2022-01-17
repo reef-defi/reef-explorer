@@ -60,7 +60,11 @@ const processNextBlock = async () => {
 
 Promise.resolve()
   .then(initializeProviders)
-  .then(deleteUnfinishedBlocks)
+  .then(async () => {
+    logger.info("Removing unfinished blocks...");
+    await deleteUnfinishedBlocks();
+    logger.info("...success");
+  })
   .then(async () => {
     currentBlockIndex = await lastBlockInDatabase();
   })

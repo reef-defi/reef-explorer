@@ -1,6 +1,9 @@
 .vscode
+.DS_Store
 node_modules
 api/dist/
 crawler/dist/
 crawler/reef-explorer.log
 /.idea/
+crawler/isolate-0x*.log
+crawler/.clinic
