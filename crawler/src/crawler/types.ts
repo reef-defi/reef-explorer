@@ -40,11 +40,12 @@ export type ExtrinsicStatus =
   | ExtrinsicUnknown;
 
 export interface ExtrinsicHead {
-  blockId: number;
-  extrinsic: Extrinsic;
+  index: number;
   events: Event[];
-  status: ExtrinsicStatus;
+  blockId: number;
   timestamp: string;
+  extrinsic: Extrinsic;
+  status: ExtrinsicStatus;
 }
 
 export interface SignedExtrinsicData {
