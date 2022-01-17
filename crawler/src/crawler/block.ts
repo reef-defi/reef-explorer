@@ -98,6 +98,7 @@ const blockToExtrinsicsHeader = ({
   events,
   timestamp,
 }: BlockBody): ExtrinsicHead[] => signedBlock.block.extrinsics.map((extrinsic, index) => ({
+  index,
   extrinsic,
   timestamp,
   blockId: id,
@@ -132,9 +133,8 @@ const extrinsicBody = (nextFreeId: number) => async (
 
 const extrinsicToInsert = (
   {
-    id, extrinsic, signedData, blockId, events, timestamp,
+    id, extrinsic, signedData, blockId, events, timestamp, index
   }: ExtrinsicBody,
-  index: number,
 ): InsertExtrinsicBody => {
   const status = extrinsicStatus(events);
   const {
