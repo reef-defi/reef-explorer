@@ -96,7 +96,7 @@ interface ID {
 }
 
 const nextFreeTableId = async (table: string): Promise<number> => {
-  const result = await query<ID>(`SELECT id FROM ${table} ORDER BY id DESC`);
+  const result = await query<ID>(`SELECT id FROM ${table} ORDER BY id DESC LIMIT 1`);
   return result.length > 0 ? parseInt(result[0].id, 10) + 1 : 0;
 };
 
