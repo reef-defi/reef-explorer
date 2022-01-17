@@ -5,7 +5,7 @@ import processBlocks from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import {
   closeProviders,
-  getLastBlocId,
+  getLastBlockId,
   initializeProviders,
 } from './utils/connector';
 import { min, wait } from './utils/utils';
@@ -30,32 +30,35 @@ let currentBlockIndex = -1;
 console.warn = () => {};
 
 const processNextBlock = async () => {
-  while (currentBlockIndex < getLastBlocId()) {
-    const difference = min(getLastBlocId() - currentBlockIndex, BLOCKS_PER_STEP);
-    const from = currentBlockIndex + 1;
-    const to = from + difference;
+  while (true) {
+    const chainHead = getLastBlockId();
 
-    const start = Date.now();
-    const transactions = await processBlocks(from, to);
-    currentBlockIndex = to - 1;
-    const ms = Date.now() - start;
-    const time = ms / 1000;
-    const bps = difference / time;
+    while (currentBlockIndex < chainHead) {
+      const difference = min(chainHead - currentBlockIndex, BLOCKS_PER_STEP);
+      const from = currentBlockIndex + 1;
+      const to = from + difference;
 
-    logger.info(
-      `n nodes: ${
-        config.nodeUrls.length
-      }\tn blocks: ${difference}\tbps: ${bps.toFixed(
-        3,
-      )}\tn transactions: ${transactions}\ttps: ${(transactions / time).toFixed(
-        3,
-      )}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`,
-    );
-    BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, config.maxBlocksPerStep);
+      const start = Date.now();
+      const transactions = await processBlocks(from, to);
+      currentBlockIndex = to - 1;
+      const ms = Date.now() - start;
+      const time = ms / 1000;
+      const bps = difference / time;
+
+      logger.info(
+        `n nodes: ${
+          config.nodeUrls.length
+        }\tn blocks: ${difference}\tbps: ${bps.toFixed(
+          3,
+        )}\tn transactions: ${transactions}\ttps: ${(transactions / time).toFixed(
+          3,
+        )}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`,
+      );
+      BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, config.maxBlocksPerStep);
+    }
+
+    await wait(config.pollInterval);
   }
-
-  await wait(100);
-  await processNextBlock();
 };
 
 Promise.resolve()

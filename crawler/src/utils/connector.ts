@@ -16,7 +16,7 @@ export const setResolvingBlocksTillId = (id: number) => {
   resolvingBlocksUntil = id;
 };
 
-export const getLastBlocId = (): number => lastBlockId;
+export const getLastBlockId = (): number => lastBlockId;
 
 /* eslint "no-unused-vars": "off" */
 export const nodeQuery = async <T>(
