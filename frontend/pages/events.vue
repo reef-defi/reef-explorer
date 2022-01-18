@@ -122,21 +122,20 @@ export default {
           this.loading = false
         },
       },
-      /* TODO
-          totalEvents: {
+      totalEvents: {
         query: gql`
-          subscription total {
-            total(where: { name: { _eq: "events" } }, limit: 1) {
+          subscription chain_info {
+            chain_info(where: { name: { _eq: "events" } }, limit: 1) {
               count
             }
           }
         `,
         result({ data }) {
           if (!this.filter) {
-            this.totalRows = data.total[0].count
+            this.totalRows = data.chain_info[0].count
           }
         },
-      }, */
+      },
     },
   },
 }
