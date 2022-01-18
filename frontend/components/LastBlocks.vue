@@ -45,7 +45,6 @@
 </template>
 
 <script>
-import '@/components/Table'
 import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 
