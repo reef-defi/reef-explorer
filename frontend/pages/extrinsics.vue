@@ -138,20 +138,20 @@ export default {
           this.loading = false
         },
       },
-      // totalExtrinsics: {
-      //   query: gql`
-      //     subscription total {
-      //       total(where: { name: { _eq: "extrinsics" } }, limit: 1) {
-      //         count
-      //       }
-      //     }
-      //   `,
-      //   result({ data }) {
-      //     if (!this.filter) {
-      //       this.totalRows = data.total[0].count
-      //     }
-      //   },
-      // },
+      totalExtrinsics: {
+        query: gql`
+          subscription chain_info {
+            chain_info(where: { name: { _eq: "extrinsics" } }, limit: 1) {
+              count
+            }
+          }
+        `,
+        result({ data }) {
+          if (!this.filter) {
+            this.totalRows = data.chain_info[0].count
+          }
+        },
+      },
     },
   },
 }
