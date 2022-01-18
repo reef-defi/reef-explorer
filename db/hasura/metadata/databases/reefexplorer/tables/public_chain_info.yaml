@@ -1,0 +1,10 @@
+table:
+  name: chain_info
+  schema: public
+select_permissions:
+- permission:
+    columns:
+    - name
+    - count
+    filter: {}
+  role: public
