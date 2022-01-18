@@ -80,6 +80,7 @@ export default {
       perPage: null,
       currentPage: 1,
       totalRows: 1,
+      nEvents: 0,
     }
   },
   apollo: {
@@ -116,27 +117,23 @@ export default {
         },
         result({ data }) {
           this.events = data.event
-          if (this.filter) {
-            this.totalRows = this.events.length
-          }
+          this.totalRows = this.filter ? this.events.length : this.nEvents
           this.loading = false
         },
       },
-      /* TODO
-          totalEvents: {
+      totalEvents: {
         query: gql`
-          subscription total {
-            total(where: { name: { _eq: "events" } }, limit: 1) {
+          subscription chain_info {
+            chain_info(where: { name: { _eq: "events" } }, limit: 1) {
               count
             }
           }
         `,
         result({ data }) {
-          if (!this.filter) {
-            this.totalRows = data.total[0].count
-          }
+          this.nEvents = data.chain_info[0].count
+          this.totalRows = this.nEvents
         },
-      }, */
+      },
     },
   },
 }

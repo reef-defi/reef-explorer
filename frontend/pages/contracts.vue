@@ -118,6 +118,7 @@ export default {
       perPage: null,
       currentPage: 1,
       totalRows: 1,
+      nContracts: 0,
     }
   },
   apollo: {
@@ -160,32 +161,29 @@ export default {
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
-          console.log('nnnn=', newVar)
           return newVar
         },
         result({ data }) {
           this.contracts = data.contract
-          if (this.filter) {
-            this.totalRows = this.contracts.length
-          }
+          this.totalRows = this.filter ? this.contracts.length : this.nContracts
           this.loading = false
         },
       },
-      /* TODO
       totalContracts: {
         query: gql`
           subscription total {
-            total(where: { name: { _eq: "contracts" } }, limit: 1) {
-              count
+            contract_aggregate {
+              aggregate {
+                count
+              }
             }
           }
         `,
         result({ data }) {
-          if (!this.filter) {
-            this.totalRows = data.total[0].count
-          }
+          this.nContracts = data.contract_aggregate.aggregate.count
+          this.totalRows = this.nContracts
         },
-      }, */
+      },
     },
   },
 }

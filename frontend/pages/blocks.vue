@@ -133,21 +133,20 @@ export default {
           this.loading = false
         },
       },
-      /* totalBlocks: {
-        // TODO when chain_info is in gql
+      totalBlocks: {
         query: gql`
-          subscription total {
-            total(where: { name: { _eq: "blocks" } }, limit: 1) {
+          subscription chain_info {
+            chain_info(where: { name: { _eq: "blocks" } }, limit: 1) {
               count
             }
           }
         `,
         result({ data }) {
           if (!this.filter) {
-            this.totalRows = data.total[0].count
+            this.totalRows = data.chain_info[0].count
           }
         },
-      }, */
+      },
     },
   },
 }

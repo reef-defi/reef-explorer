@@ -201,9 +201,9 @@
 
           <!-- Source -->
 
-          <pre v-if="tab === 'source'" class="token-details__source">{{
-            contract.verified_contract.source
-          }}</pre>
+          <pre v-if="tab === 'source'" class="token-details__source">
+            <vue-json-pretty :data="contract.source" />
+          </pre>
 
           <!-- Transactions -->
 
@@ -333,6 +333,16 @@ export default {
               data.contract[0].verified_contract.compiled_data[name]
                 ? data.contract[0].verified_contract.compiled_data[name]
                 : []
+
+            this.contract.source = Object.keys(
+              data.contract[0].verified_contract.source
+            ).reduce(
+              (acc, current) => [
+                ...acc,
+                `\n${current}\n---------------------------\n${data.contract[0].verified_contract.source[current]}`,
+              ],
+              []
+            )
           }
           this.loading = false
         },

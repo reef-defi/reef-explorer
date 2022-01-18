@@ -119,6 +119,7 @@ export default {
       perPage: null,
       currentPage: 1,
       totalRows: 1,
+      nTransfers: 0,
     }
   },
   apollo: {
@@ -132,35 +133,27 @@ export default {
             $perPage: Int!
             $offset: Int!
           ) {
-            extrinsic(
+            transfer(
               limit: $perPage
               offset: $offset
-              order_by: { block_id: desc, index: desc }
               where: {
-                _or: [
-                  {
-                    section: { _eq: "currencies" }
-                    method: { _like: "transfer" }
-                    block_id: $blockNumber
-                    hash: $extrinsicHash
-                    signer: $fromAddress
-                  }
-                  {
-                    section: { _eq: "balances" }
-                    method: { _like: "transfer%" }
-                    block_id: $blockNumber
-                    hash: $extrinsicHash
-                    signer: $fromAddress
-                  }
-                ]
+                extrinsic: { block_id: $blockNumber, hash: $extrinsicHash }
+                from_account: { address: $fromAddress }
               }
+              order_by: { block_id: desc, extrinsic: { index: desc } }
             ) {
-              block_id
-              section
-              signer
-              hash
-              args
-              status
+              extrinsic {
+                hash
+                block_id
+              }
+              from_account {
+                address
+              }
+              to_account {
+                address
+              }
+              success
+              amount
               timestamp
             }
           }
@@ -179,72 +172,43 @@ export default {
           }
         },
         result({ data }) {
-          this.transfers = data.extrinsic.map((transfer) => {
-            return {
-              block_id: transfer.block_id,
-              hash: transfer.hash,
-              from: transfer.signer,
-              to: transfer.args[0].address20
-                ? transfer.args[0].address20
-                : transfer.args[0].id,
-              amount:
-                transfer.section === 'currencies'
-                  ? transfer.args[2]
-                  : transfer.args[1],
-              success: transfer.status === 'success',
-              timestamp: transfer.timestamp,
-            }
-          })
+          this.transfers = data.transfer.map(
+            ({
+              success,
+              timestamp,
+              from_account: from,
+              to_account: to,
+              amount,
+              extrinsic,
+            }) => ({
+              amount,
+              success,
+              timestamp,
+              to: to.address,
+              from: from.address,
+              hash: extrinsic.hash,
+              block_id: extrinsic.block_id,
+            })
+          )
+          this.totalRows = this.filter ? this.transfers.length : this.nTransfers
           this.loading = false
         },
       },
-      /* count: {
+      totalTransfers: {
         query: gql`
-          subscription count(
-            $blockNumber: bigint
-            $extrinsicHash: String
-            $fromAddress: String
-            $toAddress: String
-          ) {
-            extrinsic(
-              where: {
-                _or: [
-                  {
-                    section: { _eq: "currencies" }
-                    method: { _like: "transfer" }
-                    block_id: { _eq: $blockNumber }
-                    hash: { _eq: $extrinsicHash }
-                    signer: { _eq: $fromAddress }
-                  }
-                  {
-                    section: { _eq: "balances" }
-                    method: { _like: "transfer%" }
-                    block_id: { _eq: $blockNumber }
-                    hash: { _eq: $extrinsicHash }
-                    signer: { _eq: $fromAddress }
-                  }
-                ]
-              }
-            ) {
+          subscription total {
+            transfer_aggregate {
               aggregate {
                 count
               }
             }
           }
         `,
-        variables() {
-          return {
-            blockNumber: this.isBlockNumber(this.filter)
-              ? parseInt(this.filter)
-              : undefined,
-            extrinsicHash: this.isHash(this.filter) ? this.filter : undefined,
-            fromAddress: this.isAddress(this.filter) ? this.filter : undefined,
-          }
-        },
         result({ data }) {
-          this.totalRows = data.extrinsic_aggregate.aggregate.count
+          this.nTransfers = data.transfer_aggregate.aggregate.count
+          this.totalRows = this.nTransfers
         },
-      }, */
+      },
     },
   },
 }

@@ -8,6 +8,9 @@ object_relationships:
 - name: to_account
   using:
     foreign_key_constraint_on: to_address
+- name: token
+  using:
+    foreign_key_constraint_on: token_address
 - name: block
   using:
     foreign_key_constraint_on: block_id

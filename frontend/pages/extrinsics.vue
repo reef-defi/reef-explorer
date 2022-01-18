@@ -95,6 +95,7 @@ export default {
       perPage: null,
       currentPage: 1,
       totalRows: 1,
+      nExtrinsics: 0,
     }
   },
   apollo: {
@@ -132,26 +133,25 @@ export default {
         },
         result({ data }) {
           this.extrinsics = data.extrinsic
-          if (this.filter) {
-            this.totalRows = this.extrinsics.length
-          }
+          this.totalRows = this.filter
+            ? this.extrinsics.length
+            : this.nExtrinsics
           this.loading = false
         },
       },
-      // totalExtrinsics: {
-      //   query: gql`
-      //     subscription total {
-      //       total(where: { name: { _eq: "extrinsics" } }, limit: 1) {
-      //         count
-      //       }
-      //     }
-      //   `,
-      //   result({ data }) {
-      //     if (!this.filter) {
-      //       this.totalRows = data.total[0].count
-      //     }
-      //   },
-      // },
+      totalExtrinsics: {
+        query: gql`
+          subscription total {
+            chain_info(where: { name: { _eq: "extrinsics" } }, limit: 1) {
+              count
+            }
+          }
+        `,
+        result({ data }) {
+          this.nExtrinsics = data.chain_info[0].count
+          this.totalRows = this.nExtrinsics
+        },
+      },
     },
   },
 }
