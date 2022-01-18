@@ -160,32 +160,34 @@ export default {
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
-          console.log('nnnn=', newVar)
           return newVar
         },
         result({ data }) {
           this.contracts = data.contract
+          // TODO filter does not work
           if (this.filter) {
             this.totalRows = this.contracts.length
           }
           this.loading = false
         },
       },
-      /* TODO
       totalContracts: {
         query: gql`
           subscription total {
-            total(where: { name: { _eq: "contracts" } }, limit: 1) {
-              count
+            contract_aggregate {
+              aggregate {
+                count
+              }
             }
           }
         `,
         result({ data }) {
           if (!this.filter) {
-            this.totalRows = data.total[0].count
+            console.log(data)
+            this.totalRows = data.contract_aggregate.aggregate.count
           }
         },
-      }, */
+      },
     },
   },
 }
