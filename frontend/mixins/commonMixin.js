@@ -70,8 +70,8 @@ export default {
         const client = this.$apollo.provider.defaultClient
         const query = gql`
           query block {
-            block(limit: 1, where: {block_hash: {_eq: "${input}"}}) {
-              block_id
+            block(limit: 1, where: {hash: {_eq: "${input}"}}) {
+              id
             }
           }
         `
