@@ -165,7 +165,6 @@
 <script>
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import commonMixin from '@/mixins/commonMixin.js'
-import '@/components/Details'
 
 export default {
   components: {

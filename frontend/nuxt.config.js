@@ -28,7 +28,11 @@ export default {
   css: [network.theme, 'vue-json-pretty/lib/styles.css'],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: ['@/plugins/vue-json-pretty'],
+  plugins: [
+    '@/plugins/vue-json-pretty',
+    '@/plugins/Table',
+    '@/plugins/Details',
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,

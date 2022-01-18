@@ -7,11 +7,8 @@
 </template>
 
 <script>
-import Table from '@/components/Table/Table'
-
 export default {
   name: 'Data',
-  components: { Table },
 }
 </script>
 
