@@ -17,10 +17,12 @@
           <Table v-else>
             <THead>
               <Cell>Name</Cell>
+              <Cell>Symbol</Cell>
               <Cell>Contract Address</Cell>
+              <Cell>Created at block</Cell>
               <!--              TODO Ziga
               <Cell align="right">Total supply</Cell>-->
-              <Cell align="right">Holders</Cell>
+              <Cell>Holders</Cell>
             </THead>
 
             <Row v-for="(item, index) in tokens" :key="index">
@@ -42,6 +44,24 @@
                   title="Validated Token"
                 />
               </Cell>
+              <Cell
+                v-if="item.contract_data && item.contract_data.symbol"
+                :link="`/token/${item.address}`"
+              >
+                <img
+                  v-if="item.contract_data.token_icon_url"
+                  :src="item.contract_data.token_icon_url"
+                  class="identicon"
+                />
+                <span>{{ item.contract_data.symbol }}</span>
+                <font-awesome-icon
+                  v-if="item.verified_contract"
+                  v-b-tooltip.hover
+                  icon="check"
+                  class="validated"
+                  title="Validated Token"
+                />
+              </Cell>
 
               <Cell v-else />
 
@@ -53,7 +73,16 @@
               <!-- TODO Ziga
               <Cell align="right">{{ getItemSupply(item) }}</Cell>-->
 
-              <Cell align="right">
+              <Cell
+                :link="{
+                  url: `/block?blockNumber=${item.contract.extrinsic.block_id}`,
+                  fill: false,
+                }"
+              >
+                # {{ formatNumber(item.contract.extrinsic.block_id) }}
+              </Cell>
+
+              <Cell>
                 {{ item.contract.token_holders_aggregate.aggregate.count }}
               </Cell>
             </Row>
@@ -94,7 +123,8 @@ export default {
       paginationOptions,
       perPage: null,
       currentPage: 1,
-      totalRows: 1,
+      totalRows: 0,
+      nTokens: 0,
     }
   },
   apollo: {
@@ -110,7 +140,11 @@ export default {
             verified_contract(
               limit: $perPage
               offset: $offset
-              where: { type: { _eq: "ERC20" } }
+              where: {
+                type: { _eq: "ERC20" }
+                address: $contractAddress
+                contract: { extrinsic: $blockHeight }
+              }
               order_by: { contract: { extrinsic: { block_id: desc } } }
             ) {
               address
@@ -124,6 +158,7 @@ export default {
                 }
                 extrinsic {
                   hash
+                  block_id
                 }
                 signer
               }
@@ -131,18 +166,13 @@ export default {
           }
         `,
         variables() {
-          // TODO add filter
-          // const bHeight = this.isBlockNumber(this.filter)
-          //   ? parseInt(this.filter)
-          //   : undefined
-          // const cAddress = this.isContractId(this.filter)
-          //   ? this.filter
-          //   : undefined
           return {
-            // blockHeight: bHeight
-            //   ? { contract: { extrinsic: { block_id: { _eq: bHeight } } } }
-            //   : {},
-            // contractAddress: cAddress ? { _eq: cAddress } : {},
+            blockHeight: this.isBlockNumber(this.filter)
+              ? { block_id: { _eq: parseInt(this.filter) } }
+              : {},
+            contractAddress: this.isContractId(this.filter)
+              ? { _eq: this.filter }
+              : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
@@ -150,9 +180,7 @@ export default {
         result({ data }) {
           if (data && data.verified_contract) {
             this.tokens = data.verified_contract
-            if (this.filter) {
-              this.totalRows = this.tokens.length
-            }
+            this.totalRows = this.filter ? this.tokens.length : this.nTokens
           }
           this.loading = false
         },
@@ -168,9 +196,8 @@ export default {
           }
         `,
         result({ data }) {
-          if (!this.filter) {
-            this.totalRows = data.verified_contract_aggregate.aggregate.count
-          }
+          this.nTokens = data.verified_contract_aggregate.aggregate.count
+          this.totalRows = this.nTokens
         },
       },
     },
