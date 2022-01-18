@@ -119,6 +119,7 @@ export default {
       perPage: null,
       currentPage: 1,
       totalRows: 1,
+      nTransfers: 0,
     }
   },
   apollo: {
@@ -135,6 +136,10 @@ export default {
             transfer(
               limit: $perPage
               offset: $offset
+              where: {
+                extrinsic: { block_id: $blockNumber, hash: $extrinsicHash }
+                from_account: { address: $fromAddress }
+              }
               order_by: { block_id: desc, extrinsic: { index: desc } }
             ) {
               extrinsic {
@@ -155,14 +160,13 @@ export default {
         `,
         variables() {
           return {
-            // TODO enable filtering
-            // blockNumber: this.isBlockNumber(this.filter)
-            //   ? { _eq: parseInt(this.filter) }
-            //   : {},
-            // extrinsicHash: this.isHash(this.filter) ? { _eq: this.filter } : {},
-            // fromAddress: this.isAddress(this.filter)
-            //   ? { _eq: this.filter }
-            //   : {},
+            blockNumber: this.isBlockNumber(this.filter)
+              ? { _eq: parseInt(this.filter) }
+              : {},
+            extrinsicHash: this.isHash(this.filter) ? { _eq: this.filter } : {},
+            fromAddress: this.isAddress(this.filter)
+              ? { _eq: this.filter }
+              : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
@@ -186,9 +190,7 @@ export default {
               block_id: extrinsic.block_id,
             })
           )
-          if (this.filter) {
-            this.totalRows = this.transfers.length
-          }
+          this.totalRows = this.filter ? this.transfers.length : this.nTransfers
           this.loading = false
         },
       },
@@ -203,10 +205,8 @@ export default {
           }
         `,
         result({ data }) {
-          if (!this.filter) {
-            console.log(data)
-            this.totalRows = data.transfer_aggregate.aggregate.count
-          }
+          this.nTransfers = data.transfer_aggregate.aggregate.count
+          this.totalRows = this.nTransfers
         },
       },
     },

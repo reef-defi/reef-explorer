@@ -270,6 +270,7 @@ export default {
   apollo: {
     $subscribe: {
       accounts: {
+        // TODO add limit and offset!
         query: gql`
           query account {
             account(order_by: { free_balance: desc }, where: {}) {
