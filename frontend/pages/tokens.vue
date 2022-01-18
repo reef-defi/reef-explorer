@@ -19,21 +19,21 @@
               <Cell>Name</Cell>
               <Cell>Contract Address</Cell>
               <!--              TODO Ziga
-              <Cell align="right">Total supply</Cell>
-              <Cell align="right">Holders</Cell>-->
+              <Cell align="right">Total supply</Cell>-->
+              <Cell align="right">Holders</Cell>
             </THead>
 
             <Row v-for="(item, index) in tokens" :key="index">
               <Cell
-                v-if="item.verified_contract && item.verified_contract.name"
+                v-if="item.contract_data && item.contract_data.name"
                 :link="`/token/${item.address}`"
               >
                 <img
-                  v-if="item.verified_contract.token_icon_url"
-                  :src="item.verified_contract.token_icon_url"
+                  v-if="item.contract_data.token_icon_url"
+                  :src="item.contract_data.token_icon_url"
                   class="identicon"
                 />
-                <span>{{ item.verified_contract.name }}</span>
+                <span>{{ item.contract_data.name }}</span>
                 <font-awesome-icon
                   v-if="item.verified_contract"
                   v-b-tooltip.hover
@@ -51,11 +51,11 @@
               </Cell>
 
               <!-- TODO Ziga
-              <Cell align="right">{{ getItemSupply(item) }}</Cell>
+              <Cell align="right">{{ getItemSupply(item) }}</Cell>-->
 
               <Cell align="right">
-                {{ item.holders_aggregate.aggregate.count }}
-              </Cell>-->
+                {{ item.contract.token_holders_aggregate.aggregate.count }}
+              </Cell>
             </Row>
           </Table>
 
@@ -100,13 +100,6 @@ export default {
   apollo: {
     $subscribe: {
       tokens: {
-        /* TODO Ziga - missing holders_aggregate in query
-
-        holders_aggregate {
-          aggregate {
-            count(columns: holder_account_id)
-          }
-        } */
         query: gql`
           subscription contract(
             $blockHeight: extrinsic_bool_exp
@@ -114,50 +107,49 @@ export default {
             $perPage: Int!
             $offset: Int!
           ) {
-            contract(
+            verified_contract(
               limit: $perPage
               offset: $offset
-              where: {
-                extrinsic: $blockHeight
-                address: $contractAddress
-                verified_contract: { type: { _eq: "ERC20" } }
-              }
-              order_by: { extrinsic: { block_id: desc } }
+              where: { type: { _eq: "ERC20" } }
+              order_by: { contract: { extrinsic: { block_id: desc } } }
             ) {
               address
-              verified_contract {
-                address
-                name
-                args
-                source
-                compiler_version
-                compiled_data
-                optimization
-                runs
-                target
-                type
+              contract_data
+              contract {
+                timestamp
+                token_holders_aggregate {
+                  aggregate {
+                    count(distinct: true)
+                  }
+                }
+                extrinsic {
+                  hash
+                }
+                signer
               }
-              timestamp
             }
           }
         `,
         variables() {
-          const bHeight = this.isBlockNumber(this.filter)
-            ? parseInt(this.filter)
-            : undefined
-          const cAddress = this.isContractId(this.filter)
-            ? this.filter
-            : undefined
+          // TODO add filter
+          // const bHeight = this.isBlockNumber(this.filter)
+          //   ? parseInt(this.filter)
+          //   : undefined
+          // const cAddress = this.isContractId(this.filter)
+          //   ? this.filter
+          //   : undefined
           return {
-            blockHeight: bHeight ? { block_id: { _eq: bHeight } } : {},
-            contractAddress: cAddress ? { _eq: cAddress } : {},
+            // blockHeight: bHeight
+            //   ? { contract: { extrinsic: { block_id: { _eq: bHeight } } } }
+            //   : {},
+            // contractAddress: cAddress ? { _eq: cAddress } : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
         },
         result({ data }) {
-          if (data && data.contract) {
-            this.tokens = data.contract
+          if (data && data.verified_contract) {
+            this.tokens = data.verified_contract
             if (this.filter) {
               this.totalRows = this.tokens.length
             }
@@ -165,11 +157,10 @@ export default {
           this.loading = false
         },
       },
-      /* TODO Ziga
       totaltokens: {
         query: gql`
           query contract_aggregate {
-            contract_aggregate(where: { is_erc20: { _eq: true } }) {
+            verified_contract_aggregate(where: { type: { _eq: "ERC20" } }) {
               aggregate {
                 count
               }
@@ -178,10 +169,10 @@ export default {
         `,
         result({ data }) {
           if (!this.filter) {
-            this.totalRows = data.contract_aggregate.aggregate.count
+            this.totalRows = data.verified_contract_aggregate.aggregate.count
           }
         },
-      }, */
+      },
     },
   },
   methods: {
