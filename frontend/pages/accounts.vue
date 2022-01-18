@@ -128,7 +128,7 @@
             <PerPage v-model="perPage" />
             <b-pagination
               v-model="currentPage"
-              :total-rows="searchResults.length"
+              :total-rows="totalRows"
               :per-page="perPage"
             />
           </div>
@@ -167,6 +167,8 @@ export default {
       totalRows: 1,
       accounts: [],
       favorites: [],
+      nAccounts: 0,
+      favoritAccounts: [],
       polling: null,
     }
   },
@@ -229,6 +231,7 @@ export default {
     // get favorites from cookie
     if (this.$cookies.get('favorites')) {
       this.favorites = this.$cookies.get('favorites')
+      this.favoritesLength = this.favorites.length
     }
   },
   beforeDestroy() {
@@ -269,11 +272,14 @@ export default {
   },
   apollo: {
     $subscribe: {
-      accounts: {
+      favoritAccounts: {
         // TODO add limit and offset!
         query: gql`
-          query account {
-            account(order_by: { free_balance: desc }, where: {}) {
+          subscription favoritAccount($addresses: String_comparison_exp) {
+            account(
+              order_by: { free_balance: desc }
+              where: { address: $addresses }
+            ) {
               address
               evm_address
               available_balance
@@ -282,10 +288,73 @@ export default {
             }
           }
         `,
+        variables() {
+          // console.log(this.favorites)
+          return {
+            addresses: { _in: this.favorites },
+          }
+        },
         result({ data }) {
-          this.accounts = data.account
-          this.totalRows = this.accounts.length
+          console.log(data)
+          this.favoritAccounts = data.account
+          // this.accounts = this.favoritAccounts
           this.loading = false
+        },
+      },
+      accounts: {
+        query: gql`
+          subscription account($perPage: Int!, $offset: Int!) {
+            account(
+              order_by: { free_balance: desc }
+              limit: $perPage
+              offset: $offset
+            ) {
+              address
+              evm_address
+              available_balance
+              free_balance
+              locked_balance
+            }
+          }
+        `,
+        variables() {
+          const perPage = Math.max(
+            Math.min(
+              this.currentPage * this.perPage - this.favorites.length,
+              this.perPage
+            ),
+            0
+          )
+          console.log(perPage)
+          return {
+            perPage,
+            offset: (this.currentPage - 1) * this.perPage,
+          }
+        },
+        result({ data }) {
+          console.log(data)
+          const filteredAccounts = data.account.filter(
+            ({ address }) => !this.favorites.includes(address)
+          )
+          console.log(filteredAccounts)
+          this.accounts =
+            filteredAccounts.length === this.perPage
+              ? [...filteredAccounts]
+              : [...this.favoritAccounts, ...filteredAccounts]
+        },
+      },
+      totalAccounts: {
+        query: gql`
+          subscription chain_info {
+            chain_info(where: { name: { _eq: "accounts" } }, limit: 1) {
+              count
+            }
+          }
+        `,
+        result({ data }) {
+          console.log(data)
+          this.nAccounts = data.chain_info[0].count
+          this.totalRows = this.nAccounts
         },
       },
     },
