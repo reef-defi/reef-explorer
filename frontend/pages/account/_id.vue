@@ -5,8 +5,16 @@
         <div v-if="loading" class="text-center py-4">
           <Loading />
         </div>
-        <NotFound v-else-if="!parsedAccount" text="Account not valid" />
-        <Card v-else class="account-details">
+        <NotFound
+          v-else-if="
+            !parsedAccount || (parsedAccount && !parsedAccount.identity)
+          "
+          text="Account not valid"
+        />
+        <Card
+          v-else-if="parsedAccount && parsedAccount.identity"
+          class="account-details"
+        >
           <div class="account-details__identicon">
             <ReefIdenticon
               :key="parsedAccount.address"
