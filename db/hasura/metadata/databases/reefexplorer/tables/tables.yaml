@@ -10,3 +10,4 @@
 - "!include public_verified_contract.yaml"
 - "!include public_verified_evm_call.yaml"
 - "!include public_staking.yaml"
+- "!include public_chain_info.yaml"
