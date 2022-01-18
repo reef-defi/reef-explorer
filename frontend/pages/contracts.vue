@@ -118,6 +118,7 @@ export default {
       perPage: null,
       currentPage: 1,
       totalRows: 1,
+      nContracts: 0,
     }
   },
   apollo: {
@@ -164,10 +165,7 @@ export default {
         },
         result({ data }) {
           this.contracts = data.contract
-          // TODO filter does not work
-          if (this.filter) {
-            this.totalRows = this.contracts.length
-          }
+          this.totalRows = this.filter ? this.contracts.length : this.nContracts
           this.loading = false
         },
       },
@@ -182,10 +180,8 @@ export default {
           }
         `,
         result({ data }) {
-          if (!this.filter) {
-            console.log(data)
-            this.totalRows = data.contract_aggregate.aggregate.count
-          }
+          this.nContracts = data.contract_aggregate.aggregate.count
+          this.totalRows = this.nContracts
         },
       },
     },
