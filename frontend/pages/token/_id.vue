@@ -324,12 +324,14 @@ export default {
         },
         result({ data }) {
           if (data.contract[0]) {
+            const name = data.contract[0].verified_contract.name
+
             this.contract = data.contract[0]
             this.contract.abi =
               data.contract[0].verified_contract &&
               data.contract[0].verified_contract.compiled_data &&
-              data.contract[0].verified_contract.compiled_data.flat
-                ? data.contract[0].verified_contract.compiled_data.flat()
+              data.contract[0].verified_contract.compiled_data[name]
+                ? data.contract[0].verified_contract.compiled_data[name]
                 : []
           }
           this.loading = false
