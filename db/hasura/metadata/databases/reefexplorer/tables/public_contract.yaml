@@ -15,6 +15,14 @@ object_relationships:
       table:
         name: verified_contract
         schema: public
+array_relationships:
+- name: token_holders
+  using:
+    foreign_key_constraint_on:
+      column: token_address
+      table:
+        schema: public
+        name: token_holder
 select_permissions:
 - permission:
     allow_aggregations: true
