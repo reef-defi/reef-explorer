@@ -80,6 +80,7 @@ export default {
       perPage: null,
       currentPage: 1,
       totalRows: 1,
+      nEvents: 0,
     }
   },
   apollo: {
@@ -116,9 +117,7 @@ export default {
         },
         result({ data }) {
           this.events = data.event
-          if (this.filter) {
-            this.totalRows = this.events.length
-          }
+          this.totalRows = this.filter ? this.events.length : this.nEvents
           this.loading = false
         },
       },
@@ -131,9 +130,8 @@ export default {
           }
         `,
         result({ data }) {
-          if (!this.filter) {
-            this.totalRows = data.chain_info[0].count
-          }
+          this.nEvents = data.chain_info[0].count
+          this.totalRows = this.nEvents
         },
       },
     },
