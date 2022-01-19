@@ -58,8 +58,10 @@ export default {
             timestamp
             success
             extrinsic {
+              id
               hash
               index
+              error_message
             }
             token_address
             fee_amount

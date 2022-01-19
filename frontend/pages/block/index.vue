@@ -108,6 +108,7 @@ export default {
         query: gql`
           subscription extrinsic($block_id: bigint!) {
             extrinsic(where: { block_id: { _eq: $block_id } }) {
+              id
               block_id
               index
               signer

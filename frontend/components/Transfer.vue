@@ -115,33 +115,26 @@
             class="text-success"
           />
           <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="!transfer.success">
-            <Promised
-              :promise="
-                getExtrinsicFailedFriendlyError(
-                  transfer.block_id,
-                  transfer.index,
-                  $apollo.provider.defaultClient
-                )
-              "
-            >
-              <template #default="data"
-                ><span class="text-danger ml-2">{{ data }}</span></template
-              >
-            </Promised>
-          </template>
         </Cell>
       </Row>
+
+      <template v-if="transfer.extrinsic && !!transfer.extrinsic.error_message">
+        <Row>
+          <Cell>Error Description</Cell>
+          <Cell>
+            {{ transfer.extrinsic.error_message }}
+          </Cell>
+        </Row>
+      </template>
     </Data>
   </Card>
 </template>
 
 <script>
-import { Promised } from 'vue-promised'
 import { toChecksumAddress } from 'web3-utils'
 import commonMixin from '@/mixins/commonMixin.js'
 export default {
-  components: { Promised },
+  components: {},
   mixins: [commonMixin],
   props: {
     transfer: {

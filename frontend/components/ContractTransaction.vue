@@ -5,32 +5,14 @@
       <Cell>{{ extrinsic.hash }}</Cell>
     </Row>
 
-    <Row>
-      <Cell>Status</Cell>
-      <Cell>
-        <font-awesome-icon
-          v-if="extrinsic.type === 'signed'"
-          icon="check"
-          class="text-success"
-        />
-        <font-awesome-icon v-else icon="times" class="text-danger" />
-        <template v-if="!extrinsic.type === 'signed'">
-          <Promised
-            :promise="
-              getExtrinsicFailedFriendlyError(
-                extrinsic.block_id,
-                extrinsic.index,
-                $apollo.provider.defaultClient
-              )
-            "
-          >
-            <template #default="data"
-              ><span class="text-danger ml-2">{{ data }}</span></template
-            >
-          </Promised>
-        </template>
-      </Cell>
-    </Row>
+    <template v-if="!!extrinsic.error_message">
+      <Row>
+        <Cell>Error Description</Cell>
+        <Cell>
+          {{ extrinsic.error_message }}
+        </Cell>
+      </Row>
+    </template>
 
     <Row class="contract-transaction__identicon-link">
       <Cell>Signer</Cell>
@@ -165,13 +147,12 @@
 </template>
 
 <script>
-import { Promised } from 'vue-promised'
 import { ethers } from 'ethers'
 import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import erc20Abi from '@/assets/erc20Abi.json'
 export default {
-  components: { Promised },
+  components: {},
   mixins: [commonMixin],
   props: {
     contract: {

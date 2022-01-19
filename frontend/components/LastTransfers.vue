@@ -91,6 +91,7 @@ export default {
               }
               limit: 10
             ) {
+              id
               block_id
               section
               signer

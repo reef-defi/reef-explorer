@@ -50,6 +50,7 @@ export default {
       query: gql`
         query extrinsic($hash: String!) {
           extrinsic(where: { hash: { _eq: $hash } }) {
+            id
             block_id
             index
             signer
@@ -60,6 +61,7 @@ export default {
             docs
             type
             timestamp
+            error_message
           }
         }
       `,

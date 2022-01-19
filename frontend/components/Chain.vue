@@ -68,9 +68,7 @@
 
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.transfers') }}
-        </h4>
+        <h4 class="mb-3">{{ $t('components.network.transfers') }}</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/transfers"
@@ -82,9 +80,7 @@
     </div>
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.contracts') }}
-        </h4>
+        <h4 class="mb-3">{{ $t('components.network.contracts') }}</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/contracts"
@@ -147,7 +143,7 @@ export default {
           this.totalEvents = this.findCount(data.chain_info, 'events')
           this.totalAccounts = this.findCount(data.chain_info, 'accounts')
           this.totalContracts = this.findCount(data.chain_info, 'contracts')
-          this.totalTransfers = this.findCount(data.chain_info, 'transfers')
+          // this.totalTransfers = this.findCount(data.chain_info, 'transfers')
           this.totalExtrinsics = this.findCount(data.chain_info, 'extrinsics')
         },
       },
@@ -177,6 +173,20 @@ export default {
         `,
         result({ data }) {
           this.lastBlock = data.block[0].id
+        },
+      },
+      totalTransfers: {
+        query: gql`
+          subscription total {
+            transfer_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalTransfers = data.transfer_aggregate.aggregate.count
         },
       },
     },

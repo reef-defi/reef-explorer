@@ -45,6 +45,7 @@ export default {
         query: gql`
           subscription extrinsics {
             extrinsic(order_by: { block_id: desc }, where: {}, limit: 10) {
+              id
               block_id
               index
               type
