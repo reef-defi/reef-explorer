@@ -34,10 +34,14 @@
                 ># {{ formatNumber(item.block_id) }}</Cell
               >
 
-              <Cell class="list-view__age">
+              <Cell
+                v-b-tooltip.hover
+                class="list-view__age"
+                :title="formatTimestamp(item.timestamp)"
+              >
                 <font-awesome-icon :icon="['far', 'clock']" />
                 <span>{{ getAge(item.timestamp) }}</span>
-                <span>({{ formatTimestamp(item.timestamp) }})</span>
+                <!-- <span>({{ formatTimestamp(item.timestamp) }})</span> -->
               </Cell>
 
               <Cell
