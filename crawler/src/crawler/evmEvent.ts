@@ -15,7 +15,7 @@ import {
   BytecodeLog,
   BytecodeLogWithBlockId,
 } from './types';
-import { findErc20TokenDB } from '../queries/evmEvent';
+import { getContractDB } from '../queries/evmEvent';
 import {
   dropDuplicatesMultiKey,
   removeUndefinedItem,
@@ -134,7 +134,7 @@ const getContractBalance = (
 const extractEvmLog = async (
   event: BytecodeLogWithBlockId,
 ): Promise<EvmLog | undefined> => {
-  const result = await findErc20TokenDB(event.address);
+  const result = await getContractDB(event.address);
   if (result.length === 0) {
     return undefined;
   }

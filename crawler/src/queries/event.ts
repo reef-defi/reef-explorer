@@ -1,7 +1,10 @@
-import { AccountBody, EventBody } from '../crawler/types';
+import { AccountBody, EventBody, BytecodeLog } from '../crawler/types';
 import { insert } from '../utils/connector';
+import { utils as ethersUtils } from 'ethers';
+import { getContractDB } from '../queries/evmEvent';
+import { GenericEventData } from '@polkadot/types/generic/Event';
 
-const toEventValue = ({
+const toEventValue = async ({
   id,
   blockId,
   extrinsicId,
@@ -11,18 +14,41 @@ const toEventValue = ({
     phase,
   },
   timestamp,
-}: EventBody): string => `
-  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(
-  phase,
-)}', '${timestamp}')`;
+}: EventBody): Promise<string> => {
+  //TODO we should probably move this to somewhere more appropriate
+  let parsedData = undefined;
+  if (section == 'EVM' && (method == 'ExecutedFailed' || method == 'Log')) {
+    parsedData = await parseEvent(data, method);
+  }
+  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${parsedData || '{}'}', '${JSON.stringify(phase,)}', '${timestamp}')`
+  };
+
+const parseEvent = async (eventData: GenericEventData, method: string) => {
+  const address = eventData.at(0)!.toString();
+  const contract = await getContractDB(address);
+  if ( contract.length == 0 ) {
+    return undefined
+  }
+  const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
+  if (method == 'ExecutedFailed') {
+    const decoded = iface.parseError(eventData.at(-1)!.toString());
+    return decoded
+  } 
+  //TODO refactor to include EVM Log
+  // else if (method == 'Log') {
+  //   const {address, topics, data }: BytecodeLog = (eventData.toJSON() as any)[0];
+  //   const decoded = iface.parseLog({ topics, data })
+  // }
+  return undefined
+}
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
     await insert(`
 INSERT INTO event
-  (id, block_id, extrinsic_id, index, section, method, data, phase, timestamp)
+  (id, block_id, extrinsic_id, index, section, method, data, parsed_data, phase, timestamp)
 VALUES
-  ${events.map(toEventValue).join(',\n')};
+  ${(await Promise.all(events.map(toEventValue))).join(',\n')};
 `);
   }
 };

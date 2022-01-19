@@ -100,8 +100,8 @@ export const getERC20Tokens = async (): Promise<ERC20Token[]> => query<ERC20Toke
   'SELECT address, contract_data, name FROM verified_contract WHERE type=\'ERC20\';',
 );
 
-export const findErc20TokenDB = async (
+export const getContractDB = async (
   address: string,
 ): Promise<ERC20Token[]> => query<ERC20Token>(
-  `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE type='ERC20' AND address='${address}';`,
+  `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${address}';`,
 );
