@@ -19,6 +19,7 @@ export default {
   startBlockSize: toNumber(32, process.env.START_BLOCK_SIZE),
   maxBlocksPerStep: toNumber(32, process.env.MAX_BLOCKS_PER_STEP),
   chunkSize: toNumber(1024, process.env.CHUNK_SIZE),
+  pollInterval: toNumber(100, process.env.POLL_INTERVAL),
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',

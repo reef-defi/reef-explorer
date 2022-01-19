@@ -31,13 +31,6 @@ export const range = (from: number, to: number): number[] => Array(to - from)
   .fill(0)
   .map((_, index) => from + index);
 
-export const compress = <T>(values: T[][]): T[] => {
-  const newValues: T[] = [];
-  values.forEach((subValues) => subValues.forEach((innerValue) => newValues.push(innerValue)));
-
-  return newValues;
-};
-
 export const dropDuplicates = <Object, Key extends keyof Object>(
   objects: Object[],
   key: Key,

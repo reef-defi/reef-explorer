@@ -17,7 +17,6 @@ import {
 } from './types';
 import { findErc20TokenDB } from '../queries/evmEvent';
 import {
-  compress,
   dropDuplicatesMultiKey,
   removeUndefinedItem,
 } from '../utils/utils';
@@ -213,7 +212,7 @@ export const extractTokenBalance = async ({
 
 export const extractEvmLogHeaders = (
   extrinsicEvmCalls: ExtrinsicBody[],
-): Promise<EvmLog | undefined>[] => compress(extrinsicEvmCalls.map(({ events, blockId, timestamp }) => events.map((event) => ({ event, blockId, timestamp }))))
+): Promise<EvmLog | undefined>[] => extrinsicEvmCalls.map(({ events, blockId, timestamp }) => events.map((event) => ({ event, blockId, timestamp }))).flat()
   .filter(
     ({ event: { event: { method, section } } }) => method === 'Log' && section === 'evm',
   )
@@ -224,13 +223,11 @@ export const extractEvmLogHeaders = (
   .map(extractEvmLog);
 
 export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]): TokenBalanceHead[] => dropDuplicatesMultiKey(
-  compress(
     evmLogs
       .filter(removeUndefinedItem)
       .map(decodeEvmLog)
       .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
-      .map(erc20TransferEvent),
-  ),
+      .map(erc20TransferEvent).flat(),
   ['signerAddress', 'contractAddress'],
 );
 

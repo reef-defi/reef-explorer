@@ -31,7 +31,6 @@ import {
 import { insertAccounts, insertEvents } from '../queries/event';
 import { accountHeadToBody, accountNewOrKilled } from './event';
 import {
-  compress,
   dropDuplicates,
   range,
   resolvePromisesAsChunks,
@@ -218,7 +217,7 @@ export default async (
 
   // Extrinsics
   logger.info('Extracting and compressing blocks extrinsics');
-  let extrinsicHeaders = compress(blocks.map(blockToExtrinsicsHeader));
+  let extrinsicHeaders = blocks.map(blockToExtrinsicsHeader).flat();
 
   logger.info('Retrieving next free extrinsic and event ids');
   const [eid, feid] = await nextFreeIds();
@@ -238,7 +237,7 @@ export default async (
 
   // Events
   logger.info('Extracting and compressing extrinisc events');
-  const events = compress(extrinsics.map(extrinsicToEventHeader)).map(
+  const events = extrinsics.map(extrinsicToEventHeader).flat().map(
     eventToBody(eid),
   );
 
@@ -286,7 +285,7 @@ export default async (
   // Accounts
   logger.info('Extracting, compressing and dropping duplicate accounts');
   let insertOrDeleteAccount = dropDuplicates(
-    compress(allAccounts),
+    allAccounts.flat(),
     'address',
   ).filter(({ address }) => address.length === 48);
 
