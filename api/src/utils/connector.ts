@@ -12,8 +12,8 @@ export const query = async <Res>(statement: string, args: any[]): Promise<Res[]>
 
 const dbProvider: Pool = new Pool({ ...config.postgresConfig });
 
-export const queryDb = async <Res>(statement: string): Promise<Res[]> => dbProvider
-  .query<Res>(statement)
+export const queryDb = async <Res>(statement: string, values: any[]): Promise<Res[]> => dbProvider
+  .query<Res>(statement, values)
   .then((res) => res.rows);
 
 const provider = new Provider({
