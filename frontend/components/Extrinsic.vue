@@ -41,7 +41,6 @@
           />
           <div v-else>
             <font-awesome-icon icon="times" class="text-danger" />
-            <small>({{ extrinsic.type }})</small>
           </div>
         </Cell>
       </Row>
@@ -110,22 +109,11 @@
           </div>
         </Cell>
       </Row> -->
-      <template v-if="extrinsic.type !== 'signed'">
+      <template v-if="!!extrinsic.error_message">
         <Row>
           <Cell>Error Description</Cell>
           <Cell>
-            <Promised
-              :promise="
-                getExtrinsicFailedFriendlyError(
-                  extrinsic.id,
-                  $apollo.provider.defaultClient
-                )
-              "
-            >
-              <template #default="data">
-                <span class="text-danger ml-2">{{ data }}</span>
-              </template>
-            </Promised>
+            {{ extrinsic.error_message }}
           </Cell>
         </Row>
       </template>
@@ -138,10 +126,9 @@
 </template>
 
 <script>
-import { Promised } from 'vue-promised'
 import commonMixin from '@/mixins/commonMixin.js'
 export default {
-  components: { Promised },
+  components: {},
   mixins: [commonMixin],
   props: {
     extrinsic: {

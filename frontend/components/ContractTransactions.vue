@@ -54,7 +54,7 @@
 
           <Cell align="center">
             <font-awesome-icon
-              v-if="item.type === 'signed'"
+              v-if="!item.error_message"
               icon="check"
               class="text-success"
             />
@@ -108,6 +108,7 @@ export default {
               args
               type
               timestamp
+              error_message
             }
           }
         `,

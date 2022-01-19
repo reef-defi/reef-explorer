@@ -61,6 +61,7 @@ export default {
               id
               hash
               index
+              error_message
             }
             token_address
             fee_amount

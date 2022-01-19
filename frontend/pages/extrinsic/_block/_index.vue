@@ -67,6 +67,7 @@ export default {
             docs
             type
             timestamp
+            error_message
           }
         }
       `,

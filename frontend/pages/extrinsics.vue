@@ -122,6 +122,7 @@ export default {
               hash
               type
               timestamp
+              error_message
             }
           }
         `,

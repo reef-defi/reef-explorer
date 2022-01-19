@@ -75,6 +75,7 @@ export default {
             hash
             docs
             timestamp
+            error_message
           }
         }
       `,

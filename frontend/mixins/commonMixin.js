@@ -4,7 +4,6 @@ import { gql } from 'graphql-tag'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import moment from 'moment'
 import { network } from '@/frontend.config.js'
-import { reefChainErrors } from '@/reef-chain-errors.js'
 
 const isTimestamp = (timestampOrDateString) => {
   return !timestampOrDateString.toString().includes('-')
@@ -13,20 +12,6 @@ const toMomentDate = (timestampOrDateString) => {
   return isTimestamp(timestampOrDateString)
     ? moment.unix(timestampOrDateString)
     : moment(timestampOrDateString)
-}
-
-const eventDataToFriendlyError = (jsonData) => {
-  if (jsonData[0]?.badOrigin === null) {
-    return 'Bad origin'
-  } else if (jsonData[0]?.other === null) {
-    return 'Other error'
-  } else if (jsonData[0]?.module) {
-    return reefChainErrors
-      .find((module) => module.index === jsonData[0].module.index)
-      .errors.find((error) => error.index === jsonData[0].module.error)
-      .description
-  }
-  return ''
 }
 
 export default {
@@ -156,57 +141,6 @@ export default {
       if (!contractId) return false
       if (contractId.length !== 42) return false
       return true
-    },
-    //
-    // Some error samples:
-    //
-    // [{"module":{"index":6,"error":5}},{"weight":194407000,"class":"Normal","paysFee":"Yes"}]
-    // [{"badOrigin":null},{"weight":204203000,"class":"Normal","paysFee":"Yes"}]
-    // [{"other":null},{"weight":98721,"class":"Normal","paysFee":"Yes"}]
-    //
-    /* TODO old- remove?
-       getExtrinsicFailedFriendlyError: async (
-      blockNumber,
-      extrinsicIndex,
-      apolloClient
-    ) => {
-      const query = gql`
-        query event {
-          event(
-            limit: 1
-            where: {
-              block_id: { _eq: "${blockNumber}" }
-              index: { _eq: "${extrinsicIndex}" }
-              method: { _eq: "ExtrinsicFailed" }
-            }
-          ) {
-            data
-          }
-        }
-      `
-      console.log('query err val=', query)
-      const response = await apolloClient.query({ query })
-      const jsonData = response.data.event[0].data
-      console.log('ERR QRY  =', response.data)
-      return eventDataToFriendlyError(jsonData);
-    }, */
-    getExtrinsicFailedFriendlyError: async (extrinsicId, apolloClient) => {
-      const query = gql`
-        query event {
-          event(
-            limit: 1
-            where: {
-              extrinsic_id: { _eq: "${extrinsicId}" }
-              method: { _eq: "ExtrinsicFailed" }
-            }
-          ) {
-            data
-          }
-        }
-      `
-      const response = await apolloClient.query({ query })
-      const jsonData = response.data.event[0].data
-      return eventDataToFriendlyError(jsonData)
     },
     // TODO gql returns date string so this might not be needed - check
     fromNow: (timestamp) => {

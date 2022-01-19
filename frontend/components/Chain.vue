@@ -66,11 +66,10 @@
       </div>
     </div>
 
-    <div class="card">
+    <!--    TODO remove v-if-->
+    <div v-if="!!totalTransfers" class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.transfers') }}
-        </h4>
+        <h4 class="mb-3">{{ $t('components.network.transfers') }}</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/transfers"
@@ -82,9 +81,7 @@
     </div>
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.contracts') }}
-        </h4>
+        <h4 class="mb-3">{{ $t('components.network.contracts') }}</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/contracts"

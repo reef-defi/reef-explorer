@@ -118,22 +118,11 @@
         </Cell>
       </Row>
 
-      <template v-if="!transfer.success && transfer.extrinsic">
+      <template v-if="transfer.extrinsic && !!transfer.extrinsic.error_message">
         <Row>
           <Cell>Error Description</Cell>
           <Cell>
-            <Promised
-              :promise="
-                getExtrinsicFailedFriendlyError(
-                  transfer.extrinsic.id,
-                  $apollo.provider.defaultClient
-                )
-              "
-            >
-              <template #default="data"
-                ><span class="text-danger ml-2">{{ data }}</span></template
-              >
-            </Promised>
+            {{ transfer.extrinsic.error_message }}
           </Cell>
         </Row>
       </template>
@@ -142,11 +131,10 @@
 </template>
 
 <script>
-import { Promised } from 'vue-promised'
 import { toChecksumAddress } from 'web3-utils'
 import commonMixin from '@/mixins/commonMixin.js'
 export default {
-  components: { Promised },
+  components: {},
   mixins: [commonMixin],
   props: {
     transfer: {
