@@ -24,8 +24,11 @@
             </THead>
 
             <Row v-for="(item, index) in events" :key="index">
-              <Cell :link="`/event/${item.block_id}/${item.index}`"
-                ># {{ formatNumber(item.block_id) }}-{{ item.index }}</Cell
+              <Cell
+                :link="`/event/${item.extrinsic.block_id}/${item.extrinsic.index}/${item.index}`"
+                ># {{ formatNumber(item.extrinsic.block_id) }}-{{
+                  formatNumber(item.extrinsic.index)
+                }}-{{ item.index }}</Cell
               >
 
               <Cell :link="`/block?blockNumber=${item.block_id}`"
@@ -96,9 +99,15 @@ export default {
               limit: $perPage
               offset: $offset
               where: { block_id: $blockNumber }
-              order_by: { block_id: desc, index: desc }
+              order_by: { id: desc, index: desc }
             ) {
+              id
               block_id
+              extrinsic {
+                id
+                block_id
+                index
+              }
               index
               data
               method
