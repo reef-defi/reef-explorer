@@ -1,6 +1,6 @@
 # Reef explorer
 
-Open source block explorer for [Reef chain](https://reef.finance) hosted at [https://reefscan.com](https://reefscan.com)
+Open source block explorer for [Reef chain](https://reef.io) hosted at [https://reefscan.com](https://reefscan.com)
 
 ## Dependencies
 
