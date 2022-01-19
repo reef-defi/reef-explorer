@@ -13,10 +13,10 @@
           <div class="col-lg-6 text-lg-right">
             <ul class="list-inline">
               <li class="list-inline-item">
-                <a href="https://reef.finance" target="_blank">Website</a>
+                <a href="https://reef.io" target="_blank">Website</a>
               </li>
               <li class="list-inline-item">
-                <a href="https://docs.reef.finance" target="_blank">Docs</a>
+                <a href="https://docs.reef.io" target="_blank">Docs</a>
               </li>
               <li class="list-inline-item">
                 <a href="https://github.com/reef-defi" target="_blank"
