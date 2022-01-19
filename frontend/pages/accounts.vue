@@ -7,16 +7,16 @@
         totalRows
       )}</span>`"
     >
-      <!-- <template slot="label">
+      <template slot="label">
         <JsonCSV
-          :data="accountsJSON"
+          :data="allAccounts"
           class="accounts__download-csv-btn"
           name="subsocial_accounts.csv"
         >
           <font-awesome-icon icon="file-csv" />
           <span>{{ $t('pages.accounts.download_csv') }}</span>
         </JsonCSV>
-      </template> -->
+      </template>
     </Search>
 
     <section>
@@ -103,18 +103,17 @@
 </template>
 <script>
 import { gql } from 'graphql-tag'
-// import JsonCSV from 'vue-json-csv'
+import JsonCSV from 'vue-json-csv'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Search from '@/components/Search'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
-// import { paginationOptions } from '@/frontend.config.js'
 
 export default {
   components: {
     Loading,
     ReefIdenticon,
-    // JsonCSV,
+    JsonCSV,
     Search,
   },
   mixins: [commonMixin],
