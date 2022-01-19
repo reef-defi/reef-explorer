@@ -64,6 +64,7 @@ export default {
       query: gql`
         query extrinsic($hash: String!) {
           extrinsic(where: { hash: { _eq: $hash } }) {
+            id
             block_id
             index
             type
@@ -74,6 +75,7 @@ export default {
             hash
             docs
             timestamp
+            error_message
           }
         }
       `,

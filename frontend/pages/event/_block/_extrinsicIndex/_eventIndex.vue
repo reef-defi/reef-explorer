@@ -26,14 +26,15 @@ export default {
   data() {
     return {
       loading: true,
-      extrinsicId: this.$route.params.block,
-      eventIndex: this.$route.params.index,
+      blockId: this.$route.params.block,
+      extrinsicIndex: this.$route.params.extrinsicIndex,
+      eventIndex: this.$route.params.eventIndex,
       parsedEvent: undefined,
     }
   },
   head() {
     return {
-      title: 'PolkaStats NG block explorer',
+      title: 'Reef block explorer',
       meta: [
         {
           hid: 'description',
@@ -45,21 +46,28 @@ export default {
   },
   watch: {
     $route() {
-      this.extrinsicId = this.$route.params.block
-      this.eventIndex = this.$route.params.index
+      this.blockId = this.$route.params.block
+      this.extrinsicIndex = this.$route.params.extrinsicIndex
+      this.eventIndex = this.$route.params.eventIndex
     },
   },
   apollo: {
     event: {
       query: gql`
-        query event($extrinsic_id: bigint!, $index: bigint!) {
+        query event(
+          $block_id: bigint!
+          $extrinsic_index: bigint!
+          $event_index: bigint!
+        ) {
           event(
             where: {
-              extrinsic_id: { _eq: $extrinsic_id }
-              index: { _eq: $index }
+              block_id: { _eq: $block_id }
+              index: { _eq: $event_index }
+              extrinsic: { index: { _eq: $extrinsic_index } }
             }
           ) {
             id
+            block_id
             extrinsic {
               id
               block_id
@@ -75,16 +83,17 @@ export default {
         }
       `,
       skip() {
-        return !this.extrinsicId || !this.eventIndex
+        return !this.blockId || !this.extrinsicIndex || !this.eventIndex
       },
       variables() {
         return {
-          extrinsic_id: parseInt(this.extrinsicId),
-          index: parseInt(this.eventIndex),
+          block_id: parseInt(this.blockId),
+          extrinsic_index: parseInt(this.extrinsicIndex),
+          event_index: parseInt(this.eventIndex),
         }
       },
       result({ data }) {
-        this.parsedEvent = data.event[0]
+        this.parsedEvent = data?.event[0]
         this.loading = false
       },
     },

@@ -9,7 +9,7 @@
     >
       <template slot="label">
         <JsonCSV
-          :data="accountsJSON"
+          :data="accounts"
           class="accounts__download-csv-btn"
           name="subsocial_accounts.csv"
         >
@@ -36,7 +36,69 @@
               <Cell width="10" />
             </THead>
 
-            <Row v-for="(item, index) in paginatedAccounts" :key="index">
+            <Row v-for="(item, index) in favoriteAccounts" :key="index">
+              <Cell align="center">#{{ item.rank }}</Cell>
+
+              <Cell :link="{ url: `/account/${item.address}`, fill: false }">
+                <ReefIdenticon
+                  :key="item.address"
+                  :address="item.address"
+                  :size="20"
+                />
+                <span>{{ shortAddress(item.address) }}</span>
+              </Cell>
+
+              <Cell
+                v-if="item.evm_address"
+                :link="{ url: `/account/${item.address}`, fill: false }"
+              >
+                <eth-identicon :address="item.evm_address" :size="20" />
+                <span>{{
+                  item.evm_address ? shortHash(item.evm_address) : ''
+                }}</span>
+              </Cell>
+              <Cell v-else />
+
+              <Cell align="right">{{ formatAmount(item.free_balance) }}</Cell>
+
+              <Cell align="right">{{ formatAmount(item.locked_balance) }}</Cell>
+
+              <Cell align="right">{{
+                formatAmount(item.available_balance)
+              }}</Cell>
+
+              <Cell>
+                <a class="favorite" @click="toggleFavorite(item.address)">
+                  <font-awesome-icon
+                    v-if="item.favorite"
+                    v-b-tooltip.hover
+                    icon="star"
+                    style="color: #f1bd23; cursor: pointer"
+                    :title="$t('pages.accounts.remove_from_favorites')"
+                  />
+                  <font-awesome-icon
+                    v-else
+                    v-b-tooltip.hover
+                    icon="star"
+                    style="color: #e6dfdf; cursor: pointer"
+                    :title="$t('pages.accounts.add_to_favorites')"
+                  />
+                </a>
+              </Cell>
+            </Row>
+            <THead>
+              <Cell />
+              <Cell>All accounts</Cell>
+              <Cell />
+              <Cell />
+              <Cell />
+              <Cell />
+              <Cell />
+            </THead>
+            <Row
+              v-for="(item, index) in allAccounts"
+              :key="index + favoriteAccounts.length"
+            >
               <Cell align="center">#{{ item.rank }}</Cell>
 
               <Cell :link="{ url: `/account/${item.address}`, fill: false }">
@@ -88,47 +150,11 @@
             </Row>
           </Table>
 
-          <div class="accounts__list">
-            <nuxt-link
-              v-for="(item, index) in paginatedAccounts"
-              :key="'item-' + index"
-              :to="`/account/${item.address}`"
-              class="accounts__list-item"
-            >
-              <div class="accounts__list-item-rank">Rank #{{ item.rank }}</div>
-              <div class="accounts__list-item-identicon">
-                <ReefIdenticon
-                  :key="item.address"
-                  :address="item.address"
-                  :size="40"
-                />
-              </div>
-              <div class="accounts__list-item-account">
-                {{ shortAddress(item.address) }}
-              </div>
-
-              <div class="accounts__list-item-info">
-                <div class="accounts__list-item-info-item">
-                  <label>Free Balance</label>
-                  <div>{{ formatAmount(item.free_balance) }}</div>
-                </div>
-                <div class="accounts__list-item-info-item">
-                  <label>Available Balance</label>
-                  <div>{{ formatAmount(item.available_balance) }}</div>
-                </div>
-                <div class="accounts__list-item-info-item">
-                  <label>Locked Balance</label>
-                  <div>{{ formatAmount(item.locked_balance) }}</div>
-                </div>
-              </div>
-            </nuxt-link>
-          </div>
-
           <div class="list-view__pagination">
             <PerPage v-model="perPage" />
             <b-pagination
               v-model="currentPage"
-              :total-rows="searchResults.length"
+              :total-rows="totalRows"
               :per-page="perPage"
             />
           </div>
@@ -144,7 +170,6 @@ import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Search from '@/components/Search'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
-import { paginationOptions } from '@/frontend.config.js'
 
 export default {
   components: {
@@ -157,7 +182,6 @@ export default {
   data() {
     return {
       loading: true,
-      paginationOptions,
       perPage: null,
       currentPage: 1,
       sortBy: `favorite`,
@@ -167,55 +191,11 @@ export default {
       totalRows: 1,
       accounts: [],
       favorites: [],
+      nAccounts: 0,
+      allAccounts: [],
+      favoriteAccounts: [],
       polling: null,
     }
-  },
-  computed: {
-    searchResults() {
-      let list = this.parsedAccounts || []
-
-      list = list.sort((a, b) => {
-        const keyA = this.isFavorite(a.address)
-        const keyB = this.isFavorite(b.address)
-
-        if (keyA < keyB) return 1
-        if (keyA > keyB) return -1
-
-        return 0
-      })
-
-      if (!this.filter) return list
-
-      return list.filter((item) => {
-        const filter = this.filter.toLowerCase()
-        const accountId = item.address ? item.address.toLowerCase() : ''
-        const evmAddress = item.evm_address
-          ? item.evm_address.toLowerCase()
-          : ''
-        return accountId.includes(filter) || evmAddress.includes(filter)
-      })
-    },
-    paginatedAccounts() {
-      const paginate = (list) => {
-        const start = this.perPage * (this.currentPage - 1)
-        const end = start + this.perPage
-        return list.slice(start, end)
-      }
-
-      return paginate(this.searchResults)
-    },
-    parsedAccounts() {
-      return this.accounts.map((account, index) => {
-        return {
-          rank: index + 1,
-          ...account,
-          favorite: this.isFavorite(account.address),
-        }
-      })
-    },
-    accountsJSON() {
-      return this.parsedAccounts
-    },
   },
   watch: {
     favorites(val) {
@@ -236,9 +216,10 @@ export default {
   },
   methods: {
     toggleFavorite(accountId) {
-      if (this.favorites.includes(accountId)) {
+      const includes = this.favorites.includes(accountId)
+      if (includes) {
         this.favorites.splice(this.favorites.indexOf(accountId), 1)
-
+        this.favoritesLength -= 1
         this.$bvToast.toast(
           `Account ${accountId} has been removed from your favorites.`,
           {
@@ -250,7 +231,7 @@ export default {
         )
       } else {
         this.favorites.push(accountId)
-
+        this.favoritesLength -= 1
         this.$bvToast.toast(
           `Account ${accountId} has been added to your favorites.`,
           {
@@ -261,19 +242,36 @@ export default {
           }
         )
       }
+      for (const account of this.allAccounts) {
+        if (account.address === accountId) {
+          account.favorite = !account.favorite
+        }
+      }
       return true
     },
     isFavorite(accountId) {
       return this.favorites.includes(accountId)
     },
+    updateFavoritesRank() {
+      for (const account of this.allAccounts) {
+        if (this.favorites.includes(account.address)) {
+          this.favoriteAccounts = this.favoriteAccounts.map((acc) => ({
+            ...acc,
+            rank: account.address === acc.address ? account.rank : acc.rank,
+          }))
+        }
+      }
+    },
   },
   apollo: {
     $subscribe: {
-      accounts: {
-        // TODO add limit and offset!
+      favoriteAccounts: {
         query: gql`
-          query account {
-            account(order_by: { free_balance: desc }, where: {}) {
+          subscription favoritAccount($addresses: String_comparison_exp) {
+            account(
+              order_by: { free_balance: desc }
+              where: { address: $addresses }
+            ) {
               address
               evm_address
               available_balance
@@ -282,10 +280,81 @@ export default {
             }
           }
         `,
+        variables() {
+          return {
+            addresses: { _in: this.favorites },
+          }
+        },
         result({ data }) {
-          this.accounts = data.account
-          this.totalRows = this.accounts.length
+          if (data && data.account) {
+            this.favoriteAccounts = data.account.map((account) => ({
+              ...account,
+              favorite: true,
+            }))
+            this.updateFavoritesRank()
+          }
+        },
+      },
+      accounts: {
+        query: gql`
+          subscription account(
+            $perPage: Int!
+            $offset: Int!
+            $address: String_comparison_exp
+            $evmAddress: String_comparison_exp
+          ) {
+            account(
+              order_by: { free_balance: desc }
+              limit: $perPage
+              offset: $offset
+              where: { address: $address, evm_address: $evmAddress }
+            ) {
+              address
+              evm_address
+              available_balance
+              free_balance
+              locked_balance
+            }
+          }
+        `,
+        variables() {
+          return {
+            perPage: this.perPage,
+            offset: (this.currentPage - 1) * this.perPage,
+            address: this.isAddress(this.filter) ? { _eq: this.filter } : {},
+            evmAddress: this.isContractId(this.filter)
+              ? { _eq: this.filter }
+              : {},
+          }
+        },
+        result({ data }) {
+          if (data && data.account) {
+            this.allAccounts = data.account.map((account, index) => ({
+              ...account,
+              favorite: this.favorites.includes(account.address),
+              rank: index + (this.currentPage - 1) * this.perPage + 1,
+            }))
+            if (!this.filter) {
+              this.updateFavoritesRank()
+              this.totalRows = this.nAccounts
+            } else {
+              this.totalRows = this.allAccounts.length
+            }
+          }
           this.loading = false
+        },
+      },
+      totalAccounts: {
+        query: gql`
+          subscription chain_info {
+            chain_info(where: { name: { _eq: "accounts" } }, limit: 1) {
+              count
+            }
+          }
+        `,
+        result({ data }) {
+          this.nAccounts = data.chain_info[0].count
+          this.totalRows = this.nAccounts
         },
       },
     },

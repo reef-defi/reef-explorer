@@ -71,6 +71,7 @@ export default {
               where: { type: { _eq: "signed" } }
               limit: 10
             ) {
+              id
               block_id
               index
               type

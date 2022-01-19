@@ -56,6 +56,7 @@ export default {
           extrinsic(
             where: { block_id: { _eq: $block_id }, index: { _eq: $index } }
           ) {
+            id
             block_id
             index
             signer
@@ -66,6 +67,7 @@ export default {
             docs
             type
             timestamp
+            error_message
           }
         }
       `,
