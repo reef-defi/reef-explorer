@@ -144,7 +144,6 @@ export default {
           }
         `,
         result({ data }) {
-          this.lastBlock = this.findCount(data.chain_info, 'blocks')
           this.totalEvents = this.findCount(data.chain_info, 'events')
           this.totalAccounts = this.findCount(data.chain_info, 'accounts')
           this.totalContracts = this.findCount(data.chain_info, 'contracts')
@@ -166,6 +165,18 @@ export default {
         `,
         result({ data }) {
           this.lastFinalizedBlock = data.block[0].id
+        },
+      },
+      lastBlock: {
+        query: gql`
+          subscription blocks {
+            block(limit: 1, order_by: { id: desc }) {
+              id
+            }
+          }
+        `,
+        result({ data }) {
+          this.lastBlock = data.block[0].id
         },
       },
     },

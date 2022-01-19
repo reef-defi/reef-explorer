@@ -9,7 +9,7 @@
     >
       <template slot="label">
         <JsonCSV
-          :data="allAccounts"
+          :data="accounts"
           class="accounts__download-csv-btn"
           name="subsocial_accounts.csv"
         >
@@ -36,7 +36,69 @@
               <Cell width="10" />
             </THead>
 
-            <Row v-for="(item, index) in accounts" :key="index">
+            <Row v-for="(item, index) in favoriteAccounts" :key="index">
+              <Cell align="center">#{{ item.rank }}</Cell>
+
+              <Cell :link="{ url: `/account/${item.address}`, fill: false }">
+                <ReefIdenticon
+                  :key="item.address"
+                  :address="item.address"
+                  :size="20"
+                />
+                <span>{{ shortAddress(item.address) }}</span>
+              </Cell>
+
+              <Cell
+                v-if="item.evm_address"
+                :link="{ url: `/account/${item.address}`, fill: false }"
+              >
+                <eth-identicon :address="item.evm_address" :size="20" />
+                <span>{{
+                  item.evm_address ? shortHash(item.evm_address) : ''
+                }}</span>
+              </Cell>
+              <Cell v-else />
+
+              <Cell align="right">{{ formatAmount(item.free_balance) }}</Cell>
+
+              <Cell align="right">{{ formatAmount(item.locked_balance) }}</Cell>
+
+              <Cell align="right">{{
+                formatAmount(item.available_balance)
+              }}</Cell>
+
+              <Cell>
+                <a class="favorite" @click="toggleFavorite(item.address)">
+                  <font-awesome-icon
+                    v-if="item.favorite"
+                    v-b-tooltip.hover
+                    icon="star"
+                    style="color: #f1bd23; cursor: pointer"
+                    :title="$t('pages.accounts.remove_from_favorites')"
+                  />
+                  <font-awesome-icon
+                    v-else
+                    v-b-tooltip.hover
+                    icon="star"
+                    style="color: #e6dfdf; cursor: pointer"
+                    :title="$t('pages.accounts.add_to_favorites')"
+                  />
+                </a>
+              </Cell>
+            </Row>
+            <THead>
+              <Cell />
+              <Cell>All accounts</Cell>
+              <Cell />
+              <Cell />
+              <Cell />
+              <Cell />
+              <Cell />
+            </THead>
+            <Row
+              v-for="(item, index) in allAccounts"
+              :key="index + favoriteAccounts.length"
+            >
               <Cell align="center">#{{ item.rank }}</Cell>
 
               <Cell :link="{ url: `/account/${item.address}`, fill: false }">
@@ -131,7 +193,7 @@ export default {
       favorites: [],
       nAccounts: 0,
       allAccounts: [],
-      favoritAccounts: [],
+      favoriteAccounts: [],
       polling: null,
     }
   },
@@ -147,7 +209,6 @@ export default {
     // get favorites from cookie
     if (this.$cookies.get('favorites')) {
       this.favorites = this.$cookies.get('favorites')
-      this.favoritesLength = this.favorites.length
     }
   },
   beforeDestroy() {
@@ -155,7 +216,8 @@ export default {
   },
   methods: {
     toggleFavorite(accountId) {
-      if (this.favorites.includes(accountId)) {
+      const includes = this.favorites.includes(accountId)
+      if (includes) {
         this.favorites.splice(this.favorites.indexOf(accountId), 1)
         this.favoritesLength -= 1
         this.$bvToast.toast(
@@ -180,15 +242,30 @@ export default {
           }
         )
       }
+      for (const account of this.allAccounts) {
+        if (account.address === accountId) {
+          account.favorite = !account.favorite
+        }
+      }
       return true
     },
     isFavorite(accountId) {
       return this.favorites.includes(accountId)
     },
+    updateFavoritesRank() {
+      for (const account of this.allAccounts) {
+        if (this.favorites.includes(account.address)) {
+          this.favoriteAccounts = this.favoriteAccounts.map((acc) => ({
+            ...acc,
+            rank: account.address === acc.address ? account.rank : acc.rank,
+          }))
+        }
+      }
+    },
   },
   apollo: {
     $subscribe: {
-      favoritAccounts: {
+      favoriteAccounts: {
         query: gql`
           subscription favoritAccount($addresses: String_comparison_exp) {
             account(
@@ -209,20 +286,28 @@ export default {
           }
         },
         result({ data }) {
-          this.favoritAccounts = data.account.map((account) => ({
-            ...account,
-            favorite: true,
-          }))
-          this.accounts = [...this.favoritAccounts, ...this.allAccounts]
+          if (data && data.account) {
+            this.favoriteAccounts = data.account.map((account) => ({
+              ...account,
+              favorite: true,
+            }))
+            this.updateFavoritesRank()
+          }
         },
       },
       accounts: {
         query: gql`
-          subscription account($perPage: Int!, $offset: Int!) {
+          subscription account(
+            $perPage: Int!
+            $offset: Int!
+            $address: String_comparison_exp
+            $evmAddress: String_comparison_exp
+          ) {
             account(
               order_by: { free_balance: desc }
               limit: $perPage
               offset: $offset
+              where: { address: $address, evm_address: $evmAddress }
             ) {
               address
               evm_address
@@ -236,29 +321,25 @@ export default {
           return {
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
+            address: this.isAddress(this.filter) ? { _eq: this.filter } : {},
+            evmAddress: this.isContractId(this.filter)
+              ? { _eq: this.filter }
+              : {},
           }
         },
         result({ data }) {
           if (data && data.account) {
-            const accounts = data.account.map((account, index) => ({
+            this.allAccounts = data.account.map((account, index) => ({
               ...account,
+              favorite: this.favorites.includes(account.address),
               rank: index + (this.currentPage - 1) * this.perPage + 1,
             }))
-
-            for (const account of accounts) {
-              if (this.favorites.includes(account.address)) {
-                this.favoritAccounts = this.favoritAccounts.map((acc) => ({
-                  ...acc,
-                  rank:
-                    account.address === acc.address ? account.rank : acc.rank,
-                }))
-              }
+            if (!this.filter) {
+              this.updateFavoritesRank()
+              this.totalRows = this.nAccounts
+            } else {
+              this.totalRows = this.allAccounts.length
             }
-
-            this.allAccounts = accounts.filter(
-              (account) => !this.favorites.includes(account.address)
-            )
-            this.accounts = [...this.favoritAccounts, ...this.allAccounts]
           }
           this.loading = false
         },
