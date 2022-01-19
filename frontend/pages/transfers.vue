@@ -147,6 +147,7 @@ export default {
               order_by: { block_id: desc, extrinsic: { index: desc } }
             ) {
               extrinsic {
+                id
                 hash
                 block_id
               }

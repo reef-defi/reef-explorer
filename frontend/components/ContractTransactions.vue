@@ -100,6 +100,7 @@ export default {
               }
               limit: 10
             ) {
+              id
               block_id
               index
               hash

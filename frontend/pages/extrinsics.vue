@@ -113,6 +113,7 @@ export default {
               where: { block_id: $blockNumber }
               order_by: { block_id: desc, index: desc }
             ) {
+              id
               block_id
               index
               signer

@@ -110,22 +110,14 @@
           </div>
         </Cell>
       </Row> -->
-
-      <Row>
-        <Cell>Description</Cell>
-        <Cell>
-          <font-awesome-icon
-            v-if="extrinsic.type === 'signed'"
-            icon="check"
-            class="text-success"
-          />
-          <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="extrinsic.type !== 'signed'">
+      <template v-if="extrinsic.type !== 'signed'">
+        <Row>
+          <Cell>Error Description</Cell>
+          <Cell>
             <Promised
               :promise="
                 getExtrinsicFailedFriendlyError(
-                  extrinsic.block_id,
-                  extrinsic.index,
+                  extrinsic.id,
                   $apollo.provider.defaultClient
                 )
               "
@@ -134,9 +126,9 @@
                 <span class="text-danger ml-2">{{ data }}</span>
               </template>
             </Promised>
-          </template>
-        </Cell>
-      </Row>
+          </Cell>
+        </Row>
+      </template>
     </Data>
     <extrinsic-events
       :extrinsic-id="parseInt(extrinsic.id)"

@@ -104,17 +104,22 @@
         <Cell>Status</Cell>
         <Cell>
           <font-awesome-icon
-            v-if="transfer.type === 'signed'"
+            v-if="transfer.success"
             icon="check"
             class="text-success"
           />
           <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="!transfer.type === 'signed'">
+        </Cell>
+      </Row>
+
+      <template v-if="!transfer.success && transfer.extrinsic">
+        <Row>
+          <Cell>Error Description</Cell>
+          <Cell>
             <Promised
               :promise="
                 getExtrinsicFailedFriendlyError(
-                  transfer.block_id,
-                  transfer.index,
+                  transfer.extrinsic.id,
                   $apollo.provider.defaultClient
                 )
               "
@@ -123,9 +128,9 @@
                 ><span class="text-danger ml-2">{{ data }}</span></template
               >
             </Promised>
-          </template>
-        </Cell>
-      </Row>
+          </Cell>
+        </Row>
+      </template>
     </Data>
   </Card>
 </template>
