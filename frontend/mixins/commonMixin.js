@@ -169,8 +169,12 @@ export default {
           }
         }
       `
+
       const response = await apolloClient.query({ query })
-      const jsonData = response.data.event[0].data
+      const jsonData = response.data.event[0]?.data
+
+      if (!jsonData) return null
+
       if (jsonData[0]?.badOrigin === null) {
         return 'Bad origin'
       } else if (jsonData[0]?.other === null) {
@@ -181,7 +185,8 @@ export default {
           .errors.find((error) => error.index === jsonData[0].module.error)
           .description
       }
-      return ''
+
+      return null
     },
     // TODO gql returns date string so this might not be needed - check
     fromNow: (timestamp) => {

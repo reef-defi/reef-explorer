@@ -111,30 +111,14 @@
         </Cell>
       </Row> -->
 
-      <Row>
-        <Cell>Description</Cell>
+      <Row v-if="error">
+        <Cell>Error description</Cell>
         <Cell>
-          <font-awesome-icon
-            v-if="extrinsic.type === 'signed'"
-            icon="check"
-            class="text-success"
-          />
-          <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="extrinsic.type !== 'signed'">
-            <Promised
-              :promise="
-                getExtrinsicFailedFriendlyError(
-                  extrinsic.block_id,
-                  extrinsic.index,
-                  $apollo.provider.defaultClient
-                )
-              "
-            >
-              <template #default="data">
-                <span class="text-danger ml-2">{{ data }}</span>
-              </template>
-            </Promised>
-          </template>
+          <Promised :promise="error">
+            <template #default="data">
+              <span class="text-danger ml-2">{{ data }}</span>
+            </template>
+          </Promised>
         </Cell>
       </Row>
     </Data>
@@ -156,6 +140,27 @@ export default {
     extrinsic: {
       type: Object,
       default: undefined,
+    },
+  },
+  data() {
+    return {
+      error: null,
+    }
+  },
+  created() {
+    this.setError()
+  },
+  methods: {
+    async setError() {
+      if (this.extrinsic.type === 'signed') return
+
+      const error = await this.getExtrinsicFailedFriendlyError(
+        this.extrinsic.block_id,
+        this.extrinsic.index,
+        this.$apollo.provider.defaultClient
+      )
+
+      this.error = error
     },
   },
 }
