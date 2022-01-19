@@ -30,6 +30,7 @@ select_permissions:
     - amount
     - fee_amount
     - denom
+    - token_address
     - error_message
     - timestamp
     filter: {}
