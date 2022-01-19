@@ -134,17 +134,21 @@ export default {
   },
   apollo: {
     $subscribe: {
-      block: {
+      chainInfo: {
         query: gql`
-          subscription blocks {
-            block(order_by: { id: desc }, where: {}, limit: 1) {
-              id
+          subscription chain_info {
+            chain_info {
+              name
+              count
             }
           }
         `,
         result({ data }) {
-          this.lastBlock = data.block[0].id
-          // this.totalIssuance = data.block[0].total_issuance
+          this.totalEvents = this.findCount(data.chain_info, 'events')
+          this.totalAccounts = this.findCount(data.chain_info, 'accounts')
+          this.totalContracts = this.findCount(data.chain_info, 'contracts')
+          this.totalTransfers = this.findCount(data.chain_info, 'transfers')
+          this.totalExtrinsics = this.findCount(data.chain_info, 'extrinsics')
         },
       },
       finalized: {
@@ -163,74 +167,16 @@ export default {
           this.lastFinalizedBlock = data.block[0].id
         },
       },
-      transfers: {
+      lastBlock: {
         query: gql`
-          subscription transfers {
-            transfer_aggregate {
-              aggregate {
-                count
-              }
+          subscription blocks {
+            block(limit: 1, order_by: { id: desc }) {
+              id
             }
           }
         `,
         result({ data }) {
-          this.totalTransfers = data.transfer_aggregate.aggregate.count
-        },
-      },
-      extrinsic: {
-        query: gql`
-          subscription extrinsic {
-            extrinsic_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalExtrinsics = data.extrinsic_aggregate.aggregate.count
-        },
-      },
-      evemt: {
-        query: gql`
-          subscription event {
-            event_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalEvents = data.event_aggregate.aggregate.count
-        },
-      },
-      contract: {
-        query: gql`
-          subscription contract {
-            contract_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalContracts = data.contract_aggregate.aggregate.count
-        },
-      },
-      accounts: {
-        query: gql`
-          subscription account_aggregate {
-            account_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalAccounts = parseInt(data.account_aggregate.aggregate.count)
+          this.lastBlock = data.block[0].id
         },
       },
     },
@@ -241,6 +187,9 @@ export default {
         .div(new BigNumber(10).pow(network.tokenDecimals))
         .toFixed(0)
         .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${network.tokenSymbol}`
+    },
+    findCount(counts, name) {
+      return counts.find((count) => count.name === name).count
     },
   },
 }

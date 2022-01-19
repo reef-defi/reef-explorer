@@ -24,30 +24,32 @@
         <Cell>Extrinsic</Cell>
         <Cell>
           <nuxt-link
-            :to="`/extrinsic/${transfer.block_id}/${transfer.index}`"
+            :to="`/extrinsic/${transfer.block_id}/${transfer.extrinsic.index}`"
             title="Check extrinsic information"
           >
-            # {{ formatNumber(transfer.block_id) }}-{{ transfer.index }}
+            # {{ formatNumber(transfer.block_id) }}-{{
+              transfer.extrinsic.index
+            }}
           </nuxt-link>
         </Cell>
       </Row>
 
       <Row>
         <Cell>Hash</Cell>
-        <Cell>{{ transfer.hash }}</Cell>
+        <Cell>{{ transfer.extrinsic.hash }}</Cell>
       </Row>
 
       <Row class="transfer-details__from">
         <Cell>From</Cell>
         <Cell>
-          <div v-if="transfer.signer">
+          <div v-if="transfer.from_address">
             <ReefIdenticon
-              :key="transfer.signer"
-              :address="transfer.signer"
+              :key="transfer.from_address"
+              :address="transfer.from_address"
               :size="20"
             />
-            <nuxt-link :to="`/account/${transfer.signer}`">
-              {{ transfer.signer }}
+            <nuxt-link :to="`/account/${transfer.from_address}`">
+              {{ transfer.from_address }}
             </nuxt-link>
           </div>
         </Cell>
@@ -56,25 +58,37 @@
       <Row class="transfer-details__to">
         <Cell>To</Cell>
         <Cell>
-          <div v-if="transfer.args[0].id">
+          <div v-if="transfer.to_address">
             <ReefIdenticon
-              :key="transfer.args[0].id"
-              :address="transfer.args[0].id"
+              :key="transfer.to_address"
+              :address="transfer.to_address"
               :size="20"
             />
-            <nuxt-link :to="`/account/${transfer.args[0].id}`">
-              {{ transfer.args[0].id }}
+            <nuxt-link :to="`/account/${transfer.to_address}`">
+              {{ transfer.to_address }}
             </nuxt-link>
           </div>
-          <div v-if="transfer.args[0].address20">
-            <eth-identicon
-              :address="toChecksumAddress(transfer.args[0].address20)"
-              :size="20"
-            />
-            <nuxt-link
-              :to="`/account/${toChecksumAddress(transfer.args[0].address20)}`"
-            >
-              {{ toChecksumAddress(transfer.args[0].address20) }}
+        </Cell>
+      </Row>
+
+      <Row class="transfer-details__deamon">
+        <Cell>Token name</Cell>
+        <Cell>
+          <div v-if="transfer.denom && transfer.token_address">
+            <nuxt-link :to="`/token/${transfer.token_address}`">
+              {{ transfer.denom }}
+            </nuxt-link>
+          </div>
+        </Cell>
+      </Row>
+
+      <Row class="transfer-details__token_address">
+        <Cell>Token address</Cell>
+        <Cell>
+          <div v-if="transfer.token_address">
+            <eth-identicon :address="transfer.token_address" :size="20" />
+            <nuxt-link :to="`/token/${transfer.token_address}`">
+              {{ transfer.token_address }}
             </nuxt-link>
           </div>
         </Cell>
@@ -82,21 +96,13 @@
 
       <Row class="transfer-details__amount">
         <Cell>Amount</Cell>
-        <Cell>{{
-          formatAmount(
-            transfer.section === 'currencies'
-              ? transfer.args[2]
-              : transfer.args[1]
-          )
-        }}</Cell>
+        <Cell>{{ formatAmount(transfer.amount) }}</Cell>
       </Row>
 
       <Row class="transfer-details__fee">
         <Cell>Fee</Cell>
         <Cell>
-          <div v-if="transfer.signed_data && transfer.signed_data.fee">
-            {{ formatAmount(transfer.signed_data.fee.partialFee) }}
-          </div>
+          {{ formatAmount(transfer.fee_amount) }}
         </Cell>
       </Row>
 
@@ -104,12 +110,12 @@
         <Cell>Status</Cell>
         <Cell>
           <font-awesome-icon
-            v-if="transfer.type === 'signed'"
+            v-if="transfer.success"
             icon="check"
             class="text-success"
           />
           <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="!transfer.type === 'signed'">
+          <template v-if="!transfer.success">
             <Promised
               :promise="
                 getExtrinsicFailedFriendlyError(
