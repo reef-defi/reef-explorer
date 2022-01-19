@@ -193,7 +193,7 @@ export default {
       favorites: [],
       nAccounts: 0,
       allAccounts: [],
-      favouriteAccounts: [],
+      favoriteAccounts: [],
       polling: null,
     }
   },
