@@ -46,21 +46,23 @@ export default {
     },
   },
   apollo: {
-    extrinsic: {
+    transfer: {
       query: gql`
-        query extrinsic($hash: String!) {
-          extrinsic(where: { hash: { _eq: $hash } }) {
+        query transfer($hash: String!) {
+          transfer(where: { extrinsic: { hash: { _eq: $hash } } }) {
+            amount
+            denom
             block_id
-            index
-            type
-            signer
-            signed_data
-            section
-            method
-            args
-            hash
-            docs
+            from_address
+            to_address
             timestamp
+            success
+            extrinsic {
+              hash
+              index
+            }
+            token_address
+            fee_amount
           }
         }
       `,
@@ -73,8 +75,8 @@ export default {
         }
       },
       result({ data }) {
-        if (data && data.extrinsic) {
-          this.transfer = data.extrinsic[0]
+        if (data && data.transfer) {
+          this.transfer = data.transfer[0]
         }
         this.loading = false
       },
