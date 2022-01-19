@@ -35,11 +35,24 @@
                 Verified source
                 <font-awesome-icon icon="check" />
               </b-badge>
-              <b-badge v-else class="ml-2" variant="danger">
-                Not verified source
-                <font-awesome-icon icon="times" />
-              </b-badge>
             </p>
+            <div v-if="!contract.verified_contract" class="unverified-section">
+              <div class="unverified-badge">
+                <div class="unverified-badge__content">
+                  <div class="unverified-badge__text">
+                    Contract's source code has not yet been published by it's
+                    creator.
+                  </div>
+                </div>
+              </div>
+
+              <nuxt-link
+                to="/verifyContract"
+                class="unverified-section__verify-btn"
+              >
+                Submit source
+              </nuxt-link>
+            </div>
           </h4>
 
           <Tabs v-model="tab" :options="tabs" />
