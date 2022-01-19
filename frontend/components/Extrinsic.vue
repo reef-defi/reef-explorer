@@ -138,9 +138,8 @@
         </Cell>
       </Row>
     </Data>
-
     <extrinsic-events
-      :block-number="parseInt(extrinsic.block_id)"
+      :extrinsic-id="parseInt(extrinsic.id)"
       :extrinsic-index="parseInt(extrinsic.index)"
     />
   </Card>
