@@ -72,8 +72,8 @@
 
       <Row class="extrinsic-details__documentation">
         <Cell>Documentation</Cell>
-        <Cell>
-          {{ extrinsic.docs }}
+        <Cell wrap>
+          <div v-html="extrinsic.docs" />
         </Cell>
       </Row>
 
@@ -172,18 +172,6 @@ export default {
     }
   }
 
-  .extrinsic-details__arguments {
-    .table-cell__content {
-      pre {
-        font-size: 13px;
-        line-height: 15px;
-        font-weight: 500;
-        color: #3e3f42;
-        margin: 0;
-      }
-    }
-  }
-
   .extrinsic-details__documentation,
   .extrinsic-details__arguments {
     .table-cell:last-child {
@@ -193,8 +181,22 @@ export default {
 
         .table-cell__content {
           padding: 15px 0;
-          white-space: initial;
           line-height: 1.6;
+
+          div {
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+
+          pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+            line-height: 15px;
+            font-weight: 500;
+            color: #3e3f42;
+            margin: 0;
+          }
         }
       }
     }
