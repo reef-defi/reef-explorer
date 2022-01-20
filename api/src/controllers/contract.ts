@@ -48,10 +48,11 @@ export const accountTokenBalance = async (req: AppRequest<TokenBalanceParam>, re
     const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress.toLowerCase(), req.body.contractAddress.toLowerCase());
 
     if (tokenBalances.length === 0) {
-      const decimals = await findERC20Token(req.body.contractAddress);
-      res.send({ balance: 0, decimals });
+      const token = await findERC20Token(req.body.contractAddress);
+      res.send({ balance: 0, decimals: token.decimals });
+    } else {
+      res.send({ balance: tokenBalances[0].balance, decimals: tokenBalances[0].decimals });
     }
-    res.send({ balance: tokenBalances[0].balance, decimals: tokenBalances[0].decimals });
   } catch (err) {
     res.status(errorStatus(err)).send(err.message);
   }

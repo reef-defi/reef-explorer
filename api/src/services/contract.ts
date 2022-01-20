@@ -1,4 +1,4 @@
-import { query, queryDb } from '../utils/connector';
+import { query } from '../utils/connector';
 import { PoolDB, Pool, Target } from '../utils/types';
 import { ensure } from '../utils/utils';
 
@@ -104,7 +104,7 @@ interface GetERC20 extends VerifiedContractBase {
 }
 
 export const findERC20Token = async (address: string): Promise<ERC20Token> => {
-  const res = await queryDb<GetERC20>(`SELECT contract_data as contractData, name, address FROM verified_contract WHERE type='ERC20' AND address='${address}';`);
+  const res = await query<GetERC20>('SELECT contract_data as contractData, name, address FROM verified_contract WHERE type=\'ERC20\' AND address=$1;', [address]);
   ensure(res.length > 0, 'Token does not exist');
   const data = res[0].contractdata;
   return {
@@ -117,8 +117,7 @@ export const findERC20Token = async (address: string): Promise<ERC20Token> => {
 };
 
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => {
-  const res = await queryDb<GetERC20>("SELECT address, name, contract_data as contractdata FROM verified_contract WHERE type='ERC20';");
-  console.log(res);
+  const res = await query<GetERC20>("SELECT address, name, contract_data as contractdata FROM verified_contract WHERE type='ERC20';", []);
   return res
     .map(({ address, name, contractdata }) => ({
       name,
@@ -134,4 +133,7 @@ interface TokenBalace {
   decimals: string;
 }
 
-export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => queryDb<TokenBalace>(`SELECT balance, decimals FROM token_holder WHERE token_address='${contractAddress}' AND signer='${accountAddress}';`);
+export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => query<TokenBalace>(
+  'SELECT balance, decimals FROM token_holder WHERE token_address=$1 AND signer=$2;',
+  [contractAddress, accountAddress],
+);

@@ -8,7 +8,7 @@ export const network = {
   nodeWs: 'ws://localhost:9944',
   backendWs: 'ws://localhost:8080/v1/graphql',
   backendHttp: 'http://localhost:8080/v1/graphql',
-  verificatorApi: 'http://localhost:8000/api/verificator',
+  verificatorApi: 'http://localhost:8000/api/verificator/submit-verificator',
   googleAnalytics: '',
   theme: '@/assets/scss/themes/reef.scss',
 }
