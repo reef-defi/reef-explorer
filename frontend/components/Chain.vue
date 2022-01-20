@@ -92,18 +92,12 @@
         </nuxt-link>
       </div>
     </div>
-    <!--   TODO Ziga
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.total_issuance') }}
-        </h4>
-        <h6 class="d-inline-block">
-          {{ formatAmount(totalIssuance) }}
-        </h6>
+        <h4 class="mb-3">Block time</h4>
+        <h6 class="d-inline-block">10s</h6>
       </div>
     </div>
-    -->
   </div>
 </template>
 
@@ -209,7 +203,7 @@ export default {
 .chain-info {
   display: flex;
   flex-flow: row nowrap;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-end;
   padding-bottom: 30px;
   position: relative;
@@ -260,6 +254,7 @@ export default {
 
   @media only screen and (max-width: 1199.98px) {
     flex-wrap: wrap;
+    justify-content: flex-start;
     margin-top: -20px;
 
     .card {
