@@ -1,3 +1,4 @@
+import format from 'pg-format';
 import { query } from '../utils/connector';
 import {
   User, UserTokenBalance,
@@ -39,11 +40,11 @@ export const findUserContracts = async (address: string): Promise<Contract[]> =>
 
 const userTokenBalanceToValue = ({
   tokenAddress, address, evmaddress, balance, decimals,
-}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, evmaddress, 'Account', balance, decimals, new Date().toUTCString()];// `('${tokenAddress.toLowerCase()}', '${address}', '${evmaddress}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
+}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, evmaddress, 'Account', balance.toString(), decimals, new Date().toUTCString()];// `('${tokenAddress.toLowerCase()}', '${address}', '${evmaddress}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }
-  await query(`
+  await query(format(`
     INSERT INTO token_holder 
       (token_address, signer, evm_address, type, balance, decimals, timestamp)
     VALUES
@@ -52,5 +53,5 @@ export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]
       signer = EXCLUDED.signer,
       balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;
-  `, accountTokenBalances.map(userTokenBalanceToValue));
+  `, accountTokenBalances.map(userTokenBalanceToValue)), []);
 };
