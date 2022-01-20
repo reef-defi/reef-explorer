@@ -8,7 +8,7 @@ export const network = {
   nodeWs: 'wss://rpc.reefscan.com/ws',
   backendWs: 'wss://reefscan.com/api/v3',
   backendHttp: 'https://reefscan.com/api/v3',
-  verificatorApi: 'https://reefscan.com/api/verificator',
+  verificatorApi: 'https://reefscan.com/api/verificator/submit-verification',
   googleAnalytics: '',
   theme: '@/assets/scss/themes/reef.scss',
 }
