@@ -1,4 +1,4 @@
-import format  from "pg-format"
+import format from 'pg-format';
 import { query } from '../utils/connector';
 import {
   User, UserTokenBalance,
