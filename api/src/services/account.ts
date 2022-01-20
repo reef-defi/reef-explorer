@@ -19,7 +19,8 @@ interface UserTokenDB {
   };
 }
 
-export const findUserTokens = async (address: string): Promise<UserTokenDB[]> => query<UserTokenDB>(`
+export const findUserTokens = async (address: string): Promise<UserTokenDB[]> => query<UserTokenDB>(
+  `
   SELECT v.address, t.balance, v.contract_data FROM verified_contract as v
   INNER JOIN contract as c
     ON v.address = c.address
@@ -27,18 +28,18 @@ export const findUserTokens = async (address: string): Promise<UserTokenDB[]> =>
     ON v.address = t.token_address AND t.signer = $1
   WHERE v.type = 'ERC20';
     `,
-    [address]
+  [address],
 );
 
 interface Contract {
   address: string;
 }
 
-export const findUserContracts = async (address: string): Promise<Contract[]> => query<Contract>(`SELECT address FROM contract WHERE signer=$1;`, [address]);
+export const findUserContracts = async (address: string): Promise<Contract[]> => query<Contract>('SELECT address FROM contract WHERE signer=$1;', [address]);
 
 const userTokenBalanceToValue = ({
   tokenAddress, address, evmaddress, balance, decimals,
-}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, evmaddress, 'Account', balance, decimals, new Date().toUTCString()]//`('${tokenAddress.toLowerCase()}', '${address}', '${evmaddress}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
+}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, evmaddress, 'Account', balance, decimals, new Date().toUTCString()];// `('${tokenAddress.toLowerCase()}', '${address}', '${evmaddress}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }

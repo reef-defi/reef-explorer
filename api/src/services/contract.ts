@@ -104,7 +104,7 @@ interface GetERC20 extends VerifiedContractBase {
 }
 
 export const findERC20Token = async (address: string): Promise<ERC20Token> => {
-  const res = await query<GetERC20>(`SELECT contract_data as contractData, name, address FROM verified_contract WHERE type='ERC20' AND address=$1;`, [address]);
+  const res = await query<GetERC20>('SELECT contract_data as contractData, name, address FROM verified_contract WHERE type=\'ERC20\' AND address=$1;', [address]);
   ensure(res.length > 0, 'Token does not exist');
   const data = res[0].contractdata;
   return {
@@ -134,6 +134,6 @@ interface TokenBalace {
 }
 
 export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => query<TokenBalace>(
-  `SELECT balance, decimals FROM token_holder WHERE token_address=$1 AND signer=$2;`, 
-  [contractAddress, accountAddress]
+  'SELECT balance, decimals FROM token_holder WHERE token_address=$1 AND signer=$2;',
+  [contractAddress, accountAddress],
 );
