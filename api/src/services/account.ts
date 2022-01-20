@@ -1,9 +1,9 @@
-import { queryDb } from '../utils/connector';
+import { query } from '../utils/connector';
 import {
   User, UserTokenBalance,
 } from '../utils/types';
 
-export const getAllUsersWithEvmAddress = async (): Promise<User[]> => queryDb<User>(`
+export const getAllUsersWithEvmAddress = async (): Promise<User[]> => query<User>(`
     SELECT address, evm_address as evmAddress, free_balance as freeBalance, locked_balance as lockedBalance, available_balance as availableBalance 
     FROM account 
     WHERE active=true AND LENGTH(evm_address) = 42;
@@ -19,7 +19,7 @@ interface UserTokenDB {
   };
 }
 
-export const findUserTokens = async (address: string): Promise<UserTokenDB[]> => queryDb<UserTokenDB>(`
+export const findUserTokens = async (address: string): Promise<UserTokenDB[]> => query<UserTokenDB>(`
   SELECT v.address, t.balance, v.contract_data FROM verified_contract as v
   INNER JOIN contract as c
     ON v.address = c.address
@@ -34,7 +34,7 @@ interface Contract {
   address: string;
 }
 
-export const findUserContracts = async (address: string): Promise<Contract[]> => queryDb<Contract>(`SELECT address FROM contract WHERE signer=$1;`, [address]);
+export const findUserContracts = async (address: string): Promise<Contract[]> => query<Contract>(`SELECT address FROM contract WHERE signer=$1;`, [address]);
 
 const userTokenBalanceToValue = ({
   tokenAddress, address, evmaddress, balance, decimals,
@@ -42,7 +42,7 @@ const userTokenBalanceToValue = ({
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }
-  await queryDb(`
+  await query(`
     INSERT INTO token_holder 
       (token_address, signer, evm_address, type, balance, decimals, timestamp)
     VALUES
