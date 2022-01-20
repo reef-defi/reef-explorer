@@ -1,6 +1,7 @@
 import { Contract as EthContract, utils } from 'ethers';
 import { getProvider, nodeQuery } from '../utils/connector';
 import { resolveSigner } from './extrinsic';
+import { BigNumber } from "ethers";
 import {
   ExtrinsicBody,
   Event,
@@ -247,8 +248,8 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
         tokenAddress: address,
         amount: amount.toString(),
         toAddress: toAddress.toString(),
-        fromAddress: toAddress.toString(),
-        feeAmount: signedData.fee.toString(),
+        fromAddress: fromAddress.toString(),
+        feeAmount: BigNumber.from(signedData.fee.partialFee).toString(),
         timestamp,
         success: true,
         errorMessage: "",
