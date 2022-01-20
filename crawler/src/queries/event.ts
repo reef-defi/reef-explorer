@@ -1,8 +1,9 @@
-import { AccountBody, EventBody, BytecodeLog } from '../crawler/types';
+import { AccountBody, EventBody, BytecodeLog, Event } from '../crawler/types';
+import { GenericEventData } from '@polkadot/types/generic/Event';
 import { insert } from '../utils/connector';
 import { utils as ethersUtils } from 'ethers';
 import { getContractDB } from '../queries/evmEvent';
-import { GenericEventData } from '@polkadot/types/generic/Event';
+import { stringify } from 'querystring';
 
 const toEventValue = async ({
   id,
@@ -16,29 +17,30 @@ const toEventValue = async ({
   timestamp,
 }: EventBody): Promise<string> => {
   //TODO we should probably move this to somewhere more appropriate
-  let parsedData = undefined;
-  if (section == 'EVM' && (method == 'ExecutedFailed' || method == 'Log')) {
-    parsedData = await parseEvent(data, method);
-  }
-  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${parsedData || '{}'}', '${JSON.stringify(phase,)}', '${timestamp}')`
+  const parsedEvmData = (section == 'evm' && (method == 'ExecutedFailed' || method == 'Log')) ? await parseEvmData(method, data) : undefined;
+  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(parsedEvmData) || '{}'}', '${JSON.stringify(phase,)}', '${timestamp}')`
   };
 
-const parseEvent = async (eventData: GenericEventData, method: string) => {
-  const address = eventData.at(0)!.toString();
-  const contract = await getContractDB(address);
-  if ( contract.length == 0 ) {
-    return undefined
+const parseEvmData = async (method: string, data: GenericEventData) => {
+  const eventData = (data.toJSON() as any);
+  if ( method == 'Log') {
+    const {address, topics, data} : BytecodeLog = eventData[0];
+    const contract = await getContractDB(address);
+    if ( contract.length == 0 ) {
+      return undefined
+    }
+    const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
+    return iface.parseLog({ topics, data })
+  } else if (method == 'ExecutedFailed') {
+    const address = eventData[0];
+    const errorBytecode = eventData[-1];
+    const contract = await getContractDB(address);
+    if ( contract.length == 0) {
+      return undefined
+    }
+    const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
+    return iface.parseError(errorBytecode);
   }
-  const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
-  if (method == 'ExecutedFailed') {
-    const decoded = iface.parseError(eventData.at(-1)!.toString());
-    return decoded
-  } 
-  //TODO refactor to include EVM Log
-  // else if (method == 'Log') {
-  //   const {address, topics, data }: BytecodeLog = (eventData.toJSON() as any)[0];
-  //   const decoded = iface.parseLog({ topics, data })
-  // }
   return undefined
 }
 
