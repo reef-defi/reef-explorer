@@ -32,12 +32,14 @@ import { insertAccounts, insertEvents } from '../queries/event';
 import { accountHeadToBody, accountNewOrKilled } from './event';
 import {
   dropDuplicates,
+  dropDuplicatesMultiKey,
   range,
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
   extractEvmLogHeaders,
   extractTokenBalance,
+  extractTokenTransfer,
   extractTokenTransferEvents,
   extrinsicToContract,
   extrinsicToEVMCall,
@@ -263,12 +265,20 @@ export default async (
   const evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
 
   logger.info('Extracting ERC20 transfer events');
+  transfers.push(...await resolvePromisesAsChunks(extractTokenTransfer(evmLogs)));
+
+  console.log(transfers);
+  
+  logger.info('Extracting ERC20 token balances');
   const tokenTransferEvents = extractTokenTransferEvents(evmLogs);
 
   logger.info('Retrieving ERC20 account token balances');
   transactions += tokenTransferEvents.length;
   const tokenHolders = await resolvePromisesAsChunks(
-    tokenTransferEvents.map(extractTokenBalance),
+    dropDuplicatesMultiKey(
+      tokenTransferEvents,
+      ['signerAddress', 'contractAddress'],
+    ).map(extractTokenBalance)
   );
 
   logger.info('Compressing transfer, event accounts, evm claim account');
