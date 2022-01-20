@@ -3,7 +3,6 @@ import { GenericEventData } from '@polkadot/types/generic/Event';
 import { insert } from '../utils/connector';
 import { utils as ethersUtils } from 'ethers';
 import { getContractDB } from '../queries/evmEvent';
-import { stringify } from 'querystring';
 
 const toEventValue = async ({
   id,
