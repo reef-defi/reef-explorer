@@ -14,6 +14,7 @@ import {
   TokenBalanceHead,
   BytecodeLog,
   BytecodeLogWithBlockId,
+  Transfer,
 } from './types';
 import { findErc20TokenDB } from '../queries/evmEvent';
 import {
@@ -212,24 +213,55 @@ export const extractTokenBalance = async ({
 
 export const extractEvmLogHeaders = (
   extrinsicEvmCalls: ExtrinsicBody[],
-): Promise<EvmLog | undefined>[] => extrinsicEvmCalls.map(({ events, blockId, timestamp }) => events.map((event) => ({ event, blockId, timestamp }))).flat()
+): Promise<EvmLog | undefined>[] => extrinsicEvmCalls
+  .map(({ events, blockId, timestamp, id, signedData }) => 
+    events.map((event) => ({ event, blockId, timestamp, extrinsicId: id, signedData }))
+  )
+  .flat()
   .filter(
     ({ event: { event: { method, section } } }) => method === 'Log' && section === 'evm',
   )
-  .map(({ event, blockId, timestamp }): BytecodeLogWithBlockId => {
+  .map(({ event, blockId, timestamp, extrinsicId, signedData }): BytecodeLogWithBlockId => {
     const a = (event.event.data.toJSON() as any)[0];
-    return { ...a, timestamp, blockId };
+    return { ...a, timestamp, blockId, extrinsicId, signedData };
   })
   .map(extractEvmLog);
 
-export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]): TokenBalanceHead[] => dropDuplicatesMultiKey(
-    evmLogs
-      .filter(removeUndefinedItem)
-      .map(decodeEvmLog)
-      .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
-      .map(erc20TransferEvent).flat(),
-  ['signerAddress', 'contractAddress'],
-);
+export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<Transfer>[] =>
+  evmLogs
+    .filter(removeUndefinedItem)
+    .map(decodeEvmLog)
+    .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
+    .map(async ({decodedEvent, timestamp, address, blockId, data, name, extrinsicId, signedData}) => {
+      console.log("Decoded event")
+      console.log(decodedEvent)
+      const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
+      const [fromAddress, toAddress] = await Promise.all([
+        nodeQuery((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
+        nodeQuery((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
+      ])
+      return {
+        blockId,
+        denom: name,
+        extrinsicId,
+        tokenAddress: address,
+        amount: amount.toString(),
+        toAddress: toAddress.toString(),
+        fromAddress: toAddress.toString(),
+        feeAmount: signedData.fee.toString(),
+        timestamp,
+        success: true,
+        errorMessage: "",
+      }
+    })
+
+export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]): TokenBalanceHead[] => 
+  evmLogs
+    .filter(removeUndefinedItem)
+    .map(decodeEvmLog)
+    .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
+    .map(erc20TransferEvent)
+    .flat()
 
 export const tokenHolderToAccount = ({ signer, blockId, timestamp }: TokenHolder): AccountHead[] => [
   {

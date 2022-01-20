@@ -49,7 +49,6 @@ export interface ExtrinsicHead {
 }
 
 export interface SignedExtrinsicData {
-  // TODO set tipes
   fee: any;
   feeDetails: any;
 }
@@ -170,15 +169,16 @@ export interface BytecodeLog {
 
 export interface BytecodeLogWithBlockId extends BytecodeLog {
   blockId: number;
+  extrinsicId: number;
+  signedData: SignedExtrinsicData;
   timestamp: string;
 }
 
-export interface EvmLog extends BytecodeLog {
+export interface EvmLog extends BytecodeLogWithBlockId {
   abis: ABIS;
   name: string;
   blockId: number;
   decimals: number;
-  timestamp: string;
 }
 
 export interface EvmLogWithDecodedEvent extends EvmLog {
