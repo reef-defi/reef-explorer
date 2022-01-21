@@ -336,13 +336,7 @@ export default {
 
             this.contract.source = Object.keys(
               data.contract[0].verified_contract.source
-            ).reduce(
-              (acc, current) => [
-                ...acc,
-                `\n${current}\n---------------------------\n${data.contract[0].verified_contract.source[current]}`,
-              ],
-              []
-            )
+            ).reduce(this.sourceCode(data), [])
           }
           this.loading = false
         },

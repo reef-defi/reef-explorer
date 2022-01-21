@@ -12,7 +12,6 @@
       <Table>
         <THead>
           <Cell>Transaction</Cell>
-          <Cell>Extrinsic</Cell>
           <Cell>From address</Cell>
           <Cell>To address</Cell>
           <Cell>Amount</Cell>
@@ -24,16 +23,6 @@
           <Cell :link="`/contract/tx/${item.extrinsic.hash}`">{{
             shortHash(item.extrinsic.hash)
           }}</Cell>
-
-          <Cell
-            :link="{
-              url: `/extrinsic/${item.extrinsic.block_id}/${item.index}`,
-              fill: false,
-            }"
-            ># {{ formatNumber(item.extrinsic.block_id) }}-{{
-              item.extrinsic.index
-            }}</Cell
-          >
 
           <Cell
             :link="{ url: `/account/${item.from_address}`, fill: false }"
