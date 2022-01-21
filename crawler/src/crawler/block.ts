@@ -132,7 +132,7 @@ const extrinsicBody = (nextFreeId: number) => async (
 
 const extrinsicToInsert = (
   {
-    id, extrinsic, signedData, blockId, events, timestamp, index
+    id, extrinsic, signedData, blockId, events, timestamp, index,
   }: ExtrinsicBody,
 ): InsertExtrinsicBody => {
   const status = extrinsicStatus(events);

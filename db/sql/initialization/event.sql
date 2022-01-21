@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS event (
   section TEXT NOT NULL,
   method TEXT NOT NULL,
   data JSON NOT NULL,
+  parsed_data JSON,
 
   timestamp timestamptz NOT NULL,
 

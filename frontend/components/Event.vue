@@ -60,6 +60,13 @@
           <pre>{{ JSON.stringify(event.data, null, 2) }}</pre>
         </Cell>
       </Row>
+
+      <Row class="event-details__data">
+        <Cell>Parsed Data</Cell>
+        <Cell>
+          <pre>{{ JSON.stringify(event.parsed_data, null, 2) }}</pre>
+        </Cell>
+      </Row>
     </Data>
   </Card>
 </template>

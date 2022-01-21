@@ -1,7 +1,43 @@
-import { AccountBody, EventBody } from '../crawler/types';
+import { GenericEventData } from '@polkadot/types/generic/Event';
+import { utils as ethersUtils } from 'ethers';
+import {
+  AccountBody, EventBody, BytecodeLog,
+} from '../crawler/types';
 import { insert } from '../utils/connector';
+import { getContractDB } from './evmEvent';
 
-const toEventValue = ({
+const parseEvmData = async (method: string, genericData: GenericEventData) => {
+  const eventData = (genericData.toJSON() as any);
+  if (method === 'Log') {
+    const { address, topics, data } : BytecodeLog = eventData[0];
+    const contract = await getContractDB(address);
+    if (contract.length === 0) {
+      return undefined;
+    }
+    const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
+    try {
+      return iface.parseLog({ topics, data });
+    } catch {
+      return undefined;
+    }
+  } else if (method === 'ExecutedFailed') {
+    const address = eventData[0];
+    const errorBytecode = eventData[2];
+    const contract = await getContractDB(address);
+    if (contract.length === 0) {
+      return undefined;
+    }
+    const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
+    try {
+      return iface.parseError(errorBytecode);
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+};
+
+const toEventValue = async ({
   id,
   blockId,
   extrinsicId,
@@ -11,18 +47,19 @@ const toEventValue = ({
     phase,
   },
   timestamp,
-}: EventBody): string => `
-  (${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(
-  phase,
-)}', '${timestamp}')`;
+}: EventBody): Promise<string> => {
+  // TODO we should probably move this to somewhere more appropriate
+  const parsedEvmData = (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')) ? await parseEvmData(method, data) : undefined;
+  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(parsedEvmData) || '{}'}', '${JSON.stringify(phase)}', '${timestamp}')`;
+};
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
     await insert(`
 INSERT INTO event
-  (id, block_id, extrinsic_id, index, section, method, data, phase, timestamp)
+  (id, block_id, extrinsic_id, index, section, method, data, parsed_data, phase, timestamp)
 VALUES
-  ${events.map(toEventValue).join(',\n')};
+  ${(await Promise.all(events.map(toEventValue))).join(',\n')};
 `);
   }
 };

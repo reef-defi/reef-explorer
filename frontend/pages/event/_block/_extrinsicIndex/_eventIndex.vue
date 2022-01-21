@@ -75,6 +75,7 @@ export default {
             }
             index
             data
+            parsed_data
             method
             phase
             section
