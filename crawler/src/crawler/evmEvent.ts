@@ -223,11 +223,12 @@ export const extractEvmLogHeaders = (
   .map(extractEvmLog);
 
 export const extractTokenTransferEvents = (evmLogs: (EvmLog | undefined)[]): TokenBalanceHead[] => dropDuplicatesMultiKey(
-    evmLogs
-      .filter(removeUndefinedItem)
-      .map(decodeEvmLog)
-      .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
-      .map(erc20TransferEvent).flat(),
+  evmLogs
+    .filter(removeUndefinedItem)
+    .map(decodeEvmLog)
+    .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
+    .map(erc20TransferEvent)
+    .flat(),
   ['signerAddress', 'contractAddress'],
 );
 
