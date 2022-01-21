@@ -228,19 +228,21 @@ export const extractEvmLogHeaders = (
   })
   .map(extractEvmLog);
 
-export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<Transfer>[] =>
+export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<Transfer|undefined>[] =>
   evmLogs
     .filter(removeUndefinedItem)
     .map(decodeEvmLog)
     .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
     .map(async ({decodedEvent, timestamp, address, blockId, data, name, extrinsicId, signedData}) => {
-      console.log("Decoded event")
-      console.log(decodedEvent)
       const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
       const [fromAddress, toAddress] = await Promise.all([
         nodeQuery((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
         nodeQuery((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
       ])
+      if (fromAddress.toString() === "" || toAddress.toString() === "") {
+        return undefined
+      }
+
       return {
         blockId,
         denom: name,
