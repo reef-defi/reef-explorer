@@ -4,22 +4,6 @@ import { insert } from '../utils/connector';
 import { utils as ethersUtils } from 'ethers';
 import { getContractDB } from '../queries/evmEvent';
 
-const toEventValue = async ({
-  id,
-  blockId,
-  extrinsicId,
-  index,
-  event: {
-    event: { method, section, data },
-    phase,
-  },
-  timestamp,
-}: EventBody): Promise<string> => {
-  //TODO we should probably move this to somewhere more appropriate
-  const parsedEvmData = (section == 'evm' && (method == 'ExecutedFailed' || method == 'Log')) ? await parseEvmData(method, data) : undefined;
-  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(parsedEvmData) || '{}'}', '${JSON.stringify(phase,)}', '${timestamp}')`
-  };
-
 const parseEvmData = async (method: string, data: GenericEventData) => {
   const eventData = (data.toJSON() as any);
   if ( method == 'Log') {
@@ -42,6 +26,22 @@ const parseEvmData = async (method: string, data: GenericEventData) => {
   }
   return undefined
 }
+
+const toEventValue = async ({
+  id,
+  blockId,
+  extrinsicId,
+  index,
+  event: {
+    event: { method, section, data },
+    phase,
+  },
+  timestamp,
+}: EventBody): Promise<string> => {
+  //TODO we should probably move this to somewhere more appropriate
+  const parsedEvmData = (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')) ? await parseEvmData(method, data) : undefined;
+  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(parsedEvmData) || '{}'}', '${JSON.stringify(phase,)}', '${timestamp}')`
+  };
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
