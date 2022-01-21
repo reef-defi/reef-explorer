@@ -34,6 +34,7 @@ import {
   dropDuplicates,
   dropDuplicatesMultiKey,
   range,
+  removeUndefinedItem,
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
@@ -265,10 +266,12 @@ export default async (
   const evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
 
   logger.info('Extracting ERC20 transfer events');
-  transfers.push(...await resolvePromisesAsChunks(extractTokenTransfer(evmLogs)));
+  const tokenTransfers = await resolvePromisesAsChunks(extractTokenTransfer(evmLogs));
 
-  console.log(transfers);
-  
+  transfers.push(...tokenTransfers
+    .filter(removeUndefinedItem)
+  );
+
   logger.info('Extracting ERC20 token balances');
   const tokenTransferEvents = extractTokenTransferEvents(evmLogs);
 
@@ -285,7 +288,6 @@ export default async (
   const allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
-  allAccounts.push(...tokenHolders.map(tokenHolderToAccount));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
