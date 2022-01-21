@@ -13,16 +13,27 @@ const parseEvmData = async (method: string, data: GenericEventData) => {
       return undefined
     }
     const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
-    return iface.parseLog({ topics, data })
+    try {
+      return iface.parseLog({ topics, data })
+    } catch {
+      return undefined
+    }
   } else if (method == 'ExecutedFailed') {
     const address = eventData[0];
-    const errorBytecode = eventData[-1];
+    const errorBytecode = eventData[2];
     const contract = await getContractDB(address);
     if ( contract.length == 0) {
       return undefined
     }
     const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
-    return iface.parseError(errorBytecode);
+    console.log("I'm here");
+    console.log(eventData);
+    try {
+      return iface.parseError(errorBytecode)
+    } catch {
+      return undefined
+    }
+    console.log("not here");
   }
   return undefined
 }
