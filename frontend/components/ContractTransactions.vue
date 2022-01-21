@@ -12,6 +12,7 @@
       <Table>
         <THead>
           <Cell>Transaction</Cell>
+          <Cell>Extrinsic</Cell>
           <Cell>From address</Cell>
           <Cell>To address</Cell>
           <Cell>Amount</Cell>
@@ -23,6 +24,14 @@
           <Cell :link="`/contract/tx/${item.extrinsic.hash}`">{{
             shortHash(item.extrinsic.hash)
           }}</Cell>
+
+          <Cell
+            :link="`/extrinsic/${item.extrinsic.block_id}/${item.extrinsic.index}`"
+          >
+            #{{ formatNumber(item.extrinsic.block_id) }}-{{
+              formatNumber(item.extrinsic.index)
+            }}
+          </Cell>
 
           <Cell
             :link="{ url: `/account/${item.from_address}`, fill: false }"
@@ -50,13 +59,13 @@
 
           <Cell>{{ formatAmount(item.amount) }}</Cell>
 
-          <Cell class="list-view__age">
+          <Cell
+            v-b-tooltip.hover
+            class="list-view__age"
+            :title="formatTimestamp(item.timestamp)"
+          >
             <font-awesome-icon :icon="['far', 'clock']" />
-            <span
-              >{{ fromNow(item.timestamp) }} ({{
-                formatTimestamp(item.timestamp)
-              }})</span
-            >
+            <span>{{ getAge(item.timestamp) }}</span>
           </Cell>
 
           <Cell align="center">
