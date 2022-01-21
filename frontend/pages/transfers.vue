@@ -144,9 +144,10 @@ export default {
                 extrinsic: { block_id: $blockNumber, hash: $extrinsicHash }
                 from_account: { address: $fromAddress }
               }
-              order_by: { block_id: desc, extrinsic: { index: desc } }
+              order_by: { block_id: desc }
             ) {
               extrinsic {
+                id
                 hash
                 block_id
               }

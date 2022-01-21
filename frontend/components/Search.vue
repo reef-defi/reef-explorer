@@ -3,10 +3,10 @@
   <div>
     <b-row class="mb-4 search-section">
       <div class="search-section__alert container">
-        <div class="search-section__alert-message">
+        <!--        <div class="search-section__alert-message">
           Reef indexing system is getting major upgrade. Some data on this site
           is currently not updated.
-        </div>
+        </div>-->
       </div>
 
       <div class="container">

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '../utils/config';
-import { queryDb } from '../utils/connector';
+import { query } from '../utils/connector';
 import { ensure } from '../utils/utils';
 
 const REEF_DENOM = 'reef-finance';
@@ -38,7 +38,7 @@ interface LastBlock {
 }
 
 export const getLastBlock = async (): Promise<LastBlock> => {
-  const res = await queryDb<LastBlock>('SELECT id, current_timestamp as timestamp FROM block ORDER BY id DESC limit 1');
+  const res = await query<LastBlock>('SELECT id, current_timestamp as timestamp FROM block ORDER BY id DESC limit 1', []);
   ensure(res.length > 0, 'Last block is not found');
   return {
     id: res[0].id,

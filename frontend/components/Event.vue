@@ -1,17 +1,37 @@
 <template>
   <Card v-if="event" class="event-details">
     <Headline
-      >Event {{ $route.params.block }}-{{ $route.params.index }}
+      >Event {{ event.extrinsic.block_id }}-{{ event.extrinsic.index }}-{{
+        event.index
+      }}
     </Headline>
 
     <Data>
       <Row>
         <Cell>Block number</Cell>
         <Cell
-          ><nuxt-link :to="`/block?blockNumber=${event.block_id}`">
-            # {{ formatNumber(event.block_id) }}
+          ><nuxt-link :to="`/block?blockNumber=${event.extrinsic.block_id}`">
+            # {{ formatNumber(event.extrinsic.block_id) }}
           </nuxt-link>
         </Cell>
+      </Row>
+
+      <Row>
+        <Cell>Extrinsic</Cell>
+        <Cell
+          ><nuxt-link
+            :to="`/extrinsic/${event.extrinsic.block_id}/${event.extrinsic.index}`"
+          >
+            # {{ formatNumber(event.extrinsic.block_id) }}-{{
+              formatNumber(event.extrinsic.index)
+            }}
+          </nuxt-link>
+        </Cell>
+      </Row>
+
+      <Row>
+        <Cell>Event Index</Cell>
+        <Cell>{{ event.index }}</Cell>
       </Row>
 
       <Row>
@@ -19,11 +39,6 @@
         <Cell>
           {{ getDateFromTimestamp(event.timestamp) }}
         </Cell>
-      </Row>
-
-      <Row>
-        <Cell>Event Index</Cell>
-        <Cell>{{ event.index }}</Cell>
       </Row>
 
       <Row>

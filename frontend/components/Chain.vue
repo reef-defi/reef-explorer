@@ -68,9 +68,7 @@
 
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.transfers') }}
-        </h4>
+        <h4 class="mb-3">{{ $t('components.network.transfers') }}</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/transfers"
@@ -82,9 +80,7 @@
     </div>
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.contracts') }}
-        </h4>
+        <h4 class="mb-3">{{ $t('components.network.contracts') }}</h4>
         <nuxt-link
           v-b-tooltip.hover
           to="/contracts"
@@ -96,18 +92,12 @@
         </nuxt-link>
       </div>
     </div>
-    <!--   TODO Ziga
     <div class="card">
       <div class="card-body">
-        <h4 class="mb-3">
-          {{ $t('components.network.total_issuance') }}
-        </h4>
-        <h6 class="d-inline-block">
-          {{ formatAmount(totalIssuance) }}
-        </h6>
+        <h4 class="mb-3">Block time</h4>
+        <h6 class="d-inline-block">10s</h6>
       </div>
     </div>
-    -->
   </div>
 </template>
 
@@ -134,17 +124,21 @@ export default {
   },
   apollo: {
     $subscribe: {
-      block: {
+      chainInfo: {
         query: gql`
-          subscription blocks {
-            block(order_by: { id: desc }, where: {}, limit: 1) {
-              id
+          subscription chain_info {
+            chain_info {
+              name
+              count
             }
           }
         `,
         result({ data }) {
-          this.lastBlock = data.block[0].id
-          // this.totalIssuance = data.block[0].total_issuance
+          this.totalEvents = this.findCount(data.chain_info, 'events')
+          this.totalAccounts = this.findCount(data.chain_info, 'accounts')
+          this.totalContracts = this.findCount(data.chain_info, 'contracts')
+          // this.totalTransfers = this.findCount(data.chain_info, 'transfers')
+          this.totalExtrinsics = this.findCount(data.chain_info, 'extrinsics')
         },
       },
       finalized: {
@@ -163,9 +157,21 @@ export default {
           this.lastFinalizedBlock = data.block[0].id
         },
       },
-      transfers: {
+      lastBlock: {
         query: gql`
-          subscription transfers {
+          subscription blocks {
+            block(limit: 1, order_by: { id: desc }) {
+              id
+            }
+          }
+        `,
+        result({ data }) {
+          this.lastBlock = data.block[0].id
+        },
+      },
+      totalTransfers: {
+        query: gql`
+          subscription total {
             transfer_aggregate {
               aggregate {
                 count
@@ -177,62 +183,6 @@ export default {
           this.totalTransfers = data.transfer_aggregate.aggregate.count
         },
       },
-      extrinsic: {
-        query: gql`
-          subscription extrinsic {
-            extrinsic_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalExtrinsics = data.extrinsic_aggregate.aggregate.count
-        },
-      },
-      evemt: {
-        query: gql`
-          subscription event {
-            event_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalEvents = data.event_aggregate.aggregate.count
-        },
-      },
-      contract: {
-        query: gql`
-          subscription contract {
-            contract_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalContracts = data.contract_aggregate.aggregate.count
-        },
-      },
-      accounts: {
-        query: gql`
-          subscription account_aggregate {
-            account_aggregate {
-              aggregate {
-                count
-              }
-            }
-          }
-        `,
-        result({ data }) {
-          this.totalAccounts = parseInt(data.account_aggregate.aggregate.count)
-        },
-      },
     },
   },
   methods: {
@@ -242,6 +192,9 @@ export default {
         .toFixed(0)
         .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${network.tokenSymbol}`
     },
+    findCount(counts, name) {
+      return counts.find((count) => count.name === name).count
+    },
   },
 }
 </script>
@@ -250,7 +203,7 @@ export default {
 .chain-info {
   display: flex;
   flex-flow: row nowrap;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-end;
   padding-bottom: 30px;
   position: relative;
@@ -301,6 +254,7 @@ export default {
 
   @media only screen and (max-width: 1199.98px) {
     flex-wrap: wrap;
+    justify-content: flex-start;
     margin-top: -20px;
 
     .card {

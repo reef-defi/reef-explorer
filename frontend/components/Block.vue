@@ -95,13 +95,12 @@
         <Cell>{{ extrinsic.args }}</Cell>
         <Cell align="center">
           <font-awesome-icon
-            v-if="extrinsic.type === 'signed'"
+            v-if="!extrinsic.error_message"
             icon="check"
             class="text-success"
           />
           <div v-else>
             <font-awesome-icon icon="times" class="text-danger" />
-            <small>({{ extrinsic.type }})</small>
           </div>
         </Cell>
       </Row>

@@ -41,7 +41,6 @@
           />
           <div v-else>
             <font-awesome-icon icon="times" class="text-danger" />
-            <small>({{ extrinsic.type }})</small>
           </div>
         </Cell>
       </Row>
@@ -72,8 +71,8 @@
 
       <Row class="extrinsic-details__documentation">
         <Cell>Documentation</Cell>
-        <Cell>
-          {{ extrinsic.docs }}
+        <Cell wrap>
+          <div v-html="extrinsic.docs" />
         </Cell>
       </Row>
 
@@ -110,47 +109,24 @@
           </div>
         </Cell>
       </Row> -->
-
-      <Row>
-        <Cell>Description</Cell>
+      <Row v-if="!!extrinsic.error_message">
+        <Cell>Error Description</Cell>
         <Cell>
-          <font-awesome-icon
-            v-if="extrinsic.type === 'signed'"
-            icon="check"
-            class="text-success"
-          />
-          <font-awesome-icon v-else icon="times" class="text-danger" />
-          <template v-if="extrinsic.type !== 'signed'">
-            <Promised
-              :promise="
-                getExtrinsicFailedFriendlyError(
-                  extrinsic.block_id,
-                  extrinsic.index,
-                  $apollo.provider.defaultClient
-                )
-              "
-            >
-              <template #default="data">
-                <span class="text-danger ml-2">{{ data }}</span>
-              </template>
-            </Promised>
-          </template>
+          {{ extrinsic.error_message }}
         </Cell>
       </Row>
     </Data>
-
     <extrinsic-events
-      :block-number="parseInt(extrinsic.block_id)"
+      :extrinsic-id="parseInt(extrinsic.id)"
       :extrinsic-index="parseInt(extrinsic.index)"
     />
   </Card>
 </template>
 
 <script>
-import { Promised } from 'vue-promised'
 import commonMixin from '@/mixins/commonMixin.js'
 export default {
-  components: { Promised },
+  components: {},
   mixins: [commonMixin],
   props: {
     extrinsic: {
@@ -172,18 +148,6 @@ export default {
     }
   }
 
-  .extrinsic-details__arguments {
-    .table-cell__content {
-      pre {
-        font-size: 13px;
-        line-height: 15px;
-        font-weight: 500;
-        color: #3e3f42;
-        margin: 0;
-      }
-    }
-  }
-
   .extrinsic-details__documentation,
   .extrinsic-details__arguments {
     .table-cell:last-child {
@@ -193,8 +157,22 @@ export default {
 
         .table-cell__content {
           padding: 15px 0;
-          white-space: initial;
           line-height: 1.6;
+
+          div {
+            white-space: pre-wrap;
+            word-break: break-word;
+          }
+
+          pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+            line-height: 15px;
+            font-weight: 500;
+            color: #3e3f42;
+            margin: 0;
+          }
         }
       }
     }
