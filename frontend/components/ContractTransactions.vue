@@ -131,17 +131,13 @@ export default {
         `,
         variables() {
           return {
-            // TODO Ziga - how to query json
-            // old string qry- contractId: `["${this.contractId.toLowerCase()}",%`,
-            tokenAddress: { _eq: this.contractId.toLowerCase() }, // { _in: [`"${this.contractId.toLowerCase()}"`] },
+            tokenAddress: { _eq: this.contractId.toLowerCase() },
           }
         },
         result({ data }) {
-          console.log('Transaction data: ', data)
           if (data) {
             this.transactions = data.transfer
           }
-          // this.extrinsics = data.extrinsic
           this.loading = false
         },
       },
