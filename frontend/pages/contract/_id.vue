@@ -422,13 +422,7 @@ export default {
 
             this.contract.source = Object.keys(
               data.contract[0].verified_contract.source
-            ).reduce(
-              (acc, current) => [
-                ...acc,
-                `\n// filename: ${current}\n---------------------------\n${data.contract[0].verified_contract.source[current]}`,
-              ],
-              []
-            )
+            ).reduce(this.sourceCode(data), [])
             if (
               this.contract.bytecode_context &&
               !this.contract.bytecode_context.startsWith('0x')
