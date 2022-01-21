@@ -59,6 +59,7 @@ export default {
             block_id
             index
             data
+            parsed_data
             method
             phase
             section
