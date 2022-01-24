@@ -9,7 +9,6 @@ import { DecodedEvmError } from '../crawler/types';
 
 const parseEvmData = async (method: string, genericData: GenericEventData) => {
   const eventData = (genericData.toJSON() as any);
-  console.log(eventData);
   if (method === 'Log') {
     const { address, topics, data } : BytecodeLog = eventData[0];
     const contract = await getContractDB(address);
