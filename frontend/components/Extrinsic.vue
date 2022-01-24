@@ -36,11 +36,11 @@
         <Cell>
           <font-awesome-icon
             v-if="extrinsic.type === 'signed'"
-            icon="check"
+            icon="lock"
             class="text-success"
           />
           <div v-else>
-            <font-awesome-icon icon="times" class="text-danger" />
+            <font-awesome-icon icon="lock-open" class="text-gray" />
           </div>
         </Cell>
       </Row>

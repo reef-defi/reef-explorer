@@ -51,10 +51,10 @@
               <Cell align="center">
                 <font-awesome-icon
                   v-if="item.type === 'signed'"
-                  icon="check"
+                  icon="lock"
                   class="text-success"
                 />
-                <font-awesome-icon v-else icon="times" class="text-danger" />
+                <font-awesome-icon v-else icon="lock-open" class="text-gray" />
               </Cell>
             </Row>
           </Table>
