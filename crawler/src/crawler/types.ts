@@ -135,19 +135,6 @@ export interface EVMCall {
   status: ExtrinsicStatus;
 }
 
-export interface TokenHolderHead {
-  blockId: number;
-  evmAddress: string;
-  contractAddress: string;
-}
-
-export interface TokenHolder extends TokenHolderHead {
-  type: 'Contract' | 'Account',
-  signer: string;
-  balance: string;
-  decimals: number;
-  timestamp: string;
-}
 
 export type ABI = JsonFragment[];
 
@@ -190,11 +177,33 @@ export interface EvmLogWithDecodedEvent extends EvmLog {
   decodedEvent: utils.LogDescription;
 }
 
-export interface TokenBalanceHead {
-  abi: ABI;
+type TokenHolderType = 'Contract' | 'Account';
+
+interface DefaultTokenHolder {
+  blockId: number;
+  contractAddress: string;
+}
+
+export interface TokenHolderHead extends DefaultTokenHolder {
+  evmAddress: string;
+}
+
+export interface TokenHolder extends TokenHolderHead {
+  type: TokenHolderType;
+  signer: string;
+  balance: string;
+  decimals: number;
+  timestamp: string;
+}
+
+export interface NativeTokenHolderHead {
   blockId: number;
   decimals: number;
   timestamp: string;
   signerAddress: string;
   contractAddress: string;
+}
+
+export interface TokenBalanceHead extends NativeTokenHolderHead {
+  abi: ABI;
 }
