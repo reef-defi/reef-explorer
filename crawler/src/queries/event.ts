@@ -5,6 +5,7 @@ import {
 } from '../crawler/types';
 import { insert } from '../utils/connector';
 import { getContractDB } from './evmEvent';
+import { DecodedEvmError } from '../crawler/types';
 
 const parseEvmData = async (method: string, genericData: GenericEventData) => {
   const eventData = (genericData.toJSON() as any);
@@ -18,21 +19,17 @@ const parseEvmData = async (method: string, genericData: GenericEventData) => {
     try {
       return iface.parseLog({ topics, data });
     } catch {
-      return undefined;
+      return undefined
     }
   } else if (method === 'ExecutedFailed') {
-    const address = eventData[0];
-    const errorBytecode = eventData[2];
-    const contract = await getContractDB(address);
-    if (contract.length === 0) {
-      return undefined;
-    }
-    const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
+    let decodedMessage;
     try {
-      return iface.parseError(errorBytecode);
+      decodedMessage = eventData[2] === '0x' ? '' : ethersUtils.toUtf8String(`0x${eventData[2].substr(138)}`.replace(/0+$/, ''));
     } catch {
-      return undefined;
+      decodedMessage = '';
     }
+    const decodedError: DecodedEvmError = {address: eventData[0], message: decodedMessage};
+    return decodedError
   }
   return undefined;
 };
