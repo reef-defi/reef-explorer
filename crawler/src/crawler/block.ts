@@ -20,6 +20,7 @@ import {
   ExtrinsicBody,
   ExtrinsicHead,
   SignedExtrinsicData,
+  TokenHolder,
   Transfer,
 } from './types';
 import {
@@ -39,6 +40,7 @@ import {
 } from '../utils/utils';
 import {
   extractEvmLogHeaders,
+  extractNativeTokenHoldersFromTransfers,
   extractTokenBalance,
   extractTokenTransfer,
   extractTokenTransferEvents,
@@ -56,6 +58,8 @@ import {
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
+import {Contract} from "ethers";
+import ReefAbi from "./../assets/erc20Abi";
 
 const blockHash = async (id: number): Promise<BlockHash> => {
   const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
@@ -252,6 +256,10 @@ export default async (
     .filter(isExtrinsicTransfer)
     .map(extrinsicBodyToTransfer);
 
+  
+  // Native token holders
+  let tokenHolders = await extractNativeTokenHoldersFromTransfers(transfers);
+
   // EVM Calls
   logger.info('Extracting evm calls');
   const extrinsicEvmCalls = extrinsics.filter(isExtrinsicEVMCall);
@@ -275,12 +283,12 @@ export default async (
 
   logger.info('Retrieving ERC20 account token balances');
   transactions += tokenTransferEvents.length;
-  const tokenHolders = await resolvePromisesAsChunks(
+  tokenHolders.push(... await resolvePromisesAsChunks(
     dropDuplicatesMultiKey(
       tokenTransferEvents,
       ['signerAddress', 'contractAddress'],
     ).map(extractTokenBalance),
-  );
+  ));
 
   logger.info('Compressing transfer, event accounts, evm claim account');
   const allAccounts: AccountHead[][] = [];
