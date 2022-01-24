@@ -15,10 +15,14 @@ import {
   BytecodeLog,
   BytecodeLogWithBlockId,
   Transfer,
+  NativeTokenHolderHead,
 } from './types';
 import { getContractDB } from '../queries/evmEvent';
 import {
+  dropDuplicates,
+  REEF_CONTRACT_ADDRESS,
   removeUndefinedItem,
+  resolvePromisesAsChunks,
 } from '../utils/utils';
 
 const preprocessBytecode = (bytecode: string) => {
@@ -275,3 +279,37 @@ export const tokenHolderToAccount = ({ signer, blockId, timestamp }: TokenHolder
     active: true, address: signer, blockId, timestamp,
   },
 ];
+
+const extractNativeTokenHolderFromTransfer = ({fromAddress, toAddress, blockId, timestamp}: Transfer): NativeTokenHolderHead[] => [
+  {timestamp, blockId, signerAddress: fromAddress, decimals: 18, contractAddress: REEF_CONTRACT_ADDRESS },
+  {timestamp, blockId, signerAddress: toAddress, decimals: 18, contractAddress: REEF_CONTRACT_ADDRESS },
+];
+
+const nativeTokenHolder = async (tokenHolderHead: NativeTokenHolderHead): Promise<TokenHolder> => {
+  const signer = tokenHolderHead.signerAddress;
+  
+  const [evmAddress, balance] = await Promise.all([
+    nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(tokenHolderHead.signerAddress)),
+    nodeQuery((provider) => provider.api.derive.balances.all(tokenHolderHead.signerAddress)),
+  ]);
+
+  return {...tokenHolderHead,
+    signer,
+    type: "Account",
+    evmAddress: evmAddress.toString(),
+    balance: balance.freeBalance.toString(),
+  }
+};
+
+export const extractNativeTokenHoldersFromTransfers = async (transfers: Transfer[]): Promise<TokenHolder[]> => {
+  const nativeTokenHoldersHead = dropDuplicates(
+    transfers
+      .map(extractNativeTokenHolderFromTransfer)
+      .flat(),
+    "signerAddress"
+  );
+  return await resolvePromisesAsChunks(
+    nativeTokenHoldersHead
+      .map(nativeTokenHolder)
+  )
+}
