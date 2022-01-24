@@ -3,7 +3,7 @@
     <div v-if="loading" class="text-center py-4">
       <Loading />
     </div>
-    <div v-else-if="extrinsics.length === 0" class="text-center py-4">
+    <div v-else-if="transactions.length === 0" class="text-center py-4">
       <h5>
         {{ $t('components.contract_transactions.no_transactions_found') }}
       </h5>
@@ -12,49 +12,65 @@
       <Table>
         <THead>
           <Cell>Transaction</Cell>
-          <Cell>Timestamp</Cell>
           <Cell>Extrinsic</Cell>
-          <Cell>Signer</Cell>
+          <Cell>From address</Cell>
+          <Cell>To address</Cell>
+          <Cell>Amount</Cell>
+          <Cell>Timestamp</Cell>
           <Cell align="center">Success</Cell>
         </THead>
 
-        <Row v-for="(item, index) in extrinsics" :key="index">
-          <Cell :link="`/contract/tx/${item.hash}`">{{
-            shortHash(item.hash)
+        <Row v-for="(item, index) in transactions" :key="index">
+          <Cell :link="`/contract/tx/${item.extrinsic.hash}`">{{
+            shortHash(item.extrinsic.hash)
           }}</Cell>
 
-          <Cell class="list-view__age">
-            <font-awesome-icon :icon="['far', 'clock']" />
-            <span
-              >{{ fromNow(item.timestamp) }} ({{
-                formatTimestamp(item.timestamp)
-              }})</span
-            >
+          <Cell
+            :link="`/extrinsic/${item.extrinsic.block_id}/${item.extrinsic.index}`"
+          >
+            #{{ formatNumber(item.extrinsic.block_id) }}-{{
+              formatNumber(item.extrinsic.index)
+            }}
           </Cell>
 
           <Cell
-            :link="{
-              url: `/extrinsic/${item.block_id}/${item.index}`,
-              fill: false,
-            }"
-            ># {{ formatNumber(item.block_id) }}-{{ item.index }}</Cell
-          >
-
-          <Cell
-            :link="{ url: `/account/${item.signer}`, fill: false }"
+            :link="{ url: `/account/${item.from_address}`, fill: false }"
             :title="$t('pages.accounts.account_details')"
           >
             <ReefIdenticon
               :key="item.signer"
-              :address="item.signer"
+              :address="item.from_address"
               :size="20"
             />
-            <span>{{ shortAddress(item.signer) }}</span>
+            <span>{{ shortAddress(item.from_address) }}</span>
+          </Cell>
+
+          <Cell
+            :link="{ url: `/account/${item.to_address}`, fill: false }"
+            :title="$t('pages.accounts.account_details')"
+          >
+            <ReefIdenticon
+              :key="item.signer"
+              :address="item.to_address"
+              :size="20"
+            />
+            <span>{{ shortAddress(item.to_address) }}</span>
+          </Cell>
+
+          <Cell>{{ formatAmount(item.amount) }}</Cell>
+
+          <Cell
+            v-b-tooltip.hover
+            class="list-view__age"
+            :title="formatTimestamp(item.timestamp)"
+          >
+            <font-awesome-icon :icon="['far', 'clock']" />
+            <span>{{ getAge(item.timestamp) }}</span>
           </Cell>
 
           <Cell align="center">
             <font-awesome-icon
-              v-if="!item.error_message"
+              v-if="item.success"
               icon="check"
               class="text-success"
             />
@@ -83,44 +99,45 @@ export default {
   data() {
     return {
       loading: true,
-      extrinsics: [],
+      transactions: [],
     }
   },
   apollo: {
     $subscribe: {
-      extrinsic: {
+      transactions: {
         query: gql`
-          subscription extrinsics($contractId: json_comparison_exp) {
-            extrinsic(
-              order_by: { block_id: desc }
-              where: {
-                section: { _eq: "evm" }
-                method: { _eq: "call" }
-                args: $contractId
-              }
+          subscription transferQuery(
+            $tokenAddress: String_comparison_exp = {}
+          ) {
+            transfer(
               limit: 10
+              where: { token_address: $tokenAddress }
+              order_by: { extrinsic_id: desc }
             ) {
               id
-              block_id
-              index
-              hash
-              signer
-              args
-              type
+              from_address
+              to_address
+              success
+              amount
               timestamp
-              error_message
+              token_address
+              extrinsic {
+                hash
+                block_id
+                index
+              }
             }
           }
         `,
         variables() {
           return {
-            // TODO Ziga - how to query json
-            // old string qry- contractId: `["${this.contractId.toLowerCase()}",%`,
-            contractId: {}, // { _in: [`"${this.contractId.toLowerCase()}"`] },
+            tokenAddress: { _eq: this.contractId.toLowerCase() },
           }
         },
         result({ data }) {
-          this.extrinsics = data.extrinsic
+          if (data) {
+            this.transactions = data.transfer
+          }
           this.loading = false
         },
       },

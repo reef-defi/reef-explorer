@@ -230,10 +230,10 @@
 
           <!-- Verified Source -->
 
-          <pre v-if="tab === 'source'" class="contract-details__source">{{
-            contract.verified_contract.source
-          }}</pre>
-
+          <FileExplorer
+            v-if="tab === 'source'"
+            :data="contract.verified_contract.source"
+          />
           <!-- ABI -->
 
           <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
@@ -271,6 +271,7 @@ import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
+import FileExplorer from '@/components/FileExplorer'
 
 export default {
   components: {
@@ -280,6 +281,7 @@ export default {
     ContractTransactions,
     ContractExecute,
     Promised,
+    FileExplorer,
   },
   mixins: [commonMixin],
   data() {
@@ -312,13 +314,18 @@ export default {
     decodedArguments() {
       if (
         this.contract.abi &&
-        this.contract.abi.length &&
+        this.contract.abi.length > 0 &&
         this.contract.bytecode_arguments
       ) {
         // get constructor arguments types array
-        const constructorTypes = this.contract.abi
-          .find(({ type }) => type === 'constructor')
-          .inputs.map((input) => input.type)
+        const constructor = this.contract.abi.find(
+          ({ type }) => type === 'constructor'
+        )
+        if (!constructor) {
+          return ''
+        }
+
+        const constructorTypes = constructor.inputs.map((input) => input.type)
 
         // decode constructor arguments
         const abiCoder = new ethers.utils.AbiCoder()
@@ -405,12 +412,18 @@ export default {
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
+            const name = data.contract[0].verified_contract.name
+
             this.contract.abi =
               data.contract[0].verified_contract &&
               data.contract[0].verified_contract.compiled_data &&
-              data.contract[0].verified_contract.compiled_data.flat
-                ? data.contract[0].verified_contract.compiled_data.flat()
+              data.contract[0].verified_contract.compiled_data[name]
+                ? data.contract[0].verified_contract.compiled_data[name]
                 : []
+
+            this.contract.source = Object.keys(
+              data.contract[0].verified_contract.source
+            ).reduce(this.sourceCode(data), [])
             if (
               this.contract.bytecode_context &&
               !this.contract.bytecode_context.startsWith('0x')

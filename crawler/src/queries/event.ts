@@ -6,7 +6,6 @@ import {
 import { insert } from '../utils/connector';
 import { getContractDB } from './evmEvent';
 import { DecodedEvmError } from '../crawler/types';
-import { decodeMessage } from '@reef-defi/evm-provider/utils';
 
 const parseEvmData = async (method: string, genericData: GenericEventData) => {
   const eventData = (genericData.toJSON() as any);

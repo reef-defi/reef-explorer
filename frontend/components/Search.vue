@@ -56,6 +56,8 @@ export default {
   position: relative;
   background: linear-gradient(130deg, #a51863, #3c127b);
   margin: 0 !important;
+  display: flex;
+  flex-flow: column nowrap;
 
   .search-section__alert {
     width: 100%;

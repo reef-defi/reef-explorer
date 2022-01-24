@@ -201,9 +201,10 @@
 
           <!-- Source -->
 
-          <pre v-if="tab === 'source'" class="token-details__source">
-            <vue-json-pretty :data="contract.source" />
-          </pre>
+          <FileExplorer
+            v-if="tab === 'source'"
+            :data="contract.verified_contract.source"
+          />
 
           <!-- Transactions -->
 
@@ -233,6 +234,7 @@ import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
+import FileExplorer from '@/components/FileExplorer'
 
 export default {
   components: {
@@ -241,6 +243,7 @@ export default {
     VueJsonPretty,
     // TODO add back- ContractTransactions,
     ContractExecute,
+    FileExplorer,
   },
   mixins: [commonMixin],
   data() {
@@ -336,13 +339,7 @@ export default {
 
             this.contract.source = Object.keys(
               data.contract[0].verified_contract.source
-            ).reduce(
-              (acc, current) => [
-                ...acc,
-                `\n${current}\n---------------------------\n${data.contract[0].verified_contract.source[current]}`,
-              ],
-              []
-            )
+            ).reduce(this.sourceCode(data), [])
           }
           this.loading = false
         },
