@@ -34,6 +34,11 @@ interface ExtrinsicError {
   message: string;
 }
 
+export interface DecodedEvmError {
+  address: string;
+  message: string;
+}
+
 export type ExtrinsicStatus =
   | ExtrinsicError
   | ExtrinsicSuccess
