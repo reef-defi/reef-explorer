@@ -230,9 +230,10 @@
 
           <!-- Verified Source -->
 
-          <pre v-if="tab === 'source'" class="contract-details__source">
-            <vue-json-pretty :data="contract.source" />
-          </pre>
+          <FileExplorer
+            v-if="tab === 'source'"
+            :data="contract.verified_contract.source"
+          />
           <!-- ABI -->
 
           <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
@@ -270,6 +271,7 @@ import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
+import FileExplorer from '@/components/FileExplorer'
 
 export default {
   components: {
@@ -279,6 +281,7 @@ export default {
     ContractTransactions,
     ContractExecute,
     Promised,
+    FileExplorer,
   },
   mixins: [commonMixin],
   data() {
