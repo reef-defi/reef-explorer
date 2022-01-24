@@ -48,7 +48,6 @@ import {
   isExtrinsicEVMCall,
   isExtrinsicEvmClaimAccount,
   isExtrinsicEVMCreate,
-  tokenHolderToAccount,
 } from './evmEvent';
 import {
   insertAccountTokenBalances,
@@ -269,8 +268,7 @@ export default async (
   const tokenTransfers = await resolvePromisesAsChunks(extractTokenTransfer(evmLogs));
 
   transfers.push(...tokenTransfers
-    .filter(removeUndefinedItem)
-  );
+    .filter(removeUndefinedItem));
 
   logger.info('Extracting ERC20 token balances');
   const tokenTransferEvents = extractTokenTransferEvents(evmLogs);
@@ -281,7 +279,7 @@ export default async (
     dropDuplicatesMultiKey(
       tokenTransferEvents,
       ['signerAddress', 'contractAddress'],
-    ).map(extractTokenBalance)
+    ).map(extractTokenBalance),
   );
 
   logger.info('Compressing transfer, event accounts, evm claim account');
