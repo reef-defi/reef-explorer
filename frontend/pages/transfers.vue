@@ -16,13 +16,13 @@
           </div>
           <Table v-else>
             <THead>
-              <Cell>Hash</Cell>
-              <Cell>Block</Cell>
-              <Cell>Age</Cell>
+              <Cell>Transaction</Cell>
+              <Cell>Extrinsic</Cell>
               <Cell>From</Cell>
               <Cell>To</Cell>
-              <Cell align="center">Success</Cell>
-              <Cell align="right">Amount</Cell>
+              <Cell>Amount</Cell>
+              <Cell>Age</Cell>
+              <Cell align="right">Success</Cell>
             </THead>
 
             <Row v-for="(item, index) in transfers" :key="index">
@@ -30,18 +30,8 @@
                 shortHash(item.hash)
               }}</Cell>
 
-              <Cell :link="`/block?blockNumber=${item.block_id}`"
-                ># {{ formatNumber(item.block_id) }}</Cell
-              >
-
-              <Cell
-                v-b-tooltip.hover
-                class="list-view__age"
-                :title="formatTimestamp(item.timestamp)"
-              >
-                <font-awesome-icon :icon="['far', 'clock']" />
-                <span>{{ getAge(item.timestamp) }}</span>
-                <!-- <span>({{ formatTimestamp(item.timestamp) }})</span> -->
+              <Cell :link="`/extrinsic/${item.block_id}/${item.idx}`">
+                #{{ formatNumber(item.block_id) }}-{{ formatNumber(item.idx) }}
               </Cell>
 
               <Cell
@@ -74,6 +64,17 @@
                 }}</span>
               </Cell>
 
+              <Cell>{{ formatAmount(item.amount) }}</Cell>
+
+              <Cell
+                v-b-tooltip.hover
+                class="list-view__age"
+                :title="formatTimestamp(item.timestamp)"
+              >
+                <font-awesome-icon :icon="['far', 'clock']" />
+                <span>{{ getAge(item.timestamp) }}</span>
+              </Cell>
+
               <Cell align="center">
                 <font-awesome-icon
                   v-if="item.success"
@@ -82,8 +83,6 @@
                 />
                 <font-awesome-icon v-else icon="times" class="text-danger" />
               </Cell>
-
-              <Cell align="right">{{ formatAmount(item.amount) }}</Cell>
             </Row>
           </Table>
 
@@ -144,11 +143,12 @@ export default {
                 extrinsic: { block_id: $blockNumber, hash: $extrinsicHash }
                 from_account: { address: $fromAddress }
               }
-              order_by: { block_id: desc }
+              order_by: { extrinsic: { id: desc } }
             ) {
               extrinsic {
                 id
                 hash
+                index
                 block_id
               }
               from_account {
@@ -192,6 +192,7 @@ export default {
               to: to.address,
               from: from.address,
               hash: extrinsic.hash,
+              idx: extrinsic.index,
               block_id: extrinsic.block_id,
             })
           )

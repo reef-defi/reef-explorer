@@ -184,5 +184,11 @@ export default {
 
       return value
     },
+    sourceCode(data) {
+      return (acc, current) => [
+        ...acc,
+        `\n// filename: ${current}\n---------------------------\n${data.contract[0].verified_contract.source[current]}`,
+      ]
+    },
   },
 }

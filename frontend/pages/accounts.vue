@@ -86,7 +86,7 @@
                 </a>
               </Cell>
             </Row>
-            <THead>
+            <THead v-if="favoriteAccounts.length > 0">
               <Cell />
               <Cell>All accounts</Cell>
               <Cell />
