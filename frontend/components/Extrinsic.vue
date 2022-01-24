@@ -4,7 +4,23 @@
       >Extrinsic {{ extrinsic.block_id }}-{{ extrinsic.index }}
     </Headline>
 
+    <div v-if="extrinsic.error_message" class="unverified-section">
+      <div class="unverified-badge">
+        <font-awesome-icon icon="exclamation-triangle" />
+        <div class="unverified-badge__content">
+          <div class="unverified-badge__text">Transaction failed</div>
+        </div>
+      </div>
+    </div>
+
     <Data>
+      <Row v-if="!!extrinsic.error_message" class="extrinsic-details__error">
+        <Cell>Error Description</Cell>
+        <Cell>
+          {{ extrinsic.error_message }}
+        </Cell>
+      </Row>
+
       <Row>
         <Cell>Block number</Cell>
         <Cell
@@ -109,12 +125,6 @@
           </div>
         </Cell>
       </Row> -->
-      <Row v-if="!!extrinsic.error_message">
-        <Cell>Error Description</Cell>
-        <Cell>
-          {{ extrinsic.error_message }}
-        </Cell>
-      </Row>
     </Data>
     <extrinsic-events
       :extrinsic-id="parseInt(extrinsic.id)"
@@ -139,6 +149,22 @@ export default {
 
 <style lang="scss">
 .extrinsic-details {
+  .unverified-section {
+    margin-top: 20px;
+    margin-bottom: 30px;
+
+    svg {
+      margin-right: 5px;
+      transform: translateY(-1px);
+    }
+  }
+
+  .extrinsic-details__error {
+    .table-cell__content {
+      color: #dc3545 !important;
+    }
+  }
+
   .extrinsic-details__signer {
     > div {
       display: flex;
