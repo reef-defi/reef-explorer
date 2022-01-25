@@ -230,6 +230,7 @@
 import { gql } from 'graphql-tag'
 import VueJsonPretty from 'vue-json-pretty'
 import ContractExecute from '../../components/ContractExecute.vue'
+import ContractTransactions from '~/components/ContractTransactions'
 import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
@@ -241,7 +242,7 @@ export default {
     ReefIdenticon,
     Loading,
     VueJsonPretty,
-    // TODO add back- ContractTransactions,
+    ContractTransactions,
     ContractExecute,
     FileExplorer,
   },
@@ -260,18 +261,18 @@ export default {
       if (this.contract?.verified_contract) {
         return {
           info: 'Token Info',
-          // TODO add back- holders: 'Holders',
+          // TODO holders: 'Holders',
           developer: 'Developer',
           source: 'Verified Source',
-          // TODO add back- transactions: 'Transactions',
-          // TODO add back- execute: 'Execute',
+          transactions: 'Transactions',
+          execute: 'Execute',
         }
       }
 
       return {
         info: 'Token Info',
-        // TODO add back- holders: 'Holders',
-        // TODO add back- transactions: 'Transactions',
+        // TODO holders: 'Holders',
+        transactions: 'Transactions',
       }
     },
   },

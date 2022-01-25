@@ -66,7 +66,10 @@ import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
 
 export default {
-  components: { ContractCallFunction, ContractCallFunctionWrite },
+  components: {
+    ContractCallFunction,
+    ContractCallFunctionWrite,
+  },
   mixins: [commonMixin],
   props: {
     contractId: {
