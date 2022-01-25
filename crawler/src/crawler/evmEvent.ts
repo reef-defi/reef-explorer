@@ -244,26 +244,28 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
     decodedEvent, timestamp, address, blockId, name, extrinsicId, signedData,
   }) => {
     const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
-    const [fromAddress, toAddress] = await Promise.all([
+    const [fromAddressQ, toAddressQ] = await Promise.all([
       nodeQuery((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
       nodeQuery((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
     ]);
-    if (fromAddress.toString() === '' || toAddress.toString() === '') {
-      return undefined;
-    }
+    const toAddress = toAddressQ.toString();
+    const fromAddress = fromAddressQ.toString();
+
 
     return {
       blockId,
+      timestamp,
       denom: name,
       extrinsicId,
+      toEvmAddress,
+      success: true,
+      fromEvmAddress,
+      errorMessage: '',
       tokenAddress: address,
       amount: amount.toString(),
-      toAddress: toAddress.toString(),
-      fromAddress: fromAddress.toString(),
+      toAddress: toAddress === '' ? 'null' : toAddress,
+      fromAddress: fromAddress === '' ? 'null' : fromAddress,
       feeAmount: BigNumber.from(signedData.fee.partialFee).toString(),
-      timestamp,
-      success: true,
-      errorMessage: '',
     };
   });
 
