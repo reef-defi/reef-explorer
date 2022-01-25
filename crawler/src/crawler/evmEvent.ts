@@ -203,12 +203,12 @@ export const extractTokenBalance = async ({
   const address = signerAddr.toJSON();
 
   return {
-    balance,
     blockId,
     decimals,
     timestamp,
     contractAddress,
-    evmAddress: signerAddress,
+    evmAddress: address === null ? signerAddress : 'null',
+    balance: balance.toString(),
     type: address === null ? 'Contract' : 'Account',
     signer: `${address}`,
   };
