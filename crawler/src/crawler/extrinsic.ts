@@ -7,7 +7,8 @@ import {
   ExtrinsicBody,
   Transfer,
 } from './types';
-import { getProvider } from '../utils/connector';
+import { getProvider, nodeQuery } from '../utils/connector';
+import { REEF_CONTRACT_ADDRESS } from '../utils/utils';
 
 export const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
@@ -42,25 +43,32 @@ export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => ex
 export const isExtrinsicTransfer = ({ extrinsic }: ExtrinsicBody): boolean => extrinsic.method.section === 'balances'
   || extrinsic.method.section === 'currencies';
 
-export const extrinsicBodyToTransfer = ({
+export const extrinsicBodyToTransfer = async ({
   id,
   status,
   blockId,
   extrinsic,
   timestamp,
   signedData,
-}: ExtrinsicBody): Transfer => {
+}: ExtrinsicBody): Promise<Transfer> => {
   const args: any = extrinsic.args.map((arg) => arg.toJSON());
 
   const toAddress = args[0]?.id || 'deleted';
   const fromAddress = resolveSigner(extrinsic);
+
+  const toEvmAddress = toAddress !== 'deleted'
+    ? (await nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress))).toString()
+    : 'null';
+  const fromEvmAddress = fromAddress !== 'deleted'
+    ? (await nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress))).toString()
+    : 'null';
+
 
   const denom: string = extrinsic.method.section === 'currencies' ? args[1].token : 'REEF';
   const amount: string = BigNumber.from(
     extrinsic.method.section === 'currencies' ? args[2] : args[1],
   ).toString();
   const feeAmount = BigNumber.from(signedData!.fee.partialFee).toString();
-  const tokenAddress = '0x0000000000000000000000000000000001000000';
 
   return {
     denom,
@@ -70,9 +78,11 @@ export const extrinsicBodyToTransfer = ({
     timestamp,
     toAddress,
     fromAddress,
-    tokenAddress,
+    toEvmAddress,
+    fromEvmAddress,
     extrinsicId: id,
     success: status.type === 'success',
+    tokenAddress: REEF_CONTRACT_ADDRESS,
     errorMessage: status.type === 'error' ? status.message : '',
   };
 };
