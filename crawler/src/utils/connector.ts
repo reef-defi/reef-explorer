@@ -109,6 +109,13 @@ export const insert = async (statement: string): Promise<void> => {
   await dbProvider.query(statement);
 };
 
-export const query = async <Res, >(statement: string): Promise<Res[]> => dbProvider
-  .query<Res>(statement)
-  .then((res) => res.rows);
+export const insertV2 = async (statement: string, args: any[]) => {
+  await dbProvider.query(statement, args);
+}
+
+export const query = async <Res, >(statement: string): Promise<Res[]> => {
+  const client = await dbProvider.connect();
+  const result = await client.query<Res>(statement);
+  client.release();
+  return result.rows;
+}
