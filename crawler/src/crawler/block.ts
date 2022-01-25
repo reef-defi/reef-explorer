@@ -252,9 +252,10 @@ export default async (
 
   // Transfers
   logger.info('Extracting transfers');
-  let transfers = extrinsics
+  let transfers = await resolvePromisesAsChunks(extrinsics
     .filter(isExtrinsicTransfer)
-    .map(extrinsicBodyToTransfer);
+    .map(extrinsicBodyToTransfer)
+  );
 
   
   // Native token holders
