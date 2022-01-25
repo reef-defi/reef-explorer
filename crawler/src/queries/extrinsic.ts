@@ -87,7 +87,7 @@ export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
     INSERT INTO transfer
       (block_id, extrinsic_id, denom, to_address, from_address, to_evm_address, from_evm_address, token_address, amount, fee_amount, success, error_message, timestamp)
     VALUES
-      %L
+      %L;
   `, transfers.map(transferToValue));
 };
 
