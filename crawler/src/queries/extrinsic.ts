@@ -1,5 +1,5 @@
 import { SignedExtrinsicData, Transfer } from '../crawler/types';
-import { insert, query } from '../utils/connector';
+import { insert, insertV2, query } from '../utils/connector';
 
 export interface InsertExtrinsic {
   blockId: number;
@@ -74,21 +74,21 @@ const transferToValue = ({
   feeAmount,
   success,
   errorMessage,
+  fromEvmAddress,
+  toEvmAddress,
   timestamp,
-}: Transfer): string => `(${blockId}, ${extrinsicId}, '${denom}', '${toAddress}', '${fromAddress}', '${tokenAddress}', ${
-  amount === '' ? '0' : amount
-}, ${feeAmount === '' ? '0' : feeAmount}, '${success}', '${errorMessage}', '${timestamp}')`;
+}: Transfer): any[] => [blockId, extrinsicId, denom, toAddress, fromAddress, toEvmAddress, fromEvmAddress, tokenAddress, amount === '' ? '0' : amount, feeAmount === '' ? '0' : feeAmount, success, errorMessage, timestamp];
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   if (transfers.length === 0) {
     return;
   }
-  await insert(`
+  await insertV2(`
     INSERT INTO transfer
-      (block_id, extrinsic_id, denom, to_address, from_address, token_address, amount, fee_amount, success, error_message, timestamp)
+      (block_id, extrinsic_id, denom, to_address, from_address, to_evm_address, from_evm_address, token_address, amount, fee_amount, success, error_message, timestamp)
     VALUES
-      ${transfers.map(transferToValue).join(',\n')}
-  `);
+      %L
+  `, transfers.map(transferToValue));
 };
 
 interface ID {

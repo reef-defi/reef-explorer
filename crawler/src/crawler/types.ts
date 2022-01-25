@@ -100,6 +100,8 @@ export interface Transfer {
   toAddress: string;
   fromAddress: string;
   tokenAddress: string;
+  fromEvmAddress: string;
+  toEvmAddress: string;
   amount: string;
   feeAmount: string;
 
