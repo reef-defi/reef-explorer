@@ -52,8 +52,9 @@ import {
   isExtrinsicEVMCreate,
 } from './evmEvent';
 import {
-  insertAccountTokenBalances,
+  insertAccountTokenHolders,
   insertContracts,
+  insertContractTokenHolders,
   insertEvmCalls,
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
@@ -257,8 +258,8 @@ export default async (
     .map(extrinsicBodyToTransfer)
   );
 
-  
   // Native token holders
+  logger.info('Extracting native token holders from transfers');
   let tokenHolders = await extractNativeTokenHoldersFromTransfers(transfers);
 
   // EVM Calls
@@ -284,7 +285,7 @@ export default async (
 
   logger.info('Retrieving ERC20 account token balances');
   transactions += tokenTransferEvents.length;
-  tokenHolders.push(... await resolvePromisesAsChunks(
+  tokenHolders.push(...await resolvePromisesAsChunks(
     dropDuplicatesMultiKey(
       tokenTransferEvents,
       ['signerAddress', 'contractAddress'],
@@ -334,8 +335,10 @@ export default async (
 
   transfers = [];
 
+  // EVM calls
   logger.info('Inserting evm calls');
   await insertEvmCalls(evmCalls);
+  evmCalls = [];
 
   // Contracts
   logger.info('Extracting new contracts');
@@ -346,10 +349,18 @@ export default async (
   await insertContracts(contracts);
   contracts = [];
 
-  logger.info('Inserting token balances');
-  await insertAccountTokenBalances(tokenHolders);
+  // Token holders
+  console.log(tokenHolders);
+  const accountTokenHolders = tokenHolders
+    .filter(({type}) => type === 'Account');
+  const contractTokenHolders = tokenHolders
+    .filter(({type}) => type === 'Contract');
 
-  evmCalls = [];
+  logger.info('Inserting account token holders');
+  await insertAccountTokenHolders(accountTokenHolders);
+
+  logger.info('Inserting contract token holders');
+  await insertContractTokenHolders(contractTokenHolders);
 
   logger.info('Finalizing blocks');
   await updateBlockFinalized(fromId, toId);
