@@ -27,8 +27,8 @@
             />
             <span>{{
               contract.verified_contract
-                ? contract.verified_contract.name
-                : '' || shortHash(address)
+                ? contract.verified_contract.contract_data.name
+                : shortHash(address)
             }}</span>
           </Headline>
 
@@ -67,7 +67,7 @@
 
             <Row>
               <Cell>{{ $t('details.token.token_name') }}</Cell>
-              <Cell>{{ contract.verified_contract.name }}</Cell>
+              <Cell>{{ contract.verified_contract.contract_data.name }}</Cell>
             </Row>
 
             <Row>

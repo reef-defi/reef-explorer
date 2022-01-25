@@ -36,11 +36,17 @@ export default {
         return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
       }
     },
-    formatAmount(amount) {
+    formatAmount(amount, symbol, decimals) {
+      if (!symbol) {
+        symbol = network.tokenSymbol
+      }
+      if (!decimals) {
+        decimals = network.tokenDecimals
+      }
       return `${new BigNumber(amount)
-        .div(new BigNumber(10).pow(network.tokenDecimals))
+        .div(new BigNumber(10).pow(decimals))
         .toFixed(2)
-        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${network.tokenSymbol}`
+        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${symbol}`
     },
     formatTokenAmount(amount, decimals, denom) {
       return `${new BigNumber(amount)
