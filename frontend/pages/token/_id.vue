@@ -181,13 +181,6 @@
             </Row>-->
           </Data>
 
-          <!-- Source -->
-
-          <FileExplorer
-            v-if="tab === 'source'"
-            :data="contract.verified_contract.source"
-          />
-
           <!-- Transactions -->
 
           <ContractTransactions
@@ -215,7 +208,6 @@ import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
-import FileExplorer from '@/components/FileExplorer'
 
 export default {
   components: {
@@ -223,7 +215,6 @@ export default {
     Loading,
     // TODO add back- ContractTransactions,
     ContractExecute,
-    FileExplorer,
   },
   mixins: [commonMixin],
   data() {
@@ -242,7 +233,6 @@ export default {
           info: 'Token Info',
           // TODO add back- holders: 'Holders',
           developer: 'Developer',
-          source: 'Verified Source',
           // TODO add back- transactions: 'Transactions',
           // TODO add back- execute: 'Execute',
         }
