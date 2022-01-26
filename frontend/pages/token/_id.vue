@@ -13,23 +13,12 @@
           </div>
 
           <Headline>
-            <font-awesome-icon
-              v-if="contract.verified_contract"
-              v-b-tooltip.hover
-              icon="check"
-              class="text-success"
-              title="Validated token"
-            />
             <img
               v-if="contract.verified_contract.token_icon_url"
               :src="contract.verified_contract.token_icon_url"
               style="width: 32px; height: 32px"
             />
-            <span>{{
-              contract.verified_contract
-                ? contract.verified_contract.name
-                : '' || shortHash(address)
-            }}</span>
+            <span>{{ tokenName }}</span>
           </Headline>
 
           <h4 class="text-center mb-4">
@@ -273,6 +262,14 @@ export default {
         // TODO add back- holders: 'Holders',
         // TODO add back- transactions: 'Transactions',
       }
+    },
+    tokenName() {
+      const data = this.contract?.verified_contract?.contract_data
+      if (data) {
+        return `${data.name} (${data.symbol})`
+      }
+
+      return this.shortHash(this.address)
     },
   },
   watch: {
