@@ -137,7 +137,6 @@ export interface EVMCall {
   status: ExtrinsicStatus;
 }
 
-
 export type ABI = JsonFragment[];
 
 export interface ABIS {
