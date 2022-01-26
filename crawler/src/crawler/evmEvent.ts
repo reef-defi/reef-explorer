@@ -147,6 +147,7 @@ const extractEvmLog = async (
     ...event,
     name: result[0].name,
     abis: result[0].compiled_data,
+    symbol: result[0].contract_data.symbol,
     decimals: result[0].contract_data.decimals,
   };
 };
@@ -241,7 +242,7 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
   .map(decodeEvmLog)
   .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
   .map(async ({
-    decodedEvent, timestamp, address, blockId, name, extrinsicId, signedData,
+    decodedEvent, timestamp, address, blockId, extrinsicId, signedData, symbol
   }) => {
     const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
     const [fromAddressQ, toAddressQ] = await Promise.all([
@@ -254,9 +255,9 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
     return {
       blockId,
       timestamp,
-      denom: name,
       extrinsicId,
       toEvmAddress,
+      denom: symbol,
       success: true,
       fromEvmAddress,
       errorMessage: '',

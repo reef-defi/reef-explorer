@@ -263,10 +263,10 @@ export default async (
 
   // Token balance
   logger.info('Retrieving EVM log if contract is ERC20 token');
-  const evmLogHeaders = extractEvmLogHeaders(extrinsicEvmCalls);
-
-  transactions += evmLogHeaders.length;
-  const evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
+  transactions += extrinsicEvmCalls.length;
+  const evmLogs = await resolvePromisesAsChunks(
+    extractEvmLogHeaders(extrinsicEvmCalls)
+  );
 
   logger.info('Extracting ERC20 transfer events');
   const tokenTransfers = await resolvePromisesAsChunks(extractTokenTransfer(evmLogs));
