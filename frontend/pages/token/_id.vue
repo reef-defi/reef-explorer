@@ -179,13 +179,6 @@
               <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
               <Cell wrap>{{ contract.verified_contract.deployment_bytecode }}</Cell>
             </Row>-->
-
-            <Row v-if="contract.abi">
-              <Cell>{{ $t('details.token.abi') }}</Cell>
-              <Cell class="table-json" wrap>
-                <vue-json-pretty :data="contract.abi" />
-              </Cell>
-            </Row>
           </Data>
 
           <!-- Source -->
@@ -217,7 +210,6 @@
 </template>
 <script>
 import { gql } from 'graphql-tag'
-import VueJsonPretty from 'vue-json-pretty'
 import ContractExecute from '../../components/ContractExecute.vue'
 import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
@@ -229,7 +221,6 @@ export default {
   components: {
     ReefIdenticon,
     Loading,
-    VueJsonPretty,
     // TODO add back- ContractTransactions,
     ContractExecute,
     FileExplorer,
