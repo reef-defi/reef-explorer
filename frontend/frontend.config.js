@@ -4,11 +4,12 @@ export const network = {
   tokenSymbol: 'REEF',
   tokenDecimals: 18,
   ss58Format: 42,
-  coinGeckoDenom: 'reef-finance',
-  nodeWs: 'ws://localhost:9944',
-  backendWs: 'ws://localhost:8080/v1/graphql',
-  backendHttp: 'http://localhost:8080/v1/graphql',
-  verificatorApi: 'http://localhost:8000/api/verificator/submit-verification',
+  coinGeckoDenom: undefined,
+  nodeWs: 'wss://rpc-testnet.reefscan.com/ws',
+  backendWs: 'wss://testnet.reefscan.com/graphql',
+  backendHttp: 'https://testnet.reefscan.com/graphql',
+  verificatorApi:
+    'https://testnet.reefscan.com/graphql/verificator/submit-verification',
   googleAnalytics: '',
   theme: '@/assets/scss/themes/reef.scss',
 }
