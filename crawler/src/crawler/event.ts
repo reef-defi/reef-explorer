@@ -1,4 +1,4 @@
-import { getProvider, nodeQuery } from '../utils/connector';
+import { nodeProvider } from '../utils/connector';
 import { AccountBody, AccountHead, EventHead } from './types';
 
 const eventToAccountHead = (
@@ -13,17 +13,17 @@ const eventToAccountHead = (
 
 export const accountNewOrKilled = (eventHead: EventHead): AccountHead[] => {
   const { event, blockId, timestamp } = eventHead;
-  if (getProvider().api.events.balances.Endowed.is(event.event)) {
+  if (nodeProvider.getProvider().api.events.balances.Endowed.is(event.event)) {
     return eventToAccountHead(eventHead);
-  } if (getProvider().api.events.staking.Rewarded.is(event.event)) {
+  } if (nodeProvider.getProvider().api.events.staking.Rewarded.is(event.event)) {
     return eventToAccountHead(eventHead);
-  } if (getProvider().api.events.staking.Slashed.is(event.event)) {
+  } if (nodeProvider.getProvider().api.events.staking.Slashed.is(event.event)) {
     return eventToAccountHead(eventHead);
-  } if (getProvider().api.events.system.KilledAccount.is(event.event)) {
+  } if (nodeProvider.getProvider().api.events.system.KilledAccount.is(event.event)) {
     return eventToAccountHead(eventHead, false);
-  } if (getProvider().api.events.balances.Reserved.is(event.event)) {
+  } if (nodeProvider.getProvider().api.events.balances.Reserved.is(event.event)) {
     return eventToAccountHead(eventHead);
-  } if (getProvider().api.events.balances.Transfer.is(event.event)) {
+  } if (nodeProvider.getProvider().api.events.balances.Transfer.is(event.event)) {
     const res: any = event.event.data.toJSON();
     return [
       {
@@ -41,14 +41,14 @@ export const accountHeadToBody = async (
   head: AccountHead,
 ): Promise<AccountBody> => {
   const [evmAddress, balances, identity] = await Promise.all([
-    nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(head.address)),
-    nodeQuery((provider) => provider.api.derive.balances.all(head.address)),
-    nodeQuery((provider) => provider.api.derive.accounts.identity(head.address)),
+    nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(head.address)),
+    nodeProvider.query((provider) => provider.api.derive.balances.all(head.address)),
+    nodeProvider.query((provider) => provider.api.derive.accounts.identity(head.address)),
   ]);
   const address = evmAddress.toString();
 
   const evmNonce: string | null = address !== ''
-    ? await nodeQuery((provider) => provider.api.query.evm.accounts(address))
+    ? await nodeProvider.query((provider) => provider.api.query.evm.accounts(address))
       .then((res): any => res.toJSON())
       .then((res) => res?.nonce || 0)
     : 0;
