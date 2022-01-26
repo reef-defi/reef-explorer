@@ -11,6 +11,7 @@ export default class NodeProvider {
 
   private providers: Provider[] = [];
   private lastBlockIds: number[] = [];
+  private lastFinalizedBlockIds: number[] = [];
 
   constructor(urls: string[]) {
     this.urls = [...urls];
@@ -22,6 +23,10 @@ export default class NodeProvider {
 
   lastBlockId() {
     return max(...this.lastBlockIds);
+  }
+
+  lastFinalizedBlockId() {
+    return max(...this.lastFinalizedBlockIds);
   }
 
   getProvider() {
@@ -61,6 +66,7 @@ export default class NodeProvider {
     
     this.providers = [];
     this.lastBlockIds = [];
+    this.lastFinalizedBlockIds = [];
   };
 
   async restartNodeProviders(): Promise<void> {
@@ -98,8 +104,11 @@ export default class NodeProvider {
 
     for (let index = 0; index < this.providers.length; index += 1) {
       this.providers[index].api.rpc.chain.subscribeFinalizedHeads(async (header) => {
-        this.lastBlockIds[index] = header.number.toNumber()
+        this.lastFinalizedBlockIds[index] = header.number.toNumber()
       });
+      this.providers[index].api.rpc.chain.subscribeNewHeads(async (header) => {
+        this.lastBlockIds[index] = header.number.toNumber()
+      })
     }
   }
 }
