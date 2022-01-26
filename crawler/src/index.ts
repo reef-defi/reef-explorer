@@ -41,7 +41,7 @@ const processNextBlock = async () => {
 
       let transactions = await processInitialBlocks(to, from + difference);
       transactions += await processBlocks(from, to);
-      
+
       currentBlockIndex = to - 1;
       const ms = Date.now() - start;
       const time = ms / 1000;

@@ -242,7 +242,7 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
   .map(decodeEvmLog)
   .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
   .map(async ({
-    decodedEvent, timestamp, address, blockId, extrinsicId, signedData, symbol
+    decodedEvent, timestamp, address, blockId, extrinsicId, signedData, symbol,
   }) => {
     const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
     const [fromAddressQ, toAddressQ] = await Promise.all([
@@ -312,7 +312,7 @@ export const extractNativeTokenHoldersFromTransfers = async (transfers: Transfer
       .map(extractNativeTokenHolderFromTransfer)
       .flat(),
     'signerAddress',
-  ).filter(({signerAddress}) => signerAddress !== "deleted");
+  ).filter(({ signerAddress }) => signerAddress !== 'deleted');
 
   return resolvePromisesAsChunks(
     nativeTokenHoldersHead

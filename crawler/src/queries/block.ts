@@ -1,4 +1,4 @@
-import { insert, insertV2, query } from '../utils/connector';
+import { insertV2, query } from '../utils/connector';
 
 interface BlockID {
   id: string;
@@ -33,8 +33,7 @@ const blockValuesStatement = ({
   parentHash,
   extrinsicRoot,
   timestamp,
-}: InsertInitialBlock): any[] => 
-[id, hash, author, stateRoot, parentHash, extrinsicRoot, 'false', timestamp];
+}: InsertInitialBlock): any[] => [id, hash, author, stateRoot, parentHash, extrinsicRoot, 'false', timestamp];
 
 export const insertMultipleBlocks = async (
   data: InsertInitialBlock[],

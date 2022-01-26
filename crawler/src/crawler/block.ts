@@ -201,25 +201,24 @@ const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodePr
 
 export const processInitialBlocks = async (fromId: number, toId: number): Promise<number> => {
   if (toId - fromId <= 0) { return 0; }
-  
+
   logger.info(`New unfinalized heads detected from ${fromId} to ${toId}`);
-  
+
   let transactions = 0;
   const blockIds = range(fromId, toId);
-  nodeProvider.setDbBlockId(toId-1);
-  
+  nodeProvider.setDbBlockId(toId - 1);
+
   logger.info('Retrieving unfinished block hashes');
   transactions += blockIds.length * 2;
   const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
   logger.info('Retrieving unfinished block bodies');
-  let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
+  const blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
 
   // Insert blocks
   logger.info('Inserting unfinished blocks in DB');
   await insertMultipleBlocks(blocks.map(blockBodyToInsert));
   return transactions;
-}
-
+};
 
 export default async (
   fromId: number,
@@ -227,7 +226,7 @@ export default async (
 ): Promise<number> => {
   let transactions = 0;
   const blockIds = range(fromId, toId);
-  nodeProvider.setDbBlockId(toId-1);
+  nodeProvider.setDbBlockId(toId - 1);
 
   logger.info('Retrieving block hashes');
   transactions += blockIds.length * 2;
@@ -287,7 +286,7 @@ export default async (
   logger.info('Retrieving EVM log if contract is ERC20 token');
   transactions += extrinsicEvmCalls.length;
   const evmLogs = await resolvePromisesAsChunks(
-    extractEvmLogHeaders(extrinsicEvmCalls)
+    extractEvmLogHeaders(extrinsicEvmCalls),
   );
 
   logger.info('Extracting ERC20 transfer events');
