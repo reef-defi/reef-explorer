@@ -20,6 +20,7 @@ export default {
   maxBlocksPerStep: toNumber(32, process.env.MAX_BLOCKS_PER_STEP),
   chunkSize: toNumber(1024, process.env.CHUNK_SIZE),
   pollInterval: toNumber(100, process.env.POLL_INTERVAL),
+  sentryDns: process.env.SENTRY_DNS || '',
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',
