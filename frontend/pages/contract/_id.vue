@@ -246,7 +246,7 @@
           />
           <!-- ABI -->
 
-          <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
+          <File v-if="tab === 'abi'" :data="contract.abi" />
 
           <!-- Transactions -->
 
@@ -282,6 +282,7 @@ import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
 import FileExplorer from '@/components/FileExplorer'
+import File from '@/components/FileExplorer/File'
 
 export default {
   components: {
@@ -292,6 +293,7 @@ export default {
     ContractExecute,
     Promised,
     FileExplorer,
+    File,
   },
   mixins: [commonMixin],
   data() {
