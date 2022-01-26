@@ -295,7 +295,7 @@ const extractNativeTokenHolderFromTransfer = ({
 
 const nativeTokenHolder = async (tokenHolderHead: NativeTokenHolderHead): Promise<TokenHolder> => {
   const signer = tokenHolderHead.signerAddress;
-  const balance = await nodeProvider.query((provider) => provider.api.derive.balances.all(tokenHolderHead.signerAddress));
+  const balance = await nodeProvider.query((provider) => provider.api.derive.balances.all(signer));
 
   return {
     ...tokenHolderHead,
@@ -312,7 +312,8 @@ export const extractNativeTokenHoldersFromTransfers = async (transfers: Transfer
       .map(extractNativeTokenHolderFromTransfer)
       .flat(),
     'signerAddress',
-  );
+  ).filter(({signerAddress}) => signerAddress !== "deleted");
+
   return resolvePromisesAsChunks(
     nativeTokenHoldersHead
       .map(nativeTokenHolder),
