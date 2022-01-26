@@ -128,6 +128,7 @@ export interface Contract {
 
 export interface EVMCall {
   data: string;
+  blockId: number;
   account: string;
   gasLimit: string;
   timestamp: string;

@@ -36,6 +36,7 @@ import {
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
+  extractAccountFromEvmCall,
   extractEvmLogHeaders,
   extractNativeTokenHoldersFromTransfers,
   extractTokenBalance,
@@ -311,6 +312,7 @@ export default async (
   const allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
+  allAccounts.push(...evmCalls.map(extractAccountFromEvmCall))
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
