@@ -207,10 +207,10 @@ export const extractTokenBalance = async ({
     decimals,
     timestamp,
     contractAddress,
-    evmAddress: address === null ? signerAddress : 'null',
+    evmAddress: address === null ? signerAddress : '',
     balance: balance.toString(),
     type: address === null ? 'Contract' : 'Account',
-    signer: `${address}`,
+    signer: address === null ? '' : `${address}`,
   };
 };
 
@@ -289,16 +289,12 @@ const extractNativeTokenHolderFromTransfer = ({fromAddress, toAddress, blockId, 
 
 const nativeTokenHolder = async (tokenHolderHead: NativeTokenHolderHead): Promise<TokenHolder> => {
   const signer = tokenHolderHead.signerAddress;
-  
-  const [evmAddress, balance] = await Promise.all([
-    nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(tokenHolderHead.signerAddress)),
-    nodeQuery((provider) => provider.api.derive.balances.all(tokenHolderHead.signerAddress)),
-  ]);
+  const balance = await nodeQuery((provider) => provider.api.derive.balances.all(tokenHolderHead.signerAddress))
 
   return {...tokenHolderHead,
     signer,
     type: "Account",
-    evmAddress: evmAddress.toString(),
+    evmAddress: '',
     balance: balance.freeBalance.toString(),
   }
 };
