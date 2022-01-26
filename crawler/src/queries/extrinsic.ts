@@ -77,7 +77,7 @@ const transferToValue = ({
   fromEvmAddress,
   toEvmAddress,
   timestamp,
-}: Transfer): any[] => [blockId, extrinsicId, denom, toAddress, fromAddress, toEvmAddress, fromEvmAddress, tokenAddress, amount === '' ? '0' : amount, feeAmount === '' ? '0' : feeAmount, success, errorMessage, timestamp];
+}: Transfer): any[] => [blockId, extrinsicId, denom, toAddress === 'null' ? null : toAddress, fromAddress === 'null' ? null : fromAddress, toEvmAddress, fromEvmAddress, tokenAddress, amount === '' ? '0' : amount, feeAmount === '' ? '0' : feeAmount, success, errorMessage, timestamp];
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   if (transfers.length === 0) {
