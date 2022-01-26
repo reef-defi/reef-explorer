@@ -250,7 +250,7 @@ export default {
       }
     },
     tokenName() {
-      const data = this.contract?.verified_contract?.contract_data
+      const data = this.contract?.verified_contract?.contract_data || {}
       if (data) {
         return `${data.name} (${data.symbol})`
       }
@@ -309,7 +309,7 @@ export default {
           }
         },
         result({ data }) {
-          if (data.contract[0]) {
+          if (data.contract[0] && data.contract[0].verified_contract) {
             const name = data.contract[0].verified_contract.name
 
             this.contract = data.contract[0]
