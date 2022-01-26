@@ -102,7 +102,7 @@ export const extrinsicToEVMCall = ({
   status,
   id: extrinsicId,
   timestamp,
-  blockId
+  blockId,
 }: ExtrinsicBody): EVMCall => {
   const account = resolveSigner(extrinsic);
   const args: any[] = extrinsic.args.map((arg) => arg.toJSON());
@@ -124,8 +124,10 @@ export const extrinsicToEVMCall = ({
   };
 };
 
-export const extractAccountFromEvmCall = ({timestamp, blockId, account}: EVMCall): AccountHead[] => [
-  {blockId, timestamp, address: account, active: true}
+export const extractAccountFromEvmCall = ({ timestamp, blockId, account }: EVMCall): AccountHead[] => [
+  {
+    blockId, timestamp, address: account, active: true,
+  },
 ];
 
 export const isEventEvmLog = ({ event: { method, section } }: Event): boolean => method === 'Log' && section === 'evm';
