@@ -170,6 +170,7 @@ export interface BytecodeLogWithBlockId extends BytecodeLog {
 export interface EvmLog extends BytecodeLogWithBlockId {
   abis: ABIS;
   name: string;
+  symbol: string;
   blockId: number;
   decimals: number;
 }
