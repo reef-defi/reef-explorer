@@ -20,7 +20,7 @@
           <h4 class="text-center mb-4">
             <p class="mt-3">
               <b-badge
-                v-if="contract.type === 'ERC20'"
+                v-if="contract.verified_contract.type === 'ERC20'"
                 :to="`/token/${contract.address}`"
                 class="ml-2"
                 variant="info"
@@ -228,6 +228,15 @@
             </Row>
           </Data>
 
+          <!-- Execute -->
+
+          <ContractExecute
+            v-if="tab === 'execute'"
+            :contract-id="address"
+            :contract-name="contract.verified_contract.name"
+            :contract-abi="contract.abi"
+          />
+
           <!-- Verified Source -->
 
           <FileExplorer
@@ -237,22 +246,6 @@
           <!-- ABI -->
 
           <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
-
-          <!-- Transactions -->
-
-          <ContractTransactions
-            v-if="tab === 'transactions'"
-            :contract-id="address"
-          />
-
-          <!-- Execute -->
-
-          <ContractExecute
-            v-if="tab === 'execute'"
-            :contract-id="address"
-            :contract-name="contract.verified_contract.name"
-            :contract-abi="contract.abi"
-          />
         </Card>
       </b-container>
     </section>
@@ -265,7 +258,6 @@ import { ethers } from 'ethers'
 // import cbor from 'cbor'
 import Hash from 'ipfs-only-hash'
 import { Promised } from 'vue-promised'
-import ContractTransactions from '../../components/ContractTransactions.vue'
 import ContractExecute from '../../components/ContractExecute.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
@@ -278,7 +270,6 @@ export default {
     ReefIdenticon,
     Loading,
     VueJsonPretty,
-    ContractTransactions,
     ContractExecute,
     Promised,
     FileExplorer,
@@ -299,16 +290,14 @@ export default {
         return {
           general: 'General',
           developer: 'Developer',
+          execute: 'Execute',
           source: 'Verified Source',
           abi: 'ABI',
-          transactions: 'Transactions',
-          // TODO add back- execute: 'Execute',
         }
       }
 
       return {
         general: 'General',
-        transactions: 'Transactions',
       }
     },
     decodedArguments() {
@@ -329,11 +318,15 @@ export default {
 
         // decode constructor arguments
         const abiCoder = new ethers.utils.AbiCoder()
-        const decoded = abiCoder.decode(
-          constructorTypes,
-          '0x' + this.contract.bytecode_arguments
-        )
-        return decoded.toString()
+        try {
+          const decoded = abiCoder.decode(
+            constructorTypes,
+            '0x' + this.contract.bytecode_arguments
+          )
+          return decoded.toString()
+        } catch (err) {
+          console.warn('contract decodedArguments err=', err)
+        }
       }
       return null
     },
@@ -392,6 +385,7 @@ export default {
                 optimization
                 runs
                 target
+                type
               }
               bytecode
               bytecode_context
