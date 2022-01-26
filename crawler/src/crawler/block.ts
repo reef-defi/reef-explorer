@@ -20,7 +20,6 @@ import {
   ExtrinsicBody,
   ExtrinsicHead,
   SignedExtrinsicData,
-  TokenHolder,
   Transfer,
 } from './types';
 import {
@@ -59,8 +58,6 @@ import {
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
-import {Contract} from "ethers";
-import ReefAbi from "./../assets/erc20Abi";
 
 const blockHash = async (id: number): Promise<BlockHash> => {
   const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
@@ -255,12 +252,11 @@ export default async (
   logger.info('Extracting transfers');
   let transfers = await resolvePromisesAsChunks(extrinsics
     .filter(isExtrinsicTransfer)
-    .map(extrinsicBodyToTransfer)
-  );
+    .map(extrinsicBodyToTransfer));
 
   // Native token holders
   logger.info('Extracting native token holders from transfers');
-  let tokenHolders = await extractNativeTokenHoldersFromTransfers(transfers);
+  const tokenHolders = await extractNativeTokenHoldersFromTransfers(transfers);
 
   // EVM Calls
   logger.info('Extracting evm calls');
@@ -350,11 +346,10 @@ export default async (
   contracts = [];
 
   // Token holders
-  console.log(tokenHolders);
   const accountTokenHolders = tokenHolders
-    .filter(({type}) => type === 'Account');
+    .filter(({ type }) => type === 'Account');
   const contractTokenHolders = tokenHolders
-    .filter(({type}) => type === 'Contract');
+    .filter(({ type }) => type === 'Contract');
 
   logger.info('Inserting account token holders');
   await insertAccountTokenHolders(accountTokenHolders);

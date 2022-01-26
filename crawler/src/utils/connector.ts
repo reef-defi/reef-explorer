@@ -1,10 +1,10 @@
 import { Provider } from '@reef-defi/evm-provider';
 import { WsProvider } from '@polkadot/api';
 import { Pool } from 'pg';
+import format from 'pg-format';
 import { max, wait } from './utils';
 import APP_CONFIG from '../config';
 import logger from './logger';
-import format from "pg-format";
 
 let lastBlockId = -1;
 let selectedProvider = 0;
@@ -113,11 +113,11 @@ export const insert = async (statement: string): Promise<void> => {
 export const insertV2 = async (statement: string, args: any[]) => {
   if (args.length === 0) { return; }
   await dbProvider.query(format(statement, args));
-}
+};
 
 export const query = async <Res, >(statement: string): Promise<Res[]> => {
   const client = await dbProvider.connect();
   const result = await client.query<Res>(statement);
   client.release();
   return result.rows;
-}
+};

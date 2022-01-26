@@ -75,8 +75,7 @@ const toTokenHolderInsertValue = ({
   evmAddress,
   type,
   timestamp,
-}: TokenHolder): any[] =>
-[signer === '' ? null : signer, evmAddress === '' ? null : evmAddress, type, contractAddress.toLocaleLowerCase(), balance, decimals, timestamp];
+}: TokenHolder): any[] => [signer === '' ? null : signer, evmAddress === '' ? null : evmAddress, type, contractAddress.toLocaleLowerCase(), balance, decimals, timestamp];
 
 export const insertAccountTokenHolders = async (
   accountTokenHolders: TokenHolder[],
