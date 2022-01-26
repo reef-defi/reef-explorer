@@ -80,6 +80,16 @@
               </Cell>
             </Row>
 
+            <Row v-if="tokenData">
+              <Cell>Token</Cell>
+              <Cell>
+                <eth-identicon :address="tokenData.address" :size="16" />
+                <nuxt-link :to="`/token/${tokenData.address}`">
+                  {{ tokenData.fullName }}
+                </nuxt-link>
+              </Cell>
+            </Row>
+
             <Row>
               <Cell>Created at block</Cell>
               <Cell>
@@ -311,6 +321,17 @@ export default {
         transactions: 'Transactions',
       }
     },
+    tokenData() {
+      const data = this.contract?.verified_contract?.contract_data
+
+      if (!data) return null
+
+      return {
+        ...data,
+        address: this.address,
+        fullName: `${data.name} (${data.symbol})`,
+      }
+    },
     decodedArguments() {
       if (
         this.contract.abi &&
@@ -393,6 +414,7 @@ export default {
                 source
                 compiler_version
                 compiled_data
+                contract_data
                 optimization
                 runs
                 target
