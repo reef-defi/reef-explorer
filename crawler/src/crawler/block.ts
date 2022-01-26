@@ -1,7 +1,5 @@
 import {
-  getProvider,
-  nodeQuery,
-  setResolvingBlocksTillId,
+  nodeProvider,
 } from '../utils/connector';
 import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
 import {
@@ -60,16 +58,16 @@ import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
 
 const blockHash = async (id: number): Promise<BlockHash> => {
-  const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
+  const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
   return { id, hash };
 };
 
 const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
   const [signedBlock, extendedHeader, events, timestamp] = await Promise.all([
-    nodeQuery((provider) => provider.api.rpc.chain.getBlock(hash)),
-    nodeQuery((provider) => provider.api.derive.chain.getHeader(hash)),
-    nodeQuery((provider) => provider.api.query.system.events.at(hash)),
-    nodeQuery((provider) => provider.api.query.timestamp.now.at(hash)),
+    nodeProvider.query((provider) => provider.api.rpc.chain.getBlock(hash)),
+    nodeProvider.query((provider) => provider.api.derive.chain.getHeader(hash)),
+    nodeProvider.query((provider) => provider.api.query.system.events.at(hash)),
+    nodeProvider.query((provider) => provider.api.query.timestamp.now.at(hash)),
   ]);
   return {
     id, hash, signedBlock, extendedHeader, events, timestamp: (new Date(timestamp.toJSON())).toUTCString(),
@@ -113,8 +111,8 @@ const getSignedExtrinsicData = async (
   extrinsicHash: string,
 ): Promise<SignedExtrinsicData> => {
   const [fee, feeDetails] = await Promise.all([
-    nodeQuery((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
-    nodeQuery((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
+    nodeProvider.query((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
+    nodeProvider.query((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
   ]);
 
   return {
@@ -197,9 +195,9 @@ const extractTransferAccounts = ({
   },
 ];
 
-const isEventStakingReward = ({ event: { event } }: EventHead): boolean => getProvider().api.events.staking.Rewarded.is(event);
+const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Rewarded.is(event);
 
-const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => getProvider().api.events.staking.Slashed.is(event);
+const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Slashed.is(event);
 
 export default async (
   fromId: number,
@@ -207,7 +205,7 @@ export default async (
 ): Promise<number> => {
   let transactions = 0;
   const blockIds = range(fromId, toId);
-  setResolvingBlocksTillId(toId - 1);
+  // setResolvingBlocksTillId(toId - 1);
 
   logger.info('Retrieving block hashes');
   transactions += blockIds.length * 2;

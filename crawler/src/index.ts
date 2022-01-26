@@ -3,11 +3,7 @@ import { RewriteFrames } from '@sentry/integrations';
 import config from './config';
 import processBlocks from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
-import {
-  closeProviders,
-  getLastBlockId,
-  initializeProviders,
-} from './utils/connector';
+import { nodeProvider } from './utils/connector';
 import { min, wait } from './utils/utils';
 import logger from './utils/logger';
 // Importing @sentry/tracing patches the global hub for tracing to work.
@@ -15,7 +11,7 @@ import logger from './utils/logger';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
-  dsn: 'https://b297f1e10e8040f693bbc66c9696f5d9@sentry.ilol.si/6', // TODO put this out! process.env.SENTRY_DSN
+  dsn: config.sentryDns, // TODO put this out! process.env.SENTRY_DSN
   tracesSampleRate: 1.0,
   integrations: [
     new RewriteFrames({
@@ -31,7 +27,7 @@ console.warn = () => {};
 
 const processNextBlock = async () => {
   while (true) {
-    const chainHead = getLastBlockId();
+    const chainHead = nodeProvider.lastBlockId();
 
     while (currentBlockIndex < chainHead) {
       const difference = min(chainHead - currentBlockIndex, BLOCKS_PER_STEP);
@@ -62,7 +58,9 @@ const processNextBlock = async () => {
 };
 
 Promise.resolve()
-  .then(initializeProviders)
+  .then(async () => {
+    await nodeProvider.initializeProviders();
+  })
   .then(async () => {
     logger.info('Removing unfinished blocks...');
     await deleteUnfinishedBlocks();
@@ -77,4 +75,4 @@ Promise.resolve()
     Sentry.captureException(error);
     process.exit(-1);
   })
-  .finally(closeProviders);
+  .finally(nodeProvider.closeProviders);
