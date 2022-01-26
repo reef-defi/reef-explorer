@@ -205,7 +205,7 @@ export default async (
 ): Promise<number> => {
   let transactions = 0;
   const blockIds = range(fromId, toId);
-  // setResolvingBlocksTillId(toId - 1);
+  nodeProvider.setDbBlockId(toId-1);
 
   logger.info('Retrieving block hashes');
   transactions += blockIds.length * 2;
