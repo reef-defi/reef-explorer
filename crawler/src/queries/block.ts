@@ -1,4 +1,4 @@
-import { insert, query } from '../utils/connector';
+import { insert, insertV2, query } from '../utils/connector';
 
 interface BlockID {
   id: string;
@@ -33,22 +33,25 @@ const blockValuesStatement = ({
   parentHash,
   extrinsicRoot,
   timestamp,
-}: InsertInitialBlock): string => `(${id}, '${hash}', '${author}', '${stateRoot}', '${parentHash}', '${extrinsicRoot}', false, '${timestamp}')`;
+}: InsertInitialBlock): any[] => 
+[id, hash, author, stateRoot, parentHash, extrinsicRoot, 'false', timestamp];
 
 export const insertMultipleBlocks = async (
   data: InsertInitialBlock[],
-): Promise<void> => insert(`
+): Promise<void> => insertV2(`
 INSERT INTO block
     (id, hash, author, state_root, parent_hash, extrinsic_root, finalized, timestamp)
   VALUES
-    ${data.map(blockValuesStatement).join(',\n')}
-  ON CONFLICT DO NOTHING;
-`);
-
-// TODO use insert multiple blocks!
-export const insertInitialBlock = async (
-  data: InsertInitialBlock,
-): Promise<void> => insertMultipleBlocks([data]);
+    %L
+  ON CONFLICT (id) DO UPDATE SET
+    author = EXCLUDED.author,
+    finalized = EXCLUDED.finalized,
+    timestamp = EXCLUDED.timestamp,
+    state_root = EXCLUDED.state_root,
+    parent_hash = EXCLUDED.parent_hash,
+    extrinsic_root = EXCLUDED.extrinsic_root,
+    hash = EXCLUDED.hash;
+`, data.map(blockValuesStatement));
 
 export const updateBlockFinalized = async (fromID: number, toID: number) => query(
   `UPDATE block SET finalized = true WHERE id >= ${fromID} AND id < ${toID};`,

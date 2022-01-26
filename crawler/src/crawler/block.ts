@@ -199,6 +199,28 @@ const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeP
 
 const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Slashed.is(event);
 
+export const processInitialBlocks = async (fromId: number, toId: number): Promise<number> => {
+  if (toId - fromId <= 0) { return 0; }
+  
+  logger.info(`New unfinalized heads detected from ${fromId} to ${toId}`);
+  
+  let transactions = 0;
+  const blockIds = range(fromId, toId);
+  nodeProvider.setDbBlockId(toId-1);
+  
+  logger.info('Retrieving unfinished block hashes');
+  transactions += blockIds.length * 2;
+  const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
+  logger.info('Retrieving unfinished block bodies');
+  let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
+
+  // Insert blocks
+  logger.info('Inserting unfinished blocks in DB');
+  await insertMultipleBlocks(blocks.map(blockBodyToInsert));
+  return transactions;
+}
+
+
 export default async (
   fromId: number,
   toId: number,
@@ -357,5 +379,6 @@ export default async (
 
   logger.info('Finalizing blocks');
   await updateBlockFinalized(fromId, toId);
+  logger.info('Complete!');
   return transactions;
 };
