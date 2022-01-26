@@ -85,7 +85,9 @@
             <span>{{ shortAddress(item.to_address) }}</span>
           </Cell>
 
-          <Cell align="right">{{ formatAmount(item.amount) }}</Cell>
+          <Cell align="right">{{
+            formatAmount(item.amount, item.symbol, item.decimals)
+          }}</Cell>
 
           <Cell align="right">{{ formatAmount(item.fee_amount) }}</Cell>
 
@@ -208,6 +210,12 @@ export default {
               to_address
               amount
               denom
+              token {
+                address
+                verified_contract {
+                  contract_data
+                }
+              }
               fee_amount
               success
               error_message
@@ -225,7 +233,13 @@ export default {
         },
         result({ data }) {
           this.transfers = data.transfer.map(
-            (t) => (t.extrinsic_hash = t.extrinsic.hash) && t
+            // (t) => (t.extrinsic_hash = t.extrinsic.hash) && t
+            (t) => ({
+              ...t,
+              extrinsic_hash: t.extrinsic.hash,
+              symbol: t.token.verified_contract?.contract_data?.symbol,
+              decimals: t.token.verified_contract?.contract_data?.decimals,
+            })
           )
           this.totalRows = this.transfers.length
           this.loading = false

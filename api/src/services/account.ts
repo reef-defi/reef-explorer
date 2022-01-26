@@ -39,8 +39,8 @@ interface Contract {
 export const findUserContracts = async (address: string): Promise<Contract[]> => query<Contract>('SELECT address FROM contract WHERE signer=$1;', [address]);
 
 const userTokenBalanceToValue = ({
-  tokenAddress, address, evmaddress, balance, decimals,
-}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, evmaddress, 'Account', balance.toString(), decimals, new Date().toUTCString()];// `('${tokenAddress.toLowerCase()}', '${address}', '${evmaddress}', 'Account', ${balance}, ${decimals}, '${(new Date().toUTCString())}')`;
+  tokenAddress, address, balance, decimals,
+}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, null, 'Account', balance.toString(), decimals, new Date().toUTCString()];
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }
@@ -49,7 +49,7 @@ export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]
       (token_address, signer, evm_address, type, balance, decimals, timestamp)
     VALUES
       %L
-    ON CONFLICT (token_address, evm_address) DO UPDATE SET
+    ON CONFLICT (token_address, signer) WHERE evm_address IS NULL DO UPDATE SET
       signer = EXCLUDED.signer,
       balance = EXCLUDED.balance,
       decimals = EXCLUDED.decimals;

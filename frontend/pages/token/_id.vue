@@ -21,14 +21,14 @@
               title="Validated token"
             />
             <img
-              v-if="contract.verified_contract.token_icon_url"
+              v-if="contract.verified_contract.contract_data.icon_url"
               :src="contract.verified_contract.token_icon_url"
               style="width: 32px; height: 32px"
             />
             <span>{{
               contract.verified_contract
-                ? contract.verified_contract.name
-                : '' || shortHash(address)
+                ? contract.verified_contract.contract_data.name
+                : shortHash(address)
             }}</span>
           </Headline>
 
@@ -67,7 +67,7 @@
 
             <Row>
               <Cell>{{ $t('details.token.token_name') }}</Cell>
-              <Cell>{{ contract.verified_contract.name }}</Cell>
+              <Cell>{{ contract.verified_contract.contract_data.name }}</Cell>
             </Row>
 
             <Row>
@@ -190,13 +190,6 @@
               <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
               <Cell wrap>{{ contract.verified_contract.deployment_bytecode }}</Cell>
             </Row>-->
-
-            <Row v-if="contract.abi">
-              <Cell>{{ $t('details.token.abi') }}</Cell>
-              <Cell class="table-json" wrap>
-                <vue-json-pretty :data="contract.abi" />
-              </Cell>
-            </Row>
           </Data>
 
           <!-- Source -->
@@ -228,20 +221,18 @@
 </template>
 <script>
 import { gql } from 'graphql-tag'
-import VueJsonPretty from 'vue-json-pretty'
 import ContractExecute from '../../components/ContractExecute.vue'
-import ContractTransactions from '~/components/ContractTransactions'
+import FileExplorer from '@/components/FileExplorer'
 import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
-import FileExplorer from '@/components/FileExplorer'
+import ContractTransactions from '~/components/ContractTransactions'
 
 export default {
   components: {
     ReefIdenticon,
     Loading,
-    VueJsonPretty,
     ContractTransactions,
     ContractExecute,
     FileExplorer,
@@ -260,17 +251,17 @@ export default {
     tabs() {
       if (this.contract?.verified_contract) {
         return {
-          info: 'Token Info',
+          info: 'General',
           // TODO holders: 'Holders',
           developer: 'Developer',
-          source: 'Verified Source',
           transactions: 'Transactions',
           execute: 'Execute',
+          source: 'Verified Source',
         }
       }
 
       return {
-        info: 'Token Info',
+        info: 'General',
         // TODO holders: 'Holders',
         transactions: 'Transactions',
       }

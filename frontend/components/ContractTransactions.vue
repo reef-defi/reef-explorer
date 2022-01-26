@@ -57,7 +57,9 @@
             <span>{{ shortAddress(item.to_address) }}</span>
           </Cell>
 
-          <Cell>{{ formatAmount(item.amount) }}</Cell>
+          <Cell>{{
+            formatAmount(item.amount, item.symbol, item.decimals)
+          }}</Cell>
 
           <Cell
             v-b-tooltip.hover
@@ -126,6 +128,12 @@ export default {
                 block_id
                 index
               }
+              token {
+                address
+                verified_contract {
+                  contract_data
+                }
+              }
             }
           }
         `,
@@ -136,7 +144,11 @@ export default {
         },
         result({ data }) {
           if (data) {
-            this.transactions = data.transfer
+            this.transactions = data.transfer.map((t) => ({
+              ...t,
+              symbol: t.token.verified_contract?.contract_data?.symbol,
+              decimals: t.token.verified_contract?.contract_data?.decimals,
+            }))
           }
           this.loading = false
         },
