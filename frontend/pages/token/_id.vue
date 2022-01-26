@@ -123,13 +123,12 @@
           </Data>
 
           <!-- Holders -->
-          <!--TODO query account_token_balance for holders
           <TokenHolders
             v-if="tab === 'holders'"
-            :holders="contract.holders"
-            :decimals="contract.verified_contract.contract_data.decimals"
-            :symbol="contract.verified_contract.contract_data.symbol"
-          />-->
+            :token-id="$route.params.id"
+            :decimals="tokenData.decimals"
+            :symbol="tokenData.symbol"
+          />
 
           <!-- Developer -->
 
@@ -236,7 +235,7 @@ export default {
       if (this.contract?.verified_contract) {
         return {
           info: 'Token Info',
-          // TODO add back- holders: 'Holders',
+          holders: 'Holders',
           developer: 'Developer',
           // TODO add back- transactions: 'Transactions',
           // TODO add back- execute: 'Execute',
@@ -245,12 +244,21 @@ export default {
 
       return {
         info: 'Token Info',
-        // TODO add back- holders: 'Holders',
+        holders: 'Holders',
         // TODO add back- transactions: 'Transactions',
       }
     },
-    tokenName() {
+    tokenData() {
       const data = this.contract?.verified_contract?.contract_data || {}
+
+      return {
+        ...data,
+        address: this.address,
+        fullName: `${data.name} (${data.symbol})`,
+      }
+    },
+    tokenName() {
+      const data = this.tokenData
       if (data) {
         return `${data.name} (${data.symbol})`
       }
