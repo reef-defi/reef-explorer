@@ -69,7 +69,7 @@ const initializeNodeProvider = async (): Promise<void> => {
   }
 
   for (let index = 0; index < nodeProviders.length; index += 1) {
-    nodeProviders[index].api.rpc.chain.subscribeNewHeads(async (header) => {
+    nodeProviders[index].api.rpc.chain.subscribeFinalizedHeads(async (header) => {
       updateProviderLastBlock(index, header.number.toNumber());
     });
   }
