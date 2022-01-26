@@ -214,6 +214,10 @@
             :contract-name="contract.verified_contract.name"
             :contract-abi="contract.abi"
           />
+
+          <!-- ABI -->
+
+          <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
         </Card>
       </b-container>
     </section>
@@ -257,6 +261,7 @@ export default {
           transactions: 'Transactions',
           execute: 'Execute',
           source: 'Verified Source',
+          abi: 'ABI',
         }
       }
 
