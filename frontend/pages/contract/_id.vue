@@ -317,23 +317,27 @@ export default {
         this.contract.abi.length > 0 &&
         this.contract.bytecode_arguments
       ) {
-        // get constructor arguments types array
-        const constructor = this.contract.abi.find(
-          ({ type }) => type === 'constructor'
-        )
-        if (!constructor) {
-          return ''
+        try {
+          // get constructor arguments types array
+          const constructor = this.contract.abi.find(
+            ({ type }) => type === 'constructor'
+          )
+          if (!constructor) {
+            return ''
+          }
+
+          const constructorTypes = constructor.inputs.map((input) => input.type)
+
+          // decode constructor arguments
+          const abiCoder = new ethers.utils.AbiCoder()
+          const decoded = abiCoder.decode(
+            constructorTypes,
+            '0x' + this.contract.bytecode_arguments
+          )
+          return decoded.toString()
+        } catch {
+          return null
         }
-
-        const constructorTypes = constructor.inputs.map((input) => input.type)
-
-        // decode constructor arguments
-        const abiCoder = new ethers.utils.AbiCoder()
-        const decoded = abiCoder.decode(
-          constructorTypes,
-          '0x' + this.contract.bytecode_arguments
-        )
-        return decoded.toString()
       }
       return null
     },
@@ -412,7 +416,7 @@ export default {
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
-            const name = data.contract[0].verified_contract.name
+            const name = data.contract[0].verified_contract?.name
 
             this.contract.abi =
               data.contract[0].verified_contract &&
@@ -421,9 +425,12 @@ export default {
                 ? data.contract[0].verified_contract.compiled_data[name]
                 : []
 
-            this.contract.source = Object.keys(
-              data.contract[0].verified_contract.source
-            ).reduce(this.sourceCode(data), [])
+            if (data.contract[0].verified_contract) {
+              this.contract.source = Object.keys(
+                data.contract[0].verified_contract.source
+              ).reduce(this.sourceCode(data), [])
+            }
+
             if (
               this.contract.bytecode_context &&
               !this.contract.bytecode_context.startsWith('0x')
