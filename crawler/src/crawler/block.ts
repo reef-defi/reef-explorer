@@ -373,10 +373,14 @@ export default async (
     .filter(({ type }) => type === 'Contract');
 
   logger.info('Inserting account token holders');
-  await insertAccountTokenHolders(accountTokenHolders);
+  await insertAccountTokenHolders(
+    dropDuplicatesMultiKey(accountTokenHolders, ["contractAddress", "signer"])
+  );
 
   logger.info('Inserting contract token holders');
-  await insertContractTokenHolders(contractTokenHolders);
+  await insertContractTokenHolders(
+    dropDuplicatesMultiKey(contractTokenHolders, ["contractAddress", "evmAddress"])
+  );
 
   logger.info('Finalizing blocks');
   await updateBlockFinalized(fromId, toId);
