@@ -13,23 +13,12 @@
           </div>
 
           <Headline>
-            <font-awesome-icon
-              v-if="contract.verified_contract"
-              v-b-tooltip.hover
-              icon="check"
-              class="text-success"
-              title="Validated token"
-            />
             <img
               v-if="contract.verified_contract.contract_data.icon_url"
               :src="contract.verified_contract.token_icon_url"
               style="width: 32px; height: 32px"
             />
-            <span>{{
-              contract.verified_contract
-                ? contract.verified_contract.contract_data.name
-                : shortHash(address)
-            }}</span>
+            <span>{{ tokenName }}</span>
           </Headline>
 
           <h4 class="text-center mb-4">
@@ -67,7 +56,12 @@
 
             <Row>
               <Cell>{{ $t('details.token.token_name') }}</Cell>
-              <Cell>{{ contract.verified_contract.contract_data.name }}</Cell>
+              <Cell>{{
+                contract.verified_contract &&
+                contract.verified_contract.contract_data
+                  ? contract.verified_contract.contract_data.name
+                  : ''
+              }}</Cell>
             </Row>
 
             <Row>
@@ -129,13 +123,12 @@
           </Data>
 
           <!-- Holders -->
-          <!--TODO query account_token_balance for holders
           <TokenHolders
             v-if="tab === 'holders'"
-            :holders="contract.holders"
-            :decimals="contract.verified_contract.contract_data.decimals"
-            :symbol="contract.verified_contract.contract_data.symbol"
-          />-->
+            :token-id="$route.params.id"
+            :decimals="tokenData.decimals"
+            :symbol="tokenData.symbol"
+          />
 
           <!-- Developer -->
 
@@ -192,18 +185,11 @@
             </Row>-->
           </Data>
 
-          <!-- Source -->
-
-          <FileExplorer
-            v-if="tab === 'source'"
-            :data="contract.verified_contract.source"
-          />
-
           <!-- Transactions -->
 
-          <ContractTransactions
+          <TokenTransfers
             v-if="tab === 'transactions'"
-            :contract-id="address"
+            :token-id="$route.params.id"
           />
 
           <!-- Execute -->
@@ -214,10 +200,6 @@
             :contract-name="contract.verified_contract.name"
             :contract-abi="contract.abi"
           />
-
-          <!-- ABI -->
-
-          <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
         </Card>
       </b-container>
     </section>
@@ -226,20 +208,20 @@
 <script>
 import { gql } from 'graphql-tag'
 import ContractExecute from '../../components/ContractExecute.vue'
-import FileExplorer from '@/components/FileExplorer'
 import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
-import ContractTransactions from '~/components/ContractTransactions'
+import TokenHolders from '@/components/TokenHolders'
+import TokenTransfers from '@/components/TokenTransfers'
 
 export default {
   components: {
     ReefIdenticon,
     Loading,
-    ContractTransactions,
+    TokenHolders,
+    TokenTransfers,
     ContractExecute,
-    FileExplorer,
   },
   mixins: [commonMixin],
   data() {
@@ -255,21 +237,36 @@ export default {
     tabs() {
       if (this.contract?.verified_contract) {
         return {
-          info: 'General',
-          // TODO holders: 'Holders',
+          info: 'Token Info',
+          holders: 'Holders',
           developer: 'Developer',
           transactions: 'Transactions',
-          execute: 'Execute',
-          source: 'Verified Source',
-          abi: 'ABI',
+          // TODO add back- execute: 'Execute',
         }
       }
 
       return {
-        info: 'General',
-        // TODO holders: 'Holders',
-        transactions: 'Transactions',
+        info: 'Token Info',
+        holders: 'Holders',
+        // TODO add back- transactions: 'Transactions',
       }
+    },
+    tokenData() {
+      const data = this.contract?.verified_contract?.contract_data || {}
+
+      return {
+        ...data,
+        address: this.address,
+        fullName: `${data.name} (${data.symbol})`,
+      }
+    },
+    tokenName() {
+      const data = this.tokenData
+      if (data) {
+        return `${data.name} (${data.symbol})`
+      }
+
+      return this.shortHash(this.address)
     },
   },
   watch: {
@@ -323,7 +320,7 @@ export default {
           }
         },
         result({ data }) {
-          if (data.contract[0]) {
+          if (data.contract[0] && data.contract[0].verified_contract) {
             const name = data.contract[0].verified_contract.name
 
             this.contract = data.contract[0]

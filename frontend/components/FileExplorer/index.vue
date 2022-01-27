@@ -23,25 +23,19 @@
       </button>
     </div>
 
-    <div v-if="selected" class="file-explorer__file-preview">
-      <pre :key="selected" v-html="data[selected]" />
-
-      <button
-        :key="selected"
-        v-clipboard:copy="data[selected]"
-        class="file-explorer__copy-btn"
-        title="Copy to clipboard"
-        @click="copy"
-      >
-        <font-awesome-icon icon="clipboard" />
-        <span>Copy</span>
-      </button>
-    </div>
+    <File
+      v-if="selected"
+      :data="data[selected]"
+      :name="getFilename(selected)"
+    />
   </div>
 </template>
 
 <script>
+import File from './File.vue'
+
 export default {
+  components: { File },
   props: {
     data: {
       type: Object,
@@ -69,14 +63,6 @@ export default {
       filename = filename.split('.')
       filename.splice(filename.length - 1, 1)
       return filename.join('')
-    },
-    copy() {
-      this.$bvToast.toast(this.getFilename(this.selected), {
-        title: 'Copied to clipboard!',
-        variant: 'success',
-        autoHideDelay: 5000,
-        appendToast: false,
-      })
     },
   },
 }
@@ -197,9 +183,7 @@ export default {
     }
 
     pre {
-      max-width: 100%;
       animation: file-explorer-preview-content 0.3s ease-out;
-      background: rgba(#eaedf3, 0.5);
 
       @keyframes file-explorer-preview-content {
         from {
@@ -210,45 +194,6 @@ export default {
         to {
           overflow: hidden;
         }
-      }
-    }
-
-    .file-explorer__copy-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      padding: 7px 15px;
-      border-radius: 99px;
-      background: linear-gradient(130deg, #b01f6c, #3c127b) !important;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: none;
-      transition: all 0.125s;
-      animation: file-explorer-copy-btn 0.3s ease-out;
-
-      @keyframes file-explorer-copy-btn {
-        from {
-          opacity: 0;
-        }
-      }
-
-      svg {
-        font-size: 15px;
-        margin-right: 7px;
-      }
-
-      span {
-        font-size: 12px;
-      }
-
-      &:hover {
-        filter: brightness(1.2);
-      }
-
-      &:active {
-        filter: brightness(0.8);
       }
     }
   }

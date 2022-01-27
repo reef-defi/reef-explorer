@@ -20,7 +20,10 @@
           <h4 class="text-center mb-4">
             <p class="mt-3">
               <b-badge
-                v-if="contract.verified_contract.type === 'ERC20'"
+                v-if="
+                  contract.verified_contract &&
+                  contract.verified_contract.type === 'ERC20'
+                "
                 :to="`/token/${contract.address}`"
                 class="ml-2"
                 variant="info"
@@ -77,6 +80,16 @@
                     contract.verified_contract ? 'text-success' : 'text-danger'
                   "
                 />
+              </Cell>
+            </Row>
+
+            <Row v-if="tokenData">
+              <Cell>Token</Cell>
+              <Cell>
+                <eth-identicon :address="tokenData.address" :size="16" />
+                <nuxt-link :to="`/token/${tokenData.address}`">
+                  {{ tokenData.fullName }}
+                </nuxt-link>
               </Cell>
             </Row>
 
@@ -245,7 +258,23 @@
           />
           <!-- ABI -->
 
-          <vue-json-pretty v-if="tab === 'abi'" :data="contract.abi" />
+          <File v-if="tab === 'abi'" :data="contract.abi" />
+
+          <!-- Transactions -->
+
+          <ContractTransactions
+            v-if="tab === 'transactions'"
+            :contract-id="address"
+          />
+
+          <!-- Execute -->
+
+          <ContractExecute
+            v-if="tab === 'execute'"
+            :contract-id="address"
+            :contract-name="contract.verified_contract.name"
+            :contract-abi="contract.abi"
+          />
         </Card>
       </b-container>
     </section>
@@ -264,6 +293,7 @@ import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
 import FileExplorer from '@/components/FileExplorer'
+import File from '@/components/FileExplorer/File'
 
 export default {
   components: {
@@ -273,6 +303,7 @@ export default {
     ContractExecute,
     Promised,
     FileExplorer,
+    File,
   },
   mixins: [commonMixin],
   data() {
@@ -300,32 +331,43 @@ export default {
         general: 'General',
       }
     },
+    tokenData() {
+      const data = this.contract?.verified_contract?.contract_data
+
+      if (!data) return null
+
+      return {
+        ...data,
+        address: this.address,
+        fullName: `${data.name} (${data.symbol})`,
+      }
+    },
     decodedArguments() {
       if (
         this.contract.abi &&
         this.contract.abi.length > 0 &&
         this.contract.bytecode_arguments
       ) {
-        // get constructor arguments types array
-        const constructor = this.contract.abi.find(
-          ({ type }) => type === 'constructor'
-        )
-        if (!constructor) {
-          return ''
-        }
-
-        const constructorTypes = constructor.inputs.map((input) => input.type)
-
-        // decode constructor arguments
-        const abiCoder = new ethers.utils.AbiCoder()
         try {
+          // get constructor arguments types array
+          const constructor = this.contract.abi.find(
+            ({ type }) => type === 'constructor'
+          )
+          if (!constructor) {
+            return ''
+          }
+
+          const constructorTypes = constructor.inputs.map((input) => input.type)
+
+          // decode constructor arguments
+          const abiCoder = new ethers.utils.AbiCoder()
           const decoded = abiCoder.decode(
             constructorTypes,
             '0x' + this.contract.bytecode_arguments
           )
           return decoded.toString()
-        } catch (err) {
-          console.warn('contract decodedArguments err=', err)
+        } catch {
+          return null
         }
       }
       return null
@@ -382,6 +424,7 @@ export default {
                 source
                 compiler_version
                 compiled_data
+                contract_data
                 optimization
                 runs
                 target
@@ -406,7 +449,7 @@ export default {
         result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
-            const name = data.contract[0].verified_contract.name
+            const name = data.contract[0].verified_contract?.name
 
             this.contract.abi =
               data.contract[0].verified_contract &&
@@ -415,9 +458,12 @@ export default {
                 ? data.contract[0].verified_contract.compiled_data[name]
                 : []
 
-            this.contract.source = Object.keys(
-              data.contract[0].verified_contract.source
-            ).reduce(this.sourceCode(data), [])
+            if (data.contract[0].verified_contract) {
+              this.contract.source = Object.keys(
+                data.contract[0].verified_contract.source
+              ).reduce(this.sourceCode(data), [])
+            }
+
             if (
               this.contract.bytecode_context &&
               !this.contract.bytecode_context.startsWith('0x')
