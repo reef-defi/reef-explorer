@@ -187,9 +187,9 @@
 
           <!-- Transactions -->
 
-          <ContractTransactions
+          <TokenTransfers
             v-if="tab === 'transactions'"
-            :contract-id="address"
+            :token-id="$route.params.id"
           />
 
           <!-- Execute -->
@@ -212,12 +212,15 @@ import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
 import commonMixin from '@/mixins/commonMixin.js'
+import TokenHolders from '@/components/TokenHolders'
+import TokenTransfers from '@/components/TokenTransfers'
 
 export default {
   components: {
     ReefIdenticon,
     Loading,
-    // TODO add back- ContractTransactions,
+    TokenHolders,
+    TokenTransfers,
     ContractExecute,
   },
   mixins: [commonMixin],
@@ -237,7 +240,7 @@ export default {
           info: 'Token Info',
           holders: 'Holders',
           developer: 'Developer',
-          // TODO add back- transactions: 'Transactions',
+          transactions: 'Transactions',
           // TODO add back- execute: 'Execute',
         }
       }
