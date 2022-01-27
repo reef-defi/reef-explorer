@@ -64,7 +64,9 @@
                 }}</span>
               </Cell>
 
-              <Cell>{{ formatAmount(item.amount) }}</Cell>
+              <Cell>{{
+                formatAmount(item.amount, item.symbol, item.decimals)
+              }}</Cell>
 
               <Cell
                 v-b-tooltip.hover
@@ -157,6 +159,12 @@ export default {
               to_account {
                 address
               }
+              token {
+                address
+                verified_contract {
+                  contract_data
+                }
+              }
               success
               amount
               timestamp
@@ -177,6 +185,7 @@ export default {
           }
         },
         result({ data }) {
+          console.log('transfers======', data.transfer[0])
           this.transfers = data.transfer.map(
             ({
               success,
@@ -185,6 +194,7 @@ export default {
               to_account: to,
               amount,
               extrinsic,
+              token,
             }) => ({
               amount,
               success,
@@ -194,6 +204,8 @@ export default {
               hash: extrinsic.hash,
               idx: extrinsic.index,
               block_id: extrinsic.block_id,
+              symbol: token.verified_contract?.contract_data?.symbol,
+              decimals: token.verified_contract?.contract_data?.decimals,
             })
           )
           this.totalRows = this.filter ? this.transfers.length : this.nTransfers

@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS token_holder (
 
   timestamp timestamptz NOT NULL,
 
-  UNIQUE (token_address, evm_address),
   CONSTRAINT fk_verified_contract
     FOREIGN KEY (token_address)
       REFERENCES contract(address)
@@ -22,6 +21,9 @@ CREATE TABLE IF NOT EXISTS token_holder (
       REFERENCES account(address)
       ON DELETE CASCADE
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS unique_account_token_holder ON token_holder (token_address, signer) WHERE evm_address IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_contract_token_holder ON token_holder (token_address, evm_address) WHERE signer IS NULL;
 
 CREATE INDEX IF NOT EXISTS token_holder_signer ON token_holder(signer);
 CREATE INDEX IF NOT EXISTS token_holder_balance ON token_holder(balance);

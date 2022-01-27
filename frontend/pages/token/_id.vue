@@ -14,7 +14,7 @@
 
           <Headline>
             <img
-              v-if="contract.verified_contract.token_icon_url"
+              v-if="contract.verified_contract.contract_data.icon_url"
               :src="contract.verified_contract.token_icon_url"
               style="width: 32px; height: 32px"
             />

@@ -15,10 +15,14 @@ import {
   BytecodeLog,
   BytecodeLogWithBlockId,
   Transfer,
+  NativeTokenHolderHead,
 } from './types';
 import { getContractDB } from '../queries/evmEvent';
 import {
+  dropDuplicates,
+  REEF_CONTRACT_ADDRESS,
   removeUndefinedItem,
+  resolvePromisesAsChunks,
 } from '../utils/utils';
 
 const preprocessBytecode = (bytecode: string) => {
@@ -199,14 +203,14 @@ export const extractTokenBalance = async ({
   const address = signerAddr.toJSON();
 
   return {
-    balance,
     blockId,
     decimals,
     timestamp,
     contractAddress,
-    evmAddress: signerAddress,
+    evmAddress: address === null ? signerAddress : '',
+    balance: balance.toString(),
     type: address === null ? 'Contract' : 'Account',
-    signer: `${address}`,
+    signer: address === null ? '' : `${address}`,
   };
 };
 
@@ -240,26 +244,27 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
     decodedEvent, timestamp, address, blockId, name, extrinsicId, signedData,
   }) => {
     const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
-    const [fromAddress, toAddress] = await Promise.all([
+    const [fromAddressQ, toAddressQ] = await Promise.all([
       nodeQuery((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
       nodeQuery((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
     ]);
-    if (fromAddress.toString() === '' || toAddress.toString() === '') {
-      return undefined;
-    }
+    const toAddress = toAddressQ.toString();
+    const fromAddress = fromAddressQ.toString();
 
     return {
       blockId,
+      timestamp,
       denom: name,
       extrinsicId,
+      toEvmAddress,
+      success: true,
+      fromEvmAddress,
+      errorMessage: '',
       tokenAddress: address,
       amount: amount.toString(),
-      toAddress: toAddress.toString(),
-      fromAddress: fromAddress.toString(),
+      toAddress: toAddress === '' ? 'null' : toAddress,
+      fromAddress: fromAddress === '' ? 'null' : fromAddress,
       feeAmount: BigNumber.from(signedData.fee.partialFee).toString(),
-      timestamp,
-      success: true,
-      errorMessage: '',
     };
   });
 
@@ -275,3 +280,40 @@ export const tokenHolderToAccount = ({ signer, blockId, timestamp }: TokenHolder
     active: true, address: signer, blockId, timestamp,
   },
 ];
+
+const extractNativeTokenHolderFromTransfer = ({
+  fromAddress, toAddress, blockId, timestamp,
+}: Transfer): NativeTokenHolderHead[] => [
+  {
+    timestamp, blockId, signerAddress: fromAddress, decimals: 18, contractAddress: REEF_CONTRACT_ADDRESS,
+  },
+  {
+    timestamp, blockId, signerAddress: toAddress, decimals: 18, contractAddress: REEF_CONTRACT_ADDRESS,
+  },
+];
+
+const nativeTokenHolder = async (tokenHolderHead: NativeTokenHolderHead): Promise<TokenHolder> => {
+  const signer = tokenHolderHead.signerAddress;
+  const balance = await nodeQuery((provider) => provider.api.derive.balances.all(tokenHolderHead.signerAddress));
+
+  return {
+    ...tokenHolderHead,
+    signer,
+    type: 'Account',
+    evmAddress: '',
+    balance: balance.freeBalance.toString(),
+  };
+};
+
+export const extractNativeTokenHoldersFromTransfers = async (transfers: Transfer[]): Promise<TokenHolder[]> => {
+  const nativeTokenHoldersHead = dropDuplicates(
+    transfers
+      .map(extractNativeTokenHolderFromTransfer)
+      .flat(),
+    'signerAddress',
+  );
+  return resolvePromisesAsChunks(
+    nativeTokenHoldersHead
+      .map(nativeTokenHolder),
+  );
+};

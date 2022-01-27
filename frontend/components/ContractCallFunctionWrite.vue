@@ -215,7 +215,7 @@ export default {
       const client = this.$apolloProvider.defaultClient
       const query = gql`
         query account {
-          account(where: {account_id: {_eq: "${accountId}"}}) {
+          account(where: {address: {_eq: "${accountId}"}}) {
             evm_address
           }
         }

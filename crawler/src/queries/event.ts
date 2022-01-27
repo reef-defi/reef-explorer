@@ -2,10 +2,10 @@ import { GenericEventData } from '@polkadot/types/generic/Event';
 import { utils as ethersUtils } from 'ethers';
 import {
   AccountBody, EventBody, BytecodeLog,
+  DecodedEvmError,
 } from '../crawler/types';
 import { insert } from '../utils/connector';
 import { getContractDB } from './evmEvent';
-import { DecodedEvmError } from '../crawler/types';
 
 const parseEvmData = async (method: string, genericData: GenericEventData) => {
   const eventData = (genericData.toJSON() as any);
@@ -19,7 +19,7 @@ const parseEvmData = async (method: string, genericData: GenericEventData) => {
     try {
       return iface.parseLog({ topics, data });
     } catch {
-      return undefined
+      return undefined;
     }
   } else if (method === 'ExecutedFailed') {
     let decodedMessage;
@@ -28,8 +28,8 @@ const parseEvmData = async (method: string, genericData: GenericEventData) => {
     } catch {
       decodedMessage = '';
     }
-    const decodedError: DecodedEvmError = {address: eventData[0], message: decodedMessage};
-    return decodedError
+    const decodedError: DecodedEvmError = { address: eventData[0], message: decodedMessage };
+    return decodedError;
   }
   return undefined;
 };

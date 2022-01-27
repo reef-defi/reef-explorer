@@ -76,7 +76,7 @@
         <Cell>
           <div v-if="transfer.denom && transfer.token_address">
             <nuxt-link :to="`/token/${transfer.token_address}`">
-              {{ transfer.denom }}
+              {{ transfer.tokenName || transfer.denom }}
             </nuxt-link>
           </div>
         </Cell>
@@ -96,7 +96,9 @@
 
       <Row class="transfer-details__amount">
         <Cell>Amount</Cell>
-        <Cell>{{ formatAmount(transfer.amount) }}</Cell>
+        <Cell>{{
+          formatAmount(transfer.amount, transfer.symbol, transfer.decimals)
+        }}</Cell>
       </Row>
 
       <Row class="transfer-details__fee">

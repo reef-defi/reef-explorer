@@ -4,7 +4,7 @@ import {
   ERC20Token,
   EVMCall,
 } from '../crawler/types';
-import { insert, query } from '../utils/connector';
+import { insert, insertV2, query } from '../utils/connector';
 
 const contractToValues = ({
   address,
@@ -67,7 +67,7 @@ export const insertContract = async (contract: Contract): Promise<void> => inser
 
 export const insertEvmCall = async (call: EVMCall): Promise<void> => insertEvmCalls([call]);
 
-const accountTokenBalanceToValue = ({
+const toTokenHolderInsertValue = ({
   signer,
   balance,
   contractAddress,
@@ -75,25 +75,36 @@ const accountTokenBalanceToValue = ({
   evmAddress,
   type,
   timestamp,
-}: TokenHolder): string => `(${signer === 'null' ? signer : `'${signer}'`}, '${evmAddress.toLowerCase()}', '${type}', '${contractAddress.toLowerCase()}', ${balance}, ${decimals}, '${timestamp}')`;
+}: TokenHolder): any[] => [signer === '' ? null : signer, evmAddress === '' ? null : evmAddress, type, contractAddress.toLocaleLowerCase(), balance, decimals, timestamp];
 
-export const insertAccountTokenBalances = async (
-  accountTokenBalances: TokenHolder[],
+export const insertAccountTokenHolders = async (
+  accountTokenHolders: TokenHolder[],
 ): Promise<void> => {
-  if (accountTokenBalances.length === 0) {
-    return;
-  }
-  await insert(`
+  await insertV2(`
     INSERT INTO token_holder
       (signer, evm_address, type, token_address, balance, decimals, timestamp)
     VALUES
-      ${accountTokenBalances.map(accountTokenBalanceToValue).join(',\n')}
-    ON CONFLICT (evm_address, token_address) DO UPDATE SET
-      signer = EXCLUDED.signer,
+      %L
+    ON CONFLICT (signer, token_address) WHERE evm_address IS NULL DO UPDATE SET
       balance = EXCLUDED.balance,
       timestamp = EXCLUDED.timestamp,
       decimals = EXCLUDED.decimals;
-  `);
+  `, accountTokenHolders.map(toTokenHolderInsertValue));
+};
+
+export const insertContractTokenHolders = async (
+  contractTokenHolders: TokenHolder[],
+): Promise<void> => {
+  await insertV2(`
+    INSERT INTO token_holder
+      (signer, evm_address, type, token_address, balance, decimals, timestamp)
+    VALUES
+      %L
+    ON CONFLICT (evm_address, token_address) WHERE signer IS NULL DO UPDATE SET
+      balance = EXCLUDED.balance,
+      timestamp = EXCLUDED.timestamp,
+      decimals = EXCLUDED.decimals;
+  `, contractTokenHolders.map(toTokenHolderInsertValue));
 };
 
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => query<ERC20Token>(

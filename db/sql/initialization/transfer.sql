@@ -2,9 +2,12 @@ CREATE TABLE IF NOT EXISTS transfer (
   id BIGSERIAL,
   block_id BIGINT,
   extrinsic_id BIGINT,
+
   to_address VARCHAR,
   from_address VARCHAR,
   token_address VARCHAR,
+  to_evm_address VARCHAR,
+  from_evm_address VARCHAR,
 
   denom TEXT NOT NULL,
   amount NUMERIC(80,0) NOT NULL,
@@ -45,3 +48,5 @@ CREATE INDEX IF NOT EXISTS transfer_to_address ON transfer (to_address);
 CREATE INDEX IF NOT EXISTS transfer_from_address ON transfer (from_address);
 CREATE INDEX IF NOT EXISTS transfer_extrinsic_id ON transfer (extrinsic_id);
 CREATE INDEX IF NOT EXISTS transfer_token_address ON transfer (token_address);
+CREATE INDEX IF NOT EXISTS transfer_to_evm_address ON transfer (to_evm_address);
+CREATE INDEX IF NOT EXISTS transfer_from_evm_address ON transfer (from_evm_address);

@@ -63,6 +63,12 @@ export default {
               index
               error_message
             }
+            token {
+              address
+              verified_contract {
+                contract_data
+              }
+            }
             token_address
             fee_amount
           }
@@ -79,6 +85,19 @@ export default {
       result({ data }) {
         if (data && data.transfer) {
           this.transfer = data.transfer[0]
+          console.log('TTTT=', this.transfer)
+          if (
+            this.transfer.token &&
+            this.transfer.token.verified_contract &&
+            this.transfer.token.verified_contract.contract_data
+          ) {
+            this.transfer.tokenName =
+              this.transfer.token.verified_contract.contract_data.name
+            this.transfer.symbol =
+              this.transfer.token.verified_contract.contract_data.symbol
+            this.transfer.decimals =
+              this.transfer.token.verified_contract.contract_data.decimals
+          }
         }
         this.loading = false
       },
