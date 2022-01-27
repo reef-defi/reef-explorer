@@ -42,7 +42,7 @@ const processNextBlock = async () => {
       let transactions = 0;
       nodeProvider.setDbBlockId(from + difference - 1);
       // // Processing unfinalized blocks
-      transactions += await processInitialBlocks(to, from+difference);
+      transactions += await processInitialBlocks(to, from + difference);
 
       // Processing finalized blocks
       transactions += await processBlocks(from, to);
