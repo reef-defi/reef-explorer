@@ -190,6 +190,8 @@
           <TokenTransfers
             v-if="tab === 'transactions'"
             :token-id="$route.params.id"
+            :decimals="tokenData.decimals"
+            :symbol="tokenData.symbol"
           />
 
           <!-- Execute -->

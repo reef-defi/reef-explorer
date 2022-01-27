@@ -55,7 +55,7 @@
             <span>{{ shortAddress(item.to_address) }}</span>
           </Cell>
 
-          <Cell>{{ formatAmount(item.amount) }}</Cell>
+          <Cell>{{ formatAmount(item.amount, symbol, decimals) }}</Cell>
 
           <Cell
             v-b-tooltip.hover
@@ -103,6 +103,8 @@ export default {
   mixins: [commonMixin, tableUtils],
   props: {
     tokenId: { type: String, required: true },
+    decimals: { type: Number, default: 0 },
+    symbol: { type: String, default: '' },
   },
   data() {
     return {
