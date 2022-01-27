@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS verified_contract (
   CONSTRAINT fk_address
     FOREIGN KEY (address)
       REFERENCES contract(address)
+      ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS verified_contract_name ON verified_contract (name);
@@ -84,6 +85,7 @@ CREATE TABLE IF NOT EXISTS verification_request (
 
   PRIMARY KEY (id)
 );
+
 
 CREATE INDEX IF NOT EXISTS verification_request_name ON verification_request (name);
 CREATE INDEX IF NOT EXISTS verification_request_address ON verification_request (address);

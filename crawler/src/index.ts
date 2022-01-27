@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
 import config from './config';
-import processBlocks, { processInitialBlocks } from './crawler/block';
+import processBlocks from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
 import { min, wait } from './utils/utils';
@@ -25,7 +25,7 @@ console.warn = () => {};
 const processNextBlock = async () => {
   let BLOCKS_PER_STEP = config.startBlockSize;
   let currentBlockIndex = await lastBlockInDatabase();
-
+  
   while (true) {
     const chainHead = nodeProvider.lastBlockId();
     const finalizedHead = nodeProvider.lastFinalizedBlockId();
@@ -39,8 +39,12 @@ const processNextBlock = async () => {
 
       const start = Date.now();
 
-      let transactions = await processInitialBlocks(to, from + difference);
-      transactions += await processBlocks(from, to);
+      let transactions = 0
+      nodeProvider.setDbBlockId(from+difference-1);
+      // Processing unfinalized blocks
+      transactions += await processBlocks(to, from + difference, false);
+      // Processing finalized blocks
+      transactions += await processBlocks(from, to, true);
 
       currentBlockIndex = to - 1;
       const ms = Date.now() - start;
@@ -75,7 +79,7 @@ Promise.resolve()
   .then(processNextBlock)
   .catch((error) => {
     logger.error(error);
-    Sentry.captureException(error);
+    // Sentry.captureException(error);
     process.exit(-1);
   })
   .finally(nodeProvider.closeProviders);

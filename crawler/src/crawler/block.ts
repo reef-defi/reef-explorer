@@ -1,7 +1,7 @@
 import {
-  nodeProvider,
+  nodeProvider, query, queryv2,
 } from '../utils/connector';
-import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
+import { insertMultipleBlocks, removeBlockWithId, retrieveBlockHash, updateBlockFinalized } from '../queries/block';
 import {
   extrinsicBodyToTransfer,
   extrinsicStatus,
@@ -58,8 +58,16 @@ import {
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
 
-const blockHash = async (id: number): Promise<BlockHash> => {
+const blockHash = async (id: number): Promise<BlockHash|undefined> => {
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
+
+  const dbHash = await retrieveBlockHash(id);
+  if (dbHash && dbHash.hash === hash.toString()) {
+    return undefined;
+  } else {
+    await removeBlockWithId(id);
+  }
+
   return { id, hash };
 };
 
@@ -70,6 +78,7 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
     nodeProvider.query((provider) => provider.api.query.system.events.at(hash)),
     nodeProvider.query((provider) => provider.api.query.timestamp.now.at(hash)),
   ]);
+
   return {
     id, hash, signedBlock, extendedHeader, events, timestamp: (new Date(timestamp.toJSON())).toUTCString(),
   };
@@ -200,40 +209,27 @@ const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeP
 
 const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Slashed.is(event);
 
-export const processInitialBlocks = async (fromId: number, toId: number): Promise<number> => {
-  if (toId - fromId <= 0) { return 0; }
-
-  logger.info(`New unfinalized heads detected from ${fromId} to ${toId}`);
-
-  let transactions = 0;
-  const blockIds = range(fromId, toId);
-  nodeProvider.setDbBlockId(toId - 1);
-
-  logger.info('Retrieving unfinished block hashes');
-  transactions += blockIds.length * 2;
-  const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
-  logger.info('Retrieving unfinished block bodies');
-  const blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
-
-  // Insert blocks
-  logger.info('Inserting unfinished blocks in DB');
-  await insertMultipleBlocks(blocks.map(blockBodyToInsert));
-  return transactions;
-};
-
 export default async (
   fromId: number,
   toId: number,
+  finalized: boolean
 ): Promise<number> => {
   let transactions = 0;
+  if (toId - fromId <= 0) { return transactions; }
+  logger.info(`Resolving ${finalized ? '' : 'un'}finalized blocks from ${fromId} to ${toId}...`);
+
   const blockIds = range(fromId, toId);
-  nodeProvider.setDbBlockId(toId - 1);
 
   logger.info('Retrieving block hashes');
   transactions += blockIds.length * 2;
-  const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
+  const hashes = (await resolvePromisesAsChunks(blockIds.map(blockHash)))
+    .filter(removeUndefinedItem);
+
   logger.info('Retrieving block bodies');
-  let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
+  let blocks = await resolvePromisesAsChunks(
+    hashes
+    .map(blockBody)
+  );
 
   // Insert blocks
   logger.info('Inserting initial blocks in DB');
@@ -245,6 +241,7 @@ export default async (
 
   logger.info('Retrieving next free extrinsic and event ids');
   const [eid, feid] = await nextFreeIds();
+  logger.info(`Extrinsic next id: ${eid}, Event next id: ${feid}`)
 
   logger.info('Retrieving neccessery extrinsic data');
   transactions += extrinsicHeaders.length;
@@ -382,8 +379,11 @@ export default async (
     dropDuplicatesMultiKey(contractTokenHolders, ["contractAddress", "evmAddress"])
   );
 
-  logger.info('Finalizing blocks');
-  await updateBlockFinalized(fromId, toId);
+  if (finalized) {
+    logger.info('Finalizing blocks');
+    await updateBlockFinalized(fromId, toId);
+  }
+
   logger.info('Complete!');
   return transactions;
 };

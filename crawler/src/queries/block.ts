@@ -1,4 +1,4 @@
-import { insertV2, query } from '../utils/connector';
+import { insertV2, query, queryv2 } from '../utils/connector';
 
 interface BlockID {
   id: string;
@@ -57,3 +57,16 @@ export const updateBlockFinalized = async (fromID: number, toID: number) => quer
 );
 
 export const deleteUnfinishedBlocks = async () => query('DELETE FROM block WHERE finalized = false;');
+
+interface BlockHashDB {
+  hash: string;
+}
+export const retrieveBlockHash = async (id: number): Promise<BlockHashDB|undefined> => {
+  const result = await queryv2<BlockHashDB>(`SELECT hash FROM block WHERE id = $1;`, [id]);
+  if (result.length === 0) { return; }
+  return result[0];
+};
+
+export const removeBlockWithId = async (id: number): Promise<void> => {
+  await queryv2(`DELETE FROM block WHERE id = $1;`, [id]);
+}
