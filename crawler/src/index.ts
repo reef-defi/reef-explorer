@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
 import config from './config';
-import processBlocks from './crawler/block';
+import processBlocks, { processInitialBlocks } from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
 import { min, wait } from './utils/utils';
@@ -41,10 +41,11 @@ const processNextBlock = async () => {
 
       let transactions = 0;
       nodeProvider.setDbBlockId(from + difference - 1);
-      // Processing unfinalized blocks
-      transactions += await processBlocks(to, from + difference, false);
+      // // Processing unfinalized blocks
+      transactions += await processInitialBlocks(to, from+difference);
+
       // Processing finalized blocks
-      transactions += await processBlocks(from, to, true);
+      transactions += await processBlocks(from, to);
 
       currentBlockIndex = to - 1;
       const ms = Date.now() - start;
