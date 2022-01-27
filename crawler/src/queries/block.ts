@@ -62,11 +62,10 @@ interface BlockHashDB {
   hash: string;
 }
 export const retrieveBlockHash = async (id: number): Promise<BlockHashDB|undefined> => {
-  const result = await queryv2<BlockHashDB>(`SELECT hash FROM block WHERE id = $1;`, [id]);
-  if (result.length === 0) { return; }
-  return result[0];
+  const result = await queryv2<BlockHashDB>('SELECT hash FROM block WHERE id = $1;', [id]);
+  return result.length > 0 ? result[0] : undefined;
 };
 
 export const removeBlockWithId = async (id: number): Promise<void> => {
-  await queryv2(`DELETE FROM block WHERE id = $1;`, [id]);
-}
+  await queryv2('DELETE FROM block WHERE id = $1;', [id]);
+};

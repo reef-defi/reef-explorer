@@ -1,7 +1,9 @@
 import {
-  nodeProvider, query, queryv2,
+  nodeProvider,
 } from '../utils/connector';
-import { insertMultipleBlocks, removeBlockWithId, retrieveBlockHash, updateBlockFinalized } from '../queries/block';
+import {
+  insertMultipleBlocks, removeBlockWithId, retrieveBlockHash, updateBlockFinalized,
+} from '../queries/block';
 import {
   extrinsicBodyToTransfer,
   extrinsicStatus,
@@ -64,9 +66,8 @@ const blockHash = async (id: number): Promise<BlockHash|undefined> => {
   const dbHash = await retrieveBlockHash(id);
   if (dbHash && dbHash.hash === hash.toString()) {
     return undefined;
-  } else {
-    await removeBlockWithId(id);
   }
+  await removeBlockWithId(id);
 
   return { id, hash };
 };
@@ -212,7 +213,7 @@ const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodePr
 export default async (
   fromId: number,
   toId: number,
-  finalized: boolean
+  finalized: boolean,
 ): Promise<number> => {
   let transactions = 0;
   if (toId - fromId <= 0) { return transactions; }
@@ -228,7 +229,7 @@ export default async (
   logger.info('Retrieving block bodies');
   let blocks = await resolvePromisesAsChunks(
     hashes
-    .map(blockBody)
+      .map(blockBody),
   );
 
   // Insert blocks
@@ -241,7 +242,7 @@ export default async (
 
   logger.info('Retrieving next free extrinsic and event ids');
   const [eid, feid] = await nextFreeIds();
-  logger.info(`Extrinsic next id: ${eid}, Event next id: ${feid}`)
+  logger.info(`Extrinsic next id: ${eid}, Event next id: ${feid}`);
 
   logger.info('Retrieving neccessery extrinsic data');
   transactions += extrinsicHeaders.length;
@@ -371,12 +372,12 @@ export default async (
 
   logger.info('Inserting account token holders');
   await insertAccountTokenHolders(
-    dropDuplicatesMultiKey(accountTokenHolders, ["contractAddress", "signer"])
+    dropDuplicatesMultiKey(accountTokenHolders, ['contractAddress', 'signer']),
   );
 
   logger.info('Inserting contract token holders');
   await insertContractTokenHolders(
-    dropDuplicatesMultiKey(contractTokenHolders, ["contractAddress", "evmAddress"])
+    dropDuplicatesMultiKey(contractTokenHolders, ['contractAddress', 'evmAddress']),
   );
 
   if (finalized) {

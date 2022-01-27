@@ -25,7 +25,7 @@ console.warn = () => {};
 const processNextBlock = async () => {
   let BLOCKS_PER_STEP = config.startBlockSize;
   let currentBlockIndex = await lastBlockInDatabase();
-  
+
   while (true) {
     const chainHead = nodeProvider.lastBlockId();
     const finalizedHead = nodeProvider.lastFinalizedBlockId();
@@ -39,8 +39,8 @@ const processNextBlock = async () => {
 
       const start = Date.now();
 
-      let transactions = 0
-      nodeProvider.setDbBlockId(from+difference-1);
+      let transactions = 0;
+      nodeProvider.setDbBlockId(from + difference - 1);
       // Processing unfinalized blocks
       transactions += await processBlocks(to, from + difference, false);
       // Processing finalized blocks
