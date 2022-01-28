@@ -97,7 +97,12 @@
       <Row class="transfer-details__amount">
         <Cell>Amount</Cell>
         <Cell>{{
-          formatAmount(transfer.amount, transfer.symbol, transfer.decimals)
+          formatAmount(
+            transfer.amount,
+            transfer.symbol,
+            transfer.decimals,
+            true
+          )
         }}</Cell>
       </Row>
 

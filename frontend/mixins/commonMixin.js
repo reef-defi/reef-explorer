@@ -37,17 +37,26 @@ export default {
         return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
       }
     },
-    formatAmount(amount, symbol, decimals) {
+    formatAmount(amount, symbol, decimals, exactDecimalValue) {
       if (!symbol) {
         symbol = network.tokenSymbol
       }
       if (!decimals) {
         decimals = network.tokenDecimals
       }
-      return `${new BigNumber(amount)
+      let prefix = ''
+
+      const fixedDecimalNr = new BigNumber(amount)
         .div(new BigNumber(10).pow(decimals))
-        .toFixed(2)
-        .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')} ${symbol}`
+        .toFixed(exactDecimalValue ? null : 2)
+      if (!exactDecimalValue && fixedDecimalNr < 0.01) {
+        prefix = '~'
+      }
+      const fixedString = `${fixedDecimalNr.replace(
+        /(\d)(?=(\d{3})+(?!\d))/g,
+        '$1,'
+      )}`
+      return `${prefix}${fixedString} ${symbol}`
     },
     formatTokenAmount(amount, decimals, denom) {
       return `${new BigNumber(amount)
