@@ -8,6 +8,8 @@ import {
 } from '../utils/types';
 import { ensure } from '../utils/utils';
 import { getAllUsersWithEvmAddress, insertTokenHolder } from './account';
+import {Observable, retryWhen, map, scan, delay as delayOperator, switchMap, of} from 'rxjs';
+import {shareReplay} from "rxjs/operators";
 
 interface Bytecode {
   bytecode: string;
@@ -64,11 +66,44 @@ ON CONFLICT DO NOTHING;`;
 
 const CONTRACT_VERIFICATION_STATUS = 'SELECT * FROM verification_request WHERE address = $1;';
 
+const waitingFinalityByContractQry = new Map<string, Observable<any>>()
+
 const findContractBytecode = async (address: string): Promise<string> => {
   const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
   ensure(bytecodes.length > 0, 'Contract does not exist', 404);
   return bytecodes[0].bytecode;
 };
+
+const getContractBytecode$ = (address: string): Observable<any> => {
+  if (!waitingFinalityByContractQry.has(address)) {
+    let retryNr = 20;
+    let retryEveryMs = 6000;
+    const contractValue$ = of(address).pipe(
+        switchMap(findContractBytecode),
+        retryWhen((errors) =>
+            errors.pipe(
+                scan((acc, error) => ({count: acc.count + 1, error}), {
+                  count: 0,
+                  error: undefined as any,
+                }),
+                map((current) => {
+                  if (current.count > retryNr) {
+                    throw current.error;
+                  }
+                  return current;
+                }),
+                delayOperator(retryEveryMs)
+            )
+        ),
+        shareReplay(1)
+    );
+    waitingFinalityByContractQry.set(address, contractValue$);
+    contractValue$.subscribe(null, null, () => {
+      waitingFinalityByContractQry.delete(address);
+    });
+  }
+  return waitingFinalityByContractQry.get(address);
+}
 
 const insertVerifiedContract = async ({
   address, name, filename, source, optimization, compilerVersion, abi, args, runs, target, type, data,
@@ -113,7 +148,7 @@ const updateUserBalances = async (abi: ABI, address: string, decimals: number): 
 };
 
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
-  const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
+  const deployedBytecode = await getContractBytecode$(verification.address.toLowerCase()).toPromise();
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
   let type: ContractType = 'other';
