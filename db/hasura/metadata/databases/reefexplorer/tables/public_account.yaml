@@ -14,7 +14,7 @@ select_permissions:
     - nonce
     - active
     - address
-      - evm_address
+    - evm_address
     - identity
     - available_balance
     - free_balance
