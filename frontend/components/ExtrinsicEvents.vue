@@ -1,8 +1,10 @@
 <template>
   <div class="extrinsic-events">
     <Headline small>Triggered Events</Headline>
-
-    <Table>
+    <div v-if="loading" class="text-center py-4">
+      <Loading />
+    </div>
+    <Table v-else>
       <THead>
         <Cell>Event</Cell>
         <Cell>Section &amp; Method</Cell>
@@ -43,6 +45,7 @@ export default {
   data: () => {
     return {
       events: [],
+      loading: true,
     }
   },
   apollo: {
@@ -73,6 +76,7 @@ export default {
         },
         result({ data }) {
           this.events = data.event
+          this.loading = false
         },
       },
     },
