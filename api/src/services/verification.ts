@@ -64,8 +64,18 @@ ON CONFLICT DO NOTHING;`;
 
 const CONTRACT_VERIFICATION_STATUS = 'SELECT * FROM verification_request WHERE address = $1;';
 
+const BLOCK_FINALIZED_MS = 40000;
+
+const timeout = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const findContractBytecode = async (address: string): Promise<string> => {
-  const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
+  let bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
+  if(bytecodes.length<1){
+    await timeout(BLOCK_FINALIZED_MS);
+    bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
+  }
   ensure(bytecodes.length > 0, 'Contract does not exist', 404);
   return bytecodes[0].bytecode;
 };
