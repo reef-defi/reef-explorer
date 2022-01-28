@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js'
 import { gql } from 'graphql-tag'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import moment from 'moment'
+import { utils } from 'ethers'
 import { network } from '@/frontend.config.js'
 
 const isTimestamp = (timestampOrDateString) => {
@@ -66,6 +67,7 @@ export default {
       return polkadotRegexp.test(input)
     },
     async isBlockHash(input) {
+      input = input.trim()
       if (!input || !input.toString()) {
         return false
       }
@@ -85,6 +87,7 @@ export default {
       return false
     },
     async isExtrinsicHash(input) {
+      input = input.trim()
       if (!input || !input.toString()) {
         return false
       }
@@ -121,6 +124,50 @@ export default {
       }
       const polkadotRegexp = /^(([0-9a-zA-Z]{47})|([0-9a-zA-Z]{48}))$/
       return polkadotRegexp.test(input)
+    },
+    isEvmAddress(input) {
+      if (!input || !input.toString()) {
+        return false
+      }
+      return utils.isAddress(input)
+    },
+    async isContractAddress(input) {
+      input = input.trim()
+      if (!input || !input.toString()) {
+        return false
+      }
+      if (!this.isEvmAddress(input)) {
+        return false
+      }
+      const client = this.$apollo.provider.defaultClient
+      const query = gql`
+          query contract {
+            contract(limit: 1, where: {address: {_eq: "${input}"}}) {
+              address
+            }
+          }
+        `
+      const response = await client.query({ query })
+      return response.data.contract.length > 0
+    },
+    async isEvmAccountAddress(input) {
+      input = input.trim()
+      if (!input || !input.toString()) {
+        return false
+      }
+      if (!this.isEvmAddress(input)) {
+        return false
+      }
+      const client = this.$apollo.provider.defaultClient
+      const query = gql`
+          query account {
+            account(limit: 1, where: {evm_address: {_eq: "${input}"}}) {
+              evm_address
+            }
+          }
+        `
+      const response = await client.query({ query })
+      return response.data.account.length > 0
     },
     getDateFromTimestamp(timestamp) {
       if (timestamp === 0) {

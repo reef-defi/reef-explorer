@@ -270,7 +270,14 @@ export default {
       account: {
         query: gql`
           subscription account($address: String!) {
-            account(where: { address: { _eq: $address } }) {
+            account(
+              where: {
+                _or: [
+                  { address: { _eq: $address } }
+                  { evm_address: { _eq: $address } }
+                ]
+              }
+            ) {
               address
               evm_address
               available_balance
