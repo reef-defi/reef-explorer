@@ -436,7 +436,7 @@ export default {
         `,
         variables() {
           return {
-            address: this.address,
+            address: this.address.toLowerCase(),
           }
         },
         result({ data }) {
