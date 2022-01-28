@@ -33,12 +33,12 @@ export default {
   },
   head() {
     return {
-      title: 'PolkaStats NG block explorer',
+      title: 'Reef chain block explorer',
       meta: [
         {
           hid: 'description',
           name: 'description',
-          content: 'PolkaStats block explorer',
+          content: 'Reef chain block explorer',
         },
       ],
     }
