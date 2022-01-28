@@ -68,17 +68,17 @@
                 />
                 <font-awesome-icon v-else icon="times" class="text-danger" />
               </Cell>
-              <Cell align="center">
-                <a
-                  v-if="
-                    !!item.verified_contract &&
-                    item.verified_contract.type === 'ERC20'
-                  "
-                  :href="`/token/${item.address}`"
-                  >Token</a
-                >
-                <span v-else></span>
+              <Cell
+                v-if="
+                  !!item.verified_contract &&
+                  item.verified_contract.type === 'ERC20'
+                "
+                :link="{ url: `/token/${item.address}`, fill: false }"
+                align="center"
+              >
+                Token
               </Cell>
+              <Cell v-else></Cell>
             </Row>
           </Table>
 
