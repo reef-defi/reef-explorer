@@ -16,7 +16,7 @@
           </div>
           <Table v-else>
             <THead>
-              <Cell>Transaction</Cell>
+              <Cell>Transfer</Cell>
               <Cell>Extrinsic</Cell>
               <Cell>From</Cell>
               <Cell>To</Cell>

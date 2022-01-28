@@ -4,12 +4,12 @@
       <Loading />
     </div>
     <div v-else-if="transfers.length === 0" class="text-center py-4">
-      <h5>No transactions found</h5>
+      <h5>No transfers found</h5>
     </div>
     <div v-else>
       <Table>
         <THead>
-          <Cell>Transaction</Cell>
+          <Cell>Transfer</Cell>
           <Cell>Extrinsic</Cell>
           <Cell>From address</Cell>
           <Cell>To address</Cell>

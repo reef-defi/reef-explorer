@@ -185,10 +185,10 @@
             </Row>-->
           </Data>
 
-          <!-- Transactions -->
+          <!-- Transfers -->
 
           <TokenTransfers
-            v-if="tab === 'transactions'"
+            v-if="tab === 'transfers'"
             :token-id="$route.params.id"
             :decimals="tokenData.decimals"
             :symbol="tokenData.symbol"
@@ -242,15 +242,13 @@ export default {
           info: 'Token Info',
           holders: 'Holders',
           developer: 'Developer',
-          transactions: 'Transactions',
-          // TODO add back- execute: 'Execute',
+          transfers: 'Transfers',
         }
       }
 
       return {
         info: 'Token Info',
         holders: 'Holders',
-        // TODO add back- transactions: 'Transactions',
       }
     },
     tokenData() {

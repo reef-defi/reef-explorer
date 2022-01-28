@@ -85,6 +85,14 @@ export default {
           this.$router.push({
             path: `/block?blockNumber=${this.search}`,
           })
+        } else if (await this.isContractAddress(this.search)) {
+          this.$router.push({
+            path: `/contract/${this.search}`,
+          })
+        } else if (await this.isEvmAccountAddress(this.search)) {
+          this.$router.push({
+            path: `/account/${this.search}`,
+          })
         }
       }
     },

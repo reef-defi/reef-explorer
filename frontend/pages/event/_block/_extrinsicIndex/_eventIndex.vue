@@ -39,7 +39,7 @@ export default {
         {
           hid: 'description',
           name: 'description',
-          content: 'PolkaStats block explorer',
+          content: 'Reef chain block explorer',
         },
       ],
     }
