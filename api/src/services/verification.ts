@@ -67,7 +67,9 @@ const CONTRACT_VERIFICATION_STATUS = 'SELECT * FROM verification_request WHERE a
 const BLOCK_FINALIZED_MS = 40000;
 
 const timeout = (ms) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
 }
 
 const findContractBytecode = async (address: string): Promise<string> => {
