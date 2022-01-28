@@ -260,13 +260,6 @@
 
           <File v-if="tab === 'abi'" :data="contract.abi" />
 
-          <!-- Transactions -->
-
-          <ContractTransactions
-            v-if="tab === 'transactions'"
-            :contract-id="address"
-          />
-
           <!-- Execute -->
 
           <ContractExecute
