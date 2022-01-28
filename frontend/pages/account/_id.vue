@@ -299,7 +299,7 @@ export default {
         `,
         variables() {
           return {
-            address: this.accountId,
+            address: this.accountId.toLowerCase(),
           }
         },
         result({ data }) {
