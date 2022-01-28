@@ -7,8 +7,8 @@ import {
   ExtrinsicBody,
   Transfer,
 } from './types';
-import { getProvider, nodeQuery } from '../utils/connector';
 import { REEF_CONTRACT_ADDRESS } from '../utils/utils';
+import { nodeProvider } from '../utils/connector';
 
 export const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
@@ -25,10 +25,10 @@ export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => ex
   (prev, { event }) => {
     if (
       prev.type === 'unknown'
-        && getProvider().api.events.system.ExtrinsicSuccess.is(event)
+        && nodeProvider.getProvider().api.events.system.ExtrinsicSuccess.is(event)
     ) {
       return { type: 'success' };
-    } if (getProvider().api.events.system.ExtrinsicFailed.is(event)) {
+    } if (nodeProvider.getProvider().api.events.system.ExtrinsicFailed.is(event)) {
       const [dispatchedError] = event.data;
       return {
         type: 'error',
@@ -57,10 +57,10 @@ export const extrinsicBodyToTransfer = async ({
   const fromAddress = resolveSigner(extrinsic);
 
   const toEvmAddress = toAddress !== 'deleted'
-    ? (await nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress))).toString()
+    ? (await nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress))).toString()
     : 'null';
   const fromEvmAddress = fromAddress !== 'deleted'
-    ? (await nodeQuery((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress))).toString()
+    ? (await nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress))).toString()
     : 'null';
 
   const denom: string = extrinsic.method.section === 'currencies' ? args[1].token : 'REEF';

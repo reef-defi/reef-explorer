@@ -1,5 +1,5 @@
 import { Contract as EthContract, utils, BigNumber } from 'ethers';
-import { getProvider, nodeQuery } from '../utils/connector';
+import { nodeProvider } from '../utils/connector';
 import { resolveSigner } from './extrinsic';
 import {
   ExtrinsicBody,
@@ -77,7 +77,7 @@ export const extrinsicToContract = ({
   const { args } = extrinsic;
   const contractEvent = findContractEvent(events)!;
   const address = contractEvent.event.data[0].toString();
-  const reserveEvent = events.find((evn) => getProvider().api.events.balances.Reserved.is(evn.event))!;
+  const reserveEvent = events.find((evn) => nodeProvider.getProvider().api.events.balances.Reserved.is(evn.event))!;
   const signer = reserveEvent.event.data[0].toString();
   const bytecode = args[0].toString();
   const gasLimit = args[2].toString();
@@ -102,6 +102,7 @@ export const extrinsicToEVMCall = ({
   status,
   id: extrinsicId,
   timestamp,
+  blockId,
 }: ExtrinsicBody): EVMCall => {
   const account = resolveSigner(extrinsic);
   const args: any[] = extrinsic.args.map((arg) => arg.toJSON());
@@ -114,6 +115,7 @@ export const extrinsicToEVMCall = ({
     data,
     status,
     account,
+    blockId,
     gasLimit,
     timestamp,
     extrinsicId,
@@ -121,6 +123,12 @@ export const extrinsicToEVMCall = ({
     contractAddress,
   };
 };
+
+export const extractAccountFromEvmCall = ({ timestamp, blockId, account }: EVMCall): AccountHead[] => [
+  {
+    blockId, timestamp, address: account, active: true,
+  },
+];
 
 export const isEventEvmLog = ({ event: { method, section } }: Event): boolean => method === 'Log' && section === 'evm';
 
@@ -130,7 +138,7 @@ const getContractBalance = (
   address: string,
   contractAddress: string,
   abi: ABI,
-) => nodeQuery(async (provider): Promise<string> => {
+) => nodeProvider.query(async (provider): Promise<string> => {
   const contract = new EthContract(contractAddress, abi, provider);
   return contract.balanceOf(address);
 });
@@ -147,6 +155,7 @@ const extractEvmLog = async (
     ...event,
     name: result[0].name,
     abis: result[0].compiled_data,
+    symbol: result[0].contract_data.symbol,
     decimals: result[0].contract_data.decimals,
   };
 };
@@ -197,7 +206,7 @@ export const extractTokenBalance = async ({
 }: TokenBalanceHead): Promise<TokenHolder> => {
   const [balance, signerAddr] = await Promise.all([
     getContractBalance(signerAddress, contractAddress, abi),
-    nodeQuery((provider) => provider.api.query.evmAccounts.accounts(signerAddress)),
+    nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(signerAddress)),
   ]);
 
   const address = signerAddr.toJSON();
@@ -241,12 +250,12 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
   .map(decodeEvmLog)
   .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
   .map(async ({
-    decodedEvent, timestamp, address, blockId, name, extrinsicId, signedData,
+    decodedEvent, timestamp, address, blockId, extrinsicId, signedData, symbol,
   }) => {
     const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
     const [fromAddressQ, toAddressQ] = await Promise.all([
-      nodeQuery((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
-      nodeQuery((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
+      nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
+      nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
     ]);
     const toAddress = toAddressQ.toString();
     const fromAddress = fromAddressQ.toString();
@@ -254,9 +263,9 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
     return {
       blockId,
       timestamp,
-      denom: name,
       extrinsicId,
       toEvmAddress,
+      denom: symbol,
       success: true,
       fromEvmAddress,
       errorMessage: '',
@@ -294,7 +303,7 @@ const extractNativeTokenHolderFromTransfer = ({
 
 const nativeTokenHolder = async (tokenHolderHead: NativeTokenHolderHead): Promise<TokenHolder> => {
   const signer = tokenHolderHead.signerAddress;
-  const balance = await nodeQuery((provider) => provider.api.derive.balances.all(tokenHolderHead.signerAddress));
+  const balance = await nodeProvider.query((provider) => provider.api.derive.balances.all(signer));
 
   return {
     ...tokenHolderHead,
@@ -311,7 +320,8 @@ export const extractNativeTokenHoldersFromTransfers = async (transfers: Transfer
       .map(extractNativeTokenHolderFromTransfer)
       .flat(),
     'signerAddress',
-  );
+  ).filter(({ signerAddress }) => signerAddress !== 'deleted');
+
   return resolvePromisesAsChunks(
     nativeTokenHoldersHead
       .map(nativeTokenHolder),

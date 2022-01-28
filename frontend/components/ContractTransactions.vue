@@ -119,6 +119,8 @@ export default {
               id
               from_address
               to_address
+              to_evm_address
+              from_evm_address
               success
               amount
               timestamp
@@ -146,6 +148,8 @@ export default {
           if (data) {
             this.transactions = data.transfer.map((t) => ({
               ...t,
+              to_address: t.to_address || t.to_evm_address,
+              from_address: t.from_address || t.from_evm_address,
               symbol: t.token.verified_contract?.contract_data?.symbol,
               decimals: t.token.verified_contract?.contract_data?.decimals,
             }))

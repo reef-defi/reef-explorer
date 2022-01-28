@@ -1,13 +1,9 @@
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
 import config from './config';
-import processBlocks from './crawler/block';
+import processBlocks, { processInitialBlocks } from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
-import {
-  closeProviders,
-  getLastBlockId,
-  initializeProviders,
-} from './utils/connector';
+import { nodeProvider } from './utils/connector';
 import { min, wait } from './utils/utils';
 import logger from './utils/logger';
 // Importing @sentry/tracing patches the global hub for tracing to work.
@@ -15,7 +11,7 @@ import logger from './utils/logger';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
-  dsn: 'https://b297f1e10e8040f693bbc66c9696f5d9@sentry.ilol.si/6', // TODO put this out! process.env.SENTRY_DSN
+  dsn: config.sentryDns, // TODO put this out! process.env.SENTRY_DSN
   tracesSampleRate: 1.0,
   integrations: [
     new RewriteFrames({
@@ -24,31 +20,42 @@ Sentry.init({
   ],
 });
 
-let BLOCKS_PER_STEP = config.startBlockSize;
-let currentBlockIndex = -1;
-
 console.warn = () => {};
 
 const processNextBlock = async () => {
-  while (true) {
-    const chainHead = getLastBlockId();
+  let BLOCKS_PER_STEP = config.startBlockSize;
+  let currentBlockIndex = await lastBlockInDatabase();
 
-    while (currentBlockIndex < chainHead) {
+  while (true) {
+    const chainHead = nodeProvider.lastBlockId();
+    const finalizedHead = nodeProvider.lastFinalizedBlockId();
+
+    while (currentBlockIndex < finalizedHead) {
       const difference = min(chainHead - currentBlockIndex, BLOCKS_PER_STEP);
+      const finalizedDifference = min(finalizedHead - currentBlockIndex, BLOCKS_PER_STEP);
+
       const from = currentBlockIndex + 1;
-      const to = from + difference;
+      const to = from + finalizedDifference;
 
       const start = Date.now();
-      const transactions = await processBlocks(from, to);
+
+      let transactions = 0;
+      nodeProvider.setDbBlockId(from + difference - 1);
+      // // Processing unfinalized blocks
+      transactions += await processInitialBlocks(to, from + difference);
+
+      // Processing finalized blocks
+      transactions += await processBlocks(from, to);
+
       currentBlockIndex = to - 1;
       const ms = Date.now() - start;
       const time = ms / 1000;
-      const bps = difference / time;
+      const bps = finalizedDifference / time;
 
       logger.info(
         `n nodes: ${
           config.nodeUrls.length
-        }\tn blocks: ${difference}\tbps: ${bps.toFixed(
+        }\tn blocks: ${finalizedDifference}\tbps: ${bps.toFixed(
           3,
         )}\tn transactions: ${transactions}\ttps: ${(transactions / time).toFixed(
           3,
@@ -62,19 +69,18 @@ const processNextBlock = async () => {
 };
 
 Promise.resolve()
-  .then(initializeProviders)
+  .then(async () => {
+    await nodeProvider.initializeProviders();
+  })
   .then(async () => {
     logger.info('Removing unfinished blocks...');
     await deleteUnfinishedBlocks();
     logger.info('...success');
   })
-  .then(async () => {
-    currentBlockIndex = await lastBlockInDatabase();
-  })
   .then(processNextBlock)
   .catch((error) => {
     logger.error(error);
-    Sentry.captureException(error);
+    // Sentry.captureException(error);
     process.exit(-1);
   })
-  .finally(closeProviders);
+  .finally(nodeProvider.closeProviders);

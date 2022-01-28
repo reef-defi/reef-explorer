@@ -1,7 +1,5 @@
 import {
-  getProvider,
-  nodeQuery,
-  setResolvingBlocksTillId,
+  nodeProvider,
 } from '../utils/connector';
 import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
 import {
@@ -38,6 +36,7 @@ import {
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
+  extractAccountFromEvmCall,
   extractEvmLogHeaders,
   extractNativeTokenHoldersFromTransfers,
   extractTokenBalance,
@@ -60,16 +59,16 @@ import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
 
 const blockHash = async (id: number): Promise<BlockHash> => {
-  const hash = await nodeQuery((provider) => provider.api.rpc.chain.getBlockHash(id));
+  const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
   return { id, hash };
 };
 
 const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
   const [signedBlock, extendedHeader, events, timestamp] = await Promise.all([
-    nodeQuery((provider) => provider.api.rpc.chain.getBlock(hash)),
-    nodeQuery((provider) => provider.api.derive.chain.getHeader(hash)),
-    nodeQuery((provider) => provider.api.query.system.events.at(hash)),
-    nodeQuery((provider) => provider.api.query.timestamp.now.at(hash)),
+    nodeProvider.query((provider) => provider.api.rpc.chain.getBlock(hash)),
+    nodeProvider.query((provider) => provider.api.derive.chain.getHeader(hash)),
+    nodeProvider.query((provider) => provider.api.query.system.events.at(hash)),
+    nodeProvider.query((provider) => provider.api.query.timestamp.now.at(hash)),
   ]);
   return {
     id, hash, signedBlock, extendedHeader, events, timestamp: (new Date(timestamp.toJSON())).toUTCString(),
@@ -113,8 +112,8 @@ const getSignedExtrinsicData = async (
   extrinsicHash: string,
 ): Promise<SignedExtrinsicData> => {
   const [fee, feeDetails] = await Promise.all([
-    nodeQuery((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
-    nodeQuery((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
+    nodeProvider.query((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
+    nodeProvider.query((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
   ]);
 
   return {
@@ -197,9 +196,30 @@ const extractTransferAccounts = ({
   },
 ];
 
-const isEventStakingReward = ({ event: { event } }: EventHead): boolean => getProvider().api.events.staking.Rewarded.is(event);
+const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Rewarded.is(event);
 
-const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => getProvider().api.events.staking.Slashed.is(event);
+const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Slashed.is(event);
+
+export const processInitialBlocks = async (fromId: number, toId: number): Promise<number> => {
+  if (toId - fromId <= 0) { return 0; }
+
+  logger.info(`New unfinalized heads detected from ${fromId} to ${toId}`);
+
+  let transactions = 0;
+  const blockIds = range(fromId, toId);
+  nodeProvider.setDbBlockId(toId - 1);
+
+  logger.info('Retrieving unfinished block hashes');
+  transactions += blockIds.length * 2;
+  const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
+  logger.info('Retrieving unfinished block bodies');
+  const blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
+
+  // Insert blocks
+  logger.info('Inserting unfinished blocks in DB');
+  await insertMultipleBlocks(blocks.map(blockBodyToInsert));
+  return transactions;
+};
 
 export default async (
   fromId: number,
@@ -207,13 +227,16 @@ export default async (
 ): Promise<number> => {
   let transactions = 0;
   const blockIds = range(fromId, toId);
-  setResolvingBlocksTillId(toId - 1);
+  nodeProvider.setDbBlockId(toId - 1);
 
   logger.info('Retrieving block hashes');
   transactions += blockIds.length * 2;
   const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
   logger.info('Retrieving block bodies');
-  let blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
+  let blocks = await resolvePromisesAsChunks(
+    hashes
+      .map(blockBody),
+  );
 
   // Insert blocks
   logger.info('Inserting initial blocks in DB');
@@ -225,6 +248,7 @@ export default async (
 
   logger.info('Retrieving next free extrinsic and event ids');
   const [eid, feid] = await nextFreeIds();
+  logger.info(`Extrinsic next id: ${eid}, Event next id: ${feid}`);
 
   logger.info('Retrieving neccessery extrinsic data');
   transactions += extrinsicHeaders.length;
@@ -265,10 +289,10 @@ export default async (
 
   // Token balance
   logger.info('Retrieving EVM log if contract is ERC20 token');
-  const evmLogHeaders = extractEvmLogHeaders(extrinsicEvmCalls);
-
-  transactions += evmLogHeaders.length;
-  const evmLogs = await resolvePromisesAsChunks(evmLogHeaders);
+  transactions += extrinsicEvmCalls.length;
+  const evmLogs = await resolvePromisesAsChunks(
+    extractEvmLogHeaders(extrinsicEvmCalls),
+  );
 
   logger.info('Extracting ERC20 transfer events');
   const tokenTransfers = await resolvePromisesAsChunks(extractTokenTransfer(evmLogs));
@@ -292,6 +316,7 @@ export default async (
   const allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
+  allAccounts.push(...evmCalls.map(extractAccountFromEvmCall));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
@@ -352,12 +377,17 @@ export default async (
     .filter(({ type }) => type === 'Contract');
 
   logger.info('Inserting account token holders');
-  await insertAccountTokenHolders(accountTokenHolders);
+  await insertAccountTokenHolders(
+    dropDuplicatesMultiKey(accountTokenHolders, ['contractAddress', 'signer']),
+  );
 
   logger.info('Inserting contract token holders');
-  await insertContractTokenHolders(contractTokenHolders);
+  await insertContractTokenHolders(
+    dropDuplicatesMultiKey(contractTokenHolders, ['contractAddress', 'evmAddress']),
+  );
 
   logger.info('Finalizing blocks');
   await updateBlockFinalized(fromId, toId);
+  logger.info('Complete!');
   return transactions;
 };

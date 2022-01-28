@@ -53,8 +53,10 @@ export default {
             amount
             denom
             block_id
-            from_address
             to_address
+            from_address
+            to_evm_address
+            from_evm_address
             timestamp
             success
             extrinsic {
@@ -85,7 +87,13 @@ export default {
       result({ data }) {
         if (data && data.transfer) {
           this.transfer = data.transfer[0]
-          console.log('TTTT=', this.transfer)
+
+          this.transfer.to_address =
+            this.transfer.to_address || this.transfer.to_evm_address
+
+          this.transfer.from_address =
+            this.transfer.from_address || this.transfer.from_evm_address
+
           if (
             this.transfer.token &&
             this.transfer.token.verified_contract &&

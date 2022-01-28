@@ -81,6 +81,7 @@ services:
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
       - MAX_BLOCKS_PER_STEP=32
+      - SENTRY_DNS=${CRAWLER_SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
       - POSTGRES_USER=${DB_USER} #reefexplorer

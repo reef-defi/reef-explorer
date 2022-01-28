@@ -128,6 +128,7 @@ export interface Contract {
 
 export interface EVMCall {
   data: string;
+  blockId: number;
   account: string;
   gasLimit: string;
   timestamp: string;
@@ -170,6 +171,7 @@ export interface BytecodeLogWithBlockId extends BytecodeLog {
 export interface EvmLog extends BytecodeLogWithBlockId {
   abis: ABIS;
   name: string;
+  symbol: string;
   blockId: number;
   decimals: number;
 }

@@ -131,7 +131,7 @@ export default {
     $subscribe: {
       extrinsic: {
         query: gql`
-          subscription extrinsic(
+          subscription transfer(
             $blockNumber: bigint_comparison_exp
             $extrinsicHash: String_comparison_exp
             $fromAddress: String_comparison_exp
@@ -165,6 +165,8 @@ export default {
                   contract_data
                 }
               }
+              to_evm_address
+              from_evm_address
               success
               amount
               timestamp
@@ -185,7 +187,6 @@ export default {
           }
         },
         result({ data }) {
-          console.log('transfers======', data.transfer[0])
           this.transfers = data.transfer.map(
             ({
               success,
@@ -194,16 +195,18 @@ export default {
               to_account: to,
               amount,
               extrinsic,
+              to_evm_address: toEvm,
+              from_evm_address: fromEvm,
               token,
             }) => ({
               amount,
               success,
               timestamp,
-              to: to.address,
-              from: from.address,
               hash: extrinsic.hash,
               idx: extrinsic.index,
               block_id: extrinsic.block_id,
+              to: to === null ? toEvm : to.address,
+              from: from === null ? fromEvm : from.address,
               symbol: token.verified_contract?.contract_data?.symbol,
               decimals: token.verified_contract?.contract_data?.decimals,
             })
