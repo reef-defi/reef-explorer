@@ -89,7 +89,13 @@ export default {
       },
       result({ data }) {
         this.extrinsic = data.extrinsic[0]
-        this.contractAddress = this.extrinsic.args[0].toLowerCase()
+        const extrinsicArgs = this.extrinsic.args[0]
+        // if transfer is native Reef there is no contractAddress
+        this.contractAddress = extrinsicArgs.toLowerCase
+          ? extrinsicArgs.toLowerCase()
+          : null
+
+        this.loading = false
       },
     },
     contract: {
