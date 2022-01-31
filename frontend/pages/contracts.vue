@@ -156,7 +156,7 @@ export default {
               ? { block_id: { _eq: parseInt(this.filter) } }
               : {},
             contractId: this.isContractId(this.filter)
-              ? { _eq: this.filter }
+              ? { _eq: this.filter.toLowerCase() }
               : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
