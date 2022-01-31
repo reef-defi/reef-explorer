@@ -12,13 +12,27 @@
 
     <Table>
       <THead>
-        <Cell>Hash</Cell>
+        <Cell>Transfer</Cell>
+        <Cell>Token</Cell>
         <Cell>From</Cell>
         <Cell>To</Cell>
-        <Cell align="right">Amount</Cell>
+        <Cell>Amount</Cell>
+        <Cell>Success</Cell>
       </THead>
       <Row v-for="(item, index) in transfers" :key="'item-' + index">
         <Cell :link="`/transfer/${item.hash}`">{{ shortHash(item.hash) }}</Cell>
+
+        <Cell
+          :link="{ url: `/token/${item.tokenAddress}`, fill: false }"
+          :title="$t('pages.accounts.account_details')"
+        >
+          <ReefIdenticon
+            :key="item.tokenAddress"
+            :address="item.tokenAddress"
+            :size="20"
+          />
+          <span>{{ shortAddress(item.tokenAddress) }}</span>
+        </Cell>
 
         <Cell
           :link="{ url: `/account/${item.from}`, fill: false }"
@@ -46,8 +60,17 @@
           }}</span>
         </Cell>
 
-        <Cell align="right">
-          {{ formatAmount(item.amount) }}
+        <Cell>
+          {{ formatAmount(item.amount, item.symbol, item.decimals) }}
+        </Cell>
+
+        <Cell align="center">
+          <font-awesome-icon
+            v-if="item.success"
+            icon="check"
+            class="text-success"
+          />
+          <font-awesome-icon v-else icon="times" class="text-danger" />
         </Cell>
       </Row>
     </Table>
@@ -58,7 +81,7 @@
 import { gql } from 'graphql-tag'
 import commonMixin from '@/mixins/commonMixin.js'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
-import { network } from '@/frontend.config'
+// import { network } from '@/frontend.config'
 
 export default {
   components: {
@@ -74,51 +97,52 @@ export default {
     $subscribe: {
       extrinsic: {
         query: gql`
-          subscription extrinsic {
-            extrinsic(
-              order_by: { block_id: desc }
-              where: {
-                _or: [
-                  {
-                    section: { _eq: "currencies" }
-                    method: { _like: "transfer" }
-                  }
-                  {
-                    section: { _eq: "balances" }
-                    method: { _like: "transfer%" }
-                  }
-                ]
+          subscription transfer {
+            transfer(limit: 10, order_by: { extrinsic: { id: desc } }) {
+              extrinsic {
+                id
+                hash
+                index
+                block_id
               }
-              limit: 10
-            ) {
-              id
-              block_id
-              section
-              signer
-              hash
-              args
+              from_account {
+                address
+              }
+              to_account {
+                address
+              }
+              token {
+                address
+                verified_contract {
+                  contract_data
+                }
+              }
+              to_evm_address
+              from_evm_address
+              success
+              amount
+              timestamp
             }
           }
         `,
         result({ data }) {
-          this.transfers = data.extrinsic.map((transfer) => {
-            return {
-              block_id: transfer.block_id,
-              hash: transfer.hash,
-              from: transfer.signer,
-              to: transfer.args[0].address20
-                ? transfer.args[0].address20
-                : transfer.args[0].id,
-              amount:
-                transfer.section === 'currencies'
-                  ? transfer.args[2]
-                  : transfer.args[1],
-              token:
-                transfer.section === 'currencies'
-                  ? transfer.args[1].token
-                  : network.tokenSymbol,
-            }
-          })
+          this.transfers = data.transfer.map((transfer) => ({
+            amount: transfer.amount,
+            success: transfer.success,
+            hash: transfer.extrinsic.hash,
+            timestamp: transfer.timestamp,
+            tokenAddress: transfer.token.address,
+            symbol: transfer.token.verified_contract.contract_data.symbol,
+            decimals: transfer.token.verified_contract.contract_data.decimals,
+            to:
+              transfer.to_account !== null
+                ? transfer.to_account.address
+                : transfer.to_evm_address,
+            from:
+              transfer.from_account !== null
+                ? transfer.from_account.address
+                : transfer.from_evm_address,
+          }))
         },
       },
     },
