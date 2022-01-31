@@ -130,61 +130,6 @@
             :symbol="tokenData.symbol"
           />
 
-          <!-- Developer -->
-
-          <Data v-if="tab === 'developer'">
-            <Row>
-              <Cell>{{ $t('details.token.compiler_version') }}</Cell>
-              <Cell>{{ contract.verified_contract.compiler_version }}</Cell>
-            </Row>
-
-            <Row>
-              <Cell>{{ $t('details.token.optimization') }}</Cell>
-              <Cell>
-                <font-awesome-icon
-                  :icon="
-                    contract.verified_contract.optimization ? 'check' : 'times'
-                  "
-                  :class="
-                    contract.verified_contract.optimization
-                      ? 'text-success'
-                      : 'text-danger'
-                  "
-                />
-              </Cell>
-            </Row>
-
-            <Row>
-              <Cell>{{ $t('details.token.runs') }}</Cell>
-              <Cell>{{ contract.verified_contract.runs }}</Cell>
-            </Row>
-
-            <Row>
-              <Cell>{{ $t('details.token.target') }}</Cell>
-              <Cell>{{ contract.verified_contract.target }}</Cell>
-            </Row>
-            <!--            TODO Ziga
-            <Row>
-              <Cell>{{ $t('details.token.license') }}</Cell>
-              <Cell>{{ contract.verified_contract.license }}</Cell>
-            </Row>-->
-
-            <Row
-              v-if="
-                contract.verified_contract &&
-                contract.verified_contract.bytecode
-              "
-            >
-              <Cell>{{ $t('details.token.bytecode') }}</Cell>
-              <Cell wrap>{{ contract.verified_contract.bytecode }}</Cell>
-            </Row>
-            <!--            TODO Ziga
-            <Row v-if="contract.verified_contract.deployment_bytecode">
-              <Cell>{{ $t('details.contract.deployment_bytecode') }}</Cell>
-              <Cell wrap>{{ contract.verified_contract.deployment_bytecode }}</Cell>
-            </Row>-->
-          </Data>
-
           <!-- Transfers -->
 
           <TokenTransfers
@@ -241,7 +186,6 @@ export default {
         return {
           info: 'Token Info',
           holders: 'Holders',
-          developer: 'Developer',
           transfers: 'Transfers',
         }
       }
