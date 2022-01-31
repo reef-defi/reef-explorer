@@ -212,8 +212,6 @@
           <Activity v-if="tab === 'activity'" :account-id="accountId" />
 
           <StakingRewards v-if="tab === 'rewards'" :account-id="accountId" />
-
-          <!--          <StakingSlashes v-if="tab === 'slashes'" :account-id="accountId" />-->
         </Card>
       </b-container>
     </section>
@@ -299,27 +297,13 @@ export default {
         `,
         variables() {
           return {
-            address: this.accountId.toLowerCase(),
+            address: this.accountId,
           }
         },
         result({ data }) {
-          if (data.account[0]) {
+          console.log(data)
+          if (data && data.account && data.account.length > 0) {
             this.parsedAccount = data.account[0]
-          } else if (this.isAddress(this.accountId)) {
-            this.parsedAccount = {
-              address: this.accountId,
-              evm_address: null,
-              evm_nonce: null,
-              available_balance: '0',
-              free_balance: '0',
-              locked_balance: '0',
-              reserved_balance: '0',
-              vested_balance: '0',
-              voting_balance: '0',
-              nonce: 0,
-              identity: {},
-              timestamp: null,
-            }
           }
           this.loading = false
         },
