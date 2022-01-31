@@ -143,21 +143,6 @@
               <Cell wrap>{{ contract.bytecode }}</Cell>
             </Row> -->
 
-            <Row v-if="contract.bytecode">
-              <Cell>{{ $t('details.contract.bytecode') }}</Cell>
-              <Cell wrap>{{ contract.bytecode }}</Cell>
-            </Row>
-
-            <Row v-if="contract.arguments">
-              <Cell>{{ $t('details.contract.arguments') }}</Cell>
-              <Cell wrap>{{ contract.arguments }}</Cell>
-            </Row>
-
-            <Row v-if="decodedArguments">
-              <Cell>{{ $t('details.contract.decoded_arguments') }}</Cell>
-              <Cell wrap>{{ decodedArguments }}</Cell>
-            </Row>
-
             <Row v-if="contract.metadata">
               <Cell>{{ $t('details.contract.metadata') }}</Cell>
               <Cell wrap>{{ contract.metadata }}</Cell>
@@ -238,6 +223,21 @@
             <Row>
               <Cell>{{ $t('details.contract.license') }}</Cell>
               <Cell>{{ contract.licence }}</Cell>
+            </Row>
+
+            <Row v-if="contract.bytecode">
+              <Cell>{{ $t('details.contract.bytecode') }}</Cell>
+              <Cell wrap>{{ contract.bytecode }}</Cell>
+            </Row>
+
+            <Row v-if="contract.arguments">
+              <Cell>{{ $t('details.contract.arguments') }}</Cell>
+              <Cell wrap>{{ contract.arguments }}</Cell>
+            </Row>
+
+            <Row v-if="decodedArguments">
+              <Cell>{{ $t('details.contract.decoded_arguments') }}</Cell>
+              <Cell wrap>{{ decodedArguments }}</Cell>
             </Row>
           </Data>
 

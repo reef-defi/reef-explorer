@@ -46,12 +46,18 @@ export default {
       }
       let prefix = ''
 
-      const fixedDecimalNr = new BigNumber(amount)
-        .div(new BigNumber(10).pow(decimals))
-        .toFixed(exactDecimalValue ? null : 2)
-      if (!exactDecimalValue && fixedDecimalNr < 0.01) {
+      const valueBN = new BigNumber(amount).div(new BigNumber(10).pow(decimals))
+      const fixedFullDecimalNr = valueBN.toFixed(null)
+      if (
+        !exactDecimalValue &&
+        fixedFullDecimalNr > 0 &&
+        fixedFullDecimalNr < 0.01
+      ) {
         prefix = '~'
       }
+      const fixedDecimalNr = exactDecimalValue
+        ? fixedFullDecimalNr
+        : valueBN.toFixed(2)
       const fixedString = `${fixedDecimalNr.replace(
         /(\d)(?=(\d{3})+(?!\d))/g,
         '$1,'
