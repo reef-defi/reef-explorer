@@ -24,22 +24,29 @@
 
       <Table>
         <THead>
+          <Cell :sortable="['hash', activeSort]">Hash</Cell>
           <Cell :sortable="['block_id', activeSort]">Block Number</Cell>
-          <Cell :sortable="['timestamp', activeSort]">Date</Cell>
           <Cell :sortable="['timeago', activeSort, true]">Time Ago</Cell>
-          <Cell :sortable="['amount', activeSort]" align="right">Reward</Cell>
+          <Cell :sortable="['amount', activeSort]">Reward</Cell>
+          <Cell :sortable="['fee', activeSort]" align="right">Fee</Cell>
         </THead>
 
         <Row v-for="(item, index) in list" :key="index">
+          <Cell :link="`/extrinsic/${item.block_id}/${item.extrinsicIndex}`">
+            {{ shortHash(item.hash) }}
+          </Cell>
+
           <Cell :link="`/block?blockNumber=${item.block_id}`">
             # {{ formatNumber(item.block_id) }}
           </Cell>
 
-          <Cell>{{ getDateFromTimestamp(item.timestamp) }}</Cell>
+          <Cell class="list-view__age">
+            <font-awesome-icon :icon="['far', 'clock']" />
+            <span>{{ fromNow(item.timeago) }}</span>
+          </Cell>
 
-          <Cell>{{ fromNow(item.timeago) }}</Cell>
-
-          <Cell align="right">{{ formatAmount(item.amount, 6) }}</Cell>
+          <Cell>{{ formatAmount(item.amount, 'REEF', 18) }}</Cell>
+          <Cell align="right">{{ formatAmount(item.fee, 'REEF', 18) }}</Cell>
         </Row>
       </Table>
 
@@ -136,6 +143,12 @@ export default {
               event {
                 index
                 block_id
+                extrinsic_id
+                extrinsic {
+                  hash
+                  index
+                  signed_data
+                }
               }
               timestamp
             }
@@ -152,11 +165,16 @@ export default {
         result({ data }) {
           this.stakingRewards = data.staking.map((stakeEv) => {
             const timestamp = new Date(stakeEv.timestamp).getTime() / 1000
+            console.log(stakeEv.event.extrinsic.signed_data)
             return {
-              block_id: stakeEv.event.block_id,
               timestamp,
               timeago: timestamp,
               amount: stakeEv.amount,
+              address: stakeEv.signer,
+              block_id: stakeEv.event.block_id,
+              hash: stakeEv.event.extrinsic.hash,
+              fee: stakeEv.event.extrinsic.signed_data.fee.partialFee,
+              extrinsicIndex: stakeEv.event.extrinsic.index,
             }
           })
           this.totalRows = this.stakingRewards.length
