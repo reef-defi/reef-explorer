@@ -62,6 +62,7 @@ export default {
             type
             timestamp
             error_message
+            signed_data
           }
         }
       `,

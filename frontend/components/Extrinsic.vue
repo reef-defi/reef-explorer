@@ -115,16 +115,27 @@
             {{ JSON.parse(extrinsic.fee_info).class }}
           </div>
         </Cell>
-      </Row>
+      </Row> -->
 
-      <Row>
+      <Row v-if="extrinsic.signed_data !== null">
         <Cell>Fee</Cell>
         <Cell>
-          <div v-if="extrinsic.fee_info">
-            {{ formatAmount(JSON.parse(extrinsic.fee_info).partialFee) }}
+          <div>
+            {{
+              formatAmount(parseInt(extrinsic.signed_data.fee.partialFee, 16))
+            }}
           </div>
         </Cell>
-      </Row> -->
+      </Row>
+
+      <Row v-if="extrinsic.signed_data !== null">
+        <Cell>Weight</Cell>
+        <Cell>
+          <div>
+            {{ formatAmount(parseInt(extrinsic.signed_data.fee.weight, 16)) }}
+          </div>
+        </Cell>
+      </Row>
     </Data>
     <extrinsic-events
       :extrinsic-id="parseInt(extrinsic.id)"
