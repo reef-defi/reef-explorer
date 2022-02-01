@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS token_holder (
   balance NUMERIC(80,0) NOT NULL,
 
   -- decimals INT NOT NULL,
-  info JSON NOT NULL,
+  info JSONB NOT NULL,
 
   timestamp timestamptz NOT NULL,
 
@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS token_holder (
 CREATE UNIQUE INDEX IF NOT EXISTS unique_account_token_holder ON token_holder (token_address, signer) WHERE evm_address IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS unique_contract_token_holder ON token_holder (token_address, evm_address) WHERE signer IS NULL;
 
+-- CREATE INDEX IF NOT EXISTS token_holder_info ON token_holder(info);
 CREATE INDEX IF NOT EXISTS token_holder_signer ON token_holder(signer);
 CREATE INDEX IF NOT EXISTS token_holder_balance ON token_holder(balance);
-CREATE INDEX IF NOT EXISTS token_holder_decimals ON token_holder(decimals);
 CREATE INDEX IF NOT EXISTS token_holder_evm_address ON token_holder(evm_address);
 CREATE INDEX IF NOT EXISTS token_holder_token_address ON token_holder(token_address);

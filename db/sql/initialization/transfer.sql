@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS transfer (
   -- ERC20 info - should we move this out?
   denom TEXT,
   -- ERC721 and ERC1155 ids
-  nft_id BIGNUMBER(80, 0),
+  nft_id NUMERIC(80, 0),
 
   error_message TEXT,
   success BOOLEAN NOT NULL,
@@ -50,10 +50,18 @@ CREATE TABLE IF NOT EXISTS transfer (
 
 CREATE INDEX IF NOT EXISTS transfer_denom ON transfer (denom);
 CREATE INDEX IF NOT EXISTS transfer_success ON transfer (success);
+
 CREATE INDEX IF NOT EXISTS transfer_block_id ON transfer (block_id);
+CREATE INDEX IF NOT EXISTS transfer_extrinsic_id ON transfer (extrinsic_id);
+
+CREATE INDEX IF NOT EXISTS transfer_type ON transfer (type);
+CREATE INDEX IF NOT EXISTS transfer_denom ON transfer (denom);
+CREATE INDEX IF NOT EXISTS transfer_amount ON transfer (amount);
+CREATE INDEX IF NOT EXISTS transfer_nft_id ON transfer (nft_id);
+CREATE INDEX IF NOT EXISTS transfer_fee_amount ON transfer (fee_amount);
+
 CREATE INDEX IF NOT EXISTS transfer_to_address ON transfer (to_address);
 CREATE INDEX IF NOT EXISTS transfer_from_address ON transfer (from_address);
-CREATE INDEX IF NOT EXISTS transfer_extrinsic_id ON transfer (extrinsic_id);
 CREATE INDEX IF NOT EXISTS transfer_token_address ON transfer (token_address);
 CREATE INDEX IF NOT EXISTS transfer_to_evm_address ON transfer (to_evm_address);
 CREATE INDEX IF NOT EXISTS transfer_from_evm_address ON transfer (from_evm_address);
