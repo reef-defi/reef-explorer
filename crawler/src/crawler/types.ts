@@ -96,14 +96,19 @@ export interface Transfer {
   blockId: number;
   extrinsicId: number;
 
-  denom: string;
+  denom?: string;
+  nftId?: string;
+
+  amount: string;
+  feeAmount: string;
+  type: 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
+
   toAddress: string;
   fromAddress: string;
   tokenAddress: string;
   fromEvmAddress: string;
   toEvmAddress: string;
-  amount: string;
-  feeAmount: string;
+  
 
   success: boolean;
   errorMessage: string;

@@ -83,5 +83,6 @@ export const extrinsicBodyToTransfer = async ({
     success: status.type === 'success',
     tokenAddress: REEF_CONTRACT_ADDRESS,
     errorMessage: status.type === 'error' ? status.message : '',
+    type: 'Native',
   };
 };
