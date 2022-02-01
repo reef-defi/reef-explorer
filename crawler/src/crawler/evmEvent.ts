@@ -251,7 +251,7 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
   .filter(({ decodedEvent }) => decodedEvent.name === 'Transfer')
   .map(async ({
     decodedEvent, timestamp, address, blockId, extrinsicId, signedData, symbol,
-  }) => {
+  }): Promise<Transfer> => {
     const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
     const [fromAddressQ, toAddressQ] = await Promise.all([
       nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
@@ -274,6 +274,7 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
       toAddress: toAddress === '' ? 'null' : toAddress,
       fromAddress: fromAddress === '' ? 'null' : fromAddress,
       feeAmount: BigNumber.from(signedData.fee.partialFee).toString(),
+      type: "ERC20"
     };
   });
 
