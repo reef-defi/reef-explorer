@@ -75,20 +75,20 @@ const toTokenHolderInsertValue = ({
   evmAddress,
   type,
   timestamp,
-}: TokenHolder): any[] => [signer === '' ? null : signer, evmAddress === '' ? null : evmAddress, type, contractAddress.toLocaleLowerCase(), balance, decimals, timestamp];
+}: TokenHolder): any[] => [signer === '' ? null : signer, evmAddress === '' ? null : evmAddress, type, contractAddress.toLocaleLowerCase(), balance, JSON.stringify({decimals}), timestamp];
 
 export const insertAccountTokenHolders = async (
   accountTokenHolders: TokenHolder[],
 ): Promise<void> => {
   await insertV2(`
     INSERT INTO token_holder
-      (signer, evm_address, type, token_address, balance, decimals, timestamp)
+      (signer, evm_address, type, token_address, balance, info, timestamp)
     VALUES
       %L
     ON CONFLICT (signer, token_address) WHERE evm_address IS NULL DO UPDATE SET
       balance = EXCLUDED.balance,
       timestamp = EXCLUDED.timestamp,
-      decimals = EXCLUDED.decimals;
+      info = EXCLUDED.info;
   `, accountTokenHolders.map(toTokenHolderInsertValue));
 };
 
@@ -97,13 +97,13 @@ export const insertContractTokenHolders = async (
 ): Promise<void> => {
   await insertV2(`
     INSERT INTO token_holder
-      (signer, evm_address, type, token_address, balance, decimals, timestamp)
+      (signer, evm_address, type, token_address, balance, info, timestamp)
     VALUES
       %L
     ON CONFLICT (evm_address, token_address) WHERE signer IS NULL DO UPDATE SET
       balance = EXCLUDED.balance,
       timestamp = EXCLUDED.timestamp,
-      decimals = EXCLUDED.decimals;
+      info = EXCLUDED.info;
   `, contractTokenHolders.map(toTokenHolderInsertValue));
 };
 
