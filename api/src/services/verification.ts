@@ -5,8 +5,7 @@ import {
   ABI, AutomaticContractVerificationReq, ContractType, License, Target, 
 } from '../utils/types';
 import { ensure } from '../utils/utils';
-import resolveContractData, { resolveTokenHolders } from './contract-compiler/erc-checkers'
-import {ERC20Data} from './../utils/types';
+import resolveContractData from './contract-compiler/erc-checkers'
 
 interface Bytecode {
   bytecode: string;
@@ -102,25 +101,25 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
   const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
-  const [type, data] = await resolveContractData(verification.address, abi);
   
-  await insertVerifiedContract({...verification, 
-    type,
-    abi: fullAbi,
-    args: verification.arguments, 
-    optimization: verification.optimization === 'true',
-    data: data === null ? 'null' : JSON.stringify(data),
-  });
-  
+  // Confirming verification request
   await contractVerificationRequestInsert({...verification,
     success: true,
     optimization: verification.optimization === 'true',
     args: verification.arguments,
   });
 
-  if (type === 'ERC20') {
-    await resolveTokenHolders(verification.address, abi, (data as ERC20Data).decimals);
-  }
+  // Resolving contract additional information
+  const {type, data} = await resolveContractData(verification.address, abi);
+
+  // Inserting contract into verified contract table
+  await insertVerifiedContract({...verification, 
+    abi: fullAbi,
+    type: type,
+    args: verification.arguments, 
+    optimization: verification.optimization === 'true',
+    data: data === null ? 'null' : JSON.stringify(data),
+  });
 };
 
 export const contractVerificationStatus = async (id: string): Promise<boolean> => {

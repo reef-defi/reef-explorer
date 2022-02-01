@@ -105,20 +105,18 @@ const retrieveUserTokenBalances = async (abi: ABI, address: string, decimals: nu
 
 const resolveErc20 = async (address: string, abi: ABI): Promise<ContractResolve> => {
   const data = await extractERC20ContractData(address, abi);
-  return ['ERC20', data];
+  const userBalances = await retrieveUserTokenBalances(abi, address, data.decimals);
+  await insertTokenHolder(
+    userBalances.filter(({balance}) => BigNumber.from(balance).gt("0"))
+  );
+  return {data, type: 'ERC20'};
 }
 
 const resolveErc721 = async (address: string, abi: ABI): Promise<ContractResolve> => {
   const data = await extractERC721ContractData(address, abi);
-  return ['ERC721', data];
+  return {data, type: 'ERC721'};
 }
 
-export const resolveTokenHolders = async (address: string, abi: ABI, decimals: number): Promise<void> => {
-  const userBalances = await retrieveUserTokenBalances(abi, address, decimals);
-  await insertTokenHolder(
-    userBalances.filter(({balance}) => BigNumber.from(balance).gt("0"))
-  );
-}
 
 export default async (address: string, abi: ABI): Promise<ContractResolve> => {
   if (checkIfContractIsERC20(abi)) {
@@ -126,7 +124,7 @@ export default async (address: string, abi: ABI): Promise<ContractResolve> => {
   } else if (checkIfContractIsERC721(abi)) {
     return await resolveErc721(address, abi);
   } else if (checkIfContractIsERC1155(abi)) {
-    return ['ERC1155', null];
+    return {type: 'ERC1155', data: null};
   }
-  return ['other', null];
+  return {type: 'other', data: null};
 }

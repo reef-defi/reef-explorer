@@ -6,12 +6,39 @@ export interface AppRequest <T> extends Request {
 }
 
 
+
+export interface ERC721Data {
+  name: string;
+  symbol: string;
+}
+
+export interface ERC20Data extends ERC721Data {
+  decimals: number;
+}
+
+interface VerifiedERC20 {
+  type: 'ERC20',
+  data: ERC20Data
+}
+interface VerifiedERC721 {
+  type: 'ERC721',
+  data: ERC721Data
+}
+interface VerifiedERC1155 {
+  type: 'ERC1155',
+  data: null
+}
+interface VerifiedOther {
+  type: 'other',
+  data: null
+}
+
 export type ContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
 export type ContractResolve = 
-  |  ['other', null]
-  |  ['ERC20', ERC20Data]
-  |  ['ERC721', ERC721Data]
-  |  ['ERC1155', null]
+  | VerifiedERC20
+  | VerifiedERC721
+  | VerifiedERC1155
+  | VerifiedOther;
 
 // Basic types
 export type Target =
@@ -97,15 +124,6 @@ export interface Pool extends DefaultPool {
   totalSupply: string;
   userPoolBalance: string;
   minimumLiquidity: string;
-}
-
-export interface ERC721Data {
-  name: string;
-  symbol: string;
-}
-
-export interface ERC20Data extends ERC721Data {
-  decimals: number;
 }
 
 export interface User {
