@@ -5,6 +5,14 @@ export interface AppRequest <T> extends Request {
   body: T
 }
 
+
+export type ContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
+export type ContractResolve = 
+  |  ['other', null]
+  |  ['ERC20', ERC20Data]
+  |  ['ERC721', ERC721Data]
+  |  ['ERC1155', null]
+
 // Basic types
 export type Target =
   | 'london'
@@ -91,9 +99,12 @@ export interface Pool extends DefaultPool {
   minimumLiquidity: string;
 }
 
-export interface ERC20Data {
+export interface ERC721Data {
   name: string;
   symbol: string;
+}
+
+export interface ERC20Data extends ERC721Data {
   decimals: number;
 }
 

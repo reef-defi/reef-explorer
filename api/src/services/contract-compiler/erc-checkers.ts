@@ -1,6 +1,8 @@
 import { Contract } from '@ethersproject/contracts';
-import { ABI, ERC20Data } from '../../utils/types';
+import { ABI, ContractResolve, ERC20Data, ERC721Data, UserTokenBalance } from '../../utils/types';
 import { getProvider } from '../../utils/connector';
+import { getAllUsersWithEvmAddress, insertTokenHolder } from '../account';
+import {BigNumber} from "ethers";
 
 const DEFAULT_ERC20_ABI: string[] = [
   '{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"}',
@@ -63,11 +65,11 @@ const contractChecked = (abi: ABI, format: string[]): boolean => {
     );
 }
 
-export const checkIfContractIsERC20 = (abi: ABI): boolean => contractChecked(abi, DEFAULT_ERC20_ABI);
-export const checkIfContractIsERC721 = (abi: ABI): boolean => contractChecked(abi, DEFAUTL_ERC721_ABI);
-export const checkIfContractIsERC1155 = (abi: ABI): boolean => contractChecked(abi, DEFAUTL_ERC1155_ABI);
+const checkIfContractIsERC20 = (abi: ABI): boolean => contractChecked(abi, DEFAULT_ERC20_ABI);
+const checkIfContractIsERC721 = (abi: ABI): boolean => contractChecked(abi, DEFAUTL_ERC721_ABI);
+const checkIfContractIsERC1155 = (abi: ABI): boolean => contractChecked(abi, DEFAUTL_ERC1155_ABI);
 
-export const extractERC20ContractData = async (address: string, abi: ABI): Promise<ERC20Data> => {
+const extractERC20ContractData = async (address: string, abi: ABI): Promise<ERC20Data> => {
   const contract = new Contract(address, abi, getProvider());
   const [name, symbol, decimals] = await Promise.all([
     contract.name(),
@@ -77,3 +79,54 @@ export const extractERC20ContractData = async (address: string, abi: ABI): Promi
 
   return { name, symbol, decimals };
 };
+
+const extractERC721ContractData = async (address: string, abi: ABI): Promise<ERC721Data> => {
+  const contract = new Contract(address, abi, getProvider());
+  const [name, symbol] = await Promise.all([
+    contract.name(),
+    contract.symbol(),
+  ]);
+
+  return { name, symbol};
+};
+
+const retrieveUserTokenBalances = async (abi: ABI, address: string, decimals: number): Promise<UserTokenBalance[]> => {
+  const users = await getAllUsersWithEvmAddress();
+  const contract = new Contract(address, abi, getProvider());
+  const balances = await Promise.all(
+    users.map(async ({ evmaddress }): Promise<string> => contract.balanceOf(evmaddress)),
+  );
+  const accountBalances: UserTokenBalance[] = users.map((user, index) => ({
+    ...user, decimals, balance: balances[index], tokenAddress: address,
+  }));
+  return accountBalances;
+};
+
+
+const resolveErc20 = async (address: string, abi: ABI): Promise<ContractResolve> => {
+  const data = await extractERC20ContractData(address, abi);
+  return ['ERC20', data];
+}
+
+const resolveErc721 = async (address: string, abi: ABI): Promise<ContractResolve> => {
+  const data = await extractERC721ContractData(address, abi);
+  return ['ERC721', data];
+}
+
+export const resolveTokenHolders = async (address: string, abi: ABI, decimals: number): Promise<void> => {
+  const userBalances = await retrieveUserTokenBalances(abi, address, decimals);
+  await insertTokenHolder(
+    userBalances.filter(({balance}) => BigNumber.from(balance).gt("0"))
+  );
+}
+
+export default async (address: string, abi: ABI): Promise<ContractResolve> => {
+  if (checkIfContractIsERC20(abi)) {
+    return await resolveErc20(address, abi);
+  } else if (checkIfContractIsERC721(abi)) {
+    return await resolveErc721(address, abi);
+  } else if (checkIfContractIsERC1155(abi)) {
+    return ['ERC1155', null];
+  }
+  return ['other', null];
+}
