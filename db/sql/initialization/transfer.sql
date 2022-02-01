@@ -1,3 +1,5 @@
+CREATE TYPE TransferType AS ENUM ('Native', 'ERC20', 'ERC721', 'ERC1155');
+
 CREATE TABLE IF NOT EXISTS transfer (
   id BIGSERIAL,
   block_id BIGINT,
@@ -9,9 +11,14 @@ CREATE TABLE IF NOT EXISTS transfer (
   to_evm_address VARCHAR,
   from_evm_address VARCHAR,
 
-  denom TEXT NOT NULL,
+  type TransferType NOT NULL,
   amount NUMERIC(80,0) NOT NULL,
   fee_amount NUMERIC(80, 0) NOT NULL,
+
+  -- ERC20 info - should we move this out?
+  denom TEXT,
+  -- ERC721 and ERC1155 ids
+  nft_id BIGNUMBER(80, 0),
 
   error_message TEXT,
   success BOOLEAN NOT NULL,

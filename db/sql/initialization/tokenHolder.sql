@@ -8,7 +8,9 @@ CREATE TABLE IF NOT EXISTS token_holder (
   type TokenHolderType NOT NULL,
 
   balance NUMERIC(80,0) NOT NULL,
-  decimals INT NOT NULL,
+
+  -- decimals INT NOT NULL,
+  info JSON NOT NULL,
 
   timestamp timestamptz NOT NULL,
 
