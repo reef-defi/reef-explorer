@@ -14,6 +14,7 @@ select_permissions:
     - index
     - signer
     - args
+    - contract_address_evm_call
     - inherent_data
     - signed_data
     - docs

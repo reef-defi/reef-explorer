@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS extrinsic (
   index BIGINT NOT NULL,
   hash TEXT NOT NULL,
   args JSON NOT NULL,
-  docs TEXT NOT NULL, 
+  contract_address_evm_call VARCHAR(48),
+  docs TEXT NOT NULL,
   method TEXT NOT NULL,
   section TEXT NOT NULL,
   signer VARCHAR NOT NULL,
@@ -34,6 +35,7 @@ CREATE INDEX IF NOT EXISTS extrinsic_method ON extrinsic (method);
 CREATE INDEX IF NOT EXISTS extrinsic_signer ON extrinsic (signer);
 CREATE INDEX IF NOT EXISTS extrinsic_section ON extrinsic (section);
 CREATE INDEX IF NOT EXISTS extrinsic_block_id ON extrinsic (block_id);
+CREATE INDEX IF NOT EXISTS extrinsic_contract_address_evm_call ON extrinsic (contract_address_evm_call);
 
 INSERT INTO extrinsic
   (id, block_id, index, hash, args, docs, method, section, signer, status, type, timestamp)

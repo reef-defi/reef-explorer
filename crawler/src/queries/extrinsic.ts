@@ -34,16 +34,24 @@ const extrinsicToValue = ({
   signed,
   signedData,
   timestamp,
-}: InsertExtrinsicBody): string => `(
-  ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(
-  /'/g,
-  "''",
-)}', '${method}', 
+}: InsertExtrinsicBody): string => {
+  let call_evm_contract_address = undefined;
+  if(section === 'evm' && method === 'call'){
+    try {
+      call_evm_contract_address = JSON.parse(args)[0];
+    }catch (e){}
+  }
+  return `(
+  ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${call_evm_contract_address}', '${docs.replace(
+      /'/g,
+      "''",
+  )}', '${method}', 
   '${section}', '${signed}', '${status}', '${errorMessage}', 
   ${signedData ? "'signed'" : "'unsigned'"}, ${
-  signedData ? `'${JSON.stringify(signedData)}'` : 'null'
-}, '${timestamp}'
-)`;
+      signedData ? `'${JSON.stringify(signedData)}'` : 'null'
+  }, '${timestamp}'
+)`
+};
 
 export const insertExtrinsics = async (
   extrinsics: InsertExtrinsicBody[],
@@ -51,9 +59,12 @@ export const insertExtrinsics = async (
   if (extrinsics.length > 0) {
     await insert(`
 INSERT INTO extrinsic
-  (id, block_id, index, hash, args, docs, method, section, signer, status, error_message, type, signed_data, timestamp)
+  (id, block_id, index, hash, args, contract_address_evm_call, docs, method, section, signer, status, error_message, type, signed_data, timestamp)
 VALUES
-${extrinsics.map(extrinsicToValue).join(',')}
+${extrinsics.map((e)=>{
+  console.log('aaaa11=',JSON.parse(e.args)[0], e.method, e.section)
+  return extrinsicToValue(e)
+}).join(',')}
 ON CONFLICT DO NOTHING;
 `);
   }
