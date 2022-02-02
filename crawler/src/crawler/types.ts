@@ -149,15 +149,33 @@ export interface ABIS {
   [name: string]: ABI;
 }
 
-export interface ERC20Token {
+export interface ERC721Data {
+  name: string;
+  symbol: string;
+}
+export interface ERC20Data extends ERC721Data {
+  decimals: number;
+}
+
+type VerifiedContractData = null | ERC20Data | ERC721Data;
+type VerifiedContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
+
+export interface VerifiedContract {
   name: string;
   address: string;
   compiled_data: ABIS;
-  contract_data: {
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
+  type: VerifiedContractType;
+  contract_data: VerifiedContractData;
+}
+
+
+export interface ERC20Token extends VerifiedContract {
+  type: 'ERC721';
+  contract_data: ERC721Data;
+}
+export interface ERC721Token extends VerifiedContract {
+  type: 'ERC20';
+  contract_data: ERC721Data;
 }
 
 export interface BytecodeLog {
@@ -168,17 +186,16 @@ export interface BytecodeLog {
 
 export interface BytecodeLogWithBlockId extends BytecodeLog {
   blockId: number;
+  timestamp: string;
   extrinsicId: number;
   signedData: SignedExtrinsicData;
-  timestamp: string;
 }
 
 export interface EvmLog extends BytecodeLogWithBlockId {
   abis: ABIS;
   name: string;
-  symbol: string;
-  blockId: number;
-  decimals: number;
+  type: VerifiedContractType;
+  contractData: VerifiedContractData;
 }
 
 export interface EvmLogWithDecodedEvent extends EvmLog {
