@@ -3,6 +3,7 @@ import {
   Contract,
   ERC20Token,
   EVMCall,
+  VerifiedContract,
 } from '../crawler/types';
 import { insert, insertV2, query } from '../utils/connector';
 
@@ -113,6 +114,6 @@ export const getERC20Tokens = async (): Promise<ERC20Token[]> => query<ERC20Toke
 
 export const getContractDB = async (
   address: string,
-): Promise<ERC20Token[]> => query<ERC20Token>(
-  `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${address}';`,
+): Promise<VerifiedContract[]> => query<VerifiedContract>(
+  `SELECT address, type, contract_data, compiled_data, name FROM verified_contract WHERE address='${address}';`,
 );

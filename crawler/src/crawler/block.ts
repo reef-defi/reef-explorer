@@ -5,20 +5,18 @@ import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
 import {
   extrinsicBodyToTransfer,
   extrinsicStatus,
-  isExtrinsicTransfer,
+  isExtrinsicNativeTransfer,
   resolveSigner,
 } from './extrinsic';
 import {
   AccountHead,
   BlockBody,
   BlockHash,
-  Event,
   EventBody,
   EventHead,
   ExtrinsicBody,
   ExtrinsicHead,
   SignedExtrinsicData,
-  Transfer,
 } from './types';
 import {
   InsertExtrinsicBody,
@@ -27,7 +25,7 @@ import {
   nextFreeIds,
 } from '../queries/extrinsic';
 import { insertAccounts, insertEvents } from '../queries/event';
-import { accountHeadToBody, accountNewOrKilled } from './event';
+import { accountHeadToBody, accountNewOrKilled, extrinsicToEventHeader, isEventStakingReward, isEventStakingSlash, isExtrinsicEvent } from './event';
 import {
   dropDuplicates,
   dropDuplicatesMultiKey,
@@ -36,18 +34,17 @@ import {
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
+  erc20TransferEventToTokenBalanceHead,
   extractAccountFromEvmCall,
-  extractEvmLogHeaders,
-  extractNativeTokenHoldersFromTransfers,
   extractTokenBalance,
-  extractTokenTransfer,
-  extractTokenTransferEvents,
   extrinsicToContract,
   extrinsicToEVMCall,
   extrinsicToEvmClaimAccount,
   isExtrinsicEVMCall,
   isExtrinsicEvmClaimAccount,
   isExtrinsicEVMCreate,
+  extrinsicToEvmLogs,
+  isEvmLogErc20TransferEvent,
 } from './evmEvent';
 import {
   insertAccountTokenHolders,
@@ -57,6 +54,8 @@ import {
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
+import { extractTokenTransfer, extractTransferAccounts } from './transfer';
+import { extractNativeTokenHoldersFromTransfers } from './tokenHolder';
 
 const blockHash = async (id: number): Promise<BlockHash> => {
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
@@ -75,6 +74,7 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
   };
 };
 
+// TODO move in queries/block.ts
 const blockBodyToInsert = ({
   id,
   hash,
@@ -92,7 +92,6 @@ const blockBodyToInsert = ({
   extrinsicRoot: signedBlock.block.header.extrinsicsRoot.toString(),
 });
 
-const isExtrinsicEvent = (extrinsicIndex: number) => ({ phase }: Event): boolean => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(extrinsicIndex);
 
 const blockToExtrinsicsHeader = ({
   id,
@@ -159,46 +158,10 @@ const extrinsicToInsert = (
   };
 };
 
-const extrinsicToEventHeader = ({
-  id,
-  blockId,
-  events,
-  timestamp,
-}: ExtrinsicBody): EventHead[] => events.map((event, index) => ({
-  event,
-  index,
-  blockId,
-  timestamp,
-  extrinsicId: id,
-}));
-
 const eventToBody = (nextFreeId: number) => (event: EventHead, index: number): EventBody => ({
   id: nextFreeId + index,
   ...event,
 });
-
-// Assigning that the account is active is a temporary solution!
-// The correct way would be to first query db if account exists
-// If it does not and if transfer has failed then the account is not active.
-// The query can be skipped if we would have complete
-// list available in function (dynamic programming)
-const extractTransferAccounts = ({
-  fromAddress,
-  toAddress,
-  blockId,
-  timestamp,
-}: Transfer): AccountHead[] => [
-  {
-    blockId, address: fromAddress, active: true, timestamp,
-  },
-  {
-    blockId, address: toAddress, active: true, timestamp,
-  },
-];
-
-const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Rewarded.is(event);
-
-const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Slashed.is(event);
 
 export const processInitialBlocks = async (fromId: number, toId: number): Promise<number> => {
   if (toId - fromId <= 0) { return 0; }
@@ -275,7 +238,7 @@ export default async (
   // Transfers
   logger.info('Extracting transfers');
   let transfers = await resolvePromisesAsChunks(extrinsics
-    .filter(isExtrinsicTransfer)
+    .filter(isExtrinsicNativeTransfer)
     .map(extrinsicBodyToTransfer));
 
   // Native token holders
@@ -287,21 +250,29 @@ export default async (
   const extrinsicEvmCalls = extrinsics.filter(isExtrinsicEVMCall);
   let evmCalls = extrinsicEvmCalls.map(extrinsicToEVMCall);
 
-  // Token balance
+  // EVM Logs
   logger.info('Retrieving EVM log if contract is ERC20 token');
   transactions += extrinsicEvmCalls.length;
-  const evmLogs = await resolvePromisesAsChunks(
-    extractEvmLogHeaders(extrinsicEvmCalls),
-  );
+  const evmLogs = await extrinsicToEvmLogs(extrinsicEvmCalls);
 
+  // ERC20 Transfers
+  const erc20TransferEvents = evmLogs
+  .filter(isEvmLogErc20TransferEvent);
+  
   logger.info('Extracting ERC20 transfer events');
-  const tokenTransfers = await resolvePromisesAsChunks(extractTokenTransfer(evmLogs));
+  
+  const tokenTransfers = await resolvePromisesAsChunks(
+    extractTokenTransfer(erc20TransferEvents)
+  );
 
   transfers.push(...tokenTransfers
     .filter(removeUndefinedItem));
 
+  // ERC 20 Token balance
   logger.info('Extracting ERC20 token balances');
-  const tokenTransferEvents = extractTokenTransferEvents(evmLogs);
+  const tokenTransferEvents = erc20TransferEvents
+    .map(erc20TransferEventToTokenBalanceHead)
+    .flat()
 
   logger.info('Retrieving ERC20 account token balances');
   transactions += tokenTransferEvents.length;
@@ -312,6 +283,7 @@ export default async (
     ).map(extractTokenBalance),
   ));
 
+  // Accounts
   logger.info('Compressing transfer, event accounts, evm claim account');
   const allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
@@ -323,7 +295,6 @@ export default async (
       .map(extrinsicToEvmClaimAccount),
   );
 
-  // Accounts
   logger.info('Extracting, compressing and dropping duplicate accounts');
   let insertOrDeleteAccount = dropDuplicates(
     allAccounts.flat(),
