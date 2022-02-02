@@ -56,7 +56,7 @@ import {
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
-import { erc721EvmLogToTransfer, erc20EvmLogToTransfer, extractTransferAccounts } from './transfer';
+import { erc721EvmLogToTransfer, erc20EvmLogToTransfer, extractTransferAccounts, erc1155SingleEvmLogToTransfer, erc1155BatchEvmLogToTransfer } from './transfer';
 import { extractNativeTokenHoldersFromTransfers } from './tokenHolder';
 
 const blockHash = async (id: number): Promise<BlockHash> => {
@@ -292,20 +292,26 @@ export default async (
     erc721TransferEvents.map(erc721EvmLogToTransfer)
   )
   transfers.push(...erc721TokenTransfers);
-  if (erc721TokenTransfers.length > 0) {
-    console.log(erc721TokenTransfers)
-  }
 
-  // ERC 1155 Transfers 
+  // ERC 1155 Single Transfers 
   let erc1155TransferSingleEvents = evmLogs
     .filter(isEvmLogErc1155TransferSingleEvent)
   
-  // console.log(erc1155TransferSingleEvents);
-
-  let erc1155TransferBatchEvents = evmLogs
-    .filter(isEvmLogErc1155TransferBatchEvent)
+  transactions += erc1155TransferSingleEvents.length;
+  const erc1155TokenSingleTransfers = await resolvePromisesAsChunks(
+    erc1155TransferSingleEvents.map(erc1155SingleEvmLogToTransfer)
+  );
+  transfers.push(...erc1155TokenSingleTransfers);
   
-  // console.log(erc1155TransferBatchEvents);
+  // ERC 1155 Batch Transfers 
+  let erc1155TransferBatchEvents = evmLogs
+  .filter(isEvmLogErc1155TransferBatchEvent)
+  
+  transactions += erc1155TransferBatchEvents.length;
+  const erc1155TokenBatchTransfers = await resolvePromisesAsChunks(
+    erc1155TransferBatchEvents.map(erc1155BatchEvmLogToTransfer)
+  );
+  transfers.push(...erc1155TokenBatchTransfers.flat());
 
   // Accounts
   logger.info('Compressing transfer, event accounts, evm claim account');

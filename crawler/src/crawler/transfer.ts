@@ -2,8 +2,7 @@ import { BigNumber } from "ethers";
 import { nodeProvider } from "../utils/connector";
 import { AccountHead, EvmLogWithDecodedEvent, Transfer } from "./types";
 
-const evmLogToTransfer = async ({decodedEvent, timestamp, address, blockId, extrinsicId, signedData}: EvmLogWithDecodedEvent): Promise<Transfer> => {
-  const [fromEvmAddress, toEvmAddress] = decodedEvent.args;
+const evmLogToTransfer = async ({timestamp, address, blockId, extrinsicId, signedData}: EvmLogWithDecodedEvent, fromEvmAddress: string, toEvmAddress: string): Promise<Transfer> => {
   const [fromAddressQ, toAddressQ] = await Promise.all([
     nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
     nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
@@ -29,8 +28,8 @@ const evmLogToTransfer = async ({decodedEvent, timestamp, address, blockId, extr
 }
 
 export const erc20EvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promise<Transfer> => {
-  const [, , amount] = log.decodedEvent.args;
-  const base = await evmLogToTransfer(log);
+  const [from, to, amount] = log.decodedEvent.args;
+  const base = await evmLogToTransfer(log, from, to);
 
   return {...base,
     type: 'ERC20',
@@ -40,13 +39,35 @@ export const erc20EvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promis
 };
 
 export const erc721EvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promise<Transfer> => {
-  const [, , nftId] = log.decodedEvent.args;
-  const base = await evmLogToTransfer(log);
+  const [from, to, nftId] = log.decodedEvent.args;
+  const base = await evmLogToTransfer(log, from, to);
 
   return {...base,
     type: 'ERC721',
     nftId: nftId.toString(),
   }
+}
+
+export const erc1155SingleEvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promise<Transfer> => {
+  const [,from, to, nftId, amount] = log.decodedEvent.args;
+  const base = await evmLogToTransfer(log, from, to);
+
+  return {...base,
+    type: 'ERC1155',
+    nftId: nftId.toString(),
+    amount: amount.toString(),
+  }
+}
+
+export const erc1155BatchEvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promise<Transfer[]> => {
+  const [,from, to, nftIds, amounts] = log.decodedEvent.args;
+  const base = await evmLogToTransfer(log, from, to);
+
+  return (nftIds as []).map((_, index) => ({...base,
+    type: 'ERC1155',
+    nftId: nftIds[index].toString(),
+    amount: amounts[index].toString(),
+  }));
 }
 
 // Assigning that the account is active is a temporary solution!
