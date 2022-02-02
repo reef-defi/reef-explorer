@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS token_holder (
 
   signer VARCHAR,
   evm_address VARCHAR,
+  nft_id NUMERIC(80, 0),
   type TokenHolderType NOT NULL,
 
   balance NUMERIC(80,0) NOT NULL,
