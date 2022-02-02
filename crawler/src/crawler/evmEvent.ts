@@ -246,15 +246,3 @@ export const extrinsicToEvmLogs = async (
     .map(decodeEvmLog)
 }
 
-export const isEvmLogErc20TransferEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'Transfer' && type === 'ERC20';
-
-export const isEvmLogErc721TransferEvent =  ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'Transfer' && type === 'ERC721';
-
-export const isEvmLogErc1155TransferSingleEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'TransferSingle' && type === 'ERC1155';
-
-export const isEvmLogErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'TransferBatch' && type === 'ERC1155';
-

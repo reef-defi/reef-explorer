@@ -29,8 +29,7 @@ const nativeTokenHolder = async (tokenHolderHead: NativeTokenHolderHead): Promis
 export const extractNativeTokenHoldersFromTransfers = async (transfers: Transfer[]): Promise<TokenHolder[]> => {
   const nativeTokenHoldersHead = dropDuplicates(
     transfers
-      .map(extractNativeTokenHolderFromTransfer)
-      .flat(),
+      .flatMap(extractNativeTokenHolderFromTransfer),
     'signerAddress',
   ).filter(({ signerAddress }) => signerAddress !== 'deleted');
 
