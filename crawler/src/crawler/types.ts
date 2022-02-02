@@ -109,7 +109,6 @@ export interface Transfer {
   fromEvmAddress: string;
   toEvmAddress: string;
   
-
   success: boolean;
   errorMessage: string;
 

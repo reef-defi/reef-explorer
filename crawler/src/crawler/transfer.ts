@@ -2,11 +2,8 @@ import { BigNumber } from "ethers";
 import { nodeProvider } from "../utils/connector";
 import { AccountHead, EvmLogWithDecodedEvent, Transfer } from "./types";
 
-export const extractTokenTransfer = (evmLogs: EvmLogWithDecodedEvent[]): Promise<Transfer|undefined>[] => evmLogs
-.map(async ({
-  decodedEvent, timestamp, address, blockId, extrinsicId, signedData, contractData,
-}): Promise<Transfer> => {
-  const [fromEvmAddress, toEvmAddress, amount] = decodedEvent.args;
+const evmLogToTransfer = async ({decodedEvent, timestamp, address, blockId, extrinsicId, signedData}: EvmLogWithDecodedEvent): Promise<Transfer> => {
+  const [fromEvmAddress, toEvmAddress] = decodedEvent.args;
   const [fromAddressQ, toAddressQ] = await Promise.all([
     nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
     nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
@@ -23,15 +20,34 @@ export const extractTokenTransfer = (evmLogs: EvmLogWithDecodedEvent[]): Promise
     fromEvmAddress,
     errorMessage: '',
     tokenAddress: address,
-    amount: amount.toString(),
-    denom: contractData?.symbol,
     toAddress: toAddress === '' ? 'null' : toAddress,
     fromAddress: fromAddress === '' ? 'null' : fromAddress,
     feeAmount: BigNumber.from(signedData.fee.partialFee).toString(),
-    type: "ERC20"
+    amount: "0",
+    type: "ERC20",
   };
-});
+}
 
+export const erc20EvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promise<Transfer> => {
+  const [, , amount] = log.decodedEvent.args;
+  const base = await evmLogToTransfer(log);
+
+  return {...base,
+    type: 'ERC20',
+    amount: amount.toString(),
+    denom: log.contractData?.symbol,
+  }
+};
+
+export const erc721EvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promise<Transfer> => {
+  const [, , nftId] = log.decodedEvent.args;
+  const base = await evmLogToTransfer(log);
+
+  return {...base,
+    type: 'ERC721',
+    nftId: nftId.toString(),
+  }
+}
 
 // Assigning that the account is active is a temporary solution!
 // The correct way would be to first query db if account exists

@@ -35,5 +35,6 @@ select_permissions:
     - token_address
     - error_message
     - timestamp
+    - nft_id
     filter: {}
   role: public
