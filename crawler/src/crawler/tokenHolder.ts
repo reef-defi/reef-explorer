@@ -39,9 +39,3 @@ export const extractNativeTokenHoldersFromTransfers = async (transfers: Transfer
       .map(nativeTokenHolder),
   );
 };
-
-// export const tokenHolderToAccount = ({ signer, blockId, timestamp }: TokenHolder): AccountHead[] => [
-//   {
-//     active: true, address: signer, blockId, timestamp,
-//   },
-// ];

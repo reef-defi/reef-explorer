@@ -15,7 +15,7 @@ select_permissions:
     - token_address
     - signer
     - balance
-    - decimals
+    - info
     - type
     filter: {}
   role: public

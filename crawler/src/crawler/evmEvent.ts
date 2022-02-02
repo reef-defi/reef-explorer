@@ -238,6 +238,7 @@ export const extrinsicToEvmLogs = async (
       };
     })
     .map(extractEvmLog);
+    
   const decodedEvmData = await resolvePromisesAsChunks(baseEvmLogs);
 
   return decodedEvmData
@@ -245,30 +246,15 @@ export const extrinsicToEvmLogs = async (
     .map(decodeEvmLog)
 }
 
-// const eToEvmLog = async (extrinsics: ExtrinsicBody[]): Promise<EvmLogWithDecodedEvent>[] => {
-//   const values = await Promise.all(extrinsics
-//     .flatMap(extrToEvmLog)
-//     .filter(isEventEvmLog)
-//     .map(({
-//       event, blockId, timestamp, extrinsicId, signedData,
-//     }): BytecodeLogWithBlockId => {
-//       const a = (event.event.data.toJSON() as any)[0];
-//       return {
-//         ...a, timestamp, blockId, extrinsicId, signedData,
-//       };
-//     })
-//     .map(extractEvmLog)
-//   );
-// }
-
-// export const evmLogToErc20TransferEvents = (evmLogs: (EvmLog | undefined)[]): EvmLogWithDecodedEvent[] =>
-//   evmLogs
-//     .filter(removeUndefinedItem)
-//     .map(decodeEvmLog)
-//     .filter(({ decodedEvent, type }) => decodedEvent.name === 'Transfer' && type === 'ERC20') 
-
 export const isEvmLogErc20TransferEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'Transfer' && type === 'ERC20'
+  decodedEvent.name === 'Transfer' && type === 'ERC20';
 
+export const isEvmLogErc721TransferEvent =  ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
+  decodedEvent.name === 'Transfer' && type === 'ERC721';
 
+export const isEvmLogErc1155TransferSingleEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
+  decodedEvent.name === 'TransferSingle' && type === 'ERC1155';
+
+export const isEvmLogErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
+  decodedEvent.name === 'TransferBatch' && type === 'ERC1155';
 
