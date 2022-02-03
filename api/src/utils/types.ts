@@ -5,8 +5,6 @@ export interface AppRequest <T> extends Request {
   body: T
 }
 
-
-
 export interface ERC721Data {
   name: string;
   symbol: string;
@@ -34,7 +32,7 @@ interface VerifiedOther {
 }
 
 export type ContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
-export type ContractResolve = 
+export type ContractResolve =
   | VerifiedERC20
   | VerifiedERC721
   | VerifiedERC1155

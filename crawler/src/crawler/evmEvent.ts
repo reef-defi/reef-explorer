@@ -1,4 +1,4 @@
-import { Contract as EthContract, utils} from 'ethers';
+import { utils } from 'ethers';
 import { nodeProvider } from '../utils/connector';
 import { resolveSigner } from './extrinsic';
 import {
@@ -7,14 +7,10 @@ import {
   Contract,
   EVMCall,
   AccountHead,
-  ABI,
   EvmLog,
-  TokenHolder,
   EvmLogWithDecodedEvent,
-  TokenBalanceHead,
   BytecodeLog,
   BytecodeLogWithBlockId,
-  ERC20Data,
 } from './types';
 import { getContractDB } from '../queries/evmEvent';
 import {
@@ -53,7 +49,7 @@ export const isExtrinsicEVMCall = ({
   extrinsic: { method },
 }: ExtrinsicBody): boolean => method.section === 'evm' && method.method === 'call';
 
-export const isEventEvmLog = <T extends {event: Event}>({ event: {event: { method, section }} }: T): boolean => method === 'Log' && section === 'evm';
+export const isEventEvmLog = <T extends {event: Event}>({ event: { event: { method, section } } }: T): boolean => method === 'Log' && section === 'evm';
 
 export const extrinsicToEvmClaimAccount = ({
   events,
@@ -128,17 +124,7 @@ export const extractAccountFromEvmCall = ({ timestamp, blockId, account }: EVMCa
   },
 ];
 
-
 export const eventToEvmLog = ({ event }: Event): BytecodeLog => (event.data.toJSON() as any)[0];
-
-const getContractBalance = (
-  address: string,
-  contractAddress: string,
-  abi: ABI,
-) => nodeProvider.query(async (provider): Promise<string> => {
-  const contract = new EthContract(contractAddress, abi, provider);
-  return contract.balanceOf(address);
-});
 
 const extractEvmLog = async (
   event: BytecodeLogWithBlockId,
@@ -166,9 +152,12 @@ const decodeEvmLog = (event: EvmLog): EvmLogWithDecodedEvent => {
   return { ...event, decodedEvent: result };
 };
 
-
-const extrToEvmLog = ({events, blockId, timestamp, id, signedData}: ExtrinsicBody) => events
-  .map((event) => ({event, blockId, timestamp, extrinsicId: id, signedData,}))
+const extrToEvmLog = ({
+  events, blockId, timestamp, id, signedData,
+}: ExtrinsicBody) => events
+  .map((event) => ({
+    event, blockId, timestamp, extrinsicId: id, signedData,
+  }));
 
 export const extrinsicToEvmLogs = async (
   extrinsicEvmCalls: ExtrinsicBody[],
@@ -185,24 +174,18 @@ export const extrinsicToEvmLogs = async (
       };
     })
     .map(extractEvmLog);
-    
+
   const decodedEvmData = await resolvePromisesAsChunks(baseEvmLogs);
 
   return decodedEvmData
     .filter(removeUndefinedItem)
-    .map(decodeEvmLog)
-}
+    .map(decodeEvmLog);
+};
 
+export const isErc20TransferEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => decodedEvent.name === 'Transfer' && type === 'ERC20';
 
+export const isErc721TransferEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => decodedEvent.name === 'Transfer' && type === 'ERC721';
 
-export const isErc20TransferEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'Transfer' && type === 'ERC20';
+export const isErc1155TransferSingleEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => decodedEvent.name === 'TransferSingle' && type === 'ERC1155';
 
-export const isErc721TransferEvent =  ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'Transfer' && type === 'ERC721';
-
-export const isErc1155TransferSingleEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'TransferSingle' && type === 'ERC1155';
-
-export const isErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'TransferBatch' && type === 'ERC1155';
+export const isErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => decodedEvent.name === 'TransferBatch' && type === 'ERC1155';

@@ -80,7 +80,7 @@ Promise.resolve()
   .then(processNextBlock)
   .catch((error) => {
     logger.error(error);
-    // Sentry.captureException(error);
+    Sentry.captureException(error);
     process.exit(-1);
   })
   .finally(nodeProvider.closeProviders);

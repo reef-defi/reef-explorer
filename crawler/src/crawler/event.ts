@@ -1,6 +1,7 @@
 import { nodeProvider } from '../utils/connector';
-import { AccountBody, AccountHead, EventHead, ExtrinsicBody, Event } from './types';
-
+import {
+  AccountBody, AccountHead, EventHead, ExtrinsicBody, Event,
+} from './types';
 
 export const extrinsicToEventHeader = ({
   id,
@@ -81,7 +82,6 @@ export const accountHeadToBody = async (
     evmNonce,
   };
 };
-
 
 export const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Rewarded.is(event);
 
