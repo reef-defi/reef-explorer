@@ -29,7 +29,6 @@ import { accountHeadToBody, accountNewOrKilled, extrinsicToEventHeader, isEventS
 import {
   range,
   dropDuplicates,
-  dropDuplicatesMultiKey,
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
@@ -43,15 +42,14 @@ import {
   extrinsicToEvmLogs,
 } from './evmEvent';
 import {
-  insertAccountTokenHolders,
   insertContracts,
-  insertContractTokenHolders,
   insertEvmCalls,
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
+import insertTokenHolders from '../queries/tokenHoldes';
 import { extractTransferAccounts, processTokenTransfers } from './transfer';
-import { extractNativeTokenHoldersFromTransfers } from './tokenHolder';
+import { processEvmTokenHolders, processNativeTokenHolders } from './tokenHolder';
 
 const blockHash = async (id: number): Promise<BlockHash> => {
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
@@ -239,7 +237,7 @@ export default async (
 
   // Native token holders
   logger.info('Extracting native token holders from transfers');
-  const tokenHolders = await extractNativeTokenHoldersFromTransfers(transfers);
+  let tokenHolders = await processNativeTokenHolders(transfers);
 
   // EVM Calls
   logger.info('Extracting evm calls');
@@ -257,6 +255,13 @@ export default async (
   transactions += tokenTransfers.length;
   transfers.push(...tokenTransfers);
   tokenTransfers = [];
+
+  // Evm Token Holders
+  logger.info('Extracting EVM token holders');
+  let evmTokenHolders = await processEvmTokenHolders(evmLogs);
+  transactions += evmTokenHolders.length;
+  tokenHolders.push(...evmTokenHolders);
+  evmTokenHolders = [];
 
   // Accounts
   logger.info('Compressing transfer, event accounts, evm claim account');
@@ -317,20 +322,7 @@ export default async (
   contracts = [];
 
   // Token holders
-  const accountTokenHolders = tokenHolders
-    .filter(({ type }) => type === 'Account');
-  const contractTokenHolders = tokenHolders
-    .filter(({ type }) => type === 'Contract');
-
-  logger.info('Inserting account token holders');
-  await insertAccountTokenHolders(
-    dropDuplicatesMultiKey(accountTokenHolders, ['contractAddress', 'signer']),
-  );
-
-  logger.info('Inserting contract token holders');
-  await insertContractTokenHolders(
-    dropDuplicatesMultiKey(contractTokenHolders, ['contractAddress', 'evmAddress']),
-  );
+  await insertTokenHolders(tokenHolders);
 
   logger.info('Finalizing blocks');
   await updateBlockFinalized(fromId, toId);

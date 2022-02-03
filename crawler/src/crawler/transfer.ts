@@ -1,15 +1,15 @@
 import { BigNumber } from "ethers";
 import { nodeProvider } from "../utils/connector";
 import { resolvePromisesAsChunks } from "../utils/utils";
+import { isErc20TransferEvent, isErc721TransferEvent, isErc1155TransferSingleEvent, isErc1155TransferBatchEvent } from "./evmEvent";
 import { AccountHead, EvmLogWithDecodedEvent, Transfer } from "./types";
+import { findNativeAddress } from "./utils";
 
 const evmLogToTransfer = async ({timestamp, address, blockId, extrinsicId, signedData}: EvmLogWithDecodedEvent, fromEvmAddress: string, toEvmAddress: string): Promise<Transfer> => {
-  const [fromAddressQ, toAddressQ] = await Promise.all([
-    nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(fromEvmAddress)),
-    nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(toEvmAddress)),
+  const [toAddress, fromAddress] = await Promise.all([
+    findNativeAddress(toEvmAddress),
+    findNativeAddress(fromEvmAddress),
   ]);
-  const toAddress = toAddressQ.toString();
-  const fromAddress = fromAddressQ.toString();
 
   return {
     blockId,
@@ -70,19 +70,6 @@ const erc1155BatchEvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promis
     amount: amounts[index].toString(),
   }));
 }
-
-
-const isErc20TransferEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'Transfer' && type === 'ERC20';
-
-const isErc721TransferEvent =  ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'Transfer' && type === 'ERC721';
-
-const isErc1155TransferSingleEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'TransferSingle' && type === 'ERC1155';
-
-const isErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
-  decodedEvent.name === 'TransferBatch' && type === 'ERC1155';
 
 
 export const processTokenTransfers = async (evmLogs: EvmLogWithDecodedEvent[]): Promise<Transfer[]> => {
