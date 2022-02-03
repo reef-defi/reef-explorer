@@ -24,11 +24,11 @@ interface VerifiedERC721 {
 }
 interface VerifiedERC1155 {
   type: 'ERC1155',
-  data: null
+  data: {}
 }
 interface VerifiedOther {
   type: 'other',
-  data: null
+  data: {}
 }
 
 export type ContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
