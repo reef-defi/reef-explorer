@@ -301,7 +301,6 @@ export default {
           }
         },
         result({ data }) {
-          console.log(data)
           if (data && data.account && data.account.length > 0) {
             this.parsedAccount = data.account[0]
           }
