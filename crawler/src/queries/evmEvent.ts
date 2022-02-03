@@ -2,7 +2,7 @@ import {
   TokenHolder,
   Contract,
   ERC20Token,
-  EVMCall,
+  EVMCall, EVMEvent,
 } from '../crawler/types';
 import { insert, insertV2, query } from '../utils/connector';
 
@@ -30,6 +30,15 @@ const evmCallToValue = ({
 }: EVMCall): string => `(${extrinsicId}, '${account}', '${contractAddress}', '${data}', ${gasLimit}, ${storageLimit}, '${
   status.type === 'success' ? 'success' : 'error'
 }', '${status.type === 'error' ? status.message : ''}', '${timestamp}')`;
+
+const evmEventToValue = ({
+  eventId,
+  contractAddress,
+  data,
+  topics,
+  success,
+  timestamp,
+}: EVMEvent): string => `(${eventId}, '${contractAddress}', '${data.raw}', '${data.parsed}', '${success}', '${topics[0]}', '${topics[1]}', '${topics[2]}', '${topics[3]}', '${timestamp}')`;
 
 export const insertContracts = async (contracts: Contract[]): Promise<void> => {
   if (contracts.length === 0) {
@@ -63,9 +72,23 @@ export const insertEvmCalls = async (evmCalls: EVMCall[]): Promise<void> => {
   `);
 };
 
+export const insertEvmEvents = async (evmEvents: EVMEvent[]): Promise<void> => {
+  if (evmEvents.length === 0) {
+    return;
+  }
+  await insert(`
+    INSERT INTO evm_event
+      (event_id, contract_address, data_raw, data_parsed, success, topic_0 , topic_1, topic_2, topic_3, timestamp)
+    VALUES
+      ${evmEvents.map(evmEventToValue).join(',\n')};
+  `);
+};
+
 export const insertContract = async (contract: Contract): Promise<void> => insertContracts([contract]);
 
 export const insertEvmCall = async (call: EVMCall): Promise<void> => insertEvmCalls([call]);
+
+export const insertEvmEvent = async (evmEvent: EVMEvent): Promise<void> => insertEvmEvents([evmEvent]);
 
 const toTokenHolderInsertValue = ({
   signer,

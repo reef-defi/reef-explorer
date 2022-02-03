@@ -5,22 +5,24 @@ import {
   DecodedEvmError,
 } from '../crawler/types';
 import { insert } from '../utils/connector';
-import { getContractDB } from './evmEvent';
+import {getContractDB, insertEvmCall, insertEvmEvent} from './evmEvent';
 
-const parseEvmData = async (method: string, genericData: GenericEventData) => {
+const evmData = async (method: string, genericData: GenericEventData): Promise<undefined|{raw: {address: string, topics?:string[], data?: any}, parsed?: any}> => {
   const eventData = (genericData.toJSON() as any);
   if (method === 'Log') {
     const { address, topics, data } : BytecodeLog = eventData[0];
+    let evmData = {raw: {address, topics, data}, parsed: {}};
     const contract = await getContractDB(address);
     if (contract.length === 0) {
-      return undefined;
+      return evmData;
     }
     const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
     try {
-      return iface.parseLog({ topics, data });
+      evmData.parsed = iface.parseLog({ topics, data });
     } catch {
-      return undefined;
+      //
     }
+    return evmData;
   } else if (method === 'ExecutedFailed') {
     let decodedMessage;
     try {
@@ -29,7 +31,7 @@ const parseEvmData = async (method: string, genericData: GenericEventData) => {
       decodedMessage = '';
     }
     const decodedError: DecodedEvmError = { address: eventData[0], message: decodedMessage };
-    return decodedError;
+    return {parsed: decodedError, raw: {address:decodedError.address}};
   }
   return undefined;
 };
@@ -46,7 +48,11 @@ const toEventValue = async ({
   timestamp,
 }: EventBody): Promise<string> => {
   // TODO we should probably move this to somewhere more appropriate
-  const parsedEvmData = (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')) ? await parseEvmData(method, data) : undefined;
+  const parsedEvmData = (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')) ? await evmData(method, data) : undefined;
+  if(parsedEvmData){
+    ...
+    insertEvmEvent({data: parsedEvmData, eventId: id, success: method === 'Log', topics: parsedEvmData.raw.topics || [], contractAddress: parsedEvmData.raw.address, timestamp})
+  }
   return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(parsedEvmData) || '{}'}', '${JSON.stringify(phase)}', '${timestamp}')`;
 };
 
