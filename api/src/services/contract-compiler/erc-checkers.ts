@@ -124,7 +124,7 @@ export default async (address: string, abi: ABI): Promise<ContractResolve> => {
   } if (checkIfContractIsERC721(abi)) {
     return resolveErc721(address, abi);
   } if (checkIfContractIsERC1155(abi)) {
-    return { type: 'ERC1155', data: null };
+    return { type: 'ERC1155', data: {} };
   }
-  return { type: 'other', data: null };
+  return { type: 'other', data: {} };
 };

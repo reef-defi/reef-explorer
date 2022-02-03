@@ -116,11 +116,11 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
   // Inserting contract into verified contract table
   await insertVerifiedContract({
     ...verification,
-    abi: fullAbi,
     type,
+    abi: fullAbi,
+    data: JSON.stringify(data),
     args: verification.arguments,
     optimization: verification.optimization === 'true',
-    data: data === null ? 'null' : JSON.stringify(data),
   });
 };
 
