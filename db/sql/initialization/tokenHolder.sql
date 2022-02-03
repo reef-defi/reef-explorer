@@ -25,8 +25,10 @@ CREATE TABLE IF NOT EXISTS token_holder (
       ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS unique_account_token_holder ON token_holder (token_address, signer) WHERE evm_address IS NULL;
-CREATE UNIQUE INDEX IF NOT EXISTS unique_contract_token_holder ON token_holder (token_address, evm_address) WHERE signer IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_account_token_holder ON token_holder (token_address, signer) WHERE evm_address IS NULL AND nft_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_contract_token_holder ON token_holder (token_address, evm_address) WHERE signer IS NULL AND nft_id IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_account_nft_holder ON token_holder (token_address, signer, nft_id) WHERE evm_address IS NULL AND nft_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_contract_nft_holder ON token_holder (token_address, evm_address, nft_id) WHERE signer IS NULL AND nft_id IS NOT NULL;
 
 -- CREATE INDEX IF NOT EXISTS token_holder_info ON token_holder(info);
 CREATE INDEX IF NOT EXISTS token_holder_signer ON token_holder(signer);
