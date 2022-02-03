@@ -16,6 +16,7 @@ select_permissions:
     - signer
     - balance
     - info
+    - nft_id
     - type
     filter: {}
   role: public
