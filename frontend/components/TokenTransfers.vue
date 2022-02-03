@@ -40,7 +40,9 @@
               :address="item.from_address"
               :size="20"
             />
-            <span>{{ shortAddress(item.from_address) }}</span>
+            <span>
+              {{ shortAddress(item.from_address || item.from_evm_address) }}
+            </span>
           </Cell>
 
           <Cell
@@ -52,7 +54,9 @@
               :address="item.to_address"
               :size="20"
             />
-            <span>{{ shortAddress(item.to_address) }}</span>
+            <span>
+              {{ shortAddress(item.to_address || item.to_evm_address) }}
+            </span>
           </Cell>
 
           <Cell>{{ formatAmount(item.amount, symbol, decimals) }}</Cell>
@@ -144,8 +148,10 @@ export default {
                 index
                 signer
               }
-              from_address
               to_address
+              from_address
+              to_evm_address
+              from_evm_address
               amount
               timestamp
               success

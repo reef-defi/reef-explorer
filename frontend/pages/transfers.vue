@@ -205,8 +205,8 @@ export default {
               block_id: extrinsic.block_id,
               to: to === null ? toEvm : to.address,
               from: from === null ? fromEvm : from.address,
-              symbol: token.verified_contract?.contract_data?.symbol || '',
-              decimals: token.verified_contract?.contract_data?.decimals || '',
+              symbol: token.verified_contract?.contract_data?.symbol || ' ',
+              decimals: token.verified_contract?.contract_data?.decimals || 1,
             })
           )
           this.totalRows = this.filter ? this.transfers.length : this.nTransfers
