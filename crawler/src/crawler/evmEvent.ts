@@ -166,59 +166,6 @@ const decodeEvmLog = (event: EvmLog): EvmLogWithDecodedEvent => {
   return { ...event, decodedEvent: result };
 };
 
-export const erc20TransferEventToTokenBalanceHead = ({
-  address,
-  contractData,
-  decodedEvent,
-  abis,
-  name,
-  blockId,
-  timestamp,
-}: EvmLogWithDecodedEvent): TokenBalanceHead[] => [
-  {
-    blockId,
-    decimals: (contractData as ERC20Data).decimals,
-    timestamp,
-    abi: abis[name],
-    contractAddress: address,
-    signerAddress: decodedEvent.args[0],
-  },
-  {
-    blockId,
-    decimals: (contractData as ERC20Data).decimals,
-    timestamp,
-    abi: abis[name],
-    contractAddress: address,
-    signerAddress: decodedEvent.args[1],
-  },
-];
-
-export const extractTokenBalance = async ({
-  decimals,
-  abi,
-  contractAddress,
-  signerAddress,
-  blockId,
-  timestamp,
-}: TokenBalanceHead): Promise<TokenHolder> => {
-  const [balance, signerAddr] = await Promise.all([
-    getContractBalance(signerAddress, contractAddress, abi),
-    nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(signerAddress)),
-  ]);
-
-  const address = signerAddr.toJSON();
-
-  return {
-    blockId,
-    decimals,
-    timestamp,
-    contractAddress,
-    evmAddress: address === null ? signerAddress : '',
-    balance: balance.toString(),
-    type: address === null ? 'Contract' : 'Account',
-    signer: address === null ? '' : `${address}`,
-  };
-};
 
 const extrToEvmLog = ({events, blockId, timestamp, id, signedData}: ExtrinsicBody) => events
   .map((event) => ({event, blockId, timestamp, extrinsicId: id, signedData,}))
@@ -246,3 +193,16 @@ export const extrinsicToEvmLogs = async (
     .map(decodeEvmLog)
 }
 
+
+
+export const isErc20TransferEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
+  decodedEvent.name === 'Transfer' && type === 'ERC20';
+
+export const isErc721TransferEvent =  ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
+  decodedEvent.name === 'Transfer' && type === 'ERC721';
+
+export const isErc1155TransferSingleEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
+  decodedEvent.name === 'TransferSingle' && type === 'ERC1155';
+
+export const isErc1155TransferBatchEvent = ({ decodedEvent, type }: EvmLogWithDecodedEvent): boolean => 
+  decodedEvent.name === 'TransferBatch' && type === 'ERC1155';
