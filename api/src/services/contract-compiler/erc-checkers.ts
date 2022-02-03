@@ -1,8 +1,10 @@
 import { Contract } from '@ethersproject/contracts';
-import { ABI, ContractResolve, ERC20Data, ERC721Data, UserTokenBalance } from '../../utils/types';
+import { BigNumber } from 'ethers';
+import {
+  ABI, ContractResolve, ERC20Data, ERC721Data, UserTokenBalance,
+} from '../../utils/types';
 import { getProvider } from '../../utils/connector';
 import { getAllUsersWithEvmAddress, insertTokenHolder } from '../account';
-import {BigNumber} from "ethers";
 
 const DEFAULT_ERC20_ABI: string[] = [
   '{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"}',
@@ -63,7 +65,7 @@ const contractChecked = (abi: ABI, format: string[]): boolean => {
       (prev, currentFragment) => prev && fragments.includes(currentFragment),
       true,
     );
-}
+};
 
 const checkIfContractIsERC20 = (abi: ABI): boolean => contractChecked(abi, DEFAULT_ERC20_ABI);
 const checkIfContractIsERC721 = (abi: ABI): boolean => contractChecked(abi, DEFAUTL_ERC721_ABI);
@@ -87,7 +89,7 @@ const extractERC721ContractData = async (address: string, abi: ABI): Promise<ERC
     contract.symbol(),
   ]);
 
-  return { name, symbol};
+  return { name, symbol };
 };
 
 const retrieveUserTokenBalances = async (abi: ABI, address: string, decimals: number): Promise<UserTokenBalance[]> => {
@@ -102,29 +104,27 @@ const retrieveUserTokenBalances = async (abi: ABI, address: string, decimals: nu
   return accountBalances;
 };
 
-
 const resolveErc20 = async (address: string, abi: ABI): Promise<ContractResolve> => {
   const data = await extractERC20ContractData(address, abi);
   const userBalances = await retrieveUserTokenBalances(abi, address, data.decimals);
   await insertTokenHolder(
-    userBalances.filter(({balance}) => BigNumber.from(balance).gt("0"))
+    userBalances.filter(({ balance }) => BigNumber.from(balance).gt('0')),
   );
-  return {data, type: 'ERC20'};
-}
+  return { data, type: 'ERC20' };
+};
 
 const resolveErc721 = async (address: string, abi: ABI): Promise<ContractResolve> => {
   const data = await extractERC721ContractData(address, abi);
-  return {data, type: 'ERC721'};
-}
-
+  return { data, type: 'ERC721' };
+};
 
 export default async (address: string, abi: ABI): Promise<ContractResolve> => {
   if (checkIfContractIsERC20(abi)) {
-    return await resolveErc20(address, abi);
-  } else if (checkIfContractIsERC721(abi)) {
-    return await resolveErc721(address, abi);
-  } else if (checkIfContractIsERC1155(abi)) {
-    return {type: 'ERC1155', data: null};
+    return resolveErc20(address, abi);
+  } if (checkIfContractIsERC721(abi)) {
+    return resolveErc721(address, abi);
+  } if (checkIfContractIsERC1155(abi)) {
+    return { type: 'ERC1155', data: null };
   }
-  return {type: 'other', data: null};
-}
+  return { type: 'other', data: null };
+};

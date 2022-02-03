@@ -25,7 +25,9 @@ import {
   nextFreeIds,
 } from '../queries/extrinsic';
 import { insertAccounts, insertEvents } from '../queries/event';
-import { accountHeadToBody, accountNewOrKilled, extrinsicToEventHeader, isEventStakingReward, isEventStakingSlash, isExtrinsicEvent } from './event';
+import {
+  accountHeadToBody, accountNewOrKilled, extrinsicToEventHeader, isEventStakingReward, isEventStakingSlash, isExtrinsicEvent,
+} from './event';
 import {
   range,
   dropDuplicates,
@@ -85,7 +87,6 @@ const blockBodyToInsert = ({
   stateRoot: signedBlock.block.header.stateRoot.toString(),
   extrinsicRoot: signedBlock.block.header.extrinsicsRoot.toString(),
 });
-
 
 const blockToExtrinsicsHeader = ({
   id,
@@ -237,7 +238,7 @@ export default async (
 
   // Native token holders
   logger.info('Extracting native token holders from transfers');
-  let tokenHolders = await processNativeTokenHolders(transfers);
+  const tokenHolders = await processNativeTokenHolders(transfers);
 
   // EVM Calls
   logger.info('Extracting evm calls');

@@ -108,7 +108,7 @@ export interface Transfer {
   tokenAddress: string;
   fromEvmAddress: string;
   toEvmAddress: string;
-  
+
   success: boolean;
   errorMessage: string;
 
@@ -168,7 +168,6 @@ export interface VerifiedContract {
   contract_data: VerifiedContractData;
 }
 
-
 export interface ERC20Token extends VerifiedContract {
   type: 'ERC721';
   contract_data: ERC721Data;
@@ -206,16 +205,15 @@ type TokenHolderType = 'Contract' | 'Account';
 type TokenHolderInfo = null | ERC20Data | ERC721Data;
 type TokenHolderNftId = null | string;
 
-export interface TokenBalanceHead extends NativeTokenHolderHead {
-  abi: ABI;
-}
-
-
 export interface NativeTokenHolderHead {
   timestamp: string;
   tokenAddress: string;
   info: TokenHolderInfo;
   signerAddress: string;
+}
+
+export interface TokenBalanceHead extends NativeTokenHolderHead {
+  abi: ABI;
 }
 
 interface TokenHolderBase {

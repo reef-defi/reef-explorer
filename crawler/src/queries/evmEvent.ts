@@ -1,11 +1,10 @@
 import {
-  TokenHolder,
   Contract,
   ERC20Token,
   EVMCall,
   VerifiedContract,
 } from '../crawler/types';
-import { insert, insertV2, query } from '../utils/connector';
+import { insert, query } from '../utils/connector';
 
 const contractToValues = ({
   address,
@@ -67,7 +66,6 @@ export const insertEvmCalls = async (evmCalls: EVMCall[]): Promise<void> => {
 export const insertContract = async (contract: Contract): Promise<void> => insertContracts([contract]);
 
 export const insertEvmCall = async (call: EVMCall): Promise<void> => insertEvmCalls([call]);
-
 
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => query<ERC20Token>(
   'SELECT address, contract_data, name FROM verified_contract WHERE type=\'ERC20\';',

@@ -40,7 +40,7 @@ export const findUserContracts = async (address: string): Promise<Contract[]> =>
 
 const userTokenBalanceToValue = ({
   tokenAddress, address, balance, decimals,
-}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, null, 'Account', balance.toString(), JSON.stringify({decimals}), null, new Date().toUTCString()];
+}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, null, 'Account', balance.toString(), JSON.stringify({ decimals }), null, new Date().toUTCString()];
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }

@@ -2,10 +2,10 @@ import { query } from '../utils/connector';
 import verifyContract from './contract-compiler/compiler';
 import verifyContractArguments from './contract-compiler/argumentEncoder';
 import {
-  ABI, AutomaticContractVerificationReq, ContractType, License, Target, 
+  ABI, AutomaticContractVerificationReq, ContractType, License, Target,
 } from '../utils/types';
 import { ensure } from '../utils/utils';
-import resolveContractData from './contract-compiler/erc-checkers'
+import resolveContractData from './contract-compiler/erc-checkers';
 
 interface Bytecode {
   bytecode: string;
@@ -101,22 +101,24 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
   const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
-  
+
   // Confirming verification request
-  await contractVerificationRequestInsert({...verification,
+  await contractVerificationRequestInsert({
+    ...verification,
     success: true,
     optimization: verification.optimization === 'true',
     args: verification.arguments,
   });
 
   // Resolving contract additional information
-  const {type, data} = await resolveContractData(verification.address, abi);
+  const { type, data } = await resolveContractData(verification.address, abi);
 
   // Inserting contract into verified contract table
-  await insertVerifiedContract({...verification, 
+  await insertVerifiedContract({
+    ...verification,
     abi: fullAbi,
-    type: type,
-    args: verification.arguments, 
+    type,
+    args: verification.arguments,
     optimization: verification.optimization === 'true',
     data: data === null ? 'null' : JSON.stringify(data),
   });
