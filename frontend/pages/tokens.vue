@@ -151,7 +151,7 @@ export default {
               contract_data
               contract {
                 timestamp
-                token_holders_aggregate {
+                token_holders_aggregate(where: { balance: { _gt: "0" } }) {
                   aggregate {
                     count(distinct: true)
                   }

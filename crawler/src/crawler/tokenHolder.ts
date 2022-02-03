@@ -88,7 +88,7 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
     evmLogs.flatMap(evmLogToTokenHolderHead),
     ['evmAddress', 'tokenAddress', 'nftId'],
   )
-    .filter(({ evmAddress }) => evmAddress !== 'deleted' && evmAddress !== '0x0000000000000000000000000000000000000000')
+    .filter(({ evmAddress }) => evmAddress !== '0x0000000000000000000000000000000000000000')
     .map(async (head) => {
       const balance = head.type === 'ERC1155'
         ? await balanceOfErc1155(head.evmAddress, head.tokenAddress, head.nftId!, head.abi)
