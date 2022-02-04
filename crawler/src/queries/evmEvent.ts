@@ -23,14 +23,25 @@ const contractToValues = ({
   signer,
   timestamp,
 }: Contract): string => {
-  address = toContractAddress(address);
-  return address ? `('${address}', ${extrinsicId}, '${signer}', '${bytecode}', '${bytecodeContext}', '${bytecodeArguments}', ${gasLimit}, ${storageLimit}, '${timestamp}')` : '';
+  const contractAddress = toContractAddress(address);
+  return contractAddress ? `('${contractAddress}', ${extrinsicId}, '${signer}', '${bytecode}', '${bytecodeContext}', '${bytecodeArguments}', ${gasLimit}, ${storageLimit}, '${timestamp}')` : '';
+};
+
+export const getVerifiedContractDB = async (
+    address: string,
+): Promise<ERC20Token[]> => {
+  const contractAddress = toContractAddress(address);
+  return contractAddress
+      ? query<ERC20Token>(
+          `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${contractAddress}';`,)
+      :[]
 };
 
 const parseEvmLogData = async (method: string, genericData: GenericEventData): Promise<undefined|{raw: {address: string, topics?:string[], data?: any}, parsed?: any}> => {
   const eventData = (genericData.toJSON() as any);
   if (method === 'Log') {
-    let { address, topics, data } : BytecodeLog = eventData[0];
+    const { topics, data } : BytecodeLog = eventData[0];
+    let { address } : BytecodeLog = eventData[0];
     address = toContractAddress(address);
     if(!address) {
       return undefined;
@@ -171,13 +182,3 @@ export const insertContractTokenHolders = async (
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => query<ERC20Token>(
   'SELECT address, contract_data, name FROM verified_contract WHERE type=\'ERC20\';',
 );
-
-export const getVerifiedContractDB = async (
-  address: string,
-): Promise<ERC20Token[]> => {
-  const contractAddress = toContractAddress(address);
-  return contractAddress
-      ? query<ERC20Token>(
-      `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${contractAddress}';`,)
-      :[]
-};
