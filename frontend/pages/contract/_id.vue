@@ -268,6 +268,12 @@
             :contract-name="contract.verified_contract.name"
             :contract-abi="contract.abi"
           />
+          <!-- Transactions -->
+
+          <ContractTransactions
+            v-if="tab === 'transactions'"
+            :contract-id="address"
+          />
         </Card>
       </b-container>
     </section>
@@ -281,6 +287,7 @@ import { ethers } from 'ethers'
 import Hash from 'ipfs-only-hash'
 import { Promised } from 'vue-promised'
 import ContractExecute from '../../components/ContractExecute.vue'
+import ContractTransactions from '~/components/ContractTransactions'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
 import commonMixin, { toContractAddress } from '@/mixins/commonMixin.js'
@@ -290,6 +297,7 @@ import File from '@/components/FileExplorer/File'
 
 export default {
   components: {
+    ContractTransactions,
     ReefIdenticon,
     Loading,
     VueJsonPretty,
@@ -317,11 +325,13 @@ export default {
           execute: 'Execute',
           source: 'Verified Source',
           abi: 'ABI',
+          transactions: 'Transactions',
         }
       }
 
       return {
         general: 'General',
+        transactions: 'Transactions',
       }
     },
     tokenData() {

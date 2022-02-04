@@ -12,54 +12,24 @@
       <Table>
         <THead>
           <Cell>Transaction</Cell>
+          <Cell>Block</Cell>
           <Cell>Extrinsic</Cell>
-          <Cell>From address</Cell>
-          <Cell>To address</Cell>
-          <Cell>Amount</Cell>
           <Cell>Timestamp</Cell>
           <Cell align="center">Success</Cell>
         </THead>
 
         <Row v-for="(item, index) in transactions" :key="index">
-          <Cell :link="`/contract/tx/${item.extrinsic.hash}`">{{
-            shortHash(item.extrinsic.hash)
+          <Cell :link="`/contract/tx/${item.hash}`">{{
+            shortHash(item.hash)
           }}</Cell>
 
-          <Cell
-            :link="`/extrinsic/${item.extrinsic.block_id}/${item.extrinsic.index}`"
+          <Cell :link="`/block?blockNumber=${item.block_id}`"
+            ># {{ formatNumber(item.block_id) }}</Cell
           >
-            #{{ formatNumber(item.extrinsic.block_id) }}-{{
-              formatNumber(item.extrinsic.index)
-            }}
-          </Cell>
 
-          <Cell
-            :link="{ url: `/account/${item.from_address}`, fill: false }"
-            :title="$t('pages.accounts.account_details')"
-          >
-            <ReefIdenticon
-              :key="item.signer"
-              :address="item.from_address"
-              :size="20"
-            />
-            <span>{{ shortAddress(item.from_address) }}</span>
+          <Cell :link="`/extrinsic/${item.block_id}/${item.index}`">
+            #{{ formatNumber(item.block_id) }}-{{ formatNumber(item.index) }}
           </Cell>
-
-          <Cell
-            :link="{ url: `/account/${item.to_address}`, fill: false }"
-            :title="$t('pages.accounts.account_details')"
-          >
-            <ReefIdenticon
-              :key="item.signer"
-              :address="item.to_address"
-              :size="20"
-            />
-            <span>{{ shortAddress(item.to_address) }}</span>
-          </Cell>
-
-          <Cell>{{
-            formatAmount(item.amount, item.symbol, item.decimals)
-          }}</Cell>
 
           <Cell
             v-b-tooltip.hover
@@ -72,7 +42,7 @@
 
           <Cell align="center">
             <font-awesome-icon
-              v-if="item.success"
+              v-if="item.status === 'success'"
               icon="check"
               class="text-success"
             />
@@ -108,32 +78,23 @@ export default {
     $subscribe: {
       transactions: {
         query: gql`
-          subscription transferQuery(
-            $tokenAddress: String_comparison_exp = {}
+          subscription evm_event_qry(
+            $contractAddress: String_comparison_exp = {}
           ) {
-            transfer(
+            evm_event(
               limit: 10
-              where: { token_address: $tokenAddress }
-              order_by: { extrinsic_id: desc }
+              where: { contract_address: $contractAddress }
+              order_by: { timestamp: desc }
             ) {
-              id
-              from_address
-              to_address
-              to_evm_address
-              from_evm_address
-              success
-              amount
               timestamp
-              token_address
-              extrinsic {
-                hash
-                block_id
-                index
-              }
-              token {
-                address
-                verified_contract {
-                  contract_data
+              event {
+                extrinsic {
+                  id
+                  hash
+                  block_id
+                  index
+                  timestamp
+                  status
                 }
               }
             }
@@ -141,18 +102,15 @@ export default {
         `,
         variables() {
           return {
-            tokenAddress: { _eq: toContractAddress(this.contractId) },
+            contractAddress: { _eq: toContractAddress(this.contractId) },
           }
         },
         result({ data }) {
           if (data) {
-            this.transactions = data.transfer.map((t) => ({
-              ...t,
-              to_address: t.to_address || t.to_evm_address,
-              from_address: t.from_address || t.from_evm_address,
-              symbol: t.token.verified_contract?.contract_data?.symbol,
-              decimals: t.token.verified_contract?.contract_data?.decimals,
-            }))
+            this.transactions = data.evm_event.reduce((state, curr) => {
+              state.push(curr.event.extrinsic)
+              return state
+            }, [])
           }
           this.loading = false
         },
