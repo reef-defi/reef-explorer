@@ -175,9 +175,9 @@ export const getERC20Tokens = async (): Promise<ERC20Token[]> => query<ERC20Toke
 export const getVerifiedContractDB = async (
   address: string,
 ): Promise<ERC20Token[]> => {
-  address = toContractAddress(address);
-  return address
+  const contractAddress = toContractAddress(address);
+  return contractAddress
       ? query<ERC20Token>(
-      `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${address}';`,)
+      `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${contractAddress}';`,)
       :[]
 };
