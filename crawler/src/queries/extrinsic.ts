@@ -1,5 +1,6 @@
 import { SignedExtrinsicData, Transfer } from '../crawler/types';
 import { insert, insertV2, query } from '../utils/connector';
+import {toContractAddress} from "../utils/utils";
 
 export interface InsertExtrinsic {
   blockId: number;
@@ -35,14 +36,16 @@ const extrinsicToValue = ({
   signedData,
   timestamp,
 }: InsertExtrinsicBody): string => {
-  let call_evm_contract_address = undefined;
+  let contractAddress = undefined;
   if(section === 'evm' && method === 'call'){
     try {
-      call_evm_contract_address = JSON.parse(args)[0];
-    }catch (e){}
+      contractAddress = toContractAddress(JSON.parse(args)[0]);
+    }catch {
+      //
+    }
   }
   return `(
-  ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${call_evm_contract_address}', '${docs.replace(
+  ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${contractAddress}', '${docs.replace(
       /'/g,
       "''",
   )}', '${method}', 
