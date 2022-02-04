@@ -17,7 +17,6 @@ select_permissions:
     - id
     - index
     - data
-    - parsed_data
     - phase
     - method
     - section

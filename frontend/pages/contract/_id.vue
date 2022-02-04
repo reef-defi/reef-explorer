@@ -283,7 +283,7 @@ import { Promised } from 'vue-promised'
 import ContractExecute from '../../components/ContractExecute.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
-import commonMixin from '@/mixins/commonMixin.js'
+import commonMixin, { toContractAddress } from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
 import FileExplorer from '@/components/FileExplorer'
 import File from '@/components/FileExplorer/File'
@@ -303,7 +303,7 @@ export default {
     return {
       network,
       loading: true,
-      address: this.$route.params.id,
+      address: toContractAddress(this.$route.params.id),
       contract: undefined,
       tab: 'general',
     }
@@ -436,7 +436,7 @@ export default {
         `,
         variables() {
           return {
-            address: this.address.toLowerCase(),
+            address: this.address,
           }
         },
         result({ data }) {

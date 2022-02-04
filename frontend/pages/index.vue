@@ -35,7 +35,7 @@ import LastExtrinsics from '@/components/LastExtrinsics.vue'
 import LastEvents from '@/components/LastEvents.vue'
 import Search from '@/components/Search.vue'
 import { network } from '@/frontend.config.js'
-import commonMixin from '@/mixins/commonMixin.js'
+import commonMixin, { toContractAddress } from '@/mixins/commonMixin.js'
 import LastAccounts from '@/components/LastAccounts'
 
 export default {
@@ -87,7 +87,7 @@ export default {
           })
         } else if (await this.isContractAddress(this.search)) {
           this.$router.push({
-            path: `/contract/${this.search}`,
+            path: `/contract/${toContractAddress(this.search)}`,
           })
         } else if (await this.isEvmAccountAddress(this.search)) {
           this.$router.push({

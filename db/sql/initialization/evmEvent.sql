@@ -1,6 +1,5 @@
 CREATE TYPE EventStatus AS ENUM ('success', 'error');
 
-
 CREATE TABLE IF NOT EXISTS evm_event
 (
     id               BIGSERIAL,
@@ -10,7 +9,7 @@ CREATE TABLE IF NOT EXISTS evm_event
     data_raw         JSON        NOT NULL,
     data_parsed      JSON        NOT NULL,
 
-    success          BOOLEAN     NOT NULL,
+    method           VARCHAR     NOT NULL,
     topic_0          VARCHAR,
     topic_1          VARCHAR,
     topic_2          VARCHAR,
@@ -22,17 +21,13 @@ CREATE TABLE IF NOT EXISTS evm_event
         FOREIGN KEY (event_id)
             REFERENCES event (id)
             ON DELETE CASCADE,
-    CONSTRAINT fk_signer
-        FOREIGN KEY (signer)
-            REFERENCES account (address)
-            ON DELETE CASCADE,
     CONSTRAINT fk_contract
         FOREIGN KEY (contract_address)
             REFERENCES contract (address)
             ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS evm_event_status ON evm_event (success);
+CREATE INDEX IF NOT EXISTS evm_event_method ON evm_event (method);
 CREATE INDEX IF NOT EXISTS evm_event_event_id ON evm_event (event_id);
 CREATE INDEX IF NOT EXISTS evm_event_contract_address ON evm_event (contract_address);
 CREATE INDEX IF NOT EXISTS evm_event_topic_0 ON evm_event (topic_0);

@@ -1,40 +1,5 @@
-import { GenericEventData } from '@polkadot/types/generic/Event';
-import { utils as ethersUtils } from 'ethers';
-import {
-  AccountBody, EventBody, BytecodeLog,
-  DecodedEvmError,
-} from '../crawler/types';
-import { insert } from '../utils/connector';
-import {getContractDB, insertEvmCall, insertEvmEvent} from './evmEvent';
-
-const evmData = async (method: string, genericData: GenericEventData): Promise<undefined|{raw: {address: string, topics?:string[], data?: any}, parsed?: any}> => {
-  const eventData = (genericData.toJSON() as any);
-  if (method === 'Log') {
-    const { address, topics, data } : BytecodeLog = eventData[0];
-    let evmData = {raw: {address, topics, data}, parsed: {}};
-    const contract = await getContractDB(address);
-    if (contract.length === 0) {
-      return evmData;
-    }
-    const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
-    try {
-      evmData.parsed = iface.parseLog({ topics, data });
-    } catch {
-      //
-    }
-    return evmData;
-  } else if (method === 'ExecutedFailed') {
-    let decodedMessage;
-    try {
-      decodedMessage = eventData[2] === '0x' ? '' : ethersUtils.toUtf8String(`0x${eventData[2].substr(138)}`.replace(/0+$/, ''));
-    } catch {
-      decodedMessage = '';
-    }
-    const decodedError: DecodedEvmError = { address: eventData[0], message: decodedMessage };
-    return {parsed: decodedError, raw: {address:decodedError.address}};
-  }
-  return undefined;
-};
+import {AccountBody, EventBody,} from '../crawler/types';
+import {insert} from '../utils/connector';
 
 const toEventValue = async ({
   id,
@@ -47,25 +12,21 @@ const toEventValue = async ({
   },
   timestamp,
 }: EventBody): Promise<string> => {
-  // TODO we should probably move this to somewhere more appropriate
-  const parsedEvmData = (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')) ? await evmData(method, data) : undefined;
-  if(parsedEvmData){
-    ...
-    insertEvmEvent({data: parsedEvmData, eventId: id, success: method === 'Log', topics: parsedEvmData.raw.topics || [], contractAddress: parsedEvmData.raw.address, timestamp})
-  }
-  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(parsedEvmData) || '{}'}', '${JSON.stringify(phase)}', '${timestamp}')`;
+  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
 };
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
     await insert(`
 INSERT INTO event
-  (id, block_id, extrinsic_id, index, section, method, data, parsed_data, phase, timestamp)
+  (id, block_id, extrinsic_id, index, section, method, data, phase, timestamp)
 VALUES
   ${(await Promise.all(events.map(toEventValue))).join(',\n')};
 `);
+  // await Promise.all(events.map((e:EventBody)=>insertEvmEvent({id:e.id, timestamp: e.timestamp, data: e.event.event.data, section: e.event.event.section, method: e.event.event.method })));
   }
 };
+
 export const insertEvent = async (event: EventBody) => insertEvents([event]);
 
 const accountToInsertValue = ({

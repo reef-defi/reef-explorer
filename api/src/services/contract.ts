@@ -1,6 +1,6 @@
 import { query } from '../utils/connector';
 import { PoolDB, Pool, Target } from '../utils/types';
-import { ensure } from '../utils/utils';
+import {ensure, toContractAddress} from '../utils/utils';
 
 interface TokenInfoDefault {
   name: string;
@@ -81,7 +81,7 @@ interface FindContractDB {
 
 export const findContractDB = async (address: string) => query<FindContractDB>(
   'SELECT address, bytecode FROM contract WHERE address = $1',
-  [address],
+  [toContractAddress(address)],
 );
 
 interface VerifiedContractBase {

@@ -138,16 +138,12 @@ export interface EVMCall {
   status: ExtrinsicStatus;
 }
 
-export interface EVMEvent {
-  data: { raw: { address: string }, parsed: any };
-  // blockId: number;
-  // account: string;
-  topics: string[];
+export interface EVMEventData {
+  data: any;
+  section: string;
+  method: string;
   timestamp: string;
-  // extrinsicId: number;
-  eventId: number;
-  contractAddress: string;
-  success: boolean;
+  id: number;
 }
 
 export type ABI = JsonFragment[];

@@ -17,7 +17,7 @@ import {
   Transfer,
   NativeTokenHolderHead,
 } from './types';
-import { getContractDB } from '../queries/evmEvent';
+import {getVerifiedContractDB, toContractAddress} from '../queries/evmEvent';
 import {
   dropDuplicates,
   REEF_CONTRACT_ADDRESS,
@@ -143,20 +143,20 @@ const getContractBalance = (
   return contract.balanceOf(address);
 });
 
-const extractEvmLog = async (
+const extractVerifiedEvmLog = async (
   event: BytecodeLogWithBlockId,
 ): Promise<EvmLog | undefined> => {
-  const result = await getContractDB(event.address);
-  if (result.length === 0) {
+  const verifiedContractData = await getVerifiedContractDB(event.address);
+  if (verifiedContractData.length === 0) {
     return undefined;
   }
 
   return {
     ...event,
-    name: result[0].name,
-    abis: result[0].compiled_data,
-    symbol: result[0].contract_data.symbol,
-    decimals: result[0].contract_data.decimals,
+    name: verifiedContractData[0].name,
+    abis: verifiedContractData[0].compiled_data,
+    symbol: verifiedContractData[0].contract_data.symbol,
+    decimals: verifiedContractData[0].contract_data.decimals,
   };
 };
 
@@ -223,7 +223,7 @@ export const extractTokenBalance = async ({
   };
 };
 
-export const extractEvmLogHeaders = (
+export const extractVerifiedEvmLogHeaders = (
   extrinsicEvmCalls: ExtrinsicBody[],
 ): Promise<EvmLog | undefined>[] => extrinsicEvmCalls
   .map(({
@@ -243,7 +243,7 @@ export const extractEvmLogHeaders = (
       ...a, timestamp, blockId, extrinsicId, signedData,
     };
   })
-  .map(extractEvmLog);
+  .map(extractVerifiedEvmLog);
 
 export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<Transfer|undefined>[] => evmLogs
   .filter(removeUndefinedItem)
@@ -269,7 +269,7 @@ export const extractTokenTransfer = (evmLogs: (EvmLog | undefined)[]): Promise<T
       success: true,
       fromEvmAddress,
       errorMessage: '',
-      tokenAddress: address,
+      tokenAddress: toContractAddress(address),
       amount: amount.toString(),
       toAddress: toAddress === '' ? 'null' : toAddress,
       fromAddress: fromAddress === '' ? 'null' : fromAddress,

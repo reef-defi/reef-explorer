@@ -37,7 +37,7 @@ import {
 } from '../utils/utils';
 import {
   extractAccountFromEvmCall,
-  extractEvmLogHeaders,
+  extractVerifiedEvmLogHeaders,
   extractNativeTokenHoldersFromTransfers,
   extractTokenBalance,
   extractTokenTransfer,
@@ -53,7 +53,7 @@ import {
   insertAccountTokenHolders,
   insertContracts,
   insertContractTokenHolders,
-  insertEvmCalls,
+  insertEvmEvents,
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
@@ -290,18 +290,18 @@ export default async (
   // Token balance
   logger.info('Retrieving EVM log if contract is ERC20 token');
   transactions += extrinsicEvmCalls.length;
-  const evmLogs = await resolvePromisesAsChunks(
-    extractEvmLogHeaders(extrinsicEvmCalls),
+  const verifiedEvmLogs = await resolvePromisesAsChunks(
+    extractVerifiedEvmLogHeaders(extrinsicEvmCalls),
   );
 
   logger.info('Extracting ERC20 transfer events');
-  const tokenTransfers = await resolvePromisesAsChunks(extractTokenTransfer(evmLogs));
+  const tokenTransfers = await resolvePromisesAsChunks(extractTokenTransfer(verifiedEvmLogs));
 
   transfers.push(...tokenTransfers
     .filter(removeUndefinedItem));
 
   logger.info('Extracting ERC20 token balances');
-  const tokenTransferEvents = extractTokenTransferEvents(evmLogs);
+  const tokenTransferEvents = extractTokenTransferEvents(verifiedEvmLogs);
 
   logger.info('Retrieving ERC20 account token balances');
   transactions += tokenTransferEvents.length;
@@ -356,11 +356,6 @@ export default async (
 
   transfers = [];
 
-  // EVM calls
-  logger.info('Inserting evm calls');
-  await insertEvmCalls(evmCalls);
-  evmCalls = [];
-
   // Contracts
   logger.info('Extracting new contracts');
   let contracts = extrinsics
@@ -369,6 +364,9 @@ export default async (
   logger.info('Inserting contracts');
   await insertContracts(contracts);
   contracts = [];
+
+  logger.info('Inserting evm events');
+  await insertEvmEvents(events);
 
   // Token holders
   const accountTokenHolders = tokenHolders

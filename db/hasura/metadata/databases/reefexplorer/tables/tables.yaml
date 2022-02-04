@@ -3,6 +3,7 @@
 - "!include public_block.yaml"
 - "!include public_contract.yaml"
 - "!include public_event.yaml"
+- "!include public_evm_event.yaml"
 - "!include public_extrinsic.yaml"
 - "!include public_transfer.yaml"
 - "!include public_unverified_evm_call.yaml"

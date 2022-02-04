@@ -61,12 +61,13 @@
         </Cell>
       </Row>
 
+      <!--      TODO
       <Row class="event-details__data">
         <Cell>Parsed Data</Cell>
         <Cell>
           <pre>{{ JSON.stringify(event.parsed_data, null, 2) }}</pre>
         </Cell>
-      </Row>
+      </Row>-->
     </Data>
   </Card>
 </template>

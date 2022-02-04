@@ -104,7 +104,7 @@
 
 <script>
 import { gql } from 'graphql-tag'
-import commonMixin from '@/mixins/commonMixin.js'
+import commonMixin, { toContractAddress } from '@/mixins/commonMixin.js'
 import Loading from '@/components/Loading.vue'
 import Search from '@/components/Search'
 import { paginationOptions } from '@/frontend.config.js'
@@ -171,7 +171,7 @@ export default {
               ? { block_id: { _eq: parseInt(this.filter) } }
               : {},
             contractAddress: this.isContractId(this.filter)
-              ? { _eq: this.filter }
+              ? { _eq: toContractAddress(this.filter) }
               : {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,

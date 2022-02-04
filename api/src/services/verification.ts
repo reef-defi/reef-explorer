@@ -6,7 +6,7 @@ import { checkIfContractIsERC20, extractERC20ContractData } from './contract-com
 import {
   ABI, AutomaticContractVerificationReq, ERC20Data, License, Target, UserTokenBalance,
 } from '../utils/types';
-import { ensure } from '../utils/utils';
+import {ensure, toContractAddress} from '../utils/utils';
 import { getAllUsersWithEvmAddress, insertTokenHolder } from './account';
 
 interface Bytecode {
@@ -75,7 +75,7 @@ const insertVerifiedContract = async ({
 }: UpdateContract): Promise<void> => {
   await query(
     INSERT_VERIFIED_CONTRACT,
-    [address.toLowerCase(), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target, type, data],
+    [toContractAddress(address), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target, type, data],
   );
 };
 
@@ -85,7 +85,7 @@ export const contractVerificationInsert = async ({
   await query(
     INSERT_CONTRACT_VERIFICATION,
     [
-      address.toLowerCase(),
+      toContractAddress(address),
       name,
       filename,
       source,
@@ -113,7 +113,7 @@ const updateUserBalances = async (abi: ABI, address: string, decimals: number): 
 };
 
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
-  const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
+  const deployedBytecode = await findContractBytecode(toContractAddress(verification.address));
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
   let type: ContractType = 'other';
@@ -134,7 +134,7 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
 };
 
 export const contractVerificationStatus = async (id: string): Promise<boolean> => {
-  const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [id.toLowerCase()]);
+  const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [toContractAddress(id)]);
   return result.length > 0;
 };
 

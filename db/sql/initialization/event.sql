@@ -3,12 +3,11 @@ CREATE TABLE IF NOT EXISTS event (
   block_id BIGINT,
   extrinsic_id BIGINT,
   index BIGINT NOT NULL,
-  
+
   phase JSON NOT NULL,
   section TEXT NOT NULL,
   method TEXT NOT NULL,
   data JSON NOT NULL,
-  parsed_data JSON,
 
   timestamp timestamptz NOT NULL,
 

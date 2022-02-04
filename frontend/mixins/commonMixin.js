@@ -15,8 +15,13 @@ const toMomentDate = (timestampOrDateString) => {
     : moment(timestampOrDateString)
 }
 
+export const toContractAddress = (address) => {
+  return utils.getAddress(address.trim().toLowerCase())
+}
+
 export default {
   methods: {
+    toContractAddress,
     shortAddress(address) {
       return (
         address.substring(0, 5) + '…' + address.substring(address.length - 5)
@@ -151,13 +156,14 @@ export default {
       if (!input || !input.toString()) {
         return false
       }
-      if (!this.isEvmAddress(input)) {
+      const address = toContractAddress(input)
+      if (!this.isEvmAddress(address)) {
         return false
       }
       const client = this.$apollo.provider.defaultClient
       const query = gql`
           query contract {
-            contract(limit: 1, where: {address: {_eq: "${input}"}}) {
+            contract(limit: 1, where: {address: {_eq: "${address}"}}) {
               address
             }
           }
