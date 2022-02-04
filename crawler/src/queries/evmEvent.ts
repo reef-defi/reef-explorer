@@ -10,16 +10,7 @@ import {
 import {insert, insertV2, query} from '../utils/connector';
 import {GenericEventData} from "@polkadot/types/generic/Event";
 import {utils as ethersUtils} from "ethers/lib/ethers";
-import * as Sentry from '@sentry/node';
-
-export const toContractAddress = (address: string): string =>{
-  try {
-    return ethersUtils.getAddress(address.toLowerCase());
-  }catch (e){
-    Sentry.captureException(e);
-    return '';
-  }
-}
+import {toContractAddress} from "../utils/utils";
 
 const contractToValues = ({
   address,

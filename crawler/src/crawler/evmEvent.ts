@@ -17,12 +17,12 @@ import {
   Transfer,
   NativeTokenHolderHead,
 } from './types';
-import {getVerifiedContractDB, toContractAddress} from '../queries/evmEvent';
+import {getVerifiedContractDB} from '../queries/evmEvent';
 import {
   dropDuplicates,
   REEF_CONTRACT_ADDRESS,
   removeUndefinedItem,
-  resolvePromisesAsChunks,
+  resolvePromisesAsChunks, toContractAddress,
 } from '../utils/utils';
 
 const preprocessBytecode = (bytecode: string) => {
