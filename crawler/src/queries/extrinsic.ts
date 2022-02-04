@@ -7,6 +7,7 @@ export interface InsertExtrinsic {
   index: number;
   hash: string;
   args: string;
+  contractAddressEvmCall: string|null;
   docs: string;
   method: string;
   section: string;
@@ -35,17 +36,10 @@ const extrinsicToValue = ({
   signed,
   signedData,
   timestamp,
+  contractAddressEvmCall,
 }: InsertExtrinsicBody): string => {
-  let contractAddress = undefined;
-  if(section === 'evm' && method === 'call'){
-    try {
-      contractAddress = toContractAddress(JSON.parse(args)[0]);
-    }catch {
-      //
-    }
-  }
   return `(
-  ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${contractAddress}', '${docs.replace(
+  ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${contractAddressEvmCall}', '${docs.replace(
       /'/g,
       "''",
   )}', '${method}', 
@@ -65,7 +59,6 @@ INSERT INTO extrinsic
   (id, block_id, index, hash, args, contract_address_evm_call, docs, method, section, signer, status, error_message, type, signed_data, timestamp)
 VALUES
 ${extrinsics.map((e)=>{
-  console.log('aaaa11=',JSON.parse(e.args)[0], e.method, e.section)
   return extrinsicToValue(e)
 }).join(',')}
 ON CONFLICT DO NOTHING;

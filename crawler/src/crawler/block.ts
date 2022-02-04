@@ -33,7 +33,7 @@ import {
   dropDuplicatesMultiKey,
   range,
   removeUndefinedItem,
-  resolvePromisesAsChunks,
+  resolvePromisesAsChunks, toContractAddress,
 } from '../utils/utils';
 import {
   extractAccountFromEvmCall,
@@ -142,6 +142,11 @@ const extrinsicToInsert = (
   const {
     hash, method, args, meta,
   } = extrinsic;
+  let argsJson= JSON.stringify(args);
+  let contractAddressEvmCall=null;
+  if(method.section === 'evm' && method.method === 'call'){
+      contractAddressEvmCall = toContractAddress(args[0].toString());
+  }
   return {
     id,
     index,
@@ -153,7 +158,8 @@ const extrinsicToInsert = (
     method: method.method,
     section: method.section,
     signed: resolveSigner(extrinsic),
-    args: JSON.stringify(args),
+    contractAddressEvmCall,
+    args: argsJson,
     docs: meta.docs.toLocaleString(),
     errorMessage: status.type === 'error' ? status.message : '',
   };
