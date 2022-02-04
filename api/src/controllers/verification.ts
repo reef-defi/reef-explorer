@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { authenticationToken } from '../services/utils';
 import {
-  contractVerificationInsert, contractVerificationStatus, findVeririedContract, verify,
+  contractVerificationRequestInsert, contractVerificationStatus, findVeririedContract, verify,
 } from '../services/verification';
 import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from '../utils/types';
 import { ensureObjectKeys, errorStatus, ensure } from '../utils/utils';
@@ -18,7 +18,7 @@ export const submitVerification = async (req: AppRequest<AutomaticContractVerifi
   } catch (err) {
     console.log(err);
     if (err.status === 404) {
-      await contractVerificationInsert({
+      await contractVerificationRequestInsert({
         ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
       });
     }
@@ -37,7 +37,7 @@ export const formVerification = async (req: AppRequest<ManualContractVerificatio
     res.send('Verified');
   } catch (err) {
     if (err.status === 404) {
-      await contractVerificationInsert({
+      await contractVerificationRequestInsert({
         ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
       });
     }

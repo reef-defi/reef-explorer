@@ -1,13 +1,11 @@
-import { Contract } from 'ethers';
-import { getProvider, query } from '../utils/connector';
+import { query } from '../utils/connector';
 import verifyContract from './contract-compiler/compiler';
 import verifyContractArguments from './contract-compiler/argumentEncoder';
-import { checkIfContractIsERC20, extractERC20ContractData } from './contract-compiler/erc-checkers';
 import {
-  ABI, AutomaticContractVerificationReq, ERC20Data, License, Target, UserTokenBalance,
+  ABI, AutomaticContractVerificationReq, ContractType, License, Target,
 } from '../utils/types';
 import { ensure } from '../utils/utils';
-import { getAllUsersWithEvmAddress, insertTokenHolder } from './account';
+import resolveContractData from './contract-compiler/erc-checkers';
 
 interface Bytecode {
   bytecode: string;
@@ -31,7 +29,6 @@ interface ContracVerificationInsert {
   errorMessage?: string;
 }
 
-type ContractType = 'other' | 'ERC20' | 'ERC721';
 interface UpdateContract {
   name: string;
   target: Target;
@@ -79,7 +76,7 @@ const insertVerifiedContract = async ({
   );
 };
 
-export const contractVerificationInsert = async ({
+export const contractVerificationRequestInsert = async ({
   address, name, filename, source, runs, optimization, compilerVersion, args, target, success, errorMessage,
 }: ContracVerificationInsert): Promise<void> => {
   await query(
@@ -100,37 +97,31 @@ export const contractVerificationInsert = async ({
   );
 };
 
-const updateUserBalances = async (abi: ABI, address: string, decimals: number): Promise<UserTokenBalance[]> => {
-  const users = await getAllUsersWithEvmAddress();
-  const contract = new Contract(address, abi, getProvider());
-  const balances = await Promise.all(
-    users.map(async ({ evmaddress }): Promise<string> => contract.balanceOf(evmaddress)),
-  );
-  const accountBalances: UserTokenBalance[] = users.map((user, index) => ({
-    ...user, decimals, balance: balances[index], tokenAddress: address,
-  }));
-  return accountBalances;
-};
-
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
   const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
-  let type: ContractType = 'other';
-  let data: ERC20Data | undefined;
-  let userBalances: UserTokenBalance[] = [];
-  if (checkIfContractIsERC20(abi)) {
-    data = await extractERC20ContractData(verification.address, abi);
-    type = 'ERC20';
-    userBalances = await updateUserBalances(abi, verification.address, data.decimals);
-  }
+
+  // Confirming verification request
+  await contractVerificationRequestInsert({
+    ...verification,
+    success: true,
+    optimization: verification.optimization === 'true',
+    args: verification.arguments,
+  });
+
+  // Resolving contract additional information
+  const { type, data } = await resolveContractData(verification.address, abi);
+
+  // Inserting contract into verified contract table
   await insertVerifiedContract({
-    ...verification, abi: fullAbi, optimization: verification.optimization === 'true', args: verification.arguments, type, data: data ? JSON.stringify(data) : 'null',
+    ...verification,
+    type,
+    abi: fullAbi,
+    data: JSON.stringify(data),
+    args: verification.arguments,
+    optimization: verification.optimization === 'true',
   });
-  await contractVerificationInsert({
-    ...verification, success: true, optimization: verification.optimization === 'true', args: verification.arguments,
-  });
-  await insertTokenHolder(userBalances);
 };
 
 export const contractVerificationStatus = async (id: string): Promise<boolean> => {

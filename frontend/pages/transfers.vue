@@ -143,7 +143,7 @@ export default {
               offset: $offset
               where: {
                 extrinsic: { block_id: $blockNumber, hash: $extrinsicHash }
-                from_account: { address: $fromAddress }
+                from_address: $fromAddress
               }
               order_by: { extrinsic: { id: desc } }
             ) {
@@ -179,9 +179,7 @@ export default {
               ? { _eq: parseInt(this.filter) }
               : {},
             extrinsicHash: this.isHash(this.filter) ? { _eq: this.filter } : {},
-            fromAddress: this.isAddress(this.filter)
-              ? { _eq: this.filter }
-              : {},
+            fromAddress: {},
             perPage: this.perPage,
             offset: (this.currentPage - 1) * this.perPage,
           }
@@ -207,8 +205,8 @@ export default {
               block_id: extrinsic.block_id,
               to: to === null ? toEvm : to.address,
               from: from === null ? fromEvm : from.address,
-              symbol: token.verified_contract?.contract_data?.symbol,
-              decimals: token.verified_contract?.contract_data?.decimals,
+              symbol: token.verified_contract?.contract_data?.symbol || ' ',
+              decimals: token.verified_contract?.contract_data?.decimals || 1,
             })
           )
           this.totalRows = this.filter ? this.transfers.length : this.nTransfers

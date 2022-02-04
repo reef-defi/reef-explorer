@@ -1,5 +1,20 @@
 import { nodeProvider } from '../utils/connector';
-import { AccountBody, AccountHead, EventHead } from './types';
+import {
+  AccountBody, AccountHead, EventHead, ExtrinsicBody, Event,
+} from './types';
+
+export const extrinsicToEventHeader = ({
+  id,
+  blockId,
+  events,
+  timestamp,
+}: ExtrinsicBody): EventHead[] => events.map((event, index) => ({
+  event,
+  index,
+  blockId,
+  timestamp,
+  extrinsicId: id,
+}));
 
 const eventToAccountHead = (
   { blockId, event, timestamp }: EventHead,
@@ -67,3 +82,9 @@ export const accountHeadToBody = async (
     evmNonce,
   };
 };
+
+export const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Rewarded.is(event);
+
+export const isEventStakingSlash = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Slashed.is(event);
+
+export const isExtrinsicEvent = (extrinsicIndex: number) => ({ phase }: Event): boolean => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(extrinsicIndex);

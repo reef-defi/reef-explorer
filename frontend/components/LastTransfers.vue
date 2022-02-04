@@ -132,8 +132,10 @@ export default {
             hash: transfer.extrinsic.hash,
             timestamp: transfer.timestamp,
             tokenAddress: transfer.token.address,
-            symbol: transfer.token.verified_contract.contract_data.symbol,
-            decimals: transfer.token.verified_contract.contract_data.decimals,
+            symbol:
+              transfer.token.verified_contract.contract_data?.symbol || ' ',
+            decimals:
+              transfer.token.verified_contract.contract_data?.decimals || 1,
             to:
               transfer.to_account !== null
                 ? transfer.to_account.address

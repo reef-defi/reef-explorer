@@ -64,20 +64,22 @@ export const insertExtrinsic = async (
 ): Promise<void> => insertExtrinsics([extrinsic]);
 
 const transferToValue = ({
-  blockId,
-  extrinsicId,
+  type,
   denom,
+  nftId,
+  amount,
+  blockId,
+  success,
+  timestamp,
   toAddress,
+  feeAmount,
+  extrinsicId,
   fromAddress,
   tokenAddress,
-  amount,
-  feeAmount,
-  success,
   errorMessage,
-  fromEvmAddress,
   toEvmAddress,
-  timestamp,
-}: Transfer): any[] => [blockId, extrinsicId, denom, toAddress === 'null' ? null : toAddress, fromAddress === 'null' ? null : fromAddress, toEvmAddress, fromEvmAddress, tokenAddress, amount === '' ? '0' : amount, feeAmount === '' ? '0' : feeAmount, success, errorMessage, timestamp];
+  fromEvmAddress,
+}: Transfer): any[] => [blockId, extrinsicId, denom || null, nftId || null, toAddress === 'null' ? null : toAddress, fromAddress === 'null' ? null : fromAddress, toEvmAddress, fromEvmAddress, tokenAddress, amount === '' ? '0' : amount, feeAmount === '' ? '0' : feeAmount, success, errorMessage, type, timestamp];
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   if (transfers.length === 0) {
@@ -85,7 +87,7 @@ export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   }
   await insertV2(`
     INSERT INTO transfer
-      (block_id, extrinsic_id, denom, to_address, from_address, to_evm_address, from_evm_address, token_address, amount, fee_amount, success, error_message, timestamp)
+      (block_id, extrinsic_id, denom, nft_id, to_address, from_address, to_evm_address, from_evm_address, token_address, amount, fee_amount, success, error_message, type, timestamp)
     VALUES
       %L;
   `, transfers.map(transferToValue));

@@ -40,18 +40,18 @@ export const findUserContracts = async (address: string): Promise<Contract[]> =>
 
 const userTokenBalanceToValue = ({
   tokenAddress, address, balance, decimals,
-}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, null, 'Account', balance.toString(), decimals, new Date().toUTCString()];
+}: UserTokenBalance): any[] => [tokenAddress.toLowerCase(), address, null, 'Account', balance.toString(), JSON.stringify({ decimals }), null, new Date().toUTCString()];
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }
   await query(format(`
     INSERT INTO token_holder 
-      (token_address, signer, evm_address, type, balance, decimals, timestamp)
+      (token_address, signer, evm_address, type, balance, info, nft_id, timestamp)
     VALUES
       %L
-    ON CONFLICT (token_address, signer) WHERE evm_address IS NULL DO UPDATE SET
+    ON CONFLICT (token_address, signer) WHERE evm_address IS NULL AND nft_id IS NULL DO UPDATE SET
       signer = EXCLUDED.signer,
       balance = EXCLUDED.balance,
-      decimals = EXCLUDED.decimals;
+      info = EXCLUDED.info;
   `, accountTokenBalances.map(userTokenBalanceToValue)), []);
 };

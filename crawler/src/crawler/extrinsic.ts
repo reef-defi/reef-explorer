@@ -40,7 +40,7 @@ export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => ex
     { type: 'unknown' } as ExtrinsicStatus,
 );
 
-export const isExtrinsicTransfer = ({ extrinsic }: ExtrinsicBody): boolean => extrinsic.method.section === 'balances'
+export const isExtrinsicNativeTransfer = ({ extrinsic }: ExtrinsicBody): boolean => extrinsic.method.section === 'balances'
   || extrinsic.method.section === 'currencies';
 
 export const extrinsicBodyToTransfer = async ({
@@ -83,5 +83,6 @@ export const extrinsicBodyToTransfer = async ({
     success: status.type === 'success',
     tokenAddress: REEF_CONTRACT_ADDRESS,
     errorMessage: status.type === 'error' ? status.message : '',
+    type: 'Native',
   };
 };

@@ -96,14 +96,18 @@ export interface Transfer {
   blockId: number;
   extrinsicId: number;
 
-  denom: string;
+  denom?: string;
+  nftId?: string;
+
+  amount: string;
+  feeAmount: string;
+  type: 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
+
   toAddress: string;
   fromAddress: string;
   tokenAddress: string;
   fromEvmAddress: string;
   toEvmAddress: string;
-  amount: string;
-  feeAmount: string;
 
   success: boolean;
   errorMessage: string;
@@ -144,15 +148,33 @@ export interface ABIS {
   [name: string]: ABI;
 }
 
-export interface ERC20Token {
+export interface ERC721Data {
+  name: string;
+  symbol: string;
+}
+export interface ERC20Data extends ERC721Data {
+  decimals: number;
+}
+
+export type TokenType = 'ERC20' | 'ERC721' | 'ERC1155';
+type VerifiedContractType = 'other' | TokenType;
+type VerifiedContractData = null | ERC20Data | ERC721Data;
+
+export interface VerifiedContract {
   name: string;
   address: string;
   compiled_data: ABIS;
-  contract_data: {
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
+  type: VerifiedContractType;
+  contract_data: VerifiedContractData;
+}
+
+export interface ERC20Token extends VerifiedContract {
+  type: 'ERC721';
+  contract_data: ERC721Data;
+}
+export interface ERC721Token extends VerifiedContract {
+  type: 'ERC20';
+  contract_data: ERC721Data;
 }
 
 export interface BytecodeLog {
@@ -163,17 +185,16 @@ export interface BytecodeLog {
 
 export interface BytecodeLogWithBlockId extends BytecodeLog {
   blockId: number;
+  timestamp: string;
   extrinsicId: number;
   signedData: SignedExtrinsicData;
-  timestamp: string;
 }
 
 export interface EvmLog extends BytecodeLogWithBlockId {
   abis: ABIS;
   name: string;
-  symbol: string;
-  blockId: number;
-  decimals: number;
+  type: VerifiedContractType;
+  contractData: VerifiedContractData;
 }
 
 export interface EvmLogWithDecodedEvent extends EvmLog {
@@ -181,32 +202,35 @@ export interface EvmLogWithDecodedEvent extends EvmLog {
 }
 
 type TokenHolderType = 'Contract' | 'Account';
-
-interface DefaultTokenHolder {
-  blockId: number;
-  contractAddress: string;
-}
-
-export interface TokenHolderHead extends DefaultTokenHolder {
-  evmAddress: string;
-}
-
-export interface TokenHolder extends TokenHolderHead {
-  type: TokenHolderType;
-  signer: string;
-  balance: string;
-  decimals: number;
-  timestamp: string;
-}
+type TokenHolderInfo = null | ERC20Data | ERC721Data;
+type TokenHolderNftId = null | string;
 
 export interface NativeTokenHolderHead {
-  blockId: number;
-  decimals: number;
   timestamp: string;
+  tokenAddress: string;
+  info: TokenHolderInfo;
   signerAddress: string;
-  contractAddress: string;
 }
 
 export interface TokenBalanceHead extends NativeTokenHolderHead {
   abi: ABI;
+}
+
+interface TokenHolderBase {
+  timestamp: string;
+  evmAddress: string;
+  tokenAddress: string;
+  info: TokenHolderInfo;
+  nftId: TokenHolderNftId;
+}
+
+export interface TokenHolderHead extends TokenHolderBase {
+  abi: ABI,
+  type: TokenType
+}
+
+export interface TokenHolder extends TokenHolderBase {
+  balance: string;
+  type: TokenHolderType;
+  signerAddress: string;
 }

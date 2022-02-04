@@ -1,4 +1,4 @@
-CREATE TYPE ContractType AS ENUM ('ERC20', 'ERC721', 'other');
+CREATE TYPE ContractType AS ENUM ('ERC20', 'ERC721', 'ERC1155', 'other');
 
 CREATE TABLE IF NOT EXISTS contract (
   address VARCHAR(48),

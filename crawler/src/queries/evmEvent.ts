@@ -1,10 +1,10 @@
 import {
-  TokenHolder,
   Contract,
   ERC20Token,
   EVMCall,
+  VerifiedContract,
 } from '../crawler/types';
-import { insert, insertV2, query } from '../utils/connector';
+import { insert, query } from '../utils/connector';
 
 const contractToValues = ({
   address,
@@ -67,52 +67,12 @@ export const insertContract = async (contract: Contract): Promise<void> => inser
 
 export const insertEvmCall = async (call: EVMCall): Promise<void> => insertEvmCalls([call]);
 
-const toTokenHolderInsertValue = ({
-  signer,
-  balance,
-  contractAddress,
-  decimals,
-  evmAddress,
-  type,
-  timestamp,
-}: TokenHolder): any[] => [signer === '' ? null : signer, evmAddress === '' ? null : evmAddress, type, contractAddress.toLocaleLowerCase(), balance, decimals, timestamp];
-
-export const insertAccountTokenHolders = async (
-  accountTokenHolders: TokenHolder[],
-): Promise<void> => {
-  await insertV2(`
-    INSERT INTO token_holder
-      (signer, evm_address, type, token_address, balance, decimals, timestamp)
-    VALUES
-      %L
-    ON CONFLICT (signer, token_address) WHERE evm_address IS NULL DO UPDATE SET
-      balance = EXCLUDED.balance,
-      timestamp = EXCLUDED.timestamp,
-      decimals = EXCLUDED.decimals;
-  `, accountTokenHolders.map(toTokenHolderInsertValue));
-};
-
-export const insertContractTokenHolders = async (
-  contractTokenHolders: TokenHolder[],
-): Promise<void> => {
-  await insertV2(`
-    INSERT INTO token_holder
-      (signer, evm_address, type, token_address, balance, decimals, timestamp)
-    VALUES
-      %L
-    ON CONFLICT (evm_address, token_address) WHERE signer IS NULL DO UPDATE SET
-      balance = EXCLUDED.balance,
-      timestamp = EXCLUDED.timestamp,
-      decimals = EXCLUDED.decimals;
-  `, contractTokenHolders.map(toTokenHolderInsertValue));
-};
-
 export const getERC20Tokens = async (): Promise<ERC20Token[]> => query<ERC20Token>(
   'SELECT address, contract_data, name FROM verified_contract WHERE type=\'ERC20\';',
 );
 
 export const getContractDB = async (
   address: string,
-): Promise<ERC20Token[]> => query<ERC20Token>(
-  `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${address}';`,
+): Promise<VerifiedContract[]> => query<VerifiedContract>(
+  `SELECT address, type, contract_data, compiled_data, name FROM verified_contract WHERE address='${address}';`,
 );
