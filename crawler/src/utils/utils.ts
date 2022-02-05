@@ -1,5 +1,7 @@
 import APP_CONFIG from '../config';
 import { ERC20Data } from '../crawler/types';
+import {utils} from 'ethers';
+import * as Sentry from '@sentry/node';
 
 export const REEF_CONTRACT_ADDRESS = '0x0000000000000000000000000000000001000000';
 export const REEF_DEFAULT_DATA: ERC20Data = {
@@ -98,3 +100,12 @@ export const resolvePromisesAsChunks = async <T>(
 };
 
 export const removeUndefinedItem = <Type, >(item: (Type|undefined)): item is Type => item !== undefined;
+
+export const toContractAddress = (address: string): string =>{
+  try {
+    return utils.getAddress(address.toLowerCase());
+  }catch (e){
+    Sentry.captureException(e);
+    return '';
+  }
+}

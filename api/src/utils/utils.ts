@@ -1,3 +1,5 @@
+import {utils} from "ethers";
+
 class StatusError extends Error {
   status: number;
 
@@ -28,3 +30,7 @@ export const errorStatus = (err: any): number => {
 export const delay = (ms: number): Promise<void> => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
+
+export const toContractAddress = (address: string): string => {
+  return utils.getAddress(address.trim().toLowerCase());
+}

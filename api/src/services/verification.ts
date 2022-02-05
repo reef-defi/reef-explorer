@@ -4,7 +4,7 @@ import verifyContractArguments from './contract-compiler/argumentEncoder';
 import {
   ABI, AutomaticContractVerificationReq, ContractType, License, Target,
 } from '../utils/types';
-import { ensure } from '../utils/utils';
+import { ensure, toContractAddress } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
 
 interface Bytecode {
@@ -72,7 +72,7 @@ const insertVerifiedContract = async ({
 }: UpdateContract): Promise<void> => {
   await query(
     INSERT_VERIFIED_CONTRACT,
-    [address.toLowerCase(), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target, type, data],
+    [toContractAddress(address), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target, type, data],
   );
 };
 
@@ -82,7 +82,7 @@ export const contractVerificationRequestInsert = async ({
   await query(
     INSERT_CONTRACT_VERIFICATION,
     [
-      address.toLowerCase(),
+      toContractAddress(address),
       name,
       filename,
       source,
@@ -98,7 +98,8 @@ export const contractVerificationRequestInsert = async ({
 };
 
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
-  const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
+  verification.address = toContractAddress(verification.address)
+  const deployedBytecode = await findContractBytecode(verification.address);
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
   verifyContractArguments(deployedBytecode, abi, verification.arguments);
 
@@ -125,8 +126,8 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
 };
 
 export const contractVerificationStatus = async (id: string): Promise<boolean> => {
-  const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [id.toLowerCase()]);
+  const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [toContractAddress(id)]);
   return result.length > 0;
 };
 
-export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => query<ContracVerificationInsert>('SELECT * FROM verified_contract WHERE address = $1', [address]);
+export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => query<ContracVerificationInsert>('SELECT * FROM verified_contract WHERE address = $1', [toContractAddress(address)]);
