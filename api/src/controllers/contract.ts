@@ -45,7 +45,7 @@ interface TokenBalanceParam {
 export const accountTokenBalance = async (req: AppRequest<TokenBalanceParam>, res: Response): Promise<void> => {
   try {
     ensureObjectKeys(req.body, ['accountAddress', 'contractAddress']);
-    const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress.toLowerCase(), req.body.contractAddress.toLowerCase());
+    const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress.toLowerCase(), toContractAddress(req.body.contractAddress));
 
     if (tokenBalances.length === 0) {
       const token = await findERC20Token(req.body.contractAddress);

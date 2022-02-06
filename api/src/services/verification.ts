@@ -98,30 +98,30 @@ export const contractVerificationRequestInsert = async ({
 };
 
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
-  verification.address = toContractAddress(verification.address)
-  const deployedBytecode = await findContractBytecode(verification.address);
-  const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
-  verifyContractArguments(deployedBytecode, abi, verification.arguments);
+  const verif = {...verification, address: toContractAddress(verification.address)};
+  const deployedBytecode = await findContractBytecode(verif.address);
+  const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
+  verifyContractArguments(deployedBytecode, abi, verif.arguments);
 
   // Confirming verification request
   await contractVerificationRequestInsert({
-    ...verification,
+    ...verif,
     success: true,
-    optimization: verification.optimization === 'true',
-    args: verification.arguments,
+    optimization: verif.optimization === 'true',
+    args: verif.arguments,
   });
 
   // Resolving contract additional information
-  const { type, data } = await resolveContractData(verification.address, abi);
+  const { type, data } = await resolveContractData(verif.address, abi);
 
   // Inserting contract into verified contract table
   await insertVerifiedContract({
-    ...verification,
+    ...verif,
     type,
     abi: fullAbi,
     data: JSON.stringify(data),
-    args: verification.arguments,
-    optimization: verification.optimization === 'true',
+    args: verif.arguments,
+    optimization: verif.optimization === 'true',
   });
 };
 
