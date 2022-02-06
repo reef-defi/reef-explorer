@@ -14,6 +14,7 @@ interface ContractVerificationID {
 export const submitVerification = async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ['address', 'name', 'runs', 'filename', 'source', 'compilerVersion', 'optimization', 'arguments', 'address', 'target']);
+    req.body.address = toContractAddress(req.body.address);
     await verify(req.body);
     res.send('Verified');
   } catch (err) {

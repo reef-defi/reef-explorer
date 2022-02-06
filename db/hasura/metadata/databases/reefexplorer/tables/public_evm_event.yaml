@@ -1,0 +1,27 @@
+table:
+  name: evm_event
+  schema: public
+object_relationships:
+- name: event
+  using:
+    foreign_key_constraint_on: event_id
+- name: contract
+  using:
+    foreign_key_constraint_on: contract_address
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - id
+    - event_id
+    - contract_address
+    - data_raw
+    - data_parsed
+    - method
+    - topic_0
+    - topic_1
+    - topic_2
+    - topic_3
+    - timestamp
+    filter: {}
+  role: public

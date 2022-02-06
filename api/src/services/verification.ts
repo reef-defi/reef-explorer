@@ -53,7 +53,7 @@ VALUES
   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 ON CONFLICT DO NOTHING;`;
 
-const INSERT_CONTRACT_VERIFICATION = `INSERT INTO verification_request
+const INSERT_CONTRACT_VERIFICATION_REQUEST = `INSERT INTO verification_request
   (address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
 VALUES
   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -79,21 +79,23 @@ const insertVerifiedContract = async ({
 export const contractVerificationRequestInsert = async ({
   address, name, filename, source, runs, optimization, compilerVersion, args, target, success, errorMessage,
 }: ContracVerificationInsert): Promise<void> => {
+  let args1 = [
+    toContractAddress(address),
+    name,
+    filename,
+    source,
+    runs,
+    optimization,
+    compilerVersion,
+    args,
+    target,
+    success,
+    errorMessage
+  ];
+  console.log("iii len=",args1.length);
   await query(
-    INSERT_CONTRACT_VERIFICATION,
-    [
-      toContractAddress(address),
-      name,
-      filename,
-      source,
-      runs,
-      optimization,
-      compilerVersion,
-      args,
-      target,
-      success,
-      errorMessage || 'null',
-    ],
+    INSERT_CONTRACT_VERIFICATION_REQUEST,
+    args1,
   );
 };
 
@@ -102,7 +104,7 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
   const deployedBytecode = await findContractBytecode(verif.address);
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
   verifyContractArguments(deployedBytecode, abi, verif.arguments);
-
+  console.log("VERIFY 1=",verif.address);
   // Confirming verification request
   await contractVerificationRequestInsert({
     ...verif,
@@ -111,9 +113,11 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
     args: verif.arguments,
   });
 
+  console.log("VERIFY 11=");
   // Resolving contract additional information
   const { type, data } = await resolveContractData(verif.address, abi);
 
+  console.log("VERIFY 2=",verif.address);
   // Inserting contract into verified contract table
   await insertVerifiedContract({
     ...verif,
