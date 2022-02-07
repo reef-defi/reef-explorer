@@ -12,10 +12,7 @@
         <Card v-else class="list-view">
           <Headline>Contract Transaction</Headline>
           <contract-transaction :contract="contract" :extrinsic="extrinsic" />
-          <extrinsic-events
-            :block-number="parseInt(extrinsic.block_id)"
-            :extrinsic-index="parseInt(extrinsic.index)"
-          />
+          <extrinsic-events :extrinsic-id="parseInt(extrinsic.id)" />
         </Card>
       </b-container>
     </section>

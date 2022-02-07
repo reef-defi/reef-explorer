@@ -37,10 +37,6 @@ export default {
       type: Number,
       default: () => 0,
     },
-    extrinsicIndex: {
-      type: Number,
-      default: () => 0,
-    },
   },
   data: () => {
     return {
