@@ -137,13 +137,13 @@ const extractEvmLog = async (
   if (result.length === 0) {
     return undefined;
   }
-
+  const verifiedContract = result[0];
   return {
     ...event,
-    name: result[0].name,
-    abis: result[0].compiled_data,
-    type: result[0].type,
-    contractData: result[0].contract_data,
+    name: verifiedContract?.name,
+    abis: verifiedContract?.compiled_data,
+    type: verifiedContract?.type,
+    contractData: verifiedContract?.contract_data,
   };
 };
 

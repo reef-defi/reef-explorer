@@ -25,7 +25,7 @@ export const getContractDB = async (
   const contractAddress = toContractAddress(address);
   return contractAddress
       ? query<ERC20Token>(
-          `SELECT address, contract_data, compiled_data, name FROM verified_contract WHERE address='${contractAddress}';`,)
+          `SELECT address, contract_data, compiled_data, name, type FROM verified_contract WHERE address='${contractAddress}';`,)
       :[]
 };
 
