@@ -22,6 +22,8 @@ select_permissions:
     - topic_1
     - topic_2
     - topic_3
-    - timestamp
+    - block_id
+    - extrinsic_index
+    - event_index
     filter: {}
   role: public

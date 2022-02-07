@@ -8,13 +8,17 @@ export const extrinsicToEventHeader = ({
   blockId,
   events,
   timestamp,
-}: ExtrinsicBody): EventHead[] => events.map((event, index) => ({
-  event,
-  index,
-  blockId,
-  timestamp,
-  extrinsicId: id,
-}));
+  index: extrinsicIndex
+}: ExtrinsicBody): EventHead[] => events.map((event, index) => {
+  return ({
+    event,
+    index,
+    blockId,
+    timestamp,
+    extrinsicId: id,
+    extrinsicIndex
+  })
+});
 
 const eventToAccountHead = (
   { blockId, event, timestamp }: EventHead,

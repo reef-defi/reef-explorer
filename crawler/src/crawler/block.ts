@@ -121,6 +121,7 @@ const extrinsicBody = (nextFreeId: number) => async (
 ): Promise<ExtrinsicBody> => ({
   ...extrinsicHead,
   id: nextFreeId + index,
+  index,
   signedData: extrinsicHead.extrinsic.isSigned
     ? await getSignedExtrinsicData(extrinsicHead.extrinsic.toHex())
     : undefined,

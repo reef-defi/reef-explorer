@@ -66,9 +66,11 @@ const parseEvmLogData = async (method: string, genericData: GenericEventData): P
 const evmEventDataToInsertValue = async ({
   id,
   data,
-  timestamp,
   method,
-  section
+  section,
+  blockId,
+  extrinsicIndex,
+  eventIndex
 }: EVMEventData): Promise<string | null> => {
   const parsedEvmData = (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')) ? await parseEvmLogData(method, data) : undefined;
   if(!parsedEvmData){
@@ -77,7 +79,7 @@ const evmEventDataToInsertValue = async ({
   const topics = parsedEvmData.raw.topics || []
   const parsedEvmString = parsedEvmData.parsed ? JSON.stringify(parsedEvmData.parsed) : undefined;
 
-  return `(${id}, '${parsedEvmData.raw.address}', '${JSON.stringify(parsedEvmData.raw)}', '${parsedEvmString}', '${method}', '${topics[0]}', '${topics[1]}', '${topics[2]}', '${topics[3]}', '${timestamp}')`;
+  return `(${id}, '${parsedEvmData.raw.address}', '${JSON.stringify(parsedEvmData.raw)}', '${parsedEvmString}', '${method}', '${topics[0]}', '${topics[1]}', '${topics[2]}', '${topics[3]}', ${blockId}, ${extrinsicIndex}, ${eventIndex})`;
 };
 
 export const insertContracts = async (contracts: Contract[]): Promise<void> => {
@@ -106,7 +108,10 @@ const toEventData = (eventBody: EventBody): EVMEventData => {
     timestamp: eventBody.timestamp,
     data: eventBody.event.event.data,
     section: eventBody.event.event.section,
-    method: eventBody.event.event.method
+    method: eventBody.event.event.method,
+    blockId: eventBody.blockId,
+    eventIndex: eventBody.index,
+    extrinsicIndex: eventBody.extrinsicIndex
   }
 };
 
@@ -121,7 +126,7 @@ export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => 
   if(evmEventInputValues.length) {
     await insert(`
       INSERT INTO evm_event
-      (event_id, contract_address, data_raw, data_parsed, method, topic_0, topic_1, topic_2, topic_3, timestamp)
+      (event_id, contract_address, data_raw, data_parsed, method, topic_0, topic_1, topic_2, topic_3, block_id, extrinsic_index, event_index)
       VALUES
       ${evmEventInputValues.join(',\n')};
     `);
