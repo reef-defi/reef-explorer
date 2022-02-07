@@ -60,6 +60,7 @@ export interface SignedExtrinsicData {
 export interface ExtrinsicBody extends ExtrinsicHead {
   id: number;
   signedData?: SignedExtrinsicData;
+  index: number;
 }
 
 export interface EventHead {
@@ -68,6 +69,7 @@ export interface EventHead {
   timestamp: string;
   extrinsicId: number;
   index: number;
+  extrinsicIndex: number;
 }
 export interface EventBody extends EventHead {
   id: number;
@@ -148,6 +150,9 @@ export interface EVMEventData {
   method: string;
   timestamp: string;
   id: number;
+  blockId: number;
+  extrinsicIndex: number;
+  eventIndex: number;
 }
 
 export type ABI = JsonFragment[];

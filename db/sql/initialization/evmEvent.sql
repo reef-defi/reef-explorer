@@ -14,7 +14,9 @@ CREATE TABLE IF NOT EXISTS evm_event
     topic_1          VARCHAR,
     topic_2          VARCHAR,
     topic_3          VARCHAR,
-    timestamp        timestamptz NOT NULL,
+    block_id         BIGINT     NOT NULL,
+    extrinsic_index  BIGINT     NOT NULL,
+    event_index      BIGINT     NOT NULL,
 
     PRIMARY KEY (id),
     CONSTRAINT fk_event
@@ -34,4 +36,6 @@ CREATE INDEX IF NOT EXISTS evm_event_topic_0 ON evm_event (topic_0);
 CREATE INDEX IF NOT EXISTS evm_event_topic_1 ON evm_event (topic_1);
 CREATE INDEX IF NOT EXISTS evm_event_topic_2 ON evm_event (topic_2);
 CREATE INDEX IF NOT EXISTS evm_event_topic_3 ON evm_event (topic_3);
-CREATE INDEX IF NOT EXISTS evm_event_timestamp ON evm_event (timestamp);
+CREATE INDEX IF NOT EXISTS evm_event_block_id ON evm_event (block_id);
+CREATE INDEX IF NOT EXISTS evm_event_extrinsic_index ON evm_event (extrinsic_index);
+CREATE INDEX IF NOT EXISTS evm_event_event_index ON evm_event (event_index);
