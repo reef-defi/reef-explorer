@@ -1,38 +1,5 @@
-import { GenericEventData } from '@polkadot/types/generic/Event';
-import { utils as ethersUtils } from 'ethers';
-import {
-  AccountBody, EventBody, BytecodeLog,
-  DecodedEvmError,
-} from '../crawler/types';
-import { insert } from '../utils/connector';
-import { getContractDB } from './evmEvent';
-
-const parseEvmData = async (method: string, genericData: GenericEventData) => {
-  const eventData = (genericData.toJSON() as any);
-  if (method === 'Log') {
-    const { address, topics, data } : BytecodeLog = eventData[0];
-    const contract = await getContractDB(address);
-    if (contract.length === 0) {
-      return undefined;
-    }
-    const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
-    try {
-      return iface.parseLog({ topics, data });
-    } catch {
-      return undefined;
-    }
-  } else if (method === 'ExecutedFailed') {
-    let decodedMessage;
-    try {
-      decodedMessage = eventData[2] === '0x' ? '' : ethersUtils.toUtf8String(`0x${eventData[2].substr(138)}`.replace(/0+$/, ''));
-    } catch {
-      decodedMessage = '';
-    }
-    const decodedError: DecodedEvmError = { address: eventData[0], message: decodedMessage };
-    return decodedError;
-  }
-  return undefined;
-};
+import {AccountBody, EventBody,} from '../crawler/types';
+import {insert} from '../utils/connector';
 
 const toEventValue = async ({
   id,
@@ -45,21 +12,20 @@ const toEventValue = async ({
   },
   timestamp,
 }: EventBody): Promise<string> => {
-  // TODO we should probably move this to somewhere more appropriate
-  const parsedEvmData = (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')) ? await parseEvmData(method, data) : undefined;
-  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(parsedEvmData) || '{}'}', '${JSON.stringify(phase)}', '${timestamp}')`;
+  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
 };
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
     await insert(`
 INSERT INTO event
-  (id, block_id, extrinsic_id, index, section, method, data, parsed_data, phase, timestamp)
+  (id, block_id, extrinsic_id, index, section, method, data, phase, timestamp)
 VALUES
   ${(await Promise.all(events.map(toEventValue))).join(',\n')};
 `);
   }
 };
+
 export const insertEvent = async (event: EventBody) => insertEvents([event]);
 
 const accountToInsertValue = ({

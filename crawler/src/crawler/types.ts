@@ -142,6 +142,14 @@ export interface EVMCall {
   status: ExtrinsicStatus;
 }
 
+export interface EVMEventData {
+  data: any;
+  section: string;
+  method: string;
+  timestamp: string;
+  id: number;
+}
+
 export type ABI = JsonFragment[];
 
 export interface ABIS {

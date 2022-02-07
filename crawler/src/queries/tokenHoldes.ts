@@ -21,7 +21,7 @@ const toTokenHolder = ({
   type,
   timestamp,
   nftId,
-}: TokenHolder): any[] => [signerAddress === '' ? null : signerAddress, evmAddress === '' ? null : evmAddress, type, tokenAddress.toLocaleLowerCase(), nftId, balance, JSON.stringify(info !== null ? info : {}), timestamp];
+}: TokenHolder): any[] => [signerAddress === '' ? null : signerAddress, evmAddress === '' ? null : evmAddress, type, tokenAddress, nftId, balance, JSON.stringify(info !== null ? info : {}), timestamp];
 
 const insertAccountTokenHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
   `${TOKEN_HOLDER_INSERT_STATEMENT}

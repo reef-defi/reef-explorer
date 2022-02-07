@@ -88,7 +88,7 @@
 import { gql } from 'graphql-tag'
 // eslint-disable-next-line no-unused-vars
 import moment from 'moment'
-import commonMixin from '@/mixins/commonMixin.js'
+import commonMixin, { toContractAddress } from '@/mixins/commonMixin.js'
 
 export default {
   mixins: [commonMixin],
@@ -141,7 +141,7 @@ export default {
         `,
         variables() {
           return {
-            tokenAddress: { _eq: this.contractId.toLowerCase() },
+            tokenAddress: { _eq: toContractAddress(this.contractId) },
           }
         },
         result({ data }) {

@@ -4,7 +4,7 @@ import verifyContractArguments from './contract-compiler/argumentEncoder';
 import {
   ABI, AutomaticContractVerificationReq, ContractType, License, Target,
 } from '../utils/types';
-import { ensure } from '../utils/utils';
+import { ensure, toContractAddress } from '../utils/utils';
 import resolveContractData from './contract-compiler/erc-checkers';
 
 interface Bytecode {
@@ -53,7 +53,7 @@ VALUES
   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 ON CONFLICT DO NOTHING;`;
 
-const INSERT_CONTRACT_VERIFICATION = `INSERT INTO verification_request
+const INSERT_CONTRACT_VERIFICATION_REQUEST = `INSERT INTO verification_request
   (address, name, filename, source, runs, optimization, compiler_version, args, target, success, message)
 VALUES
   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -72,61 +72,62 @@ const insertVerifiedContract = async ({
 }: UpdateContract): Promise<void> => {
   await query(
     INSERT_VERIFIED_CONTRACT,
-    [address.toLowerCase(), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target, type, data],
+    [toContractAddress(address), name, filename, source, optimization, compilerVersion, JSON.stringify(abi), args, runs, target, type, data],
   );
 };
 
 export const contractVerificationRequestInsert = async ({
   address, name, filename, source, runs, optimization, compilerVersion, args, target, success, errorMessage,
 }: ContracVerificationInsert): Promise<void> => {
+  let args1 = [
+    toContractAddress(address),
+    name,
+    filename,
+    source,
+    runs,
+    optimization,
+    compilerVersion,
+    args,
+    target,
+    success,
+    errorMessage
+  ];
   await query(
-    INSERT_CONTRACT_VERIFICATION,
-    [
-      address.toLowerCase(),
-      name,
-      filename,
-      source,
-      runs,
-      optimization,
-      compilerVersion,
-      args,
-      target,
-      success,
-      errorMessage || 'null',
-    ],
+    INSERT_CONTRACT_VERIFICATION_REQUEST,
+    args1,
   );
 };
 
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
-  const deployedBytecode = await findContractBytecode(verification.address.toLowerCase());
-  const { abi, fullAbi } = await verifyContract(deployedBytecode, verification);
-  verifyContractArguments(deployedBytecode, abi, verification.arguments);
-
+  const verif = {...verification, address: toContractAddress(verification.address)};
+  const deployedBytecode = await findContractBytecode(verif.address);
+  const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
+  verifyContractArguments(deployedBytecode, abi, verif.arguments);
   // Confirming verification request
   await contractVerificationRequestInsert({
-    ...verification,
+    ...verif,
     success: true,
-    optimization: verification.optimization === 'true',
-    args: verification.arguments,
+    optimization: verif.optimization === 'true',
+    args: verif.arguments,
   });
 
   // Resolving contract additional information
-  const { type, data } = await resolveContractData(verification.address, abi);
+  const { type, data } = await resolveContractData(verif.address, abi);
 
   // Inserting contract into verified contract table
   await insertVerifiedContract({
-    ...verification,
+    ...verif,
     type,
     abi: fullAbi,
     data: JSON.stringify(data),
-    args: verification.arguments,
-    optimization: verification.optimization === 'true',
+    args: verif.arguments,
+    optimization: verif.optimization === 'true',
   });
 };
 
 export const contractVerificationStatus = async (id: string): Promise<boolean> => {
-  const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [id.toLowerCase()]);
+  const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [toContractAddress(id)]);
   return result.length > 0;
 };
 
-export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => query<ContracVerificationInsert>('SELECT * FROM verified_contract WHERE address = $1', [address]);
+export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => query<ContracVerificationInsert>('SELECT * FROM verified_contract WHERE address = $1', [toContractAddress(address)]);

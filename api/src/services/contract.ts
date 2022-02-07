@@ -1,6 +1,6 @@
 import { query } from '../utils/connector';
 import { PoolDB, Pool, Target } from '../utils/types';
-import { ensure } from '../utils/utils';
+import {ensure} from '../utils/utils';
 
 interface TokenInfoDefault {
   name: string;

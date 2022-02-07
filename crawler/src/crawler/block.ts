@@ -44,8 +44,7 @@ import {
   extrinsicToEvmLogs,
 } from './evmEvent';
 import {
-  insertContracts,
-  insertEvmCalls,
+  insertContracts, insertEvmEvents,
 } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import insertStaking from '../queries/staking';
@@ -264,6 +263,7 @@ export default async (
   tokenHolders.push(...evmTokenHolders);
   evmTokenHolders = [];
 
+
   // Accounts
   logger.info('Compressing transfer, event accounts, evm claim account');
   const allAccounts: AccountHead[][] = [];
@@ -275,6 +275,8 @@ export default async (
       .filter(isExtrinsicEvmClaimAccount)
       .map(extrinsicToEvmClaimAccount),
   );
+
+  evmCalls = [];
 
   logger.info('Extracting, compressing and dropping duplicate accounts');
   let insertOrDeleteAccount = dropDuplicates(
@@ -308,11 +310,6 @@ export default async (
 
   transfers = [];
 
-  // EVM calls
-  logger.info('Inserting evm calls');
-  await insertEvmCalls(evmCalls);
-  evmCalls = [];
-
   // Contracts
   logger.info('Extracting new contracts');
   let contracts = extrinsics
@@ -321,6 +318,9 @@ export default async (
   logger.info('Inserting contracts');
   await insertContracts(contracts);
   contracts = [];
+
+  logger.info('Inserting evm events');
+  await insertEvmEvents(events);
 
   // Token holders
   await insertTokenHolders(tokenHolders);

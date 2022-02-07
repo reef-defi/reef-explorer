@@ -1,10 +1,11 @@
 import { Response } from 'express';
 import { authenticationToken } from '../services/utils';
 import {
-  contractVerificationRequestInsert, contractVerificationStatus, findVeririedContract, verify,
+  contractVerificationRequestInsert,
+  contractVerificationStatus, findVeririedContract, verify,
 } from '../services/verification';
 import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from '../utils/types';
-import { ensureObjectKeys, errorStatus, ensure } from '../utils/utils';
+import {ensureObjectKeys, errorStatus, ensure, toContractAddress} from '../utils/utils';
 
 interface ContractVerificationID {
   id: string;
@@ -13,6 +14,7 @@ interface ContractVerificationID {
 export const submitVerification = async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
   try {
     ensureObjectKeys(req.body, ['address', 'name', 'runs', 'filename', 'source', 'compilerVersion', 'optimization', 'arguments', 'address', 'target']);
+    req.body.address = toContractAddress(req.body.address);
     await verify(req.body);
     res.send('Verified');
   } catch (err) {
@@ -58,7 +60,7 @@ export const verificationStatus = async (req: AppRequest<ContractVerificationID>
 export const getVerifiedContract = async (req: AppRequest<{}>, res: Response) => {
   try {
     ensure(!!req.params.address, 'Url paramter address is missing');
-    const contracts = await findVeririedContract(req.params.address.toLowerCase());
+    const contracts = await findVeririedContract(toContractAddress(req.params.address));
     ensure(contracts.length > 0, 'Contract does not exist');
     res.send(contracts[0]);
   } catch (err) {

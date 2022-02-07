@@ -3,12 +3,12 @@ import {
   findContractDB, findERC20Token, findTokenAccountTokenBalance, findTokenInfo, getERC20Tokens,
 } from '../services/contract';
 import { AppRequest } from '../utils/types';
-import { ensure, ensureObjectKeys, errorStatus } from '../utils/utils';
+import {ensure, ensureObjectKeys, errorStatus, toContractAddress} from '../utils/utils';
 
 export const findToken = async (req: AppRequest<{}>, res: Response) => {
   try {
     ensure(!!req.params.address, 'Url paramter address is missing');
-    const token = await findTokenInfo(req.params.address.toLowerCase());
+    const token = await findTokenInfo(toContractAddress(req.params.address));
 
     res.send(token);
   } catch (err) {
@@ -19,7 +19,7 @@ export const findToken = async (req: AppRequest<{}>, res: Response) => {
 export const findContract = async (req: AppRequest<{}>, res: Response) => {
   try {
     ensure(!!req.params.address, 'Url paramter address is missing');
-    const contracts = await findContractDB(req.params.address.toLowerCase());
+    const contracts = await findContractDB(req.params.address);
     ensure(contracts.length > 0, 'Contract does not exist');
 
     res.send(contracts[0]);
@@ -45,7 +45,7 @@ interface TokenBalanceParam {
 export const accountTokenBalance = async (req: AppRequest<TokenBalanceParam>, res: Response): Promise<void> => {
   try {
     ensureObjectKeys(req.body, ['accountAddress', 'contractAddress']);
-    const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress.toLowerCase(), req.body.contractAddress.toLowerCase());
+    const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress.toLowerCase(), toContractAddress(req.body.contractAddress));
 
     if (tokenBalances.length === 0) {
       const token = await findERC20Token(req.body.contractAddress);

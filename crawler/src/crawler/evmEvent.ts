@@ -14,7 +14,7 @@ import {
 } from './types';
 import { getContractDB } from '../queries/evmEvent';
 import {
-  removeUndefinedItem, resolvePromisesAsChunks,
+  removeUndefinedItem, resolvePromisesAsChunks, toContractAddress,
 } from '../utils/utils';
 
 const preprocessBytecode = (bytecode: string) => {
@@ -70,7 +70,7 @@ export const extrinsicToContract = ({
 }: ExtrinsicBody): Contract => {
   const { args } = extrinsic;
   const contractEvent = findContractEvent(events)!;
-  const address = contractEvent.event.data[0].toString();
+  const address = toContractAddress(contractEvent.event.data[0].toString());
   const reserveEvent = events.find((evn) => nodeProvider.getProvider().api.events.balances.Reserved.is(evn.event))!;
   const signer = reserveEvent.event.data[0].toString();
   const bytecode = args[0].toString();
@@ -100,7 +100,7 @@ export const extrinsicToEVMCall = ({
 }: ExtrinsicBody): EVMCall => {
   const account = resolveSigner(extrinsic);
   const args: any[] = extrinsic.args.map((arg) => arg.toJSON());
-  const contractAddress: string = args[0];
+  const contractAddress: string = toContractAddress(args[0]);
   const data = JSON.stringify(args.slice(0, args.length - 2));
   const gasLimit = args.length >= 3 ? args[args.length - 2] : 0;
   const storageLimit = args.length >= 3 ? args[args.length - 1] : 0;
@@ -124,7 +124,11 @@ export const extractAccountFromEvmCall = ({ timestamp, blockId, account }: EVMCa
   },
 ];
 
-export const eventToEvmLog = ({ event }: Event): BytecodeLog => (event.data.toJSON() as any)[0];
+export const eventToEvmLog = ({ event }: Event): BytecodeLog => {
+  const bl=(event.data.toJSON() as any)[0]
+  bl.address = toContractAddress(bl.address);
+  return bl;
+};
 
 const extractEvmLog = async (
   event: BytecodeLogWithBlockId,
@@ -133,13 +137,13 @@ const extractEvmLog = async (
   if (result.length === 0) {
     return undefined;
   }
-
+  const verifiedContract = result[0];
   return {
     ...event,
-    name: result[0].name,
-    abis: result[0].compiled_data,
-    type: result[0].type,
-    contractData: result[0].contract_data,
+    name: verifiedContract?.name,
+    abis: verifiedContract?.compiled_data,
+    type: verifiedContract?.type,
+    contractData: verifiedContract?.contract_data,
   };
 };
 
@@ -169,10 +173,12 @@ export const extrinsicToEvmLogs = async (
       event, blockId, timestamp, extrinsicId, signedData,
     }): BytecodeLogWithBlockId => {
       const a = (event.event.data.toJSON() as any)[0];
+      a.address = toContractAddress(a.address);
       return {
         ...a, timestamp, blockId, extrinsicId, signedData,
       };
     })
+      // only returns verified contract logs
     .map(extractEvmLog);
 
   const decodedEvmData = await resolvePromisesAsChunks(baseEvmLogs);
