@@ -1,12 +1,5 @@
-import {
-  BytecodeLog,
-  Contract,
-  ERC20Token, EventBody,
-  EVMCall, EVMEventData,
-  VerifiedContract,
-  DecodedEvmError,
-} from '../crawler/types';
-import { insert, query } from '../utils/connector';
+import {BytecodeLog, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData,} from '../crawler/types';
+import {insert, query} from '../utils/connector';
 import {toContractAddress} from "../utils/utils";
 import {utils as ethersUtils} from "ethers/lib/ethers";
 import {GenericEventData} from "@polkadot/types/generic/Event";
