@@ -60,7 +60,6 @@
           <pre>{{ JSON.stringify(event.data, null, 2) }}</pre>
         </Cell>
       </Row>
-
     </Data>
   </Card>
 </template>
