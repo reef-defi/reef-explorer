@@ -8,7 +8,7 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'Explorer | Reef Finance',
+    title: 'Explorer | Reef chain',
     htmlAttrs: {
       lang: 'en',
     },
