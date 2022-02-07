@@ -92,7 +92,6 @@ export const contractVerificationRequestInsert = async ({
     success,
     errorMessage
   ];
-  console.log("iii len=",args1.length);
   await query(
     INSERT_CONTRACT_VERIFICATION_REQUEST,
     args1,
@@ -104,7 +103,6 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
   const deployedBytecode = await findContractBytecode(verif.address);
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
   verifyContractArguments(deployedBytecode, abi, verif.arguments);
-  console.log("VERIFY 1=",verif.address);
   // Confirming verification request
   await contractVerificationRequestInsert({
     ...verif,
@@ -113,11 +111,9 @@ export const verify = async (verification: AutomaticContractVerificationReq): Pr
     args: verif.arguments,
   });
 
-  console.log("VERIFY 11=");
   // Resolving contract additional information
   const { type, data } = await resolveContractData(verif.address, abi);
 
-  console.log("VERIFY 2=",verif.address);
   // Inserting contract into verified contract table
   await insertVerifiedContract({
     ...verif,
