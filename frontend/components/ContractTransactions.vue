@@ -84,9 +84,12 @@ export default {
             evm_event(
               limit: 10
               where: { contract_address: $contractAddress }
-              order_by: { timestamp: desc }
+              order_by: {
+                block_id: desc
+                extrinsic_index: desc
+                event_index: desc
+              }
             ) {
-              timestamp
               event {
                 extrinsic {
                   id

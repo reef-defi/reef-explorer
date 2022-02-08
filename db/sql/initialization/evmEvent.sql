@@ -22,10 +22,6 @@ CREATE TABLE IF NOT EXISTS evm_event
     CONSTRAINT fk_event
         FOREIGN KEY (event_id)
             REFERENCES event (id)
-            ON DELETE CASCADE,
-    CONSTRAINT fk_contract
-        FOREIGN KEY (contract_address)
-            REFERENCES contract (address)
             ON DELETE CASCADE
 );
 
