@@ -11,7 +11,7 @@
 
       <div class="container">
         <div v-if="label || $slots.label" class="search-section__label-section">
-          <label v-if="label" class="search-section__label" v-html="label" />
+          <label v-if="label" class="search-section__label">{{ label }}</label>
           <slot name="label" />
         </div>
         <b-form-input

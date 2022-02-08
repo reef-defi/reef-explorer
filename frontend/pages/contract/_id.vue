@@ -163,9 +163,7 @@
                 <Row>
                   <Cell>{{ $t('details.contract.ipfs_hash') }}</Cell>
                   <Cell>
-                    <a :href="`https://ipfs.io/ipfs/${data}`" target="_blank">
-                      {{ data }}
-                    </a>
+                    {{ `https://ipfs.io/ipfs/${data}` }}
                   </Cell>
                 </Row>
               </template>

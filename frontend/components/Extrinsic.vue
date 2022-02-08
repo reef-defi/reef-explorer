@@ -88,7 +88,7 @@
       <Row class="extrinsic-details__documentation">
         <Cell>Documentation</Cell>
         <Cell wrap>
-          <div v-html="extrinsic.docs" />
+          <div>{{ extrinsic.docs }}</div>
         </Cell>
       </Row>
 

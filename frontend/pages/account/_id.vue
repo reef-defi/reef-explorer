@@ -92,11 +92,7 @@
             <Row v-if="parsedAccount.identity.email">
               <Cell>Identity::email</Cell>
               <Cell>
-                <a
-                  :href="`mailto:${parsedAccount.identity.email}`"
-                  target="_blank"
-                  >{{ parsedAccount.identity.email }}</a
-                >
+                {{ parsedAccount.identity.email }}
               </Cell>
             </Row>
 
@@ -117,23 +113,19 @@
             <Row v-if="parsedAccount.identity.web">
               <Cell>Identity::web</Cell>
               <Cell>
-                <a :href="parsedAccount.identity.web" target="_blank">{{
-                  parsedAccount.identity.web
-                }}</a>
+                {{ parsedAccount.identity.web }}
               </Cell>
             </Row>
 
             <Row v-if="parsedAccount.identity.twitter">
               <Cell>Identity::twitter</Cell>
               <Cell>
-                <a
-                  :href="`https://twitter.com/${parsedAccount.identity.twitter.substr(
+                {{
+                  `https://twitter.com/${parsedAccount.identity.twitter.substr(
                     1,
                     parsedAccount.identity.twitter.length
-                  )}`"
-                  target="_blank"
-                  >{{ parsedAccount.identity.twitter }}</a
-                >
+                  )}`
+                }}
               </Cell>
             </Row>
 

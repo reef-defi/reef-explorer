@@ -1,6 +1,6 @@
 <template>
   <div class="file-explorer__file-preview">
-    <pre :key="'content-' + content" v-html="data" />
+    <pre :key="'content-' + content">{{ data }}</pre>
 
     <button
       :key="'btn-' + content"
