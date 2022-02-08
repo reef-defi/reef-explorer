@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS evm_event
     id               BIGSERIAL,
     event_id         BIGINT,
 
-    contract_address VARCHAR     NOT NULL,
+    contract_address VARCHAR,
     data_raw         JSON        NOT NULL,
     data_parsed      JSON        NOT NULL,
 
