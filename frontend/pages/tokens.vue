@@ -3,9 +3,7 @@
     <Search
       v-model="filter"
       :placeholder="$t('pages.tokens.search_placeholder')"
-      :label="`${$t('pages.tokens.title')}<span>${formatNumber(
-        totalRows
-      )}</span>`"
+      :label="`${$t('pages.tokens.title')} ${formatNumber(totalRows)}`"
     />
 
     <section>

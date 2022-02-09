@@ -3,9 +3,7 @@
     <Search
       v-model="filter"
       :placeholder="$t('pages.contracts.search_placeholder')"
-      :label="`${$t('pages.contracts.title')}<span>${formatNumber(
-        totalRows
-      )}</span>`"
+      :label="`${$t('pages.contracts.title')} ${formatNumber(totalRows)}`"
     >
       <template slot="bottom">
         <b-alert
