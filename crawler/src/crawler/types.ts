@@ -167,6 +167,12 @@ export interface ERC721Token extends VerifiedContract {
   contract_data: ERC721Data;
 }
 
+interface RawEventData {
+  address: string,
+  topics:string[],
+  data: string,
+}
+
 export interface BytecodeLog {
   data: string;
   address: string;
@@ -260,12 +266,6 @@ export interface TokenHolder extends TokenHolderBase {
   signerAddress: string;
 }
 
-
-interface RawEventData {
-  address: string,
-  topics:string[],
-  data: string,
-}
 export interface CompleteEvmData {
   raw: RawEventData;
   parsed?: any;

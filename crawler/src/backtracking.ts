@@ -1,14 +1,14 @@
-import { nodeProvider, queryv2 } from "./utils/connector";
-import logger from "./utils/logger";
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
-import config from "./config";
-import { wait } from "./utils/utils";
-import backtractContractEvents from "./backtracking/";
+import { nodeProvider, queryv2 } from './utils/connector';
+import logger from './utils/logger';
+import config from './config';
+import { wait } from './utils/utils';
+import backtractContractEvents from './backtracking/';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
-  dsn: config.sentryBacktrackingDns, 
+  dsn: config.sentryBacktrackingDns,
   tracesSampleRate: 1.0,
   integrations: [
     new RewriteFrames({
@@ -22,19 +22,20 @@ interface Address {
 }
 
 const backtrackEvents = async () => {
-  while (true) { 
+  while (true) {
     // Get contract from newly verificated contract table
-    const contracts = await queryv2<Address>("SELECT address FROM newly_verified_contract_queue");
+    const contracts = await queryv2<Address>('SELECT address FROM newly_verified_contract_queue');
 
-    for (const {address} of contracts) {
+    for (let contractIndex = 0; contractIndex < contracts.length; contractIndex += 1) {
       // Process contract events & store them
+      const { address } = contracts[contractIndex];
       await backtractContractEvents(address);
-      await queryv2(`DELETE FROM newly_verified_contract_queue WHERE address = $1;`, [address])
+      await queryv2('DELETE FROM newly_verified_contract_queue WHERE address = $1;', [address]);
     }
-    
+
     await wait(1000);
   }
-}
+};
 
 Promise.resolve()
   .then(async () => {
@@ -46,6 +47,6 @@ Promise.resolve()
     Sentry.captureException(error);
   })
   .finally(async () => {
-    await nodeProvider.closeProviders()
+    await nodeProvider.closeProviders();
     process.exit(-1);
   });

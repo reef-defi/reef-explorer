@@ -1,6 +1,5 @@
 import { utils } from 'ethers';
 import { nodeProvider } from '../utils/connector';
-import { resolveSigner } from './extrinsic';
 import {
   ExtrinsicBody,
   Event,
@@ -90,9 +89,8 @@ export const extrinsicToContract = ({
   };
 };
 
-
 export const eventToEvmLog = ({ event }: Event): BytecodeLog => {
-  const bl=(event.data.toJSON() as any)[0]
+  const bl = (event.data.toJSON() as any)[0];
   bl.address = toContractAddress(bl.address);
   return bl;
 };
@@ -145,7 +143,7 @@ export const extrinsicToEvmLogs = async (
         ...a, timestamp, blockId, extrinsicId, signedData,
       };
     })
-      // only returns verified contract logs
+  // only returns verified contract logs
     .map(extractEvmLog);
 
   const decodedEvmData = await resolvePromisesAsChunks(baseEvmLogs);

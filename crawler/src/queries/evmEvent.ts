@@ -1,9 +1,11 @@
-import {BacktrackingEvmEvent, BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData, VerifiedContract,} from '../crawler/types';
-import {insert, query, queryv2} from '../utils/connector';
-import {toContractAddress} from "../utils/utils";
-import {utils as ethersUtils} from "ethers/lib/ethers";
-import {GenericEventData} from "@polkadot/types/generic/Event";
+import { utils as ethersUtils } from 'ethers/lib/ethers';
+import { GenericEventData } from '@polkadot/types/generic/Event';
 import format from 'pg-format';
+import {
+  BacktrackingEvmEvent, BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData, VerifiedContract,
+} from '../crawler/types';
+import { insert, query, queryv2 } from '../utils/connector';
+import { toContractAddress } from '../utils/utils';
 
 const contractToValues = ({
   address,
@@ -21,15 +23,15 @@ const contractToValues = ({
 };
 
 export const getContractDB = async (
-    address: string,
+  address: string,
 ): Promise<VerifiedContract[]> => {
   const contractAddress = toContractAddress(address);
   return contractAddress
-      ? query<VerifiedContract>(
-          `SELECT address, contract_data, compiled_data, name, type FROM verified_contract WHERE address='${contractAddress}';`,)
-      :[]
+    ? query<VerifiedContract>(
+      `SELECT address, contract_data, compiled_data, name, type FROM verified_contract WHERE address='${contractAddress}';`,
+    )
+    : [];
 };
-
 
 export const insertContracts = async (contracts: Contract[]): Promise<void> => {
   if (contracts.length === 0) {
@@ -39,7 +41,7 @@ export const insertContracts = async (contracts: Contract[]): Promise<void> => {
     INSERT INTO contract
       (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit, timestamp)
     VALUES
-      ${contracts.map(contractToValues).filter(v=>!!v).join(',\n')}
+      ${contracts.map(contractToValues).filter((v) => !!v).join(',\n')}
     ON CONFLICT (address) DO UPDATE
       SET extrinsic_id = EXCLUDED.extrinsic_id,
         bytecode = EXCLUDED.bytecode,
@@ -63,10 +65,12 @@ const parseEvmLogData = async (method: string, genericData: GenericEventData): P
     const { topics, data } : BytecodeLog = eventData[0];
     let { address } : BytecodeLog = eventData[0];
     address = toContractAddress(address);
-    if(!address) {
+    if (!address) {
       return undefined;
     }
-    let evmData: CompleteEvmData = {raw: {address, topics, data}, parsed: {}, status: 'Success', type: 'Unverified'};
+    const evmData: CompleteEvmData = {
+      raw: { address, topics, data }, parsed: {}, status: 'Success', type: 'Unverified',
+    };
     const contract = await getContractDB(address);
     if (contract.length === 0) {
       return evmData;
@@ -79,7 +83,7 @@ const parseEvmLogData = async (method: string, genericData: GenericEventData): P
       //
     }
     return evmData;
-  } else if (method === 'ExecutedFailed') {
+  } if (method === 'ExecutedFailed') {
     let decodedMessage;
     try {
       decodedMessage = eventData[2] === '0x' ? '' : ethersUtils.toUtf8String(`0x${eventData[2].substr(138)}`.replace(/0+$/, ''));
@@ -87,23 +91,23 @@ const parseEvmLogData = async (method: string, genericData: GenericEventData): P
       decodedMessage = '';
     }
     const decodedError: DecodedEvmError = { address: eventData[0], message: decodedMessage };
-    return {parsed: decodedError, raw: {address:decodedError.address, data: "", topics: []}, status: 'Error', type: 'Verified'};
+    return {
+      parsed: decodedError, raw: { address: decodedError.address, data: '', topics: [] }, status: 'Error', type: 'Verified',
+    };
   }
   return undefined;
 };
 
-const toEventData = (eventBody: EventBody): EVMEventData => {
-  return {
-    id: eventBody.id,
-    timestamp: eventBody.timestamp,
-    data: eventBody.event.event.data,
-    section: eventBody.event.event.section,
-    method: eventBody.event.event.method,
-    blockId: eventBody.blockId,
-    eventIndex: eventBody.index,
-    extrinsicIndex: eventBody.extrinsicIndex
-  }
-};
+const toEventData = (eventBody: EventBody): EVMEventData => ({
+  id: eventBody.id,
+  timestamp: eventBody.timestamp,
+  data: eventBody.event.event.data,
+  section: eventBody.event.event.section,
+  method: eventBody.event.event.method,
+  blockId: eventBody.blockId,
+  eventIndex: eventBody.index,
+  extrinsicIndex: eventBody.extrinsicIndex,
+});
 
 const evmEventDataToInsertValue = async ({
   id,
@@ -114,10 +118,10 @@ const evmEventDataToInsertValue = async ({
   extrinsicIndex,
 }: EVMEventData): Promise<string | null> => {
   const parsedEvmData = await parseEvmLogData(method, data);
-  if(!parsedEvmData){
+  if (!parsedEvmData) {
     return null;
   }
-  const topics = parsedEvmData.raw.topics || []
+  const topics = parsedEvmData.raw.topics || [];
   const parsedEvmString = parsedEvmData.parsed ? JSON.stringify(parsedEvmData.parsed) : undefined;
 
   return `(${id}, '${parsedEvmData.raw.address}', '${JSON.stringify(parsedEvmData.raw)}', '${parsedEvmString}', '${method}', '${topics[0]}', '${topics[1]}', '${topics[2]}', '${topics[3]}', ${blockId}, ${extrinsicIndex}, ${eventIndex}, '${parsedEvmData.status}', '${parsedEvmData.type}')`;
@@ -128,12 +132,12 @@ export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => 
     return;
   }
   const insertValuePromises = evmEvents
-    .filter(({event: {event: {section, method}}}) => section === 'evm' && (method === 'ExecutedFailed' || method === 'Log'))
+    .filter(({ event: { event: { section, method } } }) => section === 'evm' && (method === 'ExecutedFailed' || method === 'Log'))
     .map(toEventData)
-    .map(evmEventDataToInsertValue)
-  const evmEventInputValues = (await Promise.all(insertValuePromises)).filter(v=>!!v)
+    .map(evmEventDataToInsertValue);
+  const evmEventInputValues = (await Promise.all(insertValuePromises)).filter((v) => !!v);
 
-  if(evmEventInputValues.length) {
+  if (evmEventInputValues.length) {
     await insert(`
       INSERT INTO evm_event
       (event_id, contract_address, data_raw, data_parsed, method, topic_0, topic_1, topic_2, topic_3, block_id, extrinsic_index, event_index, status, type)
@@ -156,7 +160,9 @@ export const updateEvmEvents = async (evmEvents: BacktrackingEvmEvent[]): Promis
         type = EXCLUDED.type,
         data_parsed = EXCLUDED.data_parsed
         `,
-      evmEvents.map(({id, status, type, method, blockid, parseddata, extrinsicindex, eventindex, eventid, contractaddress, rawdata}) => [id, eventid, blockid, eventindex, extrinsicindex, contractaddress, rawdata, method, status, type, parseddata])
-    )
-  )
+      evmEvents.map(({
+        id, status, type, method, blockid, parseddata, extrinsicindex, eventindex, eventid, contractaddress, rawdata,
+      }) => [id, eventid, blockid, eventindex, extrinsicindex, contractaddress, rawdata, method, status, type, parseddata]),
+    ),
+  );
 };
