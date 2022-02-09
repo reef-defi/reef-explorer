@@ -1,6 +1,7 @@
 import { TokenHolder } from '../crawler/types';
 import { insertV2 } from '../utils/connector';
 import logger from '../utils/logger';
+import { dropDuplicates, dropDuplicatesMultiKey } from '../utils/utils';
 
 const TOKEN_HOLDER_INSERT_STATEMENT = `
 INSERT INTO token_holder
@@ -58,18 +59,30 @@ const insertContractNftHolders = async (tokenHolders: TokenHolder[]): Promise<vo
 export default async (tokenHolders: TokenHolder[]): Promise<void> => {
   logger.info('Inserting account nft holders');
   await insertAccountNftHolders(
-    tokenHolders.filter(({ type, nftId }) => type === 'Account' && nftId !== null),
+    dropDuplicatesMultiKey(
+      tokenHolders.filter(({ type, nftId }) => type === 'Account' && nftId !== null),
+      ["signerAddress", "tokenAddress", "nftId"]
+    )
   );
   logger.info('Inserting contract nft holders');
   await insertContractNftHolders(
-    tokenHolders.filter(({ type, nftId }) => type === 'Contract' && nftId !== null),
+    dropDuplicatesMultiKey(
+      tokenHolders.filter(({ type, nftId }) => type === 'Contract' && nftId !== null),
+      ["evmAddress", "tokenAddress", "nftId"]
+    )
   );
   logger.info('Inserting account token holders');
   await insertAccountTokenHolders(
-    tokenHolders.filter(({ type, nftId }) => type === 'Account' && nftId === null),
+    dropDuplicatesMultiKey(
+      tokenHolders.filter(({ type, nftId }) => type === 'Account' && nftId === null),
+      ["signerAddress", "tokenAddress"]
+    )
   );
   logger.info('Inserting contract token holders');
   await insertContractTokenHolders(
-    tokenHolders.filter(({ type, nftId }) => type === 'Contract' && nftId === null),
+    dropDuplicatesMultiKey(
+      tokenHolders.filter(({ type, nftId }) => type === 'Contract' && nftId === null),
+      ["evmAddress", "tokenAddress"]
+    )
   );
 };
