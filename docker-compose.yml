@@ -95,12 +95,8 @@ services:
       - reefscan
 
   backtracking:
-    image: reef-explorer-backtracking-dev
+    image: reef-explorer-crawler-dev
     command: yarn dev-backtracking
-    build:
-      context: .
-      args:
-        COMPONENT: crawler
     volumes:
       - backtracking-modules:/usr/app/node_modules
       - ./crawler:/usr/app/

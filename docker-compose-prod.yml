@@ -93,13 +93,8 @@ services:
       - reefscan
 
   backtracking:
-    image: reef-explorer-backtracking
+    image: reef-explorer-crawler
     command: yarn start-backtracking
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
-      args:
-        COMPONENT: crawler
     restart: always
     environment:
       - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
