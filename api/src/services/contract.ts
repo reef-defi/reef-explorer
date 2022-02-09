@@ -1,6 +1,8 @@
 import { query } from '../utils/connector';
-import { PoolDB, Pool, Target, ABI } from '../utils/types';
-import {ensure} from '../utils/utils';
+import {
+  PoolDB, Pool, Target, ABI,
+} from '../utils/types';
+import { ensure } from '../utils/utils';
 
 interface TokenInfoDefault {
   name: string;

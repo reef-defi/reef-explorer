@@ -3,7 +3,9 @@ import {
   findContractDB, findERC20Token, findTokenAccountTokenBalance, findTokenInfo, getERC20Tokens,
 } from '../services/contract';
 import { AppRequest } from '../utils/types';
-import {ensure, ensureObjectKeys, errorStatus, toContractAddress} from '../utils/utils';
+import {
+  ensure, ensureObjectKeys, errorStatus, toContractAddress,
+} from '../utils/utils';
 
 export const findToken = async (req: AppRequest<{}>, res: Response) => {
   try {
