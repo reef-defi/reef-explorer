@@ -247,3 +247,16 @@ export interface TokenHolder extends TokenHolderBase {
   type: TokenHolderType;
   signerAddress: string;
 }
+
+
+interface RawEventData {
+  address: string,
+  topics?:string[],
+  data?: string,
+}
+export interface CompleteEvmData {
+  raw: RawEventData;
+  parsed?: any;
+  status: 'Success' | 'Error';
+  type: 'Verified' | 'Unverified';
+}
