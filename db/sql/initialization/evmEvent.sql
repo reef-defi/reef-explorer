@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS evm_event
     id               BIGSERIAL,
     event_id         BIGINT         NOT NULL,
     block_id         BIGINT         NOT NULL,
+    event_index      BIGINT         NOT NULL,
+    extrinsic_index  BIGINT         NOT NULL,
 
     contract_address VARCHAR        NOT NULL,
     data_raw         JSON           NOT NULL,
@@ -21,13 +23,13 @@ CREATE TABLE IF NOT EXISTS evm_event
     topic_3          VARCHAR,
 
     PRIMARY KEY (id),
-    CONSTRAINT fk_event
-      FOREIGN KEY (event_id)
-        REFERENCES event (id)
-        ON DELETE CASCADE,
     CONSTRAINT fk_block
       FOREIGN KEY (block_id)
         REFERENCES block (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_event
+      FOREIGN KEY (event_id)
+        REFERENCES event (id)
         ON DELETE CASCADE,
     CONSTRAINT fk_contract
       FOREIGN KEY (contract_address)

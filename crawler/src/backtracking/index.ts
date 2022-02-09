@@ -22,7 +22,7 @@ export default async (contractAddress: string) => {
 
   const evmLogs: EvmLogWithDecodedEvent[] = evmEvents
     .filter(({method}) => method === 'Log')
-    .map(({rawData, timestamp, blockId, extrinsicId}) => {
+    .map(({timestamp, blockId, data}) => {
       const decodedEvent = contractInterface.parseLog(rawData);
 
       return {
