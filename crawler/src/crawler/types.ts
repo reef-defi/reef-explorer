@@ -132,29 +132,6 @@ export interface Contract {
   timestamp: string;
 }
 
-export interface EVMCall {
-  data: string;
-  blockId: number;
-  account: string;
-  gasLimit: string;
-  timestamp: string;
-  extrinsicId: number;
-  storageLimit: string;
-  contractAddress: string;
-  status: ExtrinsicStatus;
-}
-
-export interface EVMEventData {
-  data: any;
-  section: string;
-  method: string;
-  timestamp: string;
-  id: number;
-  blockId: number;
-  extrinsicIndex: number;
-  eventIndex: number;
-}
-
 export type ABI = JsonFragment[];
 
 export interface ABIS {
@@ -214,6 +191,41 @@ export interface EvmLogWithDecodedEvent extends EvmLog {
   decodedEvent: utils.LogDescription;
 }
 
+export interface EVMEventData {
+  id: number;
+  data: any;
+  method: string;
+  blockId: number;
+  section: string;
+  timestamp: string;
+  eventIndex: number;
+  extrinsicIndex: number;
+}
+
+export interface EvmEvent {
+  id: number;
+  eventId: number;
+  blockId: number;
+  eventIndex: number;
+  extrinsicIndex: number;
+  contractAddress: string;
+  rawData: RawEventData;
+  parsedData: utils.LogDescription;
+  method: string;
+  type: string;
+  status: string;
+  topic0: string;
+  topic1: string;
+  topic2: string;
+  topic3: string;
+}
+
+export interface BacktrackingEvmEvent extends EvmEvent {
+  extrinsicId: number;
+  timestamp: string;
+  signedData: SignedExtrinsicData;
+}
+
 type TokenHolderType = 'Contract' | 'Account';
 type TokenHolderInfo = null | ERC20Data | ERC721Data;
 type TokenHolderNftId = null | string;
@@ -251,8 +263,8 @@ export interface TokenHolder extends TokenHolderBase {
 
 interface RawEventData {
   address: string,
-  topics?:string[],
-  data?: string,
+  topics:string[],
+  data: string,
 }
 export interface CompleteEvmData {
   raw: RawEventData;

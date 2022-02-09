@@ -1,8 +1,9 @@
-import {BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData,} from '../crawler/types';
-import {insert, query} from '../utils/connector';
+import {BacktrackingEvmEvent, BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData, VerifiedContract,} from '../crawler/types';
+import {insert, query, queryv2} from '../utils/connector';
 import {toContractAddress} from "../utils/utils";
 import {utils as ethersUtils} from "ethers/lib/ethers";
 import {GenericEventData} from "@polkadot/types/generic/Event";
+import format from 'pg-format';
 
 const contractToValues = ({
   address,
@@ -21,10 +22,10 @@ const contractToValues = ({
 
 export const getContractDB = async (
     address: string,
-): Promise<ERC20Token[]> => {
+): Promise<VerifiedContract[]> => {
   const contractAddress = toContractAddress(address);
   return contractAddress
-      ? query<ERC20Token>(
+      ? query<VerifiedContract>(
           `SELECT address, contract_data, compiled_data, name, type FROM verified_contract WHERE address='${contractAddress}';`,)
       :[]
 };
@@ -86,7 +87,7 @@ const parseEvmLogData = async (method: string, genericData: GenericEventData): P
       decodedMessage = '';
     }
     const decodedError: DecodedEvmError = { address: eventData[0], message: decodedMessage };
-    return {parsed: decodedError, raw: {address:decodedError.address}, status: 'Error', type: 'Verified'};
+    return {parsed: decodedError, raw: {address:decodedError.address, data: "", topics: []}, status: 'Error', type: 'Verified'};
   }
   return undefined;
 };
@@ -142,3 +143,20 @@ export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => 
   }
 };
 
+export const updateEvmEvents = async (evmEvents: BacktrackingEvmEvent[]): Promise<void> => {
+  if (!evmEvents.length) { return; }
+
+  await queryv2(
+    format(
+      `INSERT INTO evm_event
+        (id, type, data_parsed)
+      VALUES
+        %L
+      ON CONFLICT (id) DO UPDATE SET
+        type = EXCLUDED.type,
+        data_parsed = EXCLUDED.data_parsed
+        `,
+      evmEvents.map(({id, type, parsedData}) => [id, type, parsedData])
+    )
+  )
+};
