@@ -92,6 +92,29 @@ services:
     networks:
       - reefscan
 
+  backtracking:
+    image: reef-explorer-backtracking
+    command: yarn start-backtracking
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        COMPONENT: crawler
+    restart: always
+    environment:
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - SENTRY_DNS=${CRAWLER_SENTRY_DNS}
+      - POSTGRES_PORT=${DB_PORT} #5432
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER} #reefexplorer
+      - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
+      - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+    depends_on:
+      - 'postgres'
+      - 'substrate-node'
+    networks:
+      - reefscan
+
   api:
     image: reef-explorer-api
     build:
