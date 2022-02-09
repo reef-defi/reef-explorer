@@ -149,14 +149,14 @@ export const updateEvmEvents = async (evmEvents: BacktrackingEvmEvent[]): Promis
   await queryv2(
     format(
       `INSERT INTO evm_event
-        (id, type, data_parsed)
+        (id, event_id, block_id, event_index, extrinsic_index, contract_address, data_raw, method, status, type, data_parsed)
       VALUES
         %L
       ON CONFLICT (id) DO UPDATE SET
         type = EXCLUDED.type,
         data_parsed = EXCLUDED.data_parsed
         `,
-      evmEvents.map(({id, type, parsedData}) => [id, type, parsedData])
+      evmEvents.map(({id, status, type, method, blockid, parseddata, extrinsicindex, eventindex, eventid, contractaddress, rawdata}) => [id, eventid, blockid, eventindex, extrinsicindex, contractaddress, rawdata, method, status, type, parseddata])
     )
   )
 };

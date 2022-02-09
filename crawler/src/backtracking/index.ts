@@ -6,22 +6,25 @@ import { processTokenTransfers } from "../crawler/transfer";
 import { processEvmTokenHolders } from "../crawler/tokenHolder";
 import { insertTransfers } from "../queries/extrinsic";
 import insertTokenHolders from "../queries/tokenHoldes";
+import logger from "../utils/logger";
 
 export default async (contractAddress: string) => {
+  logger.info(`Retrieving Contracts: ${contractAddress} unverified evm events`);
   const evmEvents = await queryv2<BacktrackingEvmEvent>(
-    `SELECT 
-      id, event_id as eventId, block_id as blockId, e.extrinsic_id as extrinsicId, event_index as eventIndex, 
-      extrinsic_index as extrinsicIndex, contract_address as contractAddress, data_raw as rawData, method,
-      type, status, extrinsic.timestamp as timestamp, extrinsic.signed_data as signedData
-    FROM evm_event 
-    JOIN event
-      ON event.id = event_id
-    JOIN extrinsic
-      ON event.extrinsic_id = extrinsic.id
-    WHERE address = $1 AND type = 'Unverified'`, [contractAddress]);
+    `SELECT
+      ee.id, ee.event_id as eventId, ee.block_id as blockId, ev.extrinsic_id as extrinsicId, ee.event_index as eventIndex, 
+      ee.extrinsic_index as extrinsicIndex, ee.contract_address as contractAddress, ee.data_raw as rawData, ee.method,
+      ee.type, ee.status, ex.timestamp as timestamp, ex.signed_data as signedData
+    FROM evm_event as ee
+    JOIN event as ev
+      ON ev.id = ee.event_id
+    JOIN extrinsic as ex
+      ON ev.extrinsic_id = ex.id
+    WHERE ee.contract_address = $1 AND ee.type = 'Unverified';`, [contractAddress]);
+  logger.info(`There were ${evmEvents.length} unverified evm events found`)
   const contract = await getContractDB(contractAddress);
 
-  if (contract.length) {
+  if (contract.length <= 0) {
     throw new Error(`Contract address: ${contractAddress} was not found in verified contract...`);
   }
 
@@ -31,31 +34,39 @@ export default async (contractAddress: string) => {
   const processedLogs: BacktrackingEvmEvent[] = evmEvents
     .filter(({method}) => method === 'Log')
     .map((evmEvent) => ({...evmEvent,
-        parsedData: contractInterface.parseLog(evmEvent.rawData)
+        parseddata: contractInterface.parseLog(evmEvent.rawdata),
+        type: 'Verified',
       })) 
 
+
   const evmLogs: EvmLogWithDecodedEvent[] = processedLogs
-    .map(({timestamp, blockId, rawData, extrinsicId, signedData, parsedData}) => {
-      return {
+    .map(({timestamp, blockid, rawdata, extrinsicid, signeddata, parseddata}) => ({
         name,
         type,
-        blockId,
+        blockId: blockid,
         address,
         timestamp,
-        signedData,
-        extrinsicId,
+        signedData: signeddata,
+        extrinsicId: extrinsicid,
         contractData,
         abis: compiledData,
-        data: rawData.data,
-        topics: rawData.topics,
-        decodedEvent: parsedData,
-      };
-    });
-
+        data: rawdata.data,
+        topics: rawdata.topics,
+        decodedEvent: parseddata,
+        fee: signeddata,
+      }));
+  
+  console.log(evmLogs);
+  
+  logger.info("Processing transfer events");
   const transfers = await processTokenTransfers(evmLogs);
+  logger.info("Processing token-holder events");
   const tokenHolders = await processEvmTokenHolders(evmLogs);
 
+  logger.info('Inserting Transfers')
   await insertTransfers(transfers);
+  logger.info('Inserting Token holders')
   await insertTokenHolders(tokenHolders);
+  logger.info('Updating evm events with parsed data')
   await updateEvmEvents(processedLogs)
 }

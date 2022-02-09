@@ -24,17 +24,13 @@ interface Address {
 const backtrackEvents = async () => {
   while (true) { 
     // Get contract from newly verificated contract table
-    const contracts = await queryv2<Address>("SELECT address FROM newly_verified_contract");
+    const contracts = await queryv2<Address>("SELECT address FROM newly_verified_contract_queue");
 
     for (const {address} of contracts) {
       // Process contract events & store them
-      await backtractContractEvents(address)
+      await backtractContractEvents(address);
+      await queryv2(`DELETE FROM newly_verified_contract_queue WHERE address = $1;`, [address])
     }
-    
-    // Remove contract from newly verificated contract table
-    await queryv2('DELETE FROM newly_verified_contract WHERE address IN $1;', [
-      `[${contracts.map(({address}) => address).join(", ")}]`
-    ]);
     
     await wait(1000);
   }
