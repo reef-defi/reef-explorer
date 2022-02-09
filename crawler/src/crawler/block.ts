@@ -155,12 +155,12 @@ const eventToBody = (nextFreeId: number) => (event: EventHead, index: number): E
   ...event,
 });
 
-const initialBlockToInsert = ({id, hash}: BlockHash) => ({
+const initialBlockToInsert = ({ id, hash }: BlockHash) => ({
   id,
   finalized: false,
   hash: hash.toString(),
   timestamp: `${(new Date()).toUTCString()}`,
-  
+
   author: '',
   parentHash: '',
   stateRoot: '',
