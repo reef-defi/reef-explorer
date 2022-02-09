@@ -57,29 +57,6 @@ CREATE INDEX IF NOT EXISTS verified_contract_type ON verified_contract (type);
 CREATE INDEX IF NOT EXISTS verified_contract_address ON verified_contract (address);
 CREATE INDEX IF NOT EXISTS verified_contract_filename ON verified_contract (filename);
 
-CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
-  address VARCHAR(48),
-  CONSTRAINT fk_verified_contract
-    FOREIGN KEY (address)
-      REFERENCES contract(address)
-      ON DELETE NO ACTION
-);
-
-CREATE FUNCTION new_verified_contract_found() 
-  RETURNS TRIGGER 
-  LANGUAGE PLPGSQL
-AS $$
-BEGIN
-	INSERT INTO newly_verified_contract_queue (address) VALUES (NEW.address);
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER verified_contract_found AFTER INSERT ON verified_contract
-  FOR EACH ROW EXECUTE FUNCTION new_verified_contract_found();
-
-
-
 CREATE TABLE IF NOT EXISTS verification_request (
   id BIGSERIAL,
   address VARCHAR(48),
