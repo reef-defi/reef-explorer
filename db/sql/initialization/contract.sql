@@ -65,19 +65,18 @@ CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
       ON DELETE NO ACTION
 );
 
--- When new contract is added in verified contract table we capture its address and add it in newly verified contract queueu 
-START TRANSACTION;
-CREATE FUNCTION newly_added_contract_trigger() RETURNS trigger LANGUAGE plpgsql AS
-$$BEGIN
-  IF TG_OP = 'INSERT' THEN
-    INSERT INTO newly_verified_contract_queue (address) VALUES (TG_OP.address)
-    RETURN NEW;
-END;$$;
-CREATE CONSTRAINT TRIGGER extrinsic_count_mod
-  AFTER INSERT ON verified_contract
-  DEFERRABLE INITIALLY DEFERRED
-  FOR EACH ROW EXECUTE PROCEDURE newly_added_contract_trigger();
-COMMIT;
+CREATE FUNCTION new_verified_contract_found() 
+  RETURNS TRIGGER 
+  LANGUAGE PLPGSQL
+AS $$
+BEGIN
+	INSERT INTO newly_verified_contract_queue (address) VALUES (NEW.address);
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER verified_contract_found AFTER INSERT ON verified_contract
+  FOR EACH ROW EXECUTE FUNCTION new_verified_contract_found();
 
 
 
