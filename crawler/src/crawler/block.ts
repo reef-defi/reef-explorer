@@ -158,6 +158,18 @@ const eventToBody = (nextFreeId: number) => (event: EventHead, index: number): E
   ...event,
 });
 
+const initialBlockToInsert = ({id, hash}: BlockHash) => ({
+  id,
+  finalized: false,
+  hash: hash.toString(),
+  timestamp: Date.now().toString(),
+
+  author: '',
+  parentHash: '',
+  stateRoot: '',
+  extrinsicRoot: '',
+})
+
 export const processInitialBlocks = async (fromId: number, toId: number): Promise<number> => {
   if (toId - fromId <= 0) { return 0; }
 
@@ -168,14 +180,12 @@ export const processInitialBlocks = async (fromId: number, toId: number): Promis
   nodeProvider.setDbBlockId(toId - 1);
 
   logger.info('Retrieving unfinished block hashes');
-  transactions += blockIds.length * 2;
+  transactions += blockIds.length;
   const hashes = await resolvePromisesAsChunks(blockIds.map(blockHash));
-  logger.info('Retrieving unfinished block bodies');
-  const blocks = await resolvePromisesAsChunks(hashes.map(blockBody));
 
   // Insert blocks
   logger.info('Inserting unfinished blocks in DB');
-  await insertMultipleBlocks(blocks.map(blockBodyToInsert));
+  await insertMultipleBlocks(hashes.map(initialBlockToInsert));
   return transactions;
 };
 
@@ -223,9 +233,9 @@ export default async (
 
   // Events
   logger.info('Extracting and compressing extrinisc events');
-  const events = extrinsics.map(extrinsicToEventHeader).flat().map(
-    eventToBody(eid),
-  );
+  const events = extrinsics
+    .flatMap(extrinsicToEventHeader)
+    .map(eventToBody(eid));
 
   logger.info('Inserting events');
   await insertEvents(events);
@@ -240,15 +250,10 @@ export default async (
   logger.info('Extracting native token holders from transfers');
   const tokenHolders = await processNativeTokenHolders(transfers);
 
-  // EVM Calls
-  logger.info('Extracting evm calls');
-  const extrinsicEvmCalls = extrinsics.filter(isExtrinsicEVMCall);
-  let evmCalls = extrinsicEvmCalls.map(extrinsicToEVMCall);
-
   // EVM Logs
   logger.info('Retrieving EVM log if contract is ERC20 token');
-  transactions += extrinsicEvmCalls.length;
-  const evmLogs = await extrinsicToEvmLogs(extrinsicEvmCalls);
+  const evmLogs = await extrinsicToEvmLogs(extrinsics);
+  transactions += evmLogs.length;
 
   // Token Transfers
   logger.info('Extracting token transfer');
@@ -264,20 +269,16 @@ export default async (
   tokenHolders.push(...evmTokenHolders);
   evmTokenHolders = [];
 
-
   // Accounts
   logger.info('Compressing transfer, event accounts, evm claim account');
   const allAccounts: AccountHead[][] = [];
   allAccounts.push(...transfers.map(extractTransferAccounts));
   allAccounts.push(...events.map(accountNewOrKilled));
-  allAccounts.push(...evmCalls.map(extractAccountFromEvmCall));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
       .map(extrinsicToEvmClaimAccount),
   );
-
-  evmCalls = [];
 
   logger.info('Extracting, compressing and dropping duplicate accounts');
   let insertOrDeleteAccount = dropDuplicates(

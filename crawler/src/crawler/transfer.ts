@@ -81,9 +81,9 @@ const erc1155BatchEvmLogToTransfer = async (log: EvmLogWithDecodedEvent): Promis
 export const processTokenTransfers = async (evmLogs: EvmLogWithDecodedEvent[]): Promise<Transfer[]> => {
   const transfers = evmLogs
     .map(async (log): Promise<Transfer[]> => {
-      console.log("EVENT name=",log.decodedEvent.name, ' type=', log);
+      // console.log("EVENT name=",log.decodedEvent.name, ' type=', log);
       if (isErc20TransferEvent(log)) {
-        console.log("ERC20 tr ev=",erc20EvmLogToTransfer(log));
+        // console.log("ERC20 tr ev=",erc20EvmLogToTransfer(log));
         return erc20EvmLogToTransfer(log);
       } if (isErc721TransferEvent(log)) {
         return erc721EvmLogToTransfer(log);

@@ -115,12 +115,14 @@ const toEventData = (eventBody: EventBody): EVMEventData => {
   }
 };
 
-export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => {
-  if (evmEvents.length < 1) {
+export const insertEvmEvents = async (events: EventBody[]): Promise<void> => {
+  if (events.length < 0) {
     return;
   }
-  const insertValuePromises = evmEvents.map(toEventData)
-      .map(evmEventDataToInsertValue)
+  const insertValuePromises = events
+    .filter(({event: {event: {section, method}}}) => (section === 'evm' && (method === 'ExecutedFailed' || method === 'Log')))
+    .map(toEventData)
+    .map(evmEventDataToInsertValue)
   const evmEventInputValues = (await Promise.all(insertValuePromises)).filter(v=>!!v)
 
   if(evmEventInputValues.length) {
