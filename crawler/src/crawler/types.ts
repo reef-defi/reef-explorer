@@ -204,13 +204,13 @@ export interface EVMEventData {
 
 export interface EvmEvent {
   id: number;
-  eventId: number;
-  blockId: number;
-  eventIndex: number;
-  extrinsicIndex: number;
-  contractAddress: string;
-  rawData: RawEventData;
-  parsedData: utils.LogDescription;
+  eventid: number;
+  blockid: number;
+  eventindex: number;
+  extrinsicindex: number;
+  contractaddress: string;
+  rawdata: RawEventData;
+  parseddata: utils.LogDescription;
   method: string;
   type: string;
   status: string;
@@ -221,9 +221,9 @@ export interface EvmEvent {
 }
 
 export interface BacktrackingEvmEvent extends EvmEvent {
-  extrinsicId: number;
+  extrinsicid: number;
   timestamp: string;
-  signedData: SignedExtrinsicData;
+  signeddata: SignedExtrinsicData;
 }
 
 type TokenHolderType = 'Contract' | 'Account';

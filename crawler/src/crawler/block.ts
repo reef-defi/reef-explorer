@@ -34,11 +34,8 @@ import {
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
-  extractAccountFromEvmCall,
   extrinsicToContract,
-  extrinsicToEVMCall,
   extrinsicToEvmClaimAccount,
-  isExtrinsicEVMCall,
   isExtrinsicEvmClaimAccount,
   isExtrinsicEVMCreate,
   extrinsicToEvmLogs,
