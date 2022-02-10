@@ -4,7 +4,7 @@ import {toContractAddress} from "../utils/utils";
 import {utils as ethersUtils} from "ethers/lib/ethers";
 import {GenericEventData} from "@polkadot/types/generic/Event";
 
-const contractToValues = ({
+export const contractToValues = ({
   address,
   extrinsicId,
   bytecode,
