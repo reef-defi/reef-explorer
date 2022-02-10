@@ -1,11 +1,34 @@
 import { nodeProvider } from "../utils/connector";
 import logger from '../utils/logger';
 import { Contract } from './types';
-import { insert } from '../utils/connector';
-import { contractToValues } from '../queries/evmEvent';
+import { insertV2 } from '../utils/connector';
+import { toContractAddress } from '../utils/utils';
+
 
 type Codes = {[codeHash: string]: string};
 
+const contractToValues = ({
+    address,
+    extrinsicId,
+    bytecode,
+    bytecodeContext,
+    bytecodeArguments,
+    gasLimit,
+    storageLimit,
+    signer,
+    timestamp,
+  }: Contract): any[] => [
+    toContractAddress(address),
+    extrinsicId,
+    signer,
+    bytecode,
+    bytecodeContext,
+    bytecodeArguments,
+    gasLimit,
+    storageLimit,
+    timestamp
+  ];
+  
 const batchLoadContracts = async (): Promise<void> => {
     const codes: Codes = await getCodes();
     const contractData = await nodeProvider.query((provider) => provider.api.query.evm.accounts.entries());
@@ -31,15 +54,15 @@ const batchLoadContracts = async (): Promise<void> => {
                 timestamp: ''
             }
         });
-    await insert(`
+    await insertV2(`
     INSERT INTO contract
         (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit, timestamp)
     VALUES
-        ${contracts.map(contractToValues).filter(v=>!!v).join(',\n')}
+        %L
     ON CONFLICT (address) DO NOTHING;
-    `);
+    `, contracts.map(contractToValues));
 }
-
+  
 const getCodes = async (): Promise<Codes> => {
     const codeData = await nodeProvider.query((provider) => provider.api.query.evm.codes.entries());
     return codeData
