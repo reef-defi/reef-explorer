@@ -1,4 +1,4 @@
-VOLUMES = db-data crawler-modules api-modules frontend-modules
+VOLUMES = db-data crawler-modules backtracking-modules api-modules frontend-modules
 
 ifeq ($(net), dev)
 	NODE_CHAIN_CMD=--dev

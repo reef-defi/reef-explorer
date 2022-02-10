@@ -79,7 +79,7 @@ const insertVerifiedContract = async ({
 export const contractVerificationRequestInsert = async ({
   address, name, filename, source, runs, optimization, compilerVersion, args, target, success, errorMessage,
 }: ContracVerificationInsert): Promise<void> => {
-  let args1 = [
+  const args1 = [
     toContractAddress(address),
     name,
     filename,
@@ -90,7 +90,7 @@ export const contractVerificationRequestInsert = async ({
     args,
     target,
     success,
-    errorMessage
+    errorMessage,
   ];
   await query(
     INSERT_CONTRACT_VERIFICATION_REQUEST,
@@ -99,7 +99,7 @@ export const contractVerificationRequestInsert = async ({
 };
 
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
-  const verif = {...verification, address: toContractAddress(verification.address)};
+  const verif = { ...verification, address: toContractAddress(verification.address) };
   const deployedBytecode = await findContractBytecode(verif.address);
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
   verifyContractArguments(deployedBytecode, abi, verif.arguments);

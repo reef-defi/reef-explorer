@@ -98,3 +98,15 @@
 -- SELECT * FROM event WHERE section = 'staking';
 -- DELETE FROM verified_contract where address not in ('0x0000000000000000000000000000000000000803', '0x0000000000000000000000000000000000000802', '0x0000000000000000000000000000000000000801', '0x0000000000000000000000000000000000000800', '0x0000000000000000000000000000000001000001', '0x0000000000000000000000000000000001000000');
 -- DELETE FROM block where id > 0;
+
+
+SELECT
+  ee.id, ee.event_id as eventId, ee.block_id as blockId, ev.extrinsic_id as extrinsicId, ee.event_index as eventIndex, 
+  ee.extrinsic_index as extrinsicIndex, ee.contract_address as contractAddress, ee.data_raw as rawData, ee.method,
+  ee.type, ee.status, ex.timestamp as timestamp, ex.signed_data as signedData
+FROM evm_event as ee
+JOIN event as ev
+  ON ev.id = ee.event_id
+JOIN extrinsic as ex
+  ON ev.extrinsic_id = ex.id
+WHERE ee.contract_address = '0x0230135fDeD668a3F7894966b14F42E65Da322e4' AND ee.type = 'Unverified';

@@ -132,29 +132,6 @@ export interface Contract {
   timestamp: string;
 }
 
-export interface EVMCall {
-  data: string;
-  blockId: number;
-  account: string;
-  gasLimit: string;
-  timestamp: string;
-  extrinsicId: number;
-  storageLimit: string;
-  contractAddress: string;
-  status: ExtrinsicStatus;
-}
-
-export interface EVMEventData {
-  data: any;
-  section: string;
-  method: string;
-  timestamp: string;
-  id: number;
-  blockId: number;
-  extrinsicIndex: number;
-  eventIndex: number;
-}
-
 export type ABI = JsonFragment[];
 
 export interface ABIS {
@@ -190,6 +167,12 @@ export interface ERC721Token extends VerifiedContract {
   contract_data: ERC721Data;
 }
 
+interface RawEventData {
+  address: string,
+  topics:string[],
+  data: string,
+}
+
 export interface BytecodeLog {
   data: string;
   address: string;
@@ -212,6 +195,41 @@ export interface EvmLog extends BytecodeLogWithBlockId {
 
 export interface EvmLogWithDecodedEvent extends EvmLog {
   decodedEvent: utils.LogDescription;
+}
+
+export interface EVMEventData {
+  id: number;
+  data: any;
+  method: string;
+  blockId: number;
+  section: string;
+  timestamp: string;
+  eventIndex: number;
+  extrinsicIndex: number;
+}
+
+export interface EvmEvent {
+  id: number;
+  eventid: number;
+  blockid: number;
+  eventindex: number;
+  extrinsicindex: number;
+  contractaddress: string;
+  rawdata: RawEventData;
+  parseddata: utils.LogDescription;
+  method: string;
+  type: string;
+  status: string;
+  topic0: string;
+  topic1: string;
+  topic2: string;
+  topic3: string;
+}
+
+export interface BacktrackingEvmEvent extends EvmEvent {
+  extrinsicid: number;
+  timestamp: string;
+  signeddata: SignedExtrinsicData;
 }
 
 type TokenHolderType = 'Contract' | 'Account';
@@ -246,4 +264,11 @@ export interface TokenHolder extends TokenHolderBase {
   balance: string;
   type: TokenHolderType;
   signerAddress: string;
+}
+
+export interface CompleteEvmData {
+  raw: RawEventData;
+  parsed?: any;
+  status: 'Success' | 'Error';
+  type: 'Verified' | 'Unverified';
 }

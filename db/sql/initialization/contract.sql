@@ -57,14 +57,6 @@ CREATE INDEX IF NOT EXISTS verified_contract_type ON verified_contract (type);
 CREATE INDEX IF NOT EXISTS verified_contract_address ON verified_contract (address);
 CREATE INDEX IF NOT EXISTS verified_contract_filename ON verified_contract (filename);
 
-CREATE TABLE IF NOT EXISTS newly_verified_contract_queue (
-  address VARCHAR(48),
-  CONSTRAINT fk_verified_contract
-    FOREIGN KEY (address)
-      REFERENCES verified_contract(address)
-      ON DELETE NO ACTION
-);
-
 CREATE TABLE IF NOT EXISTS verification_request (
   id BIGSERIAL,
   address VARCHAR(48),

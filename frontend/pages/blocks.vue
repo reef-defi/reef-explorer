@@ -3,9 +3,7 @@
     <Search
       v-model="filter"
       placeholder="Search by block number"
-      :label="`${$t('pages.blocks.title')}<span>${formatNumber(
-        totalRows
-      )}</span>`"
+      :label="`${$t('pages.blocks.title')} ${formatNumber(totalRows)}`"
     />
 
     <section>
