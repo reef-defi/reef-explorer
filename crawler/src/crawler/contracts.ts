@@ -49,9 +49,9 @@ const batchLoadContracts = async (): Promise<void> => {
                 extrinsicId: -1,
                 bytecodeContext: '',
                 bytecodeArguments: '',
-                gasLimit: '',
-                storageLimit: '',
-                timestamp: ''
+                gasLimit: '0',
+                storageLimit: '0',
+                timestamp: '2020-10-01 00:00:00+00'
             }
         });
     await insertV2(`
