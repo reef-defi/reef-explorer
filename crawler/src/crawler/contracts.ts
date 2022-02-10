@@ -18,12 +18,12 @@ const batchLoadContracts = async (): Promise<void> => {
             }
         })
         .filter(({address, codeHash, maintainer}) => address && codeHash && maintainer)
-        .map(({address, codeHash, maintainer}) => {
+        .map(({address, codeHash, maintainer}): Contract => {
             return {
-                address: address, 
+                address: address!, 
                 bytecode: codes[codeHash], 
                 signer: maintainer,
-                extrinsicId: '',
+                extrinsicId: -1,
                 bytecodeContext: '',
                 bytecodeArguments: '',
                 gasLimit: '',
