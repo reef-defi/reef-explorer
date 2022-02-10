@@ -42,11 +42,15 @@ Promise.resolve()
     await nodeProvider.initializeProviders();
   })
   .then(backtrackEvents)
-  .catch((error) => {
+  .then(async () => {
+    await nodeProvider.closeProviders();
+    logger.info('Finished');
+    process.exit();
+  })
+  .catch(async (error) => {
     logger.error(error);
     Sentry.captureException(error);
-  })
-  .finally(async () => {
     await nodeProvider.closeProviders();
+    logger.error('Finished');
     process.exit(-1);
   });
