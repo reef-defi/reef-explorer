@@ -20,7 +20,8 @@ export default async (contractAddress: string) => {
     JOIN extrinsic as ex
       ON ev.extrinsic_id = ex.id
     WHERE ee.contract_address = $1 AND ee.type = 'Unverified';`, [contractAddress]);
-  logger.info(`There were ${evmEvents.length} unverified evm events found`);
+    
+  logger.info(`There were ${evmEvents.length} unverified evm events`);
   const contract = await getContractDB(contractAddress);
 
   if (contract.length <= 0) {

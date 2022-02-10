@@ -78,7 +78,7 @@ const parseEvmLogData = async (method: string, genericData: GenericEventData): P
     const iface = new ethersUtils.Interface(contract[0].compiled_data[contract[0].name]);
     try {
       evmData.parsed = iface.parseLog({ topics, data });
-      eventData.type = 'Verified';
+      evmData.type = 'Verified';
     } catch {
       //
     }
