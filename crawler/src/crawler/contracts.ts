@@ -4,35 +4,12 @@ import { Contract } from './types';
 import { insertV2 } from '../utils/connector';
 import { toContractAddress } from '../utils/utils';
 
-
 type Codes = {[codeHash: string]: string};
 
-const contractToValues = ({
-    address,
-    extrinsicId,
-    bytecode,
-    bytecodeContext,
-    bytecodeArguments,
-    gasLimit,
-    storageLimit,
-    signer,
-    timestamp,
-  }: Contract): any[] => [
-    toContractAddress(address),
-    extrinsicId,
-    signer,
-    bytecode,
-    bytecodeContext,
-    bytecodeArguments,
-    gasLimit,
-    storageLimit,
-    timestamp
-  ];
-  
 const batchLoadContracts = async (): Promise<void> => {
     const codes: Codes = await getCodes();
     const contractData = await nodeProvider.query((provider) => provider.api.query.evm.accounts.entries());
-    const contracts: Contract[] = contractData.map(([key, data]) => {
+    const contracts: any[][] = contractData.map(([key, data]) => {
         const contract = data.toHuman() as any;
         return {
             address: key.toHuman()?.toString() || undefined,
@@ -41,18 +18,18 @@ const batchLoadContracts = async (): Promise<void> => {
             }
         })
         .filter(({address, codeHash, maintainer}) => address && codeHash && maintainer)
-        .map(({address, codeHash, maintainer}): Contract => {
-            return {
-                address: address!, 
-                bytecode: codes[codeHash], 
-                signer: maintainer,
-                extrinsicId: -1,
-                bytecodeContext: '',
-                bytecodeArguments: '',
-                gasLimit: '0',
-                storageLimit: '0',
-                timestamp: '2020-10-01 00:00:00+00'
-            }
+        .map(({address, codeHash, maintainer}): any[] => {
+            return [
+                toContractAddress(address!),
+                -1,
+                maintainer,
+                codes[codeHash],                 
+                '',
+                '',
+                '0',
+                '0',
+                (new Date()).toUTCString()
+            ]
         });
     await insertV2(`
     INSERT INTO contract
@@ -60,7 +37,7 @@ const batchLoadContracts = async (): Promise<void> => {
     VALUES
         %L
     ON CONFLICT (address) DO NOTHING;
-    `, contracts.map(contractToValues));
+    `, contracts);
 }
   
 const getCodes = async (): Promise<Codes> => {
