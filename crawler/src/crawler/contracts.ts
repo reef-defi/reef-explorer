@@ -1,14 +1,32 @@
 import { nodeProvider } from "../utils/connector";
 import logger from '../utils/logger';
-import { Contract } from './types';
 import { insertV2 } from '../utils/connector';
-import { toContractAddress } from '../utils/utils';
+import { toContractAddress, wait } from '../utils/utils';
+import type { StorageKey } from '@polkadot/types';
+import type { AnyTuple, Codec } from '@polkadot/types/types';
 
 type Codes = {[codeHash: string]: string};
 
 const batchLoadContracts = async (): Promise<void> => {
-    const codes: Codes = await getCodes();
     const contractData = await nodeProvider.query((provider) => provider.api.query.evm.accounts.entries());
+    await parseAndInsertContracts(contractData);
+}
+
+const subscribeContracts = async () => {
+    const unsub = nodeProvider.getProvider().api.query.evm.accounts(async ([key, data]: [StorageKey<AnyTuple>, Codec]): Promise<void> => {
+        /* wait for finalized blocks to be parsed */
+        await wait(20);
+        try {
+          await parseAndInsertContracts([[key, data]]);
+        } catch (e) {
+          logger.error(e);
+        }
+      });
+    return unsub
+}
+
+export const parseAndInsertContracts = async (contractData: [StorageKey<AnyTuple>, Codec][]): Promise<void> => {
+    const codes: Codes = await getCodes();
     const contracts: any[][] = contractData.map(([key, data]) => {
         const contract = data.toHuman() as any;
         return {
@@ -51,15 +69,20 @@ const getCodes = async (): Promise<Codes> => {
 }
 
 
-Promise.resolve().then(async () => {
-    await nodeProvider.initializeProviders();
-  })
-  .then(async () => await batchLoadContracts())
-  .catch((error) => {
-    logger.error(error);
-  })
-  .finally(async () => {
-    await nodeProvider.closeProviders();
-    logger.info("Finished")
-    process.exit();
-  });
+Promise.resolve()
+    .then(async () => await nodeProvider.initializeProviders())
+    .then(async () => await batchLoadContracts())
+    .then(async () => await subscribeContracts())
+    .then(async () => {
+        while(true) {
+          await wait(100000);
+        };
+    })
+    .catch((error) => {
+        logger.error(error);
+    })
+    .finally(async () => {
+        await nodeProvider.closeProviders();
+        logger.info("Finished")
+        process.exit();
+    });
