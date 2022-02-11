@@ -76,7 +76,6 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
 
 export const processNativeTokenHolders = (accounts: AccountBody[]): TokenHolder[] => 
   dropDuplicates(accounts, "address")
-    .filter(({address}) => address != 'deleted')
     .map(({address, timestamp, freeBalance}): TokenHolder => ({
       timestamp,
       signerAddress: address,
