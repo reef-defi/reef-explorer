@@ -243,7 +243,6 @@ export default async (
     .filter(isExtrinsicNativeTransfer)
     .map(extrinsicBodyToTransfer));
 
-
   // EVM Logs
   logger.info('Retrieving EVM log if contract is ERC20 token');
   const evmLogs = await extrinsicToEvmLogs(extrinsics);
@@ -258,7 +257,7 @@ export default async (
 
   // Evm Token Holders
   logger.info('Extracting EVM token holders');
-  let tokenHolders = await processEvmTokenHolders(evmLogs);
+  const tokenHolders = await processEvmTokenHolders(evmLogs);
   transactions += tokenHolders.length;
 
   // Accounts

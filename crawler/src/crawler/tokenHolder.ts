@@ -74,15 +74,14 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
   return resolvePromisesAsChunks(tokenHolders);
 };
 
-export const processNativeTokenHolders = (accounts: AccountBody[]): TokenHolder[] => 
-  dropDuplicates(accounts, "address")
-    .map(({address, timestamp, freeBalance}): TokenHolder => ({
-      timestamp,
-      signerAddress: address,
-      tokenAddress: REEF_CONTRACT_ADDRESS,
-      info: { ...REEF_DEFAULT_DATA },
-      balance: freeBalance,
-      type: 'Account',
-      evmAddress: '',
-      nftId: null,
-    }));
+export const processNativeTokenHolders = (accounts: AccountBody[]): TokenHolder[] => dropDuplicates(accounts, 'address')
+  .map(({ address, timestamp, freeBalance }): TokenHolder => ({
+    timestamp,
+    signerAddress: address,
+    tokenAddress: REEF_CONTRACT_ADDRESS,
+    info: { ...REEF_DEFAULT_DATA },
+    balance: freeBalance,
+    type: 'Account',
+    evmAddress: '',
+    nftId: null,
+  }));
