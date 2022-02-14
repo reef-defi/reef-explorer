@@ -243,10 +243,6 @@ export default async (
     .filter(isExtrinsicNativeTransfer)
     .map(extrinsicBodyToTransfer));
 
-  // Native token holders
-  logger.info('Extracting native token holders from transfers');
-  const tokenHolders = await processNativeTokenHolders(transfers);
-
   // EVM Logs
   logger.info('Retrieving EVM log if contract is ERC20 token');
   const evmLogs = await extrinsicToEvmLogs(extrinsics);
@@ -261,39 +257,39 @@ export default async (
 
   // Evm Token Holders
   logger.info('Extracting EVM token holders');
-  let evmTokenHolders = await processEvmTokenHolders(evmLogs);
-  transactions += evmTokenHolders.length;
-  tokenHolders.push(...evmTokenHolders);
-  evmTokenHolders = [];
+  const tokenHolders = await processEvmTokenHolders(evmLogs);
+  transactions += tokenHolders.length;
 
   // Accounts
   logger.info('Compressing transfer, event accounts, evm claim account');
-  const allAccounts: AccountHead[][] = [];
-  allAccounts.push(...transfers.map(extractTransferAccounts));
-  allAccounts.push(...events.map(accountNewOrKilled));
+  const allAccounts: AccountHead[] = [];
+  allAccounts.push(...transfers.flatMap(extractTransferAccounts));
+  allAccounts.push(...events.flatMap(accountNewOrKilled));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
-      .map(extrinsicToEvmClaimAccount),
+      .flatMap(extrinsicToEvmClaimAccount),
   );
 
   logger.info('Extracting, compressing and dropping duplicate accounts');
-  let insertOrDeleteAccount = dropDuplicates(
-    allAccounts.flat(),
-    'address',
-  ).filter(({ address }) => address.length === 48);
+  let insertOrDeleteAccount = dropDuplicates(allAccounts, 'address')
+    .filter(({ address }) => address.length === 48);
 
   logger.info('Retrieving used account info');
   transactions += insertOrDeleteAccount.length;
   let accounts = await resolvePromisesAsChunks(
     insertOrDeleteAccount.map(accountHeadToBody),
   );
+  insertOrDeleteAccount = [];
+
+  // Native token holders
+  logger.info('Extracting native token holders from accounts');
+  tokenHolders.push(...processNativeTokenHolders(accounts));
 
   logger.info('Inserting or updating accounts');
   await insertAccounts(accounts);
   // Free memory
   accounts = [];
-  insertOrDeleteAccount = [];
 
   // Staking Slash
   logger.info('Inserting staking slashes');
