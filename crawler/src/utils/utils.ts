@@ -1,5 +1,4 @@
 import { utils } from 'ethers';
-import * as Sentry from '@sentry/node';
 import APP_CONFIG from '../config';
 import { ERC20Data } from '../crawler/types';
 
