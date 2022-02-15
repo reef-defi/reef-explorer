@@ -142,10 +142,14 @@ export const getERC20Tokens = async (): Promise<ERC20Token[]> => {
 
 interface TokenBalace {
   balance: string;
-  decimals: string;
+  info: {
+    name?: string;
+    symbol?: string;
+    decimals?: number;
+  };
 }
 
 export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => query<TokenBalace>(
-  'SELECT balance, decimals FROM token_holder WHERE token_address ILIKE $1 AND signer=$2;',
+  'SELECT balance, info FROM token_holder WHERE token_address ILIKE $1 AND signer ILIKE $2;',
   [contractAddress, accountAddress],
 );
