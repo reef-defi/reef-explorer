@@ -59,7 +59,7 @@ VALUES
   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 ON CONFLICT DO NOTHING;`;
 
-const CONTRACT_VERIFICATION_STATUS = 'SELECT * FROM verification_request WHERE address = $1;';
+const CONTRACT_VERIFICATION_STATUS = 'SELECT * FROM verification_request WHERE address ILIKE $1;';
 
 const findContractBytecode = async (address: string): Promise<string> => {
   const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
@@ -130,4 +130,4 @@ export const contractVerificationStatus = async (id: string): Promise<boolean> =
   return result.length > 0;
 };
 
-export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => query<ContracVerificationInsert>('SELECT * FROM verified_contract WHERE address = $1', [toContractAddress(address)]);
+export const findVeririedContract = async (address: string): Promise<ContracVerificationInsert[]> => query<ContracVerificationInsert>('SELECT * FROM verified_contract WHERE address ILIKE $1', [toContractAddress(address)]);

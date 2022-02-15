@@ -1,5 +1,4 @@
 import { utils } from 'ethers';
-import * as Sentry from '@sentry/node';
 import APP_CONFIG from '../config';
 import { ERC20Data } from '../crawler/types';
 
@@ -101,11 +100,4 @@ export const resolvePromisesAsChunks = async <T>(
 
 export const removeUndefinedItem = <Type, >(item: (Type|undefined)): item is Type => item !== undefined;
 
-export const toContractAddress = (address: string): string => {
-  try {
-    return utils.getAddress(address.toLowerCase());
-  } catch (e) {
-    Sentry.captureException(e);
-    return '';
-  }
-};
+export const toContractAddress = (address: string): string => utils.getAddress(address.trim().toLowerCase());
