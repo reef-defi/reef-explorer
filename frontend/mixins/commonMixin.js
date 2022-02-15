@@ -15,7 +15,6 @@ const toMomentDate = (timestampOrDateString) => {
     : moment(timestampOrDateString)
 }
 
-
 export default {
   methods: {
     toContractAddress(address) {
@@ -155,7 +154,7 @@ export default {
       if (!input || !input.toString()) {
         return false
       }
-      const address = toContractAddress(input)
+      const address = this.toContractAddress(input)
       if (!this.isEvmAddress(address)) {
         return false
       }
