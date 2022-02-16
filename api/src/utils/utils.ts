@@ -31,4 +31,4 @@ export const delay = (ms: number): Promise<void> => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
 
-export const toContractAddress = (address: string): string => utils.getAddress(address.trim().toLowerCase());
+export const toChecksumAddress = (address: string): string => utils.getAddress(address.trim().toLowerCase());

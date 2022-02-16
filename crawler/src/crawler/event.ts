@@ -1,5 +1,5 @@
 import { nodeProvider } from '../utils/connector';
-import { toContractAddress } from '../utils/utils';
+import { toChecksumAddress } from '../utils/utils';
 import {
   AccountBody, AccountHead, EventHead, ExtrinsicBody, Event,
 } from './types';
@@ -65,7 +65,7 @@ export const accountHeadToBody = async (
   ]);
   const address = evmAddress.toString();
   const eddress = address !== ''
-    ? toContractAddress(address)
+    ? toChecksumAddress(address)
     : address;
 
   const evmNonce: string | null = address !== ''

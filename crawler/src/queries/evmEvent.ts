@@ -5,7 +5,7 @@ import {
   BacktrackingEvmEvent, BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData, VerifiedContract,
 } from '../crawler/types';
 import { insert, query, queryv2 } from '../utils/connector';
-import { toContractAddress } from '../utils/utils';
+import { toChecksumAddress } from '../utils/utils';
 
 const contractToValues = ({
   address,
@@ -18,14 +18,14 @@ const contractToValues = ({
   signer,
   timestamp,
 }: Contract): string => {
-  const contractAddress = toContractAddress(address);
+  const contractAddress = toChecksumAddress(address);
   return contractAddress ? `('${contractAddress}', ${extrinsicId}, '${signer}', '${bytecode}', '${bytecodeContext}', '${bytecodeArguments}', ${gasLimit}, ${storageLimit}, '${timestamp}')` : '';
 };
 
 export const getContractDB = async (
   address: string,
 ): Promise<VerifiedContract[]> => {
-  const contractAddress = toContractAddress(address);
+  const contractAddress = toChecksumAddress(address);
   return contractAddress
     ? query<VerifiedContract>(
       `SELECT address, contract_data, compiled_data, name, type FROM verified_contract WHERE address='${contractAddress}';`,
@@ -64,7 +64,7 @@ const parseEvmLogData = async (method: string, genericData: GenericEventData): P
   if (method === 'Log') {
     const { topics, data } : BytecodeLog = eventData[0];
     let { address } : BytecodeLog = eventData[0];
-    address = toContractAddress(address);
+    address = toChecksumAddress(address);
     if (!address) {
       return undefined;
     }
