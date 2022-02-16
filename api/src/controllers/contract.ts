@@ -4,13 +4,13 @@ import {
 } from '../services/contract';
 import { AppRequest } from '../utils/types';
 import {
-  ensure, ensureObjectKeys, errorStatus, toContractAddress,
+  ensure, ensureObjectKeys, errorStatus, toChecksumAddress,
 } from '../utils/utils';
 
 export const findToken = async (req: AppRequest<{}>, res: Response) => {
   try {
     ensure(!!req.params.address, 'Url paramter address is missing');
-    const token = await findTokenInfo(toContractAddress(req.params.address));
+    const token = await findTokenInfo(toChecksumAddress(req.params.address));
 
     res.send(token);
   } catch (err) {
@@ -47,7 +47,7 @@ interface TokenBalanceParam {
 export const accountTokenBalance = async (req: AppRequest<TokenBalanceParam>, res: Response): Promise<void> => {
   try {
     ensureObjectKeys(req.body, ['accountAddress', 'contractAddress']);
-    const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress.toLowerCase(), toContractAddress(req.body.contractAddress));
+    const tokenBalances = await findTokenAccountTokenBalance(req.body.accountAddress.toLowerCase(), toChecksumAddress(req.body.contractAddress));
 
     if (tokenBalances.length === 0) {
       const token = await findERC20Token(req.body.contractAddress);

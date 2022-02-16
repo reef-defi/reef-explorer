@@ -12,7 +12,7 @@ import {
 } from './types';
 import { getContractDB } from '../queries/evmEvent';
 import {
-  removeUndefinedItem, resolvePromisesAsChunks, toContractAddress,
+  removeUndefinedItem, resolvePromisesAsChunks, toChecksumAddress,
 } from '../utils/utils';
 
 const preprocessBytecode = (bytecode: string) => {
@@ -68,7 +68,7 @@ export const extrinsicToContract = ({
 }: ExtrinsicBody): Contract => {
   const { args } = extrinsic;
   const contractEvent = findContractEvent(events)!;
-  const address = toContractAddress(contractEvent.event.data[0].toString());
+  const address = toChecksumAddress(contractEvent.event.data[0].toString());
   const reserveEvent = events.find((evn) => nodeProvider.getProvider().api.events.balances.Reserved.is(evn.event))!;
   const signer = reserveEvent.event.data[0].toString();
   const bytecode = args[0].toString();
@@ -91,7 +91,7 @@ export const extrinsicToContract = ({
 
 export const eventToEvmLog = ({ event }: Event): BytecodeLog => {
   const bl = (event.data.toJSON() as any)[0];
-  bl.address = toContractAddress(bl.address);
+  bl.address = toChecksumAddress(bl.address);
   return bl;
 };
 
@@ -138,7 +138,7 @@ export const extrinsicToEvmLogs = async (
       event, blockId, timestamp, extrinsicId, signedData,
     }): BytecodeLogWithBlockId => {
       const a = (event.event.data.toJSON() as any)[0];
-      a.address = toContractAddress(a.address);
+      a.address = toChecksumAddress(a.address);
       return {
         ...a, timestamp, blockId, extrinsicId, signedData,
       };

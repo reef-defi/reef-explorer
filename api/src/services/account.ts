@@ -3,7 +3,7 @@ import { query } from '../utils/connector';
 import {
   User, UserTokenBalance,
 } from '../utils/types';
-import { toContractAddress } from '../utils/utils';
+import { toChecksumAddress } from '../utils/utils';
 
 export const getAllUsersWithEvmAddress = async (): Promise<User[]> => query<User>(`
     SELECT address, evm_address as evmAddress, free_balance as freeBalance, locked_balance as lockedBalance, available_balance as availableBalance 
@@ -41,7 +41,7 @@ export const findUserContracts = async (address: string): Promise<Contract[]> =>
 
 const userTokenBalanceToValue = ({
   tokenAddress, address, balance, decimals,
-}: UserTokenBalance): any[] => [toContractAddress(tokenAddress), address, null, 'Account', balance.toString(), JSON.stringify({ decimals }), null, new Date().toUTCString()];
+}: UserTokenBalance): any[] => [toChecksumAddress(tokenAddress), address, null, 'Account', balance.toString(), JSON.stringify({ decimals }), null, new Date().toUTCString()];
 
 export const insertTokenHolder = async (accountTokenBalances: UserTokenBalance[]): Promise<void> => {
   if (accountTokenBalances.length === 0) { return; }

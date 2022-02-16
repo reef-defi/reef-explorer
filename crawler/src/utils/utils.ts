@@ -100,4 +100,4 @@ export const resolvePromisesAsChunks = async <T>(
 
 export const removeUndefinedItem = <Type, >(item: (Type|undefined)): item is Type => item !== undefined;
 
-export const toContractAddress = (address: string): string => utils.getAddress(address.trim().toLowerCase());
+export const toChecksumAddress = (address: string): string => utils.getAddress(address.trim().toLowerCase());
