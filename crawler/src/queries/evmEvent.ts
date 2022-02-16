@@ -7,7 +7,7 @@ import {
 import { insert, query, queryv2 } from '../utils/connector';
 import { toContractAddress } from '../utils/utils';
 
-export const contractToValues = ({
+const contractToValues = ({
   address,
   extrinsicId,
   bytecode,
@@ -128,7 +128,7 @@ const evmEventDataToInsertValue = async ({
 };
 
 export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => {
-  if (evmEvents.length < 0) {
+  if (evmEvents.length < 1) {
     return;
   }
   const insertValuePromises = evmEvents
