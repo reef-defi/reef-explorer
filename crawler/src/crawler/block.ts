@@ -114,9 +114,10 @@ const getSignedExtrinsicData = async (
 
 const extrinsicBody = (nextFreeId: number) => async (
   extrinsicHead: ExtrinsicHead,
+  index: number
 ): Promise<ExtrinsicBody> => ({
   ...extrinsicHead,
-  id: nextFreeId + extrinsicHead.index,
+  id: nextFreeId + index,
   signedData: extrinsicHead.extrinsic.isSigned
     ? await getSignedExtrinsicData(extrinsicHead.extrinsic.toHex())
     : undefined,
