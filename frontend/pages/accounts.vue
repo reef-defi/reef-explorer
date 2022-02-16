@@ -323,7 +323,7 @@ export default {
             offset: (this.currentPage - 1) * this.perPage,
             address: this.isAddress(this.filter) ? { _eq: this.filter } : {},
             evmAddress: this.isContractId(this.filter)
-              ? { _eq: this.filter }
+              ? { _eq: this.toContractAddress(this.filter) }
               : {},
           }
         },
