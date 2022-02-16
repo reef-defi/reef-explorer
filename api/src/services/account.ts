@@ -3,7 +3,7 @@ import { query } from '../utils/connector';
 import {
   User, UserTokenBalance,
 } from '../utils/types';
-import {toContractAddress} from "../utils/utils";
+import { toContractAddress } from '../utils/utils';
 
 export const getAllUsersWithEvmAddress = async (): Promise<User[]> => query<User>(`
     SELECT address, evm_address as evmAddress, free_balance as freeBalance, locked_balance as lockedBalance, available_balance as availableBalance 

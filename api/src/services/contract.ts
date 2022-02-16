@@ -1,6 +1,8 @@
 import { query } from '../utils/connector';
-import { PoolDB, Pool, Target } from '../utils/types';
-import {ensure} from '../utils/utils';
+import {
+  PoolDB, Pool, Target, ABI,
+} from '../utils/types';
+import { ensure } from '../utils/utils';
 
 interface TokenInfoDefault {
   name: string;
@@ -77,10 +79,20 @@ export const findPoolQuery = async (tokenAddress1: string, tokenAddress2: string
 interface FindContractDB {
   address: string;
   bytecode: string;
+  name: string | null;
+  filename: string | null;
+  args: string[] | null;
+  source: {[filename: string]: string} | null
+  compileddata: {[filename: string]: ABI} | null;
 }
 
 export const findContractDB = async (address: string) => query<FindContractDB>(
-  'SELECT address, bytecode FROM contract WHERE address = $1',
+  `SELECT 
+    c.address, c.bytecode, vc.compiled_data, vc.source, vc.args, vc.name, vc.filename
+  FROM contract as c
+  LEFT JOIN verified_contract as vc
+    on c.address = vc.address
+  WHERE c.address = $1`,
   [address],
 );
 

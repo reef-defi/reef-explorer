@@ -5,7 +5,9 @@ import {
   contractVerificationStatus, findVeririedContract, verify,
 } from '../services/verification';
 import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from '../utils/types';
-import {ensureObjectKeys, errorStatus, ensure, toContractAddress} from '../utils/utils';
+import {
+  ensureObjectKeys, errorStatus, ensure, toContractAddress,
+} from '../utils/utils';
 
 interface ContractVerificationID {
   id: string;

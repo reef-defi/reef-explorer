@@ -22,7 +22,7 @@ export const query = async <Res, >(statement: string): Promise<Res[]> => {
   return result.rows;
 };
 
-export const queryv2 = async <Res, >(statement: string, args: any[]): Promise<Res[]> => {
+export const queryv2 = async <Res, >(statement: string, args = [] as any[]): Promise<Res[]> => {
   const client = await dbProvider.connect();
   const result = await client.query<Res>(statement, args);
   client.release();

@@ -4,30 +4,15 @@ import { insertV2 } from '../utils/connector';
 import { toContractAddress, wait } from '../utils/utils';
 import type { StorageKey } from '@polkadot/types';
 import type { AnyTuple, Codec } from '@polkadot/types/types';
+import type { BlockHash } from '@polkadot/types/interfaces/chain';
 
 type Codes = {[codeHash: string]: string};
 
-const batchLoadContracts = async (): Promise<void> => {
-    const contractData = await nodeProvider.query((provider) => provider.api.query.evm.accounts.entries());
-    await parseAndInsertContracts(contractData);
-}
-
-const subscribeContracts = async () => {
-    const unsub = nodeProvider.getProvider().api.query.evm.accounts(async ([key, data]: [StorageKey<AnyTuple>, Codec]): Promise<void> => {
-        /* wait for finalized blocks to be parsed */
-        await wait(20);
-        try {
-          await parseAndInsertContracts([[key, data]]);
-        } catch (e) {
-          logger.error(e);
-        }
-      });
-    return unsub
-}
-
-export const parseAndInsertContracts = async (contractData: [StorageKey<AnyTuple>, Codec][]): Promise<void> => {
-    const codes: Codes = await getCodes();
-    const contracts: any[][] = contractData.map(([key, data]) => {
+export const parseAndInsertContracts = async (blockNumber: number): Promise<void> => {
+    const blockHash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(blockNumber));
+    const contractData: [StorageKey<AnyTuple>, Codec][] = await nodeProvider.query((provider) => provider.api.query.evm.accounts.entriesAt(blockHash));
+    const codes: Codes = await getCodes(blockHash);
+    const contracts: Promise<any[]>[] = contractData.map(([key, data]) => {
         const contract = data.toHuman() as any;
         return {
             address: key.toHuman()?.toString() || undefined,
@@ -36,11 +21,12 @@ export const parseAndInsertContracts = async (contractData: [StorageKey<AnyTuple
             }
         })
         .filter(({address, codeHash, maintainer}) => address && codeHash && maintainer)
-        .map(({address, codeHash, maintainer}): any[] => {
+        .map(async ({address, codeHash, maintainer}): Promise<any[]> => {
+            const signer = await nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(maintainer));
             return [
                 toContractAddress(address!),
                 -1,
-                maintainer,
+                signer.toHuman()?.toString() || '0x',
                 codes[codeHash],                 
                 '',
                 '',
@@ -55,11 +41,11 @@ export const parseAndInsertContracts = async (contractData: [StorageKey<AnyTuple
     VALUES
         %L
     ON CONFLICT (address) DO NOTHING;
-    `, contracts);
+    `, await Promise.all(contracts));
 }
   
-const getCodes = async (): Promise<Codes> => {
-    const codeData = await nodeProvider.query((provider) => provider.api.query.evm.codes.entries());
+const getCodes = async (blockHash: BlockHash): Promise<Codes> => {
+    const codeData = await nodeProvider.query((provider) => provider.api.query.evm.codes.entriesAt(blockHash));
     return codeData
     .map(([key, data]) => [key.toHuman()?.toString(), data.toHuman()?.toString()])
     .reduce(
@@ -67,22 +53,3 @@ const getCodes = async (): Promise<Codes> => {
       {}
     );
 }
-
-
-Promise.resolve()
-    .then(async () => await nodeProvider.initializeProviders())
-    .then(async () => await batchLoadContracts())
-    .then(async () => await subscribeContracts())
-    .then(async () => {
-        while(true) {
-          await wait(100000);
-        };
-    })
-    .catch((error) => {
-        logger.error(error);
-    })
-    .finally(async () => {
-        await nodeProvider.closeProviders();
-        logger.info("Finished")
-        process.exit();
-    });

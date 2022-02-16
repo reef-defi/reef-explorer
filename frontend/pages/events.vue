@@ -3,9 +3,7 @@
     <Search
       v-model="filter"
       :placeholder="$t('pages.events.search_placeholder')"
-      :label="`${$t('pages.events.title')}<span>${formatNumber(
-        totalRows
-      )}</span>`"
+      :label="`${$t('pages.events.title')} ${formatNumber(totalRows)}`"
     />
 
     <section>

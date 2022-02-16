@@ -1,5 +1,5 @@
-import {AccountBody, EventBody,} from '../crawler/types';
-import {insert} from '../utils/connector';
+import { AccountBody, EventBody } from '../crawler/types';
+import { insert } from '../utils/connector';
 
 const toEventValue = async ({
   id,
@@ -11,9 +11,7 @@ const toEventValue = async ({
     phase,
   },
   timestamp,
-}: EventBody): Promise<string> => {
-  return `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
-};
+}: EventBody): Promise<string> => `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {

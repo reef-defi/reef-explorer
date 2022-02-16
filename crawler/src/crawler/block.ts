@@ -2,6 +2,7 @@ import {
   nodeProvider,
 } from '../utils/connector';
 import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
+import { parseAndInsertContracts } from './contracts';
 import {
   extrinsicBodyToTransfer,
   extrinsicStatus,
@@ -34,11 +35,8 @@ import {
   resolvePromisesAsChunks,
 } from '../utils/utils';
 import {
-  extractAccountFromEvmCall,
   extrinsicToContract,
-  extrinsicToEVMCall,
   extrinsicToEvmClaimAccount,
-  isExtrinsicEVMCall,
   isExtrinsicEvmClaimAccount,
   isExtrinsicEVMCreate,
   extrinsicToEvmLogs,
@@ -158,17 +156,16 @@ const eventToBody = (nextFreeId: number) => (event: EventHead, index: number): E
   ...event,
 });
 
-const initialBlockToInsert = ({id, hash}: BlockHash) => ({
+const initialBlockToInsert = ({ id, hash }: BlockHash) => ({
   id,
   finalized: false,
   hash: hash.toString(),
-  timestamp: Date.now().toString(),
-
+  timestamp: `${(new Date()).toUTCString()}`,
   author: '',
   parentHash: '',
   stateRoot: '',
   extrinsicRoot: '',
-})
+});
 
 export const processInitialBlocks = async (fromId: number, toId: number): Promise<number> => {
   if (toId - fromId <= 0) { return 0; }
@@ -246,10 +243,6 @@ export default async (
     .filter(isExtrinsicNativeTransfer)
     .map(extrinsicBodyToTransfer));
 
-  // Native token holders
-  logger.info('Extracting native token holders from transfers');
-  const tokenHolders = await processNativeTokenHolders(transfers);
-
   // EVM Logs
   logger.info('Retrieving EVM log if contract is ERC20 token');
   const evmLogs = await extrinsicToEvmLogs(extrinsics);
@@ -264,39 +257,39 @@ export default async (
 
   // Evm Token Holders
   logger.info('Extracting EVM token holders');
-  let evmTokenHolders = await processEvmTokenHolders(evmLogs);
-  transactions += evmTokenHolders.length;
-  tokenHolders.push(...evmTokenHolders);
-  evmTokenHolders = [];
+  const tokenHolders = await processEvmTokenHolders(evmLogs);
+  transactions += tokenHolders.length;
 
   // Accounts
   logger.info('Compressing transfer, event accounts, evm claim account');
-  const allAccounts: AccountHead[][] = [];
-  allAccounts.push(...transfers.map(extractTransferAccounts));
-  allAccounts.push(...events.map(accountNewOrKilled));
+  const allAccounts: AccountHead[] = [];
+  allAccounts.push(...transfers.flatMap(extractTransferAccounts));
+  allAccounts.push(...events.flatMap(accountNewOrKilled));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
-      .map(extrinsicToEvmClaimAccount),
+      .flatMap(extrinsicToEvmClaimAccount),
   );
 
   logger.info('Extracting, compressing and dropping duplicate accounts');
-  let insertOrDeleteAccount = dropDuplicates(
-    allAccounts.flat(),
-    'address',
-  ).filter(({ address }) => address.length === 48);
+  let insertOrDeleteAccount = dropDuplicates(allAccounts, 'address')
+    .filter(({ address }) => address.length === 48);
 
   logger.info('Retrieving used account info');
   transactions += insertOrDeleteAccount.length;
   let accounts = await resolvePromisesAsChunks(
     insertOrDeleteAccount.map(accountHeadToBody),
   );
+  insertOrDeleteAccount = [];
+
+  // Native token holders
+  logger.info('Extracting native token holders from accounts');
+  tokenHolders.push(...processNativeTokenHolders(accounts));
 
   logger.info('Inserting or updating accounts');
   await insertAccounts(accounts);
   // Free memory
   accounts = [];
-  insertOrDeleteAccount = [];
 
   // Staking Slash
   logger.info('Inserting staking slashes');
@@ -323,6 +316,9 @@ export default async (
 
   logger.info('Inserting evm events');
   await insertEvmEvents(events);
+
+  // Missing Contracts - Inefficient pattern
+  await parseAndInsertContracts(toId);
 
   // Token holders
   await insertTokenHolders(tokenHolders);

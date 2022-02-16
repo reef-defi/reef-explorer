@@ -78,9 +78,15 @@ Promise.resolve()
     logger.info('...success');
   })
   .then(processNextBlock)
-  .catch((error) => {
+  .then(async () => {
+    await nodeProvider.closeProviders();
+    logger.info('Finished');
+    process.exit();
+  })
+  .catch(async (error) => {
     logger.error(error);
     Sentry.captureException(error);
+    await nodeProvider.closeProviders();
+    logger.error('Finished');
     process.exit(-1);
-  })
-  .finally(nodeProvider.closeProviders);
+  });

@@ -32,7 +32,8 @@ services:
       - './db/sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/07_transfer.sql'
       - './db/sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
       - './db/sql/initialization/tokenHolder.sql:/docker-entrypoint-initdb.d/08_tokenHolder.sql'
-      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/09_chainInfo.sql'
+      - './db/sql/initialization/newlyVerifiedContract.sql:/docker-entrypoint-initdb.d/09_newlyVerifiedContract.sql'
+      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/10_chainInfo.sql'
     ports:
       - 5432:5432
     environment:
@@ -81,6 +82,27 @@ services:
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
       - MAX_BLOCKS_PER_STEP=32
+      - SENTRY_DNS=${CRAWLER_SENTRY_DNS}
+      - POSTGRES_PORT=${DB_PORT} #5432
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER} #reefexplorer
+      - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
+      - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+    depends_on:
+      - 'postgres'
+      - 'substrate-node'
+    networks:
+      - reefscan
+
+  backtracking:
+    image: reef-explorer-crawler-dev
+    command: yarn dev-backtracking
+    volumes:
+      - backtracking-modules:/usr/app/node_modules
+      - ./crawler:/usr/app/
+    restart: always
+    environment:
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
       - SENTRY_DNS=${CRAWLER_SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
@@ -142,6 +164,7 @@ volumes:
   db-data: {}
   substrate-data: {}
   crawler-modules: {}
+  backtracking-modules: {}
   api-modules: {}
   frontend-modules: {}
 

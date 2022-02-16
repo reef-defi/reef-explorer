@@ -1,38 +1,13 @@
-import { nodeProvider } from '../utils/connector';
 import {
-  REEF_CONTRACT_ADDRESS, resolvePromisesAsChunks, REEF_DEFAULT_DATA, dropDuplicatesMultiKey,
+  REEF_CONTRACT_ADDRESS, resolvePromisesAsChunks, REEF_DEFAULT_DATA, dropDuplicatesMultiKey, dropDuplicates,
 } from '../utils/utils';
 import {
   isErc20TransferEvent, isErc721TransferEvent, isErc1155TransferSingleEvent, isErc1155TransferBatchEvent,
 } from './evmEvent';
 import {
-  Transfer, NativeTokenHolderHead, TokenHolder, EvmLogWithDecodedEvent, TokenHolderHead, TokenType,
+  TokenHolder, EvmLogWithDecodedEvent, TokenHolderHead, TokenType, AccountBody,
 } from './types';
 import { balanceOf, balanceOfErc1155, findNativeAddress } from './utils';
-
-const extractNativeTokenHolderFromTransfer = ({
-  fromAddress, toAddress, timestamp,
-}: Transfer): NativeTokenHolderHead[] => [
-  {
-    timestamp, signerAddress: fromAddress, info: { ...REEF_DEFAULT_DATA }, tokenAddress: REEF_CONTRACT_ADDRESS,
-  },
-  {
-    timestamp, signerAddress: toAddress, info: { ...REEF_DEFAULT_DATA }, tokenAddress: REEF_CONTRACT_ADDRESS,
-  },
-];
-
-const nativeTokenHolder = async (tokenHolderHead: NativeTokenHolderHead): Promise<TokenHolder> => {
-  const signer = tokenHolderHead.signerAddress;
-  const balance = await nodeProvider.query((provider) => provider.api.derive.balances.all(signer));
-
-  return {
-    ...tokenHolderHead,
-    type: 'Account',
-    evmAddress: '',
-    nftId: null,
-    balance: balance.freeBalance.toString(),
-  };
-};
 
 const prepareTokenHolderHead = (evmAddress: string, nftId: null | string, type: TokenType, {
   timestamp, address: tokenAddress, contractData, abis, name,
@@ -99,15 +74,14 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
   return resolvePromisesAsChunks(tokenHolders);
 };
 
-export const processNativeTokenHolders = async (transfers: Transfer[]): Promise<TokenHolder[]> => {
-  const tokenHolders = dropDuplicatesMultiKey(
-    transfers.flatMap(extractNativeTokenHolderFromTransfer),
-    ['signerAddress', 'tokenAddress'],
-  );
-
-  return resolvePromisesAsChunks(
-    tokenHolders
-      .filter(({ signerAddress }) => signerAddress !== 'deleted')
-      .map(nativeTokenHolder),
-  );
-};
+export const processNativeTokenHolders = (accounts: AccountBody[]): TokenHolder[] => dropDuplicates(accounts, 'address')
+  .map(({ address, timestamp, freeBalance }): TokenHolder => ({
+    timestamp,
+    signerAddress: address,
+    tokenAddress: REEF_CONTRACT_ADDRESS,
+    info: { ...REEF_DEFAULT_DATA },
+    balance: freeBalance,
+    type: 'Account',
+    evmAddress: '',
+    nftId: null,
+  }));

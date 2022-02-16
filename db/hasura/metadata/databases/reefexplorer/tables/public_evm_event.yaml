@@ -5,6 +5,15 @@ object_relationships:
 - name: event
   using:
     foreign_key_constraint_on: event_id
+- name: contract
+  using:
+    manual_configuration:
+      remote_table:
+        schema: public
+        name: contract
+      column_mapping:
+        contract_address: address
+
 select_permissions:
 - permission:
     allow_aggregations: true
