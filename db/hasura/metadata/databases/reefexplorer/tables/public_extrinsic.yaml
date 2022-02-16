@@ -5,6 +5,14 @@ object_relationships:
 - name: block
   using:
     foreign_key_constraint_on: block_id
+array_relationships:
+- name: events
+  using:
+    foreign_key_constraint_on:
+      column: extrinsic_id
+      table:
+        name: event
+        schema: public
 select_permissions:
 - permission:
     allow_aggregations: true
