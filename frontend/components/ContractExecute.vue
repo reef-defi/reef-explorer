@@ -105,7 +105,10 @@ export default {
     this.provider = provider
   },
   async beforeDestroy() {
-    await this.provider.api.disconnect()
+    if (this.provider) {
+      await this.provider.api.disconnect()
+      this.provider = undefined
+    }
   },
   methods: {
     getInputs(message) {

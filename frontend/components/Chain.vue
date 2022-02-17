@@ -134,11 +134,8 @@ export default {
           }
         `,
         result({ data }) {
-          this.totalEvents = this.findCount(data.chain_info, 'events')
           this.totalAccounts = this.findCount(data.chain_info, 'accounts')
           this.totalContracts = this.findCount(data.chain_info, 'contracts')
-          this.totalTransfers = this.findCount(data.chain_info, 'transfers')
-          this.totalExtrinsics = this.findCount(data.chain_info, 'extrinsics')
         },
       },
       finalized: {
@@ -167,6 +164,48 @@ export default {
         `,
         result({ data }) {
           this.lastBlock = data.block[0].id
+        },
+      },
+      transfers: {
+        query: gql`
+          subscription transfer {
+            transfer_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalTransfers = data.transfer_aggregate.aggregate.count // this.findCount(data.chain_info, 'transfers')
+        },
+      },
+      events: {
+        query: gql`
+          subscription event {
+            event_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalEvents = data.event_aggregate.aggregate.count // this.findCount(data.chain_info, 'events')
+        },
+      },
+      extrinsics: {
+        query: gql`
+          subscription extrinsic {
+            extrinsic_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        result({ data }) {
+          this.totalExtrinsics = data.extrinsic_aggregate.aggregate.count // this.findCount(data.chain_info, 'extrinsics')
         },
       },
     },

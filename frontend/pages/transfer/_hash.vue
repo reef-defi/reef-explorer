@@ -64,6 +64,10 @@ export default {
               hash
               index
               error_message
+              events(where: { method: { _eq: "Transfer" } }) {
+                data
+                extrinsic_id
+              }
             }
             token {
               address
@@ -87,12 +91,20 @@ export default {
       result({ data }) {
         if (data && data.transfer) {
           this.transfer = data.transfer[0]
-
           this.transfer.to_address =
             this.transfer.to_address || this.transfer.to_evm_address
 
+          if (this.transfer.to_address === 'deleted') {
+            this.transfer.to_address =
+              data.transfer[0].extrinsic.events[0].data[1]
+          }
+
           this.transfer.from_address =
             this.transfer.from_address || this.transfer.from_evm_address
+          if (this.transfer.from_address === 'deleted') {
+            this.transfer.from_address =
+              data.transfer[0].extrinsic.events[0].data[0]
+          }
 
           if (
             this.transfer.token &&

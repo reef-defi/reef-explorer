@@ -83,6 +83,20 @@ import commonMixin from '@/mixins/commonMixin.js'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 // import { network } from '@/frontend.config'
 
+const GET_TRANSFER_EXTRINSIC_EVENTS = gql`
+  query extrinsic($exId: bigint!) {
+    extrinsic(where: { id: { _eq: $exId } }) {
+      id
+      hash
+      index
+      events(where: { method: { _eq: "Transfer" } }) {
+        data
+        extrinsic_id
+      }
+    }
+  }
+`
+
 export default {
   components: {
     ReefIdenticon,
@@ -125,8 +139,8 @@ export default {
             }
           }
         `,
-        result({ data }) {
-          this.transfers = data.transfer.map((transfer) => ({
+        async result({ data }) {
+          const processed = data.transfer.map((transfer) => ({
             amount: transfer.amount,
             success: transfer.success,
             hash: transfer.extrinsic.hash,
@@ -144,7 +158,31 @@ export default {
               transfer.from_account !== null
                 ? transfer.from_account.address
                 : transfer.from_evm_address,
+            extrinsicId: transfer.extrinsic.id,
           }))
+          const repaird = processed.map(async (transfer) => {
+            if (transfer.to !== 'deleted' && transfer.from !== 'deleted') {
+              return transfer
+            }
+            const res = await this.$apollo.provider.defaultClient.query({
+              query: GET_TRANSFER_EXTRINSIC_EVENTS,
+              variables: {
+                exId: transfer.extrinsicId,
+              },
+            })
+            if (
+              res.data &&
+              res.data.extrinsic.length > 0 &&
+              res.data.extrinsic[0].events &&
+              res.data.extrinsic[0].events.length > 0 &&
+              res.data.extrinsic[0].events[0].data
+            ) {
+              const [to, from] = res.data.extrinsic[0].events[0].data
+              return { ...transfer, to, from }
+            }
+            return transfer
+          })
+          this.transfers = await Promise.all(repaird)
         },
       },
     },
