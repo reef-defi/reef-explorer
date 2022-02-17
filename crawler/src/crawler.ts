@@ -6,6 +6,7 @@ import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
 import { min, wait } from './utils/utils';
 import logger from './utils/logger';
+import { parseAndInsertContracts } from './crawler/contracts';
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // import * as Tracing from "@sentry/tracing";
 
@@ -63,6 +64,9 @@ const processNextBlock = async () => {
       );
       BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, config.maxBlocksPerStep);
     }
+
+    // Missing Contracts - Inefficient pattern
+    await parseAndInsertContracts(finalizedHead);
 
     await wait(config.pollInterval);
   }

@@ -2,7 +2,6 @@ import {
   nodeProvider,
 } from '../utils/connector';
 import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
-import { parseAndInsertContracts } from './contracts';
 import {
   extrinsicBodyToTransfer,
   extrinsicStatus,
@@ -316,9 +315,6 @@ export default async (
 
   logger.info('Inserting evm events');
   await insertEvmEvents(events);
-
-  // Missing Contracts - Inefficient pattern
-  await parseAndInsertContracts(toId);
 
   // Token holders
   await insertTokenHolders(tokenHolders);
