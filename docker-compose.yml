@@ -11,7 +11,7 @@ services:
       - ${NODE_PORT}:${NODE_PORT}
       - ${NODE_WS}:${NODE_WS}
     # TODO paramaterise chain
-    command: -d /data --ws-max-connections ${NODE_MAX_CONS} ${NODE_CHAIN_CMD} ${NODE_CHAIN} --pruning=archive --rpc-cors "*" --ws-port ${NODE_WS} --port ${NODE_PORT} --unsafe-ws-external --no-prometheus --no-telemetry
+    command: -d /data --rpc-max-payload 1024 --ws-max-connections ${NODE_MAX_CONS} ${NODE_CHAIN_CMD} ${NODE_CHAIN} --pruning=archive --rpc-cors "*" --ws-port ${NODE_WS} --port ${NODE_PORT} --unsafe-ws-external --no-prometheus --no-telemetry
     restart: always
     networks:
       - reefscan

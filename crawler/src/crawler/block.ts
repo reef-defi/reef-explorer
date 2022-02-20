@@ -191,7 +191,6 @@ const initialBlockToInsert = ({ id, hash }: BlockHash) => ({
   finalized: false,
   hash: hash.toString(),
   timestamp: `${new Date().toUTCString()}`,
-
   author: "",
   parentHash: "",
   stateRoot: "",
