@@ -288,7 +288,7 @@ import ContractExecute from '../../components/ContractExecute.vue'
 import ContractTransactions from '~/components/ContractTransactions'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import Loading from '@/components/Loading.vue'
-import commonMixin, { toContractAddress } from '@/mixins/commonMixin.js'
+import commonMixin from '@/mixins/commonMixin.js'
 import { network } from '@/frontend.config.js'
 import FileExplorer from '@/components/FileExplorer'
 import File from '@/components/FileExplorer/File'
@@ -309,7 +309,7 @@ export default {
     return {
       network,
       loading: true,
-      address: toContractAddress(this.$route.params.id),
+      address: this.toContractAddress(this.$route.params.id),
       contract: undefined,
       tab: 'general',
     }
@@ -417,7 +417,7 @@ export default {
       contract: {
         query: gql`
           subscription contract($address: String!) {
-            contract(where: { address: { _eq: $address } }) {
+            contract(where: { address: { _ilike: $address } }) {
               address
               verified_contract {
                 name

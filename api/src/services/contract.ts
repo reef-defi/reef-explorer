@@ -29,7 +29,7 @@ interface StakingRewardDB {
 
 const FIND_TOKEN_INFO = `SELECT name, compiled_data as compileddata, source, compiler_version as compilerversion, optimization, runs, target
 FROM verified_contract
-WHERE address = $1`;
+WHERE address ILIKE $1`;
 
 const FIND_POOL = `
 SELECT 
@@ -92,7 +92,7 @@ export const findContractDB = async (address: string) => query<FindContractDB>(
   FROM contract as c
   LEFT JOIN verified_contract as vc
     on c.address = vc.address
-  WHERE c.address = $1`,
+  WHERE c.address ILIKE $1`,
   [address],
 );
 
@@ -116,7 +116,7 @@ interface GetERC20 extends VerifiedContractBase {
 }
 
 export const findERC20Token = async (address: string): Promise<ERC20Token> => {
-  const res = await query<GetERC20>('SELECT contract_data as contractData, name, address FROM verified_contract WHERE type=\'ERC20\' AND address=$1;', [address]);
+  const res = await query<GetERC20>('SELECT contract_data as contractData, name, address FROM verified_contract WHERE type=\'ERC20\' AND address ILIKE $1;', [address]);
   ensure(res.length > 0, 'Token does not exist');
   const data = res[0].contractdata;
   return {
@@ -142,10 +142,14 @@ export const getERC20Tokens = async (): Promise<ERC20Token[]> => {
 
 interface TokenBalace {
   balance: string;
-  decimals: string;
+  info: {
+    name?: string;
+    symbol?: string;
+    decimals?: number;
+  };
 }
 
 export const findTokenAccountTokenBalance = async (accountAddress: string, contractAddress: string): Promise<TokenBalace[]> => query<TokenBalace>(
-  'SELECT balance, decimals FROM token_holder WHERE token_address=$1 AND signer=$2;',
+  'SELECT balance, info FROM token_holder WHERE token_address ILIKE $1 AND signer ILIKE $2;',
   [contractAddress, accountAddress],
 );

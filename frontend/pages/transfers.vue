@@ -107,6 +107,20 @@ import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { paginationOptions } from '@/frontend.config.js'
 
+const GET_TRANSFER_EXTRINSIC_EVENTS = gql`
+  query extrinsic($exId: bigint!) {
+    extrinsic(where: { id: { _eq: $exId } }) {
+      id
+      hash
+      index
+      events(where: { method: { _eq: "Transfer" } }) {
+        data
+        extrinsic_id
+      }
+    }
+  }
+`
+
 export default {
   components: {
     ReefIdenticon,
@@ -150,6 +164,7 @@ export default {
                 hash
                 index
                 block_id
+                args
               }
               from_account {
                 address
@@ -168,6 +183,7 @@ export default {
               success
               amount
               timestamp
+              denom
             }
           }
         `,
@@ -182,8 +198,8 @@ export default {
             offset: (this.currentPage - 1) * this.perPage,
           }
         },
-        result({ data }) {
-          this.transfers = data.transfer.map(
+        async result({ data }) {
+          const converted = data.transfer.map(
             ({
               success,
               timestamp,
@@ -200,13 +216,38 @@ export default {
               timestamp,
               hash: extrinsic.hash,
               idx: extrinsic.index,
+              extrinsicId: extrinsic.id,
               block_id: extrinsic.block_id,
-              to: to === null ? toEvm : to.address,
-              from: from === null ? fromEvm : from.address,
+              to: to === null ? toEvm : to.address, // resolveAddress(toEvm, to, extrinsic.event.data[1]),
+              from: from === null ? fromEvm : from.address, // resolveAddress(toEvm, to, extrinsic.event.data[0]), // from === null ? fromEvm : from.address,
               symbol: token.verified_contract?.contract_data?.symbol || ' ',
               decimals: token.verified_contract?.contract_data?.decimals || 1,
             })
           )
+          const repared = converted.map(async (transfer) => {
+            if (transfer.to !== 'deleted' && transfer.from !== 'deleted') {
+              return transfer
+            }
+            const res = await this.$apollo.provider.defaultClient.query({
+              query: GET_TRANSFER_EXTRINSIC_EVENTS,
+              variables: {
+                exId: transfer.extrinsicId,
+              },
+            })
+            if (
+              res.data &&
+              res.data.extrinsic.length > 0 &&
+              res.data.extrinsic[0].events &&
+              res.data.extrinsic[0].events.length > 0 &&
+              res.data.extrinsic[0].events[0].data
+            ) {
+              const [to, from] = res.data.extrinsic[0].events[0].data
+              return { ...transfer, to, from }
+            }
+            return transfer
+          })
+
+          this.transfers = await Promise.all(repared)
           this.totalRows = this.filter ? this.transfers.length : this.nTransfers
           this.loading = false
         },

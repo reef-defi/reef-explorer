@@ -158,7 +158,7 @@ import ContractExecute from '../../components/ContractExecute.vue'
 import Loading from '@/components/Loading.vue'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
 import { network } from '@/frontend.config.js'
-import commonMixin, { toContractAddress } from '@/mixins/commonMixin.js'
+import commonMixin from '@/mixins/commonMixin.js'
 import TokenHolders from '@/components/TokenHolders'
 import TokenTransfers from '@/components/TokenTransfers'
 
@@ -175,7 +175,7 @@ export default {
     return {
       network,
       loading: true,
-      address: toContractAddress(this.$route.params.id),
+      address: this.toContractAddress(this.$route.params.id),
       contract: undefined,
       tab: 'info',
     }
@@ -234,7 +234,7 @@ export default {
         } */
         query: gql`
           subscription contract($address: String!) {
-            contract(where: { address: { _eq: $address } }) {
+            contract(where: { address: { _ilike: $address } }) {
               address
               bytecode
               extrinsic {

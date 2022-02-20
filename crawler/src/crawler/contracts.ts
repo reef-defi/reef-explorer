@@ -1,7 +1,7 @@
 import { nodeProvider } from "../utils/connector";
 import logger from '../utils/logger';
 import { insertV2 } from '../utils/connector';
-import { toContractAddress, wait } from '../utils/utils';
+import { toChecksumAddress, } from '../utils/utils';
 import type { StorageKey } from '@polkadot/types';
 import type { AnyTuple, Codec } from '@polkadot/types/types';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
@@ -24,7 +24,7 @@ export const parseAndInsertContracts = async (blockNumber: number): Promise<void
         .map(async ({address, codeHash, maintainer}): Promise<any[]> => {
             const signer = await nodeProvider.query((provider) => provider.api.query.evmAccounts.accounts(maintainer));
             return [
-                toContractAddress(address!),
+                toChecksumAddress(address!),
                 -1,
                 signer.toHuman()?.toString() || '0x',
                 codes[codeHash],                 

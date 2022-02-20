@@ -15,13 +15,11 @@ const toMomentDate = (timestampOrDateString) => {
     : moment(timestampOrDateString)
 }
 
-export const toContractAddress = (address) => {
-  return utils.getAddress(address.trim().toLowerCase())
-}
-
 export default {
   methods: {
-    toContractAddress,
+    toContractAddress(address) {
+      return utils.getAddress(address.trim().toLowerCase())
+    },
     shortAddress(address) {
       return (
         address.substring(0, 5) + '…' + address.substring(address.length - 5)
@@ -156,7 +154,7 @@ export default {
       if (!input || !input.toString()) {
         return false
       }
-      const address = toContractAddress(input)
+      const address = this.toContractAddress(input)
       if (!this.isEvmAddress(address)) {
         return false
       }

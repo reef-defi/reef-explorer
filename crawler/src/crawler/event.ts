@@ -1,4 +1,5 @@
 import { nodeProvider } from '../utils/connector';
+import { toChecksumAddress } from '../utils/utils';
 import {
   AccountBody, AccountHead, EventHead, ExtrinsicBody, Event,
 } from './types';
@@ -63,6 +64,9 @@ export const accountHeadToBody = async (
     nodeProvider.query((provider) => provider.api.derive.accounts.identity(head.address)),
   ]);
   const address = evmAddress.toString();
+  const eddress = address !== ''
+    ? toChecksumAddress(address)
+    : address;
 
   const evmNonce: string | null = address !== ''
     ? await nodeProvider.query((provider) => provider.api.query.evm.accounts(address))
@@ -72,7 +76,7 @@ export const accountHeadToBody = async (
 
   return {
     ...head,
-    evmAddress: address,
+    evmAddress: eddress,
     freeBalance: balances.freeBalance.toString(),
     lockedBalance: balances.lockedBalance.toString(),
     availableBalance: balances.availableBalance.toString(),
