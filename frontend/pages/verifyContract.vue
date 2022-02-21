@@ -229,9 +229,9 @@
               </div>
             </div>
             <b-alert show>
-              Providing contract filesources is crutial for contract
+              Providing contract filesources is crucial for contract
               verification! <br />
-              Here user shoudl create a project file-map to verify its contract.
+              Here user should create a project file-map to verify its contract.
               It is best to use exact filepaths like in project directory.
               <br />
               I.E. `contract/Storage.sol` should be used in Contract source
