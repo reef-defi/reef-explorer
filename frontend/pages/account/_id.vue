@@ -263,8 +263,8 @@ export default {
             account(
               where: {
                 _or: [
-                  { address: { _eq: $address } }
-                  { evm_address: { _eq: $address } }
+                  { address: { _ilike: $address } }
+                  { evm_address: { _ilike: $address } }
                 ]
               }
             ) {

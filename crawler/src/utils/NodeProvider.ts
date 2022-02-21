@@ -1,7 +1,7 @@
-import { Provider } from "@reef-defi/evm-provider";
-import { WsProvider } from "@polkadot/api";
-import { max, wait } from "./utils";
-import logger from "./logger";
+import { Provider } from '@reef-defi/evm-provider';
+import { WsProvider } from '@polkadot/api';
+import { max, wait } from './utils';
+import logger from './logger';
 
 export default class NodeProvider {
   private urls: string[];
@@ -34,7 +34,7 @@ export default class NodeProvider {
 
   getProvider() {
     if (this.providers.length === 0) {
-      throw new Error("Initialize providers! Non was detected");
+      throw new Error('Initialize providers! Non was detected');
     }
     const pointer = this.currentProvider;
     this.currentProvider = (this.currentProvider + 1) % this.providers.length;
@@ -52,16 +52,16 @@ export default class NodeProvider {
   }
 
   async initializeProviders(): Promise<void> {
-    logger.info("Connecting to nodes...");
+    logger.info('Connecting to nodes...');
     await this.initializeNodeProviders();
-    logger.info("... connected");
-    logger.info("Syncing node...");
+    logger.info('... connected');
+    logger.info('Syncing node...');
     await this.syncNode();
-    logger.info("Syncing complete");
+    logger.info('Syncing complete');
   }
 
   async closeProviders(): Promise<void> {
-    logger.info("Closing providers");
+    logger.info('Closing providers');
 
     for (let index = 0; index < this.providers.length; index += 1) {
       await this.providers[index].api.disconnect();
@@ -94,7 +94,7 @@ export default class NodeProvider {
   }
 
   private async initializeNodeProviders() {
-    logger.info("Inside");
+    logger.info('Inside');
     for (let index = 0; index < this.urls.length; index += 1) {
       const provider = new Provider({
         provider: new WsProvider(this.urls[index]),
@@ -108,7 +108,7 @@ export default class NodeProvider {
       this.providers[index].api.rpc.chain.subscribeFinalizedHeads(
         async (header) => {
           this.lastFinalizedBlockIds[index] = header.number.toNumber();
-        }
+        },
       );
       this.providers[index].api.rpc.chain.subscribeNewHeads(async (header) => {
         this.lastBlockIds[index] = header.number.toNumber();
