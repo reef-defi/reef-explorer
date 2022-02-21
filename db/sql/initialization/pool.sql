@@ -35,12 +35,13 @@ CREATE INDEX IF NOT EXISTS pool_reserved_2 ON pool (reserved_2);
 CREATE INDEX IF NOT EXISTS pool_reserved_2 ON pool (reserved_2);
 
 
-CREATE TYPE PoolType As Enum('Mint', 'Burn', 'Swap');
+CREATE TYPE PoolType As Enum('Mint', 'Burn', 'Swap', 'Sync');
 
 CREATE SEQUENCE pool_event_serail_id START -1;
 
 CREATE TABLE IF NOT EXISTS pool_event (
   id BIGSERIAL, -- TODO Do we need it as a primary key?
+  pool_id BIGINT NOT NULL,
   evm_event_id BIGINT NOT NULL,
 
   address VARCHAR(48) NOT NULL, -- ???
@@ -57,8 +58,8 @@ CREATE TABLE IF NOT EXISTS pool_event (
 
   -- Reserved fields indicate 
   -- TODO Do we have this info in harvesting???
-  -- reserved_1 NUMERIC(80, 0) NOT NULL,
-  -- reserved_2 NUMERIC(80, 0) NOT NULL,
+  reserved_1 NUMERIC(80, 0) NOT NULL,
+  reserved_2 NUMERIC(80, 0) NOT NULL,
 
   timestamp timestamptz NOT NULL,
 
@@ -67,8 +68,8 @@ CREATE TABLE IF NOT EXISTS pool_event (
       REFERENCES evm_event(id)
       ON DELETE CASCADE,
   CONSTRAINT fk_pool
-    FOREIGN KEY(evm_event_id)
-      REFERENCES evm_event(id)
+    FOREIGN KEY(pool_id)
+      REFERENCES pool(id)
       ON DELETE CASCADE
 )
 

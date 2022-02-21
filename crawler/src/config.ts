@@ -5,13 +5,8 @@ const toNumber = (defaultValue: number, value?: string): number => {
   return parseInt(value, 10);
 };
 
-// new Array(100).map(() => "ws://0.0.0.0:9944")
 const defaultNodeUrls = [
   'ws://0.0.0.0:9944',
-  // "ws://0.0.0.0:9945",
-  // "ws://0.0.0.0:9946",
-  // "ws://0.0.0.0:9948",
-  // "ws://0.0.0.0:9947",
 ];
 
 export default {
@@ -22,6 +17,7 @@ export default {
   pollInterval: toNumber(100, process.env.POLL_INTERVAL),
   sentryDns: process.env.SENTRY_DNS || '',
   sentryBacktrackingDns: process.env.SENTRY_DNS || '',
+  reefswapFactoryAddress: process.env.REEFSWAP_FACTORY_ADDR || '',
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',
