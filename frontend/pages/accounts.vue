@@ -472,10 +472,6 @@ export default {
   }
 
   @media only screen and (max-width: 768px) {
-    .accounts__table {
-      display: none;
-    }
-
     .accounts__list {
       display: block;
     }
