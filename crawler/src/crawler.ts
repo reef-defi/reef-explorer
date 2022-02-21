@@ -6,7 +6,7 @@ import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
 import { min, wait } from './utils/utils';
 import logger from './utils/logger';
-import { parseAndInsertContracts } from './crawler/contracts';
+import parseAndInsertContracts from './crawler/contracts';
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // import * as Tracing from "@sentry/tracing";
 
