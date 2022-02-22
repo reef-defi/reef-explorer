@@ -45,39 +45,63 @@ interface ProcessPairEvent extends DefaultPairEvent {
   data: utils.LogDescription;
 }
 
-const processSync = async ({poolId, eventId, timestamp, data}: ProcessPairEvent): Promise<void> => {
+type PoolEventParameterDict = {[key: string]: any};
+
+const defaultPairProcess = async ({poolId, eventId, timestamp}: DefaultPairEvent, type: string, data: PoolEventParameterDict): Promise<void> => {
+  const keys = Object.keys(data);
+  const values = keys.map((key) => data[key]);
   await queryv2(
     `INSERT INTO pool_event
-      (pool_id, evm_event_id, type, reserved_1, reserved_2, timestamp)
+      (pool_id, evm_event_id, timestamp, type, ${keys.join(", ")})
     VALUES
-      ($1, $2, $3, $4, $5, $6);
+      ($1, $2, $3, $4, ${keys.map((_, index) => `$${index + 5}`).join(", ")});
     `,
-    [poolId, eventId, 'Sync', data.args[0].toString(), data.args[1].toString(), timestamp]
+    [poolId, eventId, timestamp, type, ...values]
   )
 }
 
-const processMint = async ({poolId, eventId, data, timestamp}: ProcessPairEvent): Promise<void> => {
-  await queryv2(
-    `INSERT INTO pool_event
-      (pool_id, evm_event_id, type, sender_address, amount_1, amount_2, timestamp)
-    VALUES
-      ($1, $2, $3, $4, $5, $6, $7);
-    `,
-    [poolId, eventId, 'Mint', data.args[0], data.args[1].toString(), data.args[2].toString(), timestamp]
-  )
-}
+const processSync = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
+  event, 
+  'Sync', 
+  {
+    "reserved_1": event.data.args[0].toString(),
+    "reserved_2": event.data.args[1].toString(),
+  }
+);
 
-const processBurn = async ({poolId, eventId, data, timestamp}: ProcessPairEvent): Promise<void> => {
-  process.exit()
-  // await queryv2(
-  //   `INSERT INTO pool_event
-  //     (pool_id, evm_event_id, type, sender_address, amount_1, amount_2, timestamp)
-  //   VALUES
-  //     ($1, $2, $3, $4, $5, $6, $7);
-  //   `,
-  //   [poolId, eventId, 'Mint', data.args[0], data.args[1].toString(), data.args[2].toString(), timestamp]
-  // )
-}
+const processMint = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
+  event,
+  'Mint',
+  {
+    "sender_address": event.data.args[0],
+    "amount_1": event.data.args[1].toString(),
+    "amount_2": event.data.args[2].toString(),
+  }
+)
+
+const processBurn = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
+  event,
+  'Burn',
+  {
+    "sender_address": event.data.args[0],
+    "amount_1": event.data.args[1].toString(),
+    "amount_2": event.data.args[2].toString(),
+    "to_address": event.data.args[3]
+  }
+)
+
+const processSwap = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
+  event,
+  'Swap',
+  {
+    "sender_address": event.data.args[0],
+    "amount_in_1": event.data.args[1].toString(),
+    "amount_in_2": event.data.args[2].toString(),
+    "amount_1": event.data.args[3].toString(),
+    "amount_2": event.data.args[4].toString(),
+    "to_address": event.data.args[5]
+  }
+)
 
 const processPairEvent = async (pairEvent: InitialPairEvent): Promise<void> => {
   logger.info("Reefswap Pair event detected!");
@@ -91,8 +115,8 @@ const processPairEvent = async (pairEvent: InitialPairEvent): Promise<void> => {
   switch(data.name) {
     case "Mint": await processMint({...pairEvent, data}); break;
     case "Burn": await processBurn({...pairEvent, data}); break;
-    case "Swap": process.exit(); break;
-    case "Sync": processSync({...pairEvent, data}); break;
+    case "Swap": await processSwap({...pairEvent, data}); break;
+    case "Sync": await processSync({...pairEvent, data}); break;
     default: break;
   }
 }
