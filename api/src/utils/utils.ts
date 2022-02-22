@@ -32,3 +32,9 @@ export const delay = (ms: number): Promise<void> => new Promise((resolve) => {
 });
 
 export const toChecksumAddress = (address: string): string => utils.getAddress(address.trim().toLowerCase());
+
+export const dropKey = <T, Key extends keyof T> (obj: T, key: Key): Omit<T, Key> => {
+  const newObj = { ...obj };
+  delete newObj[key];
+  return newObj;
+};

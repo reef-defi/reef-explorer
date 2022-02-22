@@ -64,9 +64,11 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
 
   // Parse the timestamp from the `timestamp.set` extrinsic
   const firstExtrinsic = signedBlock.block.extrinsics[0];
+
   let timestamp;
   if (
-    firstExtrinsic.method.section === 'timestamp'
+    firstExtrinsic
+    && firstExtrinsic.method.section === 'timestamp'
     && firstExtrinsic.method.method === 'set'
   ) {
     timestamp = new Date(Number(firstExtrinsic.method.args)).toUTCString();
