@@ -1,5 +1,7 @@
 import { Request } from 'express';
-import { Fragment, JsonFragment, FunctionFragment, EventFragment } from '@ethersproject/abi';
+import {
+  Fragment, JsonFragment, FunctionFragment, EventFragment,
+} from '@ethersproject/abi';
 
 export interface AppRequest <T> extends Request {
   body: T

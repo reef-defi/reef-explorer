@@ -64,7 +64,7 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
 
   // Parse the timestamp from the `timestamp.set` extrinsic
   const firstExtrinsic = signedBlock.block.extrinsics[0];
-  
+
   let timestamp;
   if (
     firstExtrinsic

@@ -10,11 +10,11 @@ import Erc721Abi from '../../assets/Erc721Abi';
 import Erc1155Abi from '../../assets/Erc1155Abi';
 import { dropKey } from '../../utils/utils';
 
-
 const contractChecked = (abi: ABI, format: string[]): boolean => {
   const fragments = abi
-    .map((fragment) => ({...fragment,
-      inputs: fragment.inputs?.map((i) => dropKey(i, "name"))
+    .map((fragment) => ({
+      ...fragment,
+      inputs: fragment.inputs?.map((i) => dropKey(i, 'name')),
     }))
     .map((fragment) => JSON.stringify(fragment));
 
