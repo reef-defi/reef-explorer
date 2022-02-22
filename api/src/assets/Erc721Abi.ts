@@ -1,3 +1,6 @@
+import { ABI } from "../utils/types";
+import { dropKey } from "../utils/utils";
+
 export default [
   {
     "anonymous": false,
@@ -329,4 +332,8 @@ export default [
     "stateMutability": "nonpayable",
     "type": "function"
   }
-];
+]
+.map((fragment) => ({...fragment,
+  inputs: fragment.inputs?.map((i) => dropKey(i, "name")),
+}))
+.map((fragment) => JSON.stringify(fragment))
