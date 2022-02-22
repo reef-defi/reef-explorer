@@ -95,7 +95,7 @@ services:
 
   backtracking:
     image: reef-explorer-crawler
-    command: yarn start-backtracking
+    command: /wait-for http://graphql:8080/healthz -t 0 -- yarn start-backtracking
     restart: always
     environment:
       - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list

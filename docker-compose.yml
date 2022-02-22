@@ -97,7 +97,7 @@ services:
 
   backtracking:
     image: reef-explorer-crawler-dev
-    command: yarn dev-backtracking
+    command: /wait-for http://graphql:8080/healthz -t 0 -- yarn dev-backtracking
     volumes:
       - backtracking-modules:/usr/app/node_modules
       - ./crawler:/usr/app/
