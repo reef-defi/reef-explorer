@@ -53,6 +53,7 @@ services:
       - 8080:8080
     volumes:
       - './db/hasura/metadata:/hasura-metadata'
+      - './db/hasura/migrations:/hasura-migrations'
     depends_on:
       - 'postgres'
     restart: always
