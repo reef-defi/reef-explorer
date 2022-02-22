@@ -24,22 +24,47 @@ const getFirstQueryValue = async <T,>(statement: string, args = [] as any[]): Pr
   return res[0];
 }
 
+const findPoolEvent = async <T,>(evmEventId: string): Promise<T[]> => 
+  queryv2<T>('SELECT id FROM pool_event WHERE evm_event_id = $1;', [evmEventId]);
+
+const getCurrentPoolPointer = async (): Promise<string> =>
+  (await getFirstQueryValue<{currval: string}>(`SELECT last_value as currval FROM pool_event_sequence`)).currval
+
+const getNextPoolPointer = async (): Promise<string> =>
+  (await getFirstQueryValue<{nextval: string}>(`SELECT nextval('pool_event_sequence');`)).nextval
+
+const checkIfEventExists = async (id: string): Promise<boolean> => {
+  const event = await queryv2<unknown>('SELECT id FROM evm_event WHERE id = $1;', [id]);
+  return event.length > 0;
+}
+
+const findInitialIndex = async (): Promise<string> => {
+  let currentEvmEventPointer = await getCurrentPoolPointer();
+  
+  // Initializion with current evm event pointer to make sure last pool event was written in DB
+  let doesEventExist = await findPoolEvent<{id: number}>(currentEvmEventPointer);
+  while(doesEventExist.length > 0) {
+    currentEvmEventPointer = await getNextPoolPointer();  
+    doesEventExist = await findPoolEvent<{id: number}>(currentEvmEventPointer);
+  }
+  return currentEvmEventPointer;
+}
+
 const poolEvents = async () => {
-  let nextEvmEvent = await getFirstQueryValue<number>('SELECT next_val(pool_event_serail_id);');
+  let currentEvmEventPointer = await findInitialIndex();
 
   while (true) {
-    const event = await queryv2<any>('SELECT * FROM evm_event WHERE id = $1;', [nextEvmEvent]);
-
-    if (event.length === 0) { 
+    // If evm event does not exist wait for one second and retry
+    if (!(await checkIfEventExists(currentEvmEventPointer))) { 
       await wait(1000);
       continue;
     }
 
-    await processPoolEvent(event[0]);
-    nextEvmEvent = await getFirstQueryValue<number>('SELECT next_val(pool_event_serail_id);');
+    // process evm evnt pointer
+    await processPoolEvent(currentEvmEventPointer);
+    currentEvmEventPointer = await getNextPoolPointer();
   }
 };
-
 
 Promise.resolve()
   .then(async () => {
