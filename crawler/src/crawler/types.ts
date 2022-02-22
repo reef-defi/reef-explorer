@@ -167,7 +167,7 @@ export interface ERC721Token extends VerifiedContract {
   contract_data: ERC721Data;
 }
 
-interface RawEventData {
+export interface RawEventData {
   address: string,
   topics:string[],
   data: string,
