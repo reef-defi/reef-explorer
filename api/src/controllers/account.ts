@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { Response, Request } from 'express';
 import { findUserTokens, findUserContracts } from '../services/account';
 import { AppRequest } from '../utils/types';
@@ -17,6 +18,7 @@ export const accountTokens = async (req: AppRequest<AccountAddress>, res: Respon
     const tokens = await findUserTokens(req.body.address);
     res.send({ tokens: [...tokens] });
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };
@@ -27,6 +29,7 @@ export const accountOwnedContracts = async (req: Request, res: Response) => {
     const contracts = await findUserContracts(req.params.address);
     res.send({ contracts: [...contracts] });
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };
