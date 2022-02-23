@@ -19,7 +19,9 @@ Sentry.init({
       root: global.__dirname,
     }),
   ],
+  environment: config.environment,
 });
+Sentry.setTag('component', 'api');
 
 const cors = require('cors');
 

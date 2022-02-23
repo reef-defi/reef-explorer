@@ -128,6 +128,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PW}
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
       - SENTRY_DNS=${SENTRY_DNS}
+      - ENVIRONMENT=${ENVIRONMENT}
     ports:
       - ${API_PORT}:${API_PORT}
     depends_on:

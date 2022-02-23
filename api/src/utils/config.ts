@@ -10,6 +10,7 @@ export default {
   nodeWs: process.env.NODE_URL || 'ws://0.0.0.0:9944',
   recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
   sentryDns: process.env.SENTRY_DNS || '',
+  environment: process.env.ENVIRONMENT,
 
   postgresConfig: {
     port: toNumber(54321, process.env.POSTGRES_PORT),
