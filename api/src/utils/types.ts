@@ -1,5 +1,7 @@
 import { Request } from 'express';
-import { Fragment, JsonFragment } from '@ethersproject/abi';
+import {
+  Fragment, JsonFragment, FunctionFragment, EventFragment,
+} from '@ethersproject/abi';
 
 export interface AppRequest <T> extends Request {
   body: T
@@ -65,7 +67,7 @@ export type License =
   | 'Apache-2.0'
   | 'GNU AGPLv3';
 
-export type ABIFragment = Fragment | JsonFragment;
+export type ABIFragment = Fragment | JsonFragment | FunctionFragment | EventFragment;
 export type ABI = ReadonlyArray<ABIFragment>;
 
 // Request types
