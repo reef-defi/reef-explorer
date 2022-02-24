@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { Response } from 'express';
 import { authenticationToken } from '../services/utils';
 import {
@@ -20,6 +21,7 @@ export const submitVerification = async (req: AppRequest<AutomaticContractVerifi
     await verify(req.body);
     res.send('Verified');
   } catch (err) {
+    Sentry.captureException(err);
     console.log(err);
     if (err.status === 404) {
       await contractVerificationRequestInsert({
@@ -40,6 +42,7 @@ export const formVerification = async (req: AppRequest<ManualContractVerificatio
     await verify(req.body);
     res.send('Verified');
   } catch (err) {
+    Sentry.captureException(err);
     if (err.status === 404) {
       await contractVerificationRequestInsert({
         ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
@@ -55,6 +58,7 @@ export const verificationStatus = async (req: AppRequest<ContractVerificationID>
     const status = await contractVerificationStatus(req.body.id);
     res.send(status);
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };
@@ -66,6 +70,7 @@ export const getVerifiedContract = async (req: AppRequest<{}>, res: Response) =>
     ensure(contracts.length > 0, 'Contract does not exist');
     res.send(contracts[0]);
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };

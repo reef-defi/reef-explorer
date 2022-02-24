@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/node';
+import { RewriteFrames } from '@sentry/integrations';
 import express, { Response } from 'express';
 import morgan from 'morgan';
 import config from './utils/config';
@@ -7,6 +9,19 @@ import verificationRouter from './routes/verification';
 import { getLastBlock, getReefPrice } from './services/utils';
 import { errorStatus } from './utils/utils';
 import { getProvider } from './utils/connector';
+
+/* eslint "no-underscore-dangle": "off" */
+Sentry.init({
+  dsn: config.sentryDns,
+  tracesSampleRate: 1.0,
+  integrations: [
+    new RewriteFrames({
+      root: global.__dirname,
+    }),
+  ],
+  environment: config.environment,
+});
+Sentry.setTag('component', 'api');
 
 const cors = require('cors');
 

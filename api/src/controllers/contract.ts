@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { Response } from 'express';
 import {
   findContractDB, findERC20Token, findTokenAccountTokenBalance, findTokenInfo, getERC20Tokens,
@@ -14,6 +15,7 @@ export const findToken = async (req: AppRequest<{}>, res: Response) => {
 
     res.send(token);
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };
@@ -26,6 +28,7 @@ export const findContract = async (req: AppRequest<{}>, res: Response) => {
 
     res.send(contracts[0]);
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };
@@ -35,6 +38,7 @@ export const getAllERC20Tokens = async (_, res: Response) => {
     const tokens = await getERC20Tokens();
     res.send({ tokens: [...tokens] });
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };
@@ -56,6 +60,7 @@ export const accountTokenBalance = async (req: AppRequest<TokenBalanceParam>, re
       res.send({ balance: tokenBalances[0].balance, decimals: tokenBalances[0].info.decimals || 0 });
     }
   } catch (err) {
+    Sentry.captureException(err);
     res.status(errorStatus(err)).send(err.message);
   }
 };
