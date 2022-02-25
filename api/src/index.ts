@@ -1,16 +1,14 @@
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
-import  Tracing from '@sentry/tracing';
-import express, { NextFunction, Response, Request } from 'express';
+import express, { Response, Request } from 'express';
 import morgan from 'morgan';
 import config from './utils/config';
 import accountRouter from './routes/account';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
 import { getLastBlock, getReefPrice } from './services/utils';
-import { errorStatus } from './utils/utils';
+import { errorStatus, StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
-import { StatusError } from './utils/utils';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
@@ -63,21 +61,21 @@ app.get('/api/crawler/status', async (_, res: Response) => {
 // add sentry error handler
 app.use(
   Sentry.Handlers.errorHandler({
-    shouldHandleError(error) {
+    shouldHandleError() {
       return true;
     },
-  }) as express.ErrorRequestHandler
+  }) as express.ErrorRequestHandler,
 );
 
-const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+const errorHandler = (err: Error, req: Request, res: Response) => {
   console.log({
     request: req,
-    error: err
+    error: err,
   });
   const status = err instanceof StatusError ? err.status : 400;
   const message = err.message || 'Something went wrong';
-  res.status(status).send({ error: message});
-}
+  res.status(status).send({ error: message });
+};
 
 app.use(errorHandler);
 

@@ -1,8 +1,7 @@
-import * as Sentry from '@sentry/node';
 import { Response, Request, NextFunction } from 'express';
 import { findUserTokens, findUserContracts } from '../services/account';
 import { AppRequest } from '../utils/types';
-import { ensure, errorStatus } from '../utils/utils';
+import { ensure } from '../utils/utils';
 
 interface AccountAddress {
   address: string;

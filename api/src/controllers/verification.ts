@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/node';
 import { Response, NextFunction } from 'express';
 import { authenticationToken } from '../services/utils';
 import {
@@ -7,7 +6,7 @@ import {
 } from '../services/verification';
 import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from '../utils/types';
 import {
-  ensureObjectKeys, errorStatus, ensure, toChecksumAddress,
+  ensureObjectKeys, ensure, toChecksumAddress,
 } from '../utils/utils';
 
 interface ContractVerificationID {

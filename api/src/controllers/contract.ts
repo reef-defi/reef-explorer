@@ -1,11 +1,10 @@
-import * as Sentry from '@sentry/node';
 import { Response, NextFunction } from 'express';
 import {
   findContractDB, findERC20Token, findTokenAccountTokenBalance, findTokenInfo, getERC20Tokens,
 } from '../services/contract';
 import { AppRequest } from '../utils/types';
 import {
-  ensure, ensureObjectKeys, errorStatus, toChecksumAddress,
+  ensure, ensureObjectKeys, toChecksumAddress,
 } from '../utils/utils';
 
 export const findToken = async (req: AppRequest<{}>, res: Response, next: NextFunction) => {
@@ -23,8 +22,8 @@ export const findContract = async (req: AppRequest<{}>, res: Response, next: Nex
     ensure(!!req.params.address, 'Url paramter address is missing');
     const contracts = await findContractDB(req.params.address);
     ensure(contracts.length > 0, 'Contract does not exist');
-  res.send(contracts[0]);
-  } catch(err) {
+    res.send(contracts[0]);
+  } catch (err) {
     next(err);
   }
 };
