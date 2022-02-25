@@ -72,7 +72,7 @@ app.use(
 
 const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log({
-    reques: req,
+    request: req,
     error: err
   });
   const status = err instanceof StatusError ? err.status : 400;
