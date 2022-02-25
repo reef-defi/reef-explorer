@@ -35,14 +35,14 @@ type PariEventType = "Swap" | "Burn" | "Mint" | "Sync";
 type PoolEventParameterDict = {[key: string]: any};
 
 interface PoolEventData {
-  toAddress?: string;
-  senderAddress?: string;
-  amount1?: string;
-  amount2?: string;
-  amountIn1?: string;
-  amountIn2?: string;
-  reserved1?: string;
-  reserved2?: string;
+  to_address?: string;
+  sender_address?: string;
+  amount_1?: string;
+  amount_2?: string;
+  amount_in_1?: string;
+  amount_in_2?: string;
+  reserved_1?: string;
+  reserved_2?: string;
 }
 
 const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): Promise<void> => {
@@ -68,12 +68,13 @@ const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): P
 
 type PoolEventKey = keyof PoolEventData;
 
-const poolEventInsertSequence: PoolEventKey[] = ["toAddress", "senderAddress", "amount1", "amount2", "amountIn1", "amountIn2", "reserved1", "reserved2"];
+const poolEventInsertSequence: PoolEventKey[] = ["to_address", "sender_address", "amount_1", "amount_2", "amount_in_1", "amount_in_2", "reserved_1", "reserved_2"];
 
 const defaultPairProcess = async ({poolId, eventId, timestamp}: DefaultPairEvent, type: PariEventType, data: PoolEventParameterDict): Promise<void> => {
   logger.info(`Processing ${type} event...`)
   
   const vals = poolEventInsertSequence.map((key) => data[key] || null)
+  console.log(vals);
 
   await queryv2(
     `INSERT INTO pool_event
