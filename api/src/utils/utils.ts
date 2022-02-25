@@ -20,13 +20,6 @@ export const ensureObjectKeys = <Object extends {}, K extends keyof Object> (obj
     .forEach((key) => ensure(!!obj[key], `Parameter ${key} is missing`, 400));
 };
 
-export const errorStatus = (err: any): number => {
-  if (err instanceof StatusError) {
-    return err.status;
-  }
-  return 400;
-};
-
 export const delay = (ms: number): Promise<void> => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });

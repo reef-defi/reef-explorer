@@ -7,7 +7,7 @@ import accountRouter from './routes/account';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
 import { getLastBlock, getReefPrice } from './services/utils';
-import { errorStatus, StatusError } from './utils/utils';
+import { StatusError } from './utils/utils';
 import { getProvider } from './utils/connector';
 
 /* eslint "no-underscore-dangle": "off" */
