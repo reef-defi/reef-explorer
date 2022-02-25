@@ -11,7 +11,6 @@ import { getLastBlock, getReefPrice } from './services/utils';
 import { errorStatus } from './utils/utils';
 import { getProvider } from './utils/connector';
 import { StatusError } from './utils/utils';
-import { stat } from 'fs';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
