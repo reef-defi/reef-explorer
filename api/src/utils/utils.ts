@@ -1,6 +1,6 @@
 import { utils } from 'ethers';
 
-class StatusError extends Error {
+export class StatusError extends Error {
   status: number;
 
   constructor(message: string, status: number) {
