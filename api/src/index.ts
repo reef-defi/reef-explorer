@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
-import express, { Response, Request } from 'express';
+import express, { Response, Request, NextFunction } from 'express';
 import morgan from 'morgan';
 import config from './utils/config';
 import accountRouter from './routes/account';
@@ -40,21 +40,21 @@ app.use('/api', contractRouter);
 app.use('/api/account', accountRouter);
 app.use('/api/verificator', verificationRouter);
 
-app.get('/api/price/reef', async (_, res: Response) => {
+app.get('/api/price/reef', async (_, res: Response, next: NextFunction) => {
   try {
     const price = await getReefPrice();
     res.send(price);
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    next(err);
   }
 });
 
-app.get('/api/crawler/status', async (_, res: Response) => {
+app.get('/api/crawler/status', async (_, res: Response, next: NextFunction) => {
   try {
     const result = await getLastBlock();
     res.send({ ...result });
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    next(err);
   }
 });
 
