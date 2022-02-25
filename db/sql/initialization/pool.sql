@@ -52,8 +52,6 @@ CREATE TABLE IF NOT EXISTS pool_event (
   amount_in_1 NUMERIC(80, 0),
   amount_in_2 NUMERIC(80, 0),
 
-  -- Reserved fields indicate 
-  -- TODO Do we have this info in harvesting???
   reserved_1 NUMERIC(80, 0),
   reserved_2 NUMERIC(80, 0),
 
