@@ -1,4 +1,13 @@
 
+
+-- DROP FUNCTION pool_ratio;
+
+
+-- SELECT * FROM pool_candlestick('minute');
+
+-- DROP FUNCTION qr;
+
+
 -- DROP FUNCTION pool_query_ratio;
 -- CREATE FUNCTION pool_query_ratio (
 --   duration text
@@ -173,9 +182,9 @@
 --   ORDER BY org.pool_id, org.timeframe;
 
 
- SELECT DISTINCT ON (timeframe)
-  *
-FROM pool_ratio_query('minute')
+--  SELECT DISTINCT ON (timeframe)
+--   *
+-- FROM pool_ratio_query('minute')
       -- WHERE 
         -- org.timeframe = sub.timeframe AND 
         -- MIN(org.timestamp) = sub.timestamp
