@@ -1,5 +1,4 @@
-import * as Sentry from '@sentry/node';
-import { Response } from 'express';
+import { Response, NextFunction } from 'express';
 import { authenticationToken } from '../services/utils';
 import {
   contractVerificationRequestInsert,
@@ -7,32 +6,30 @@ import {
 } from '../services/verification';
 import { AppRequest, AutomaticContractVerificationReq, ManualContractVerificationReq } from '../utils/types';
 import {
-  ensureObjectKeys, errorStatus, ensure, toChecksumAddress,
+  ensureObjectKeys, ensure, toChecksumAddress,
 } from '../utils/utils';
 
 interface ContractVerificationID {
   id: string;
 }
 
-export const submitVerification = async (req: AppRequest<AutomaticContractVerificationReq>, res: Response) => {
+export const submitVerification = async (req: AppRequest<AutomaticContractVerificationReq>, res: Response, next: NextFunction) => {
   try {
     ensureObjectKeys(req.body, ['address', 'name', 'runs', 'filename', 'source', 'compilerVersion', 'optimization', 'arguments', 'address', 'target']);
     req.body.address = toChecksumAddress(req.body.address);
     await verify(req.body);
     res.send('Verified');
   } catch (err) {
-    Sentry.captureException(err);
-    console.log(err);
     if (err.status === 404) {
       await contractVerificationRequestInsert({
         ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
       });
     }
-    res.status(errorStatus(err)).send({ message: err.message });
+    next(err);
   }
 };
 
-export const formVerification = async (req: AppRequest<ManualContractVerificationReq>, res: Response) => {
+export const formVerification = async (req: AppRequest<ManualContractVerificationReq>, res: Response, next: NextFunction) => {
   try {
     ensureObjectKeys(req.body, ['address', 'name', 'runs', 'filename', 'source', 'compilerVersion', 'optimization', 'token', 'arguments', 'address', 'target']);
 
@@ -42,35 +39,32 @@ export const formVerification = async (req: AppRequest<ManualContractVerificatio
     await verify(req.body);
     res.send('Verified');
   } catch (err) {
-    Sentry.captureException(err);
     if (err.status === 404) {
       await contractVerificationRequestInsert({
         ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
       });
     }
-    res.status(errorStatus(err)).send(err.message);
+    next(err);
   }
 };
 
-export const verificationStatus = async (req: AppRequest<ContractVerificationID>, res: Response) => {
+export const verificationStatus = async (req: AppRequest<ContractVerificationID>, res: Response, next: NextFunction) => {
   try {
     ensure(!!req.body.id, 'Parameter id is missing');
     const status = await contractVerificationStatus(req.body.id);
     res.send(status);
   } catch (err) {
-    Sentry.captureException(err);
-    res.status(errorStatus(err)).send(err.message);
+    next(err);
   }
 };
 
-export const getVerifiedContract = async (req: AppRequest<{}>, res: Response) => {
+export const getVerifiedContract = async (req: AppRequest<{}>, res: Response, next: NextFunction) => {
   try {
     ensure(!!req.params.address, 'Url paramter address is missing');
     const contracts = await findVeririedContract(toChecksumAddress(req.params.address));
     ensure(contracts.length > 0, 'Contract does not exist');
     res.send(contracts[0]);
   } catch (err) {
-    Sentry.captureException(err);
-    res.status(errorStatus(err)).send(err.message);
+    next(err);
   }
 };
