@@ -1,0 +1,29 @@
+table:
+  name: pool_day_candlestick
+  schema: public
+object_relationships:
+- name: pool
+  using:
+    manual_configuration:
+      remote_table:
+        schema: public
+        name: pool
+      column_mapping:
+        pool_id: id
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - timeframe
+    - pool_id
+    - which_token
+    - low_ratio_token_1
+    - low_ratio_token_2
+    - high_ratio_token_1
+    - high_ratio_token_2
+    - open_ratio_token_1
+    - open_ratio_token_2
+    - close_ratio_token_1
+    - close_ratio_token_2
+    filter: {}
+  role: public
