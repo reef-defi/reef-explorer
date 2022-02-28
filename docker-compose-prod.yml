@@ -33,7 +33,8 @@ services:
       - './db/sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
       - './db/sql/initialization/tokenHolder.sql:/docker-entrypoint-initdb.d/08_tokenHolder.sql'
       - './db/sql/initialization/newlyVerifiedContract.sql:/docker-entrypoint-initdb.d/09_newlyVerifiedContract.sql'
-      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/10_chainInfo.sql'
+      - './db/sql/initialization/pool.sql:/docker-entrypoint-initdb.d/10_pool.sql'
+      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/11_chainInfo.sql'
     ports:
       - 5432:5432
     environment:
