@@ -86,6 +86,7 @@ services:
       - POSTGRES_USER=${DB_USER} #reefexplorer
       - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+      - ENVIRONMENT=${ENVIRONMENT}
     depends_on:
       - 'postgres'
       - 'substrate-node'
