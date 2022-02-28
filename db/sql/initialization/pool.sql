@@ -138,7 +138,7 @@ CREATE FUNCTION pool_ratio (
     ORDER BY pe.timestamp;
   end; $$
   LANGUAGE plpgsql;
-  
+
 -- Pool candlestick function groups by pool events by timeframe, pool id and which token (flag which indicates token token1/token2)
 CREATE FUNCTION pool_candlestick (
   duration text

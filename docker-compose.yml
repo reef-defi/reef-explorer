@@ -36,7 +36,7 @@ services:
       - './db/sql/initialization/pool.sql:/docker-entrypoint-initdb.d/10_pool.sql'
       - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/11_chainInfo.sql'
     ports:
-      - 54321:5432
+      - 5432:5432
     environment:
       POSTGRES_USER: ${DB_USER} #'reefexplorer'
       POSTGRES_PASSWORD: ${DB_PW} #'reefexplorer'
