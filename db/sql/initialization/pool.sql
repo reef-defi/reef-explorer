@@ -215,7 +215,6 @@ CREATE VIEW pool_hour_candlestick AS
 
 CREATE VIEW pool_day_candlestick AS
   SELECT * FROM pool_candlestick('day');
-  
 
 -- Pool volume data
 CREATE VIEW pool_volume AS 
