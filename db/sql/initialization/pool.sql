@@ -1,3 +1,7 @@
+CREATE TYPE PoolType As Enum('Mint', 'Burn', 'Swap', 'Sync');
+
+CREATE SEQUENCE pool_event_sequence START 1;
+
 CREATE TABLE IF NOT EXISTS pool (
   id BIGSERIAL,
   
@@ -5,6 +9,10 @@ CREATE TABLE IF NOT EXISTS pool (
   address VARCHAR(48) NOT NULL,
   token_1 VARCHAR(48) NOT NULL,
   token_2 VARCHAR(48) NOT NULL,
+
+  pool_decimal INT NOT NULL,
+  decimal_1 INT NOT NULL,
+  decimal_2 INT NOT NULL,
 
   PRIMARY KEY (id),
   CONSTRAINT fk_evm_event
@@ -25,15 +33,6 @@ CREATE TABLE IF NOT EXISTS pool (
       REFERENCES contract(address)
       ON DELETE CASCADE
 );
-
-CREATE INDEX IF NOT EXISTS pool_address ON pool (address);
-CREATE INDEX IF NOT EXISTS pool_token_1 ON pool (token_1);
-CREATE INDEX IF NOT EXISTS pool_token_2 ON pool (token_2);
-CREATE INDEX IF NOT EXISTS pool_evm_event_id ON pool (evm_event_id);
-
-
-CREATE TYPE PoolType As Enum('Mint', 'Burn', 'Swap', 'Sync');
-CREATE SEQUENCE pool_event_sequence START 1;
 
 CREATE TABLE IF NOT EXISTS pool_event (
   id BIGSERIAL, -- TODO Do we need it as a primary key?
@@ -65,6 +64,11 @@ CREATE TABLE IF NOT EXISTS pool_event (
       ON DELETE CASCADE
 );
 
+CREATE INDEX IF NOT EXISTS pool_address ON pool (address);
+CREATE INDEX IF NOT EXISTS pool_token_1 ON pool (token_1);
+CREATE INDEX IF NOT EXISTS pool_token_2 ON pool (token_2);
+CREATE INDEX IF NOT EXISTS pool_evm_event_id ON pool (evm_event_id);
+
 CREATE INDEX IF NOT EXISTS pool_event_type ON pool_event(type);
 CREATE INDEX IF NOT EXISTS pool_event_pool_id ON pool_event(pool_id);
 CREATE INDEX IF NOT EXISTS pool_event_amount_1 ON pool_event(amount_1);
@@ -78,7 +82,8 @@ CREATE INDEX IF NOT EXISTS pool_event_amount_in_2 ON pool_event(amount_in_2);
 CREATE INDEX IF NOT EXISTS pool_event_evm_event_id ON pool_event(evm_event_id);
 CREATE INDEX IF NOT EXISTS pool_event_sender_address ON pool_event(sender_address);
 
-
+-- Pool ratio function prepares pool info in intermediat structure for easier candlestick calculatin
+-- Currenty it uses ration between buy amount and sell amount from which candlesticks are made.
 CREATE FUNCTION pool_ratio (
   duration text
 )
@@ -100,14 +105,22 @@ CREATE FUNCTION pool_ratio (
       (
         CASE 
           WHEN pe.amount_in_2 > 0
-          THEN pe.amount_1/pe.amount_in_2
+          THEN (
+            pe.amount_1 / POWER(10, pl.decimal_1)
+          ) / (
+            pe.amount_in_2 / POWER(10, pl.decimal_2)
+          )
           ELSE 1
         END
       ) as token_1_ratio,
       (
         CASE
           WHEN pe.amount_in_1 > 0
-          THEN pe.amount_2/pe.amount_in_1
+          THEN (
+            pe.amount_2 / POWER(10, pl.decimal_2)
+          ) / (
+            pe.amount_in_1 / POWER(10, pl.decimal_1)
+          )
           ELSE 1
         END
       ) as token_2_ratio,
@@ -119,12 +132,14 @@ CREATE FUNCTION pool_ratio (
         END
       ) as which_token
     FROM pool_event as pe
+    JOIN pool as pl
+      ON pe.pool_id = pl.id
     WHERE pe.type = 'Swap'
     ORDER BY pe.timestamp;
   end; $$
   LANGUAGE plpgsql;
   
-
+-- Pool candlestick function groups by pool events by timeframe, pool id and which token (flag which indicates token token1/token2)
 CREATE FUNCTION pool_candlestick (
   duration text
 )
@@ -191,6 +206,7 @@ CREATE FUNCTION pool_candlestick (
   end; $$
   LANGUAGE plpgsql;
 
+-- Additional pools for minute, hour and day candlestick data
 CREATE VIEW pool_minute_candlestick AS
   SELECT * FROM pool_candlestick('minute');
 
@@ -200,3 +216,12 @@ CREATE VIEW pool_hour_candlestick AS
 CREATE VIEW pool_day_candlestick AS
   SELECT * FROM pool_candlestick('day');
   
+
+CREATE VIEW pool_volume AS 
+  SELECT
+    pool_id,
+    timestamp,
+    reserved_1,
+    reserved_2
+  FROM pool_event
+  WHERE type = 'Sync';
