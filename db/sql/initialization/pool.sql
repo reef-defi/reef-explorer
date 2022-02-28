@@ -106,9 +106,9 @@ CREATE FUNCTION pool_ratio (
         CASE 
           WHEN pe.amount_in_2 > 0
           THEN (
-            pe.amount_1 / POWER(10, pl.decimal_1)
+            pe.amount_1 / POWER(10, pl.decimal_1)::decimal
           ) / (
-            pe.amount_in_2 / POWER(10, pl.decimal_2)
+            pe.amount_in_2 / POWER(10, pl.decimal_2)::decimal
           )
           ELSE 1
         END
@@ -117,9 +117,9 @@ CREATE FUNCTION pool_ratio (
         CASE
           WHEN pe.amount_in_1 > 0
           THEN (
-            pe.amount_2 / POWER(10, pl.decimal_2)
+            pe.amount_2 / POWER(10, pl.decimal_2)::decimal
           ) / (
-            pe.amount_in_1 / POWER(10, pl.decimal_1)
+            pe.amount_in_1 / POWER(10, pl.decimal_1)::decimal
           )
           ELSE 1
         END
@@ -216,6 +216,8 @@ CREATE VIEW pool_hour_candlestick AS
 CREATE VIEW pool_day_candlestick AS
   SELECT * FROM pool_candlestick('day');
   
+
+-- Pool volume data
 CREATE VIEW pool_volume AS 
   SELECT
     pool_id,
