@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS pool (
   id BIGSERIAL,
   
@@ -34,7 +33,6 @@ CREATE INDEX IF NOT EXISTS pool_evm_event_id ON pool (evm_event_id);
 
 
 CREATE TYPE PoolType As Enum('Mint', 'Burn', 'Swap', 'Sync');
-
 CREATE SEQUENCE pool_event_sequence START 1;
 
 CREATE TABLE IF NOT EXISTS pool_event (
@@ -135,12 +133,12 @@ CREATE FUNCTION pool_candlestick (
     pool_id BIGINT,
     which_token int,
     low_ratio_token_1 decimal,
-    low_ratio_token_2 decimal,
     high_ratio_token_1 decimal,
+    low_ratio_token_2 decimal,
     high_ratio_token_2 decimal,
     open_ratio_token_1 decimal,
-    open_ratio_token_2 decimal,
     close_ratio_token_1 decimal,
+    open_ratio_token_2 decimal,
     close_ratio_token_2 decimal
   )
   AS $$
@@ -201,5 +199,4 @@ CREATE VIEW pool_hour_candlestick AS
 
 CREATE VIEW pool_day_candlestick AS
   SELECT * FROM pool_candlestick('day');
-    -- (timeframe, pool_id, which_token, low_ratio_token_1, low_ratio_token_2, high_ratio_token_1, high_ratio_token_2, open_ratio_token_1, open_ratio_token_2, close_ratio_token_1, close_ratio_token_2)
   
