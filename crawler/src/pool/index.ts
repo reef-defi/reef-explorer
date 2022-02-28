@@ -1,10 +1,11 @@
 import { RawEventData } from "../crawler/types";
-import { queryv2 } from "../utils/connector"
+import { nodeProvider, queryv2 } from "../utils/connector"
 import logger from "../utils/logger";
 import config from "./../config"
-import { utils } from "ethers";
+import { utils, Contract } from "ethers";
 import ReefswapPair from "../assets/ReefswapPair";
 import ReefswapFactory from "../assets/ReefswapFactoryAbi";
+import erc20Abi from "../assets/erc20Abi";
 
 interface DefaultPairEvent {
   poolId: string;
@@ -57,12 +58,20 @@ const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): P
 
   const [tokenAddress1, tokenAddress2, poolAddress] = data.args as string[];
 
+  const pool = new Contract(poolAddress, ReefswapPair, nodeProvider.getProvider());
+  const token1 = new Contract(tokenAddress1, erc20Abi, nodeProvider.getProvider());
+  const token2 = new Contract(tokenAddress2, erc20Abi, nodeProvider.getProvider());
+
+  const poolDecimal = await pool.decimals();
+  const tokenDecimal1 = await token1.decimals();
+  const tokenDecimal2 = await token2.decimals();
+
   await queryv2(
     `INSERT INTO pool 
-      (evm_event_id, address, token_1, token_2)
+      (evm_event_id, address, token_1, token_2, pool_decimal, decimal_1, decimal_2)
     VALUES
-      ($1, $2, $3, $4);`, 
-    [evmEventId, poolAddress, tokenAddress1, tokenAddress2]
+      ($1, $2, $3, $4, $5, $6, $7);`, 
+    [evmEventId, poolAddress, tokenAddress1, tokenAddress2, poolDecimal.toString(), tokenDecimal1.toString(), tokenDecimal2.toString()]
   );
 }
 
@@ -74,7 +83,6 @@ const defaultPairProcess = async ({poolId, eventId, timestamp}: DefaultPairEvent
   logger.info(`Processing ${type} event...`)
   
   const vals = poolEventInsertSequence.map((key) => data[key] || null)
-  console.log(vals);
 
   await queryv2(
     `INSERT INTO pool_event
