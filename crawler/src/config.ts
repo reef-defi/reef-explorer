@@ -17,11 +17,11 @@ export default {
   pollInterval: toNumber(100, process.env.POLL_INTERVAL),
   sentryDns: process.env.SENTRY_DNS || '',
   sentryBacktrackingDns: process.env.SENTRY_DNS || '',
-  reefswapFactoryAddress: process.env.REEFSWAP_FACTORY_ADDR || '',
+  reefswapFactoryAddress: process.env.FACTORY_ADDRESS || '',
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',
-    port: toNumber(5432, process.env.POSTGRES_PORT),
+    port: toNumber(54321, process.env.POSTGRES_PORT),
     user: process.env.POSTGRES_USER || 'reefexplorer',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
     password: process.env.POSTGRES_PASSWORD || 'reefexplorer',

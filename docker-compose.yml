@@ -33,9 +33,10 @@ services:
       - './db/sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
       - './db/sql/initialization/tokenHolder.sql:/docker-entrypoint-initdb.d/08_tokenHolder.sql'
       - './db/sql/initialization/newlyVerifiedContract.sql:/docker-entrypoint-initdb.d/09_newlyVerifiedContract.sql'
-      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/10_chainInfo.sql'
+      - './db/sql/initialization/pool.sql:/docker-entrypoint-initdb.d/10_pool.sql'
+      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/11_chainInfo.sql'
     ports:
-      - 5432:5432
+      - 54321:5432
     environment:
       POSTGRES_USER: ${DB_USER} #'reefexplorer'
       POSTGRES_PASSWORD: ${DB_PW} #'reefexplorer'
@@ -115,6 +116,28 @@ services:
     networks:
       - reefscan
 
+  pool:
+    image: reef-explorer-crawler-dev
+    command: yarn dev-pool
+    volumes:
+      - pool-modules:/usr/app/node_modules
+      - ./crawler:/usr/app/
+    restart: always
+    environment:
+      - FACTORY_ADDRESS=0x6a6f9922a9a680040365D5d2C3aa94dc95CfeCbb # TODO change the address based on used network 
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - SENTRY_DNS=${CRAWLER_SENTRY_DNS}
+      - POSTGRES_PORT=${DB_PORT} #5432
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER} #reefexplorer
+      - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
+      - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+    depends_on:
+      - 'postgres'
+      - 'substrate-node'
+    networks:
+      - reefscan
+
   api:
     image: reef-explorer-api-dev
     build:
@@ -167,6 +190,7 @@ volumes:
   substrate-data: {}
   crawler-modules: {}
   backtracking-modules: {}
+  pool-modules: {}
   api-modules: {}
   frontend-modules: {}
 
