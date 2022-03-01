@@ -106,7 +106,7 @@ export default {
         variables() {
           return {
             contractAddress: {
-              _ilike: this.toContractAddress(this.contractId)
+              _ilike: this.toContractAddress(this.contractId),
             },
           }
         },
