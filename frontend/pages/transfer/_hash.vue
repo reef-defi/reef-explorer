@@ -88,7 +88,7 @@ export default {
           hash: this.hash,
         }
       },
-      async result({ data }) {
+      result({ data }) {
         if (data && data.transfer) {
           this.transfer = data.transfer[0]
           this.transfer.to_address =
