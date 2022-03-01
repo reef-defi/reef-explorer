@@ -116,7 +116,7 @@ services:
     command: yarn start-pool
     restart: always
     environment:
-      - FACTORY_ADDRESS=0x6a6f9922a9a680040365D5d2C3aa94dc95CfeCbb # TODO change the address depending on the network.
+      - FACTORY_ADDRESS=${REEFSWAP_FACTORY_ADDRESS}
       - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
       - SENTRY_DNS=${CRAWLER_SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
