@@ -18,6 +18,7 @@ Sentry.init({
   environment: config.environment,
 });
 Sentry.setTag('component', 'backtracking');
+Sentry.setTag('network', config.network);
 
 interface Address {
   address: string;

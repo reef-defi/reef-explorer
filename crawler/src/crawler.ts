@@ -22,6 +22,7 @@ Sentry.init({
   environment: config.environment,
 });
 Sentry.setTag('component', 'crawler');
+Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 

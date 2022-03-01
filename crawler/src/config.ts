@@ -19,10 +19,11 @@ export default {
   sentryBacktrackingDns: process.env.SENTRY_DNS || '',
   environment: process.env.ENVIRONMENT,
   reefswapFactoryAddress: process.env.FACTORY_ADDRESS || '',
+  network: process.env.NETWORK,
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',
-    port: toNumber(5432, process.env.POSTGRES_PORT),
+    port: toNumber(54321, process.env.POSTGRES_PORT),
     user: process.env.POSTGRES_USER || 'reefexplorer',
     database: process.env.POSTGRES_DATABASE || 'reefexplorer',
     password: process.env.POSTGRES_PASSWORD || 'reefexplorer',

@@ -17,6 +17,7 @@ Sentry.init({
   environment: config.environment,
 });
 Sentry.setTag('component', 'pools');
+Sentry.setTag('network', config.network);
 
 const getFirstQueryValue = async <T, >(statement: string, args = [] as any[]): Promise<T> => {
   const res = await queryv2<T>(statement, args);

@@ -11,6 +11,7 @@ export default {
   recaptchaSecret: process.env.RECAPTCHA_SECRET || '',
   sentryDns: process.env.SENTRY_DNS || '',
   environment: process.env.ENVIRONMENT,
+  network: process.env.NETWORK,
 
   postgresConfig: {
     port: toNumber(54321, process.env.POSTGRES_PORT),

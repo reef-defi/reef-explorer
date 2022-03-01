@@ -88,6 +88,7 @@ services:
       - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
       - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
     depends_on:
       - 'postgres'
       - 'substrate-node'
@@ -106,6 +107,8 @@ services:
       - POSTGRES_USER=${DB_USER} #reefexplorer
       - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+      - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
     depends_on:
       - 'postgres'
       - 'substrate-node'
@@ -125,6 +128,8 @@ services:
       - POSTGRES_USER=${DB_USER} #reefexplorer
       - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+      - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
     depends_on:
       - 'postgres'
       - 'substrate-node'
@@ -150,6 +155,7 @@ services:
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
       - SENTRY_DNS=${SENTRY_DNS}
       - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
     ports:
       - ${API_PORT}:${API_PORT}
     depends_on:
