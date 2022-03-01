@@ -39,17 +39,29 @@ const checkIfEventExists = async (id: string): Promise<boolean> => {
   return event.length > 0;
 };
 
+const checkIfPoolEventExists = async (id: string): Promise<boolean> => {
+  const events = await findPoolEvent(id);
+  return events.length > 0;
+}
+
 const findInitialIndex = async (): Promise<string> => {
   let currentEvmEventPointer = await getCurrentPoolPointer();
 
   // Initializion with current evm event pointer to make sure last pool event was written in DB
-  let doesEventExist = await findPoolEvent(currentEvmEventPointer);
-  while (doesEventExist.length > 0) {
+  while (await checkIfPoolEventExists(currentEvmEventPointer)) {
     currentEvmEventPointer = await getNextPoolPointer();
-    doesEventExist = await findPoolEvent(currentEvmEventPointer);
   }
+
   return currentEvmEventPointer;
 };
+
+const isCurrentPointerInGap = async (id: string): Promise<boolean> => {
+  const events = await queryv2<unknown>(
+    'SELECT id FROM evm_event WHERE id > $1 LIMIT 1;', 
+    [id]
+  )
+  return events.length > 0;
+}
 
 const poolEvents = async () => {
   let currentEvmEventPointer = await findInitialIndex();
@@ -59,6 +71,8 @@ const poolEvents = async () => {
     if (await checkIfEventExists(currentEvmEventPointer)) {
       // process evm evnt pointer
       await processPoolEvent(currentEvmEventPointer);
+      currentEvmEventPointer = await getNextPoolPointer();
+    } else if (await isCurrentPointerInGap(currentEvmEventPointer)) {
       currentEvmEventPointer = await getNextPoolPointer();
     } else {
       await wait(1000);
