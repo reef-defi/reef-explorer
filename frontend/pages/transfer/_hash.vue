@@ -16,29 +16,6 @@ import { gql } from 'graphql-tag'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 
-const DOES_CONTRACT_EXIST_GQL = gql`
-  query contract($contract: String!) {
-    contract(where: { address: { _like: $contract } }) {
-      address
-    }
-  }
-`
-
-const isAddressContract = async (client, address) => {
-  if (address === null || address.length !== 42) {
-    return false
-  }
-
-  const res = await client.query({
-    query: DOES_CONTRACT_EXIST_GQL,
-    variables: {
-      contract: address,
-    },
-  })
-
-  return res.data.contract.length > 0
-}
-
 export default {
   components: {
     Loading,
@@ -111,7 +88,7 @@ export default {
           hash: this.hash,
         }
       },
-      async result({ data }) {
+      result({ data }) {
         if (data && data.transfer) {
           this.transfer = data.transfer[0]
           this.transfer.to_address =
@@ -128,15 +105,6 @@ export default {
             this.transfer.from_address =
               data.transfer[0].extrinsic.events[0].data[0]
           }
-
-          this.transfer.isToAddressContract = await isAddressContract(
-            this.$apollo.provider.defaultClient,
-            this.transfer.to_address
-          )
-          this.transfer.isFromAddressContract = await isAddressContract(
-            this.$apollo.provider.defaultClient,
-            this.transfer.from_address
-          )
 
           if (
             this.transfer.token &&

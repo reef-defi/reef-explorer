@@ -48,11 +48,7 @@
               :address="transfer.from_address"
               :size="20"
             />
-            <nuxt-link
-              :to="`/${
-                transfer.isFromAddressContract ? 'contract' : 'account'
-              }/${transfer.from_address}`"
-            >
+            <nuxt-link :to="`/account/${transfer.from_address}`">
               {{ transfer.from_address }}
             </nuxt-link>
           </div>
@@ -68,11 +64,7 @@
               :address="transfer.to_address"
               :size="20"
             />
-            <nuxt-link
-              :to="`/${transfer.isToAddressContract ? 'contract' : 'account'}/${
-                transfer.to_address
-              }`"
-            >
+            <nuxt-link :to="`/account/${transfer.to_address}`">
               {{ transfer.to_address }}
             </nuxt-link>
           </div>
