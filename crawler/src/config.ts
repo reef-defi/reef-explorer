@@ -17,6 +17,7 @@ export default {
   pollInterval: toNumber(100, process.env.POLL_INTERVAL),
   sentryDns: process.env.SENTRY_DNS || '',
   sentryBacktrackingDns: process.env.SENTRY_DNS || '',
+  environment: process.env.ENVIRONMENT,
   reefswapFactoryAddress: process.env.FACTORY_ADDRESS || '',
 
   postgresConfig: {
