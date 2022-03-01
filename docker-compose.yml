@@ -128,9 +128,9 @@ services:
       - ./crawler:/usr/app/
     restart: always
     environment:
-      - FACTORY_ADDRESS=${REEFSWAP_FACTORY_ADDRESS}
+      - FACTORY_ADDRESS=${FACTORY_ADDRESS}
       - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
-      - SENTRY_DNS=${CRAWLER_SENTRY_DNS}
+      - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
       - POSTGRES_USER=${DB_USER} #reefexplorer

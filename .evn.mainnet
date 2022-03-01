@@ -2,4 +2,3 @@ NETWORK=mainnet
 NODE_CHAIN=mainnet
 NODE_CHAIN_CMD=--chain
 FACTORY_ADDRESS=0x380a9033500154872813F6E1120a81ed6c0760a8
-VOLUMES = db-data crawler-modules backtracking-modules api-modules frontend-modules
