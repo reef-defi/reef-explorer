@@ -16,7 +16,7 @@ import { gql } from 'graphql-tag'
 import Loading from '@/components/Loading.vue'
 import commonMixin from '@/mixins/commonMixin.js'
 
-const DOES_ACCOUNT_EXIST_GQL = gql`
+const DOES_CONTRACT_EXIST_GQL = gql`
   query contract($contract: String!) {
     contract(where: { address: { _like: $contract } }) {
       address
@@ -30,7 +30,7 @@ const isAddressContract = async (client, address) => {
   }
 
   const res = await client.query({
-    query: DOES_ACCOUNT_EXIST_GQL,
+    query: DOES_CONTRACT_EXIST_GQL,
     variables: {
       contract: address,
     },
