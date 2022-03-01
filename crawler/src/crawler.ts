@@ -12,14 +12,16 @@ import parseAndInsertContracts from './crawler/contracts';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
-  dsn: config.sentryDns, // TODO put this out! process.env.SENTRY_DSN
+  dsn: config.sentryDns,
   tracesSampleRate: 1.0,
   integrations: [
     new RewriteFrames({
       root: global.__dirname,
     }),
   ],
+  environment: config.environment,
 });
+Sentry.setTag('component', 'crawler');
 
 console.warn = () => {};
 
@@ -92,5 +94,7 @@ Promise.resolve()
     Sentry.captureException(error);
     await nodeProvider.closeProviders();
     logger.error('Finished');
-    process.exit(-1);
+    Sentry.close(2000).then(function() {
+      process.exit(-1);
+    })
   });
