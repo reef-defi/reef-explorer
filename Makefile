@@ -1,13 +1,3 @@
-VOLUMES = db-data crawler-modules backtracking-modules api-modules frontend-modules
-
-ifeq ($(net), dev)
-	NODE_CHAIN_CMD=--dev
-	NODE_CHAIN=
-	VOLUMES += substrate-data
-else
-	NODE_CHAIN_CMD=--chain
-	NODE_CHAIN=$(net)
-endif
 
 ifeq ($(env), prod)
 	COMPOSE-MANIFEST=docker-compose-prod.yml
@@ -15,8 +5,10 @@ else
 	COMPOSE-MANIFEST=docker-compose.yml
 endif
 
+
+
 up:
-	NODE_CHAIN_CMD=$(NODE_CHAIN_CMD) NODE_CHAIN=$(NODE_CHAIN) docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) up -d
+	export $$(cat $(net).env | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) up -d
 
 down:
 	docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) down
