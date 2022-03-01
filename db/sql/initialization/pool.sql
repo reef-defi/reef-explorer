@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS pool_event (
 
   timestamp timestamptz NOT NULL,
 
+  PRIMARY KEY (id),
+
   CONSTRAINT fk_event
     FOREIGN KEY(evm_event_id)
       REFERENCES evm_event(id)
