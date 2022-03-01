@@ -14,7 +14,9 @@ Sentry.init({
       root: global.__dirname,
     }),
   ],
+  environment: config.environment,
 });
+Sentry.setTag('component', 'pools');
 
 const getFirstQueryValue = async <T, >(statement: string, args = [] as any[]): Promise<T> => {
   const res = await queryv2<T>(statement, args);
@@ -95,5 +97,7 @@ Promise.resolve()
     Sentry.captureException(error);
     await nodeProvider.closeProviders();
     logger.error('Finished');
-    process.exit(-1);
+    Sentry
+      .close(2000)
+      .then(() => process.exit(-1))
   });
