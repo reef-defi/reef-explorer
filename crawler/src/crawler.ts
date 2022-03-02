@@ -4,7 +4,7 @@ import config from './config';
 import processBlocks, { processInitialBlocks } from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
-import { min, wait } from './utils/utils';
+import { min, wait, promiseWithTimeout } from './utils/utils';
 import logger from './utils/logger';
 import parseAndInsertContracts from './crawler/contracts';
 // Importing @sentry/tracing patches the global hub for tracing to work.
@@ -92,9 +92,15 @@ Promise.resolve()
   .catch(async (error) => {
     logger.error(error);
     Sentry.captureException(error);
-    await nodeProvider.closeProviders();
+
+    try {
+      await promiseWithTimeout(nodeProvider.closeProviders(), 200, Error('Failed to close proivders!'));
+    } catch (err) {
+      Sentry.captureException(err);
+    }
+
     logger.error('Finished');
-    Sentry.close(2000).then(function() {
+    Sentry.close(2000).then(() => {
       process.exit(-1);
-    })
+    });
   });
