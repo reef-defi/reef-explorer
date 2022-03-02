@@ -86,6 +86,7 @@ const poolEvents = async () => {
 Promise.resolve()
   .then(async () => {
     await nodeProvider.initializeProviders();
+    logger.info(`Factory address used: ${config.reefswapFactoryAddress}`);
   })
   .then(poolEvents)
   .then(async () => {

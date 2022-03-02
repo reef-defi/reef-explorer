@@ -85,7 +85,7 @@ CREATE INDEX IF NOT EXISTS pool_event_evm_event_id ON pool_event(evm_event_id);
 CREATE INDEX IF NOT EXISTS pool_event_sender_address ON pool_event(sender_address);
 
 -- Pool ratio function prepares pool info in intermediat structure for easier candlestick calculatin
--- Currenty it uses ration between buy amount and sell amount from which candlesticks are made.
+-- Currenty ratio is calculated betweem reserves of token 1 and reserves of token 2
 CREATE FUNCTION pool_ratio (
   duration text
 )
@@ -93,70 +93,49 @@ CREATE FUNCTION pool_ratio (
     pool_id BIGINT, 
     timeframe timestamptz,
     exact_time timestamptz,
-    token_1_ratio decimal,
-    token_2_ratio decimal,
-    which_token int
+    ratio_1 decimal,
+    ratio_2 decimal
   )
   as $$
   begin
     return query
     SELECT 
-      pe.pool_id as pool_id,
-      date_trunc(duration, pe.timestamp) as timeframe,
-      pe.timestamp as exact_time,
+      pe.pool_id,
+      date_trunc(duration, pe.timestamp),
+      pe.timestamp,
       (
-        CASE 
-          WHEN pe.amount_in_2 > 0
-          THEN (
-            pe.amount_1 / POWER(10, pl.decimal_1)::decimal
-          ) / (
-            pe.amount_in_2 / POWER(10, pl.decimal_2)::decimal
-          )
-          ELSE 1
-        END
-      ) as token_1_ratio,
+        pe.reserved_1 / POWER(10, pl.decimal_1)::decimal
+      ) / (
+        pe.reserved_2 / POWER(10, pl.decimal_2)::decimal
+      ),
       (
-        CASE
-          WHEN pe.amount_in_1 > 0
-          THEN (
-            pe.amount_2 / POWER(10, pl.decimal_2)::decimal
-          ) / (
-            pe.amount_in_1 / POWER(10, pl.decimal_1)::decimal
-          )
-          ELSE 1
-        END
-      ) as token_2_ratio,
-      (
-        CASE
-          WHEN pe.amount_in_2 > 0
-          THEN 1
-          ELSE 2
-        END
-      ) as which_token
+        pe.reserved_2 / POWER(10, pl.decimal_2)::decimal
+      ) / (
+        pe.reserved_1 / POWER(10, pl.decimal_1)::decimal
+      )
     FROM pool_event as pe
     JOIN pool as pl
       ON pe.pool_id = pl.id
-    WHERE pe.type = 'Swap'
+    WHERE pe.type = 'Sync'
     ORDER BY pe.timestamp;
   end; $$
   LANGUAGE plpgsql;
 
--- Pool candlestick function groups by pool events by timeframe, pool id and which token (flag which indicates token token1/token2)
+-- Pool candlestick function groups by pool events by timeframe and pool id and find their Max, min , first and last values
 CREATE FUNCTION pool_candlestick (
   duration text
 )
   RETURNS TABLE (
     timeframe timestamptz,
     pool_id BIGINT,
-    which_token int,
-    low_ratio_token_1 decimal,
-    high_ratio_token_1 decimal,
-    low_ratio_token_2 decimal,
-    high_ratio_token_2 decimal,
-    open_ratio_token_1 decimal,
-    close_ratio_token_1 decimal,
-    open_ratio_token_2 decimal,
-    close_ratio_token_2 decimal
+    low_1 decimal,
+    high_1 decimal,
+    low_2 decimal,
+    high_2 decimal,
+    open_1 decimal,
+    close_1 decimal,
+    open_2 decimal,
+    close_2 decimal
   )
   AS $$
   BEGIN
@@ -164,49 +143,48 @@ CREATE FUNCTION pool_candlestick (
     SELECT 
       org.timeframe,
       org.pool_id,
-      org.which_token as which_token,
-      MIN(org.token_1_ratio) as low_ratio_token_1,
-      MAX(org.token_1_ratio) as high_ratio_token_1,
-      MIN(org.token_2_ratio) as low_ratio_token_2,
-      MAX(org.token_2_ratio) as high_ratio_token_2,
-      -- TODO maybe place below distint selects into one function? 
+      MIN(org.ratio_1),
+      MAX(org.ratio_1),
+      MIN(org.ratio_2),
+      MAX(org.ratio_2),
       (
         SELECT DISTINCT ON (sub.timeframe)
-          sub.token_1_ratio
+          sub.ratio_1
         FROM pool_ratio(duration) as sub
         WHERE 
           org.timeframe = sub.timeframe AND 
           MIN(org.exact_time) = sub.exact_time
-      ) as opened_token_1_ratio,
+      ),
       (
         SELECT DISTINCT ON (sub.timeframe)
-          sub.token_1_ratio
+          sub.ratio_1
         FROM pool_ratio(duration) as sub
         WHERE 
           org.timeframe = sub.timeframe AND 
           MAX(org.exact_time) = sub.exact_time
-      ) as closed_token_1_ratio,
+      ),
       (
         SELECT DISTINCT ON (sub.timeframe)
-          sub.token_2_ratio
+          sub.ratio_2
         FROM pool_ratio(duration) as sub
         WHERE 
           org.timeframe = sub.timeframe AND 
           MIN(org.exact_time) = sub.exact_time
-      ) as opened_token_2_ratio,
+      ),
       (
         SELECT DISTINCT ON (sub.timeframe)
-          sub.token_2_ratio
+          sub.ratio_2
         FROM pool_ratio(duration) as sub
         WHERE 
           org.timeframe = sub.timeframe AND 
           MAX(org.exact_time) = sub.exact_time
-      ) as closed_token_2_ratio
+      )
     FROM pool_ratio(duration) as org
-    GROUP BY org.timeframe, org.pool_id, org.which_token
+    GROUP BY org.timeframe, org.pool_id
     ORDER BY org.pool_id, org.timeframe;
   end; $$
   LANGUAGE plpgsql;
+
 
 -- Additional pools for minute, hour and day candlestick data
 CREATE VIEW pool_minute_candlestick AS
