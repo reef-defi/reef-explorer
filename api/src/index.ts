@@ -67,6 +67,7 @@ app.use(
   }) as express.ErrorRequestHandler,
 );
 
+/* eslint "no-unused-vars": "off" */
 const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log({
     request: req,
