@@ -100,13 +100,7 @@ Promise.resolve()
     }
 
     logger.error('Finished');
-<<<<<<< HEAD
-    Sentry.close(2000).then(function() {
-      process.exit(-1);
-    })
-=======
     Sentry.close(2000).then(() => {
       process.exit(-1);
     });
->>>>>>> develop
   });
