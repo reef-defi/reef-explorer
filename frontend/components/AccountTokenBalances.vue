@@ -165,9 +165,9 @@ export default {
             holder_account_id: balance.signer,
             holder_evm_address: balance.account.evm_address,
             balance: balance.balance,
-            token_decimals: balance.info.decimals || 1,
+            token_decimals: balance.info?.decimals || 1,
             token_name: balance.contract.verified_contract.name,
-            token_symbol: balance.info.symbol || '', // TODO check
+            token_symbol: balance.info?.symbol || '', // TODO check
           }))
           this.totalRows = this.balances.length
           this.loading = false
