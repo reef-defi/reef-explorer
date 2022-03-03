@@ -37,7 +37,7 @@
       <Row>
         <Cell>Timestamp</Cell>
         <Cell>
-          {{ getDateFromTimestamp(event.timestamp) }}
+          {{ formatTimestamp(event.timestamp) }}
         </Cell>
       </Row>
 
