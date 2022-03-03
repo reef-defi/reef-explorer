@@ -295,6 +295,10 @@ export default {
         result({ data }) {
           if (data && data.account && data.account.length > 0) {
             this.parsedAccount = data.account[0]
+          } else if (this.accountId.length === 42) {
+            this.$router.push({
+              path: `/contract/${this.accountId}`,
+            })
           }
           this.loading = false
         },

@@ -67,7 +67,7 @@ app.use(
   }) as express.ErrorRequestHandler,
 );
 
-const errorHandler = (err: Error, req: Request, res: Response) => {
+const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log({
     request: req,
     error: err,
