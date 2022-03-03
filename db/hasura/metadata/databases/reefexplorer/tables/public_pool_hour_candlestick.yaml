@@ -16,14 +16,14 @@ select_permissions:
     columns:
     - timeframe
     - pool_id
-    - which_token
-    - low_ratio_token_1
-    - low_ratio_token_2
-    - high_ratio_token_1
-    - high_ratio_token_2
-    - open_ratio_token_1
-    - open_ratio_token_2
-    - close_ratio_token_1
-    - close_ratio_token_2
+    - low_1
+    - low_2
+    - close_1
+    - close_2
+    - high_1
+    - high_2
+    - open_1
+    - open_2
+    # - which_token
     filter: {}
   role: public

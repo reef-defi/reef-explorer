@@ -121,6 +121,70 @@ CREATE FUNCTION pool_ratio (
   end; $$
   LANGUAGE plpgsql;
 
+-- Additional pool ratio function, which calculates the ratio between buy and sell amount
+-- It has an additional field (which_token) to indicate for which token ration was calculated
+-- CREATE FUNCTION pool_ratio (
+--   duration text
+-- )
+--   RETURNS TABLE (
+--     pool_id BIGINT, 
+--     timeframe timestamptz,
+--     exact_time timestamptz,
+--     ratio_1 decimal,
+--     ratio_2 decimal,
+--     which_token int
+--   )
+--   as $$
+--   begin
+--     return query
+--     SELECT 
+--       pe.pool_id,
+--       date_trunc(duration, pe.timestamp),
+--       pe.timestamp,
+--       (
+--         CASE 
+--         WHEN pe.amount_in_2 > 0
+--         THEN (
+--           pe.amount_1 / POWER(10, pl.decimal_1)::decimal
+--         ) / (
+--           pe.amount_in_2 / POWER(10, pl.decimal_2)::decimal
+--         )
+--         ELSE -1
+--         END
+--       ),
+--       (
+--         pe.reserved_2 / POWER(10, pl.decimal_2)::decimal
+--       ) / (
+--         pe.reserved_1 / POWER(10, pl.decimal_1)::decimal
+--       ),
+--       (
+--         CASE
+--           WHEN pe.amount_in_1 > 0
+--           THEN (
+--             pe.amount_2 / POWER(10, pl.decimal_2)::decimal
+--           ) / (
+--             pe.amount_in_1 / POWER(10, pl.decimal_1)::decimal
+--           )
+--           ELSE 1
+--         END
+--       ) as token_2_ratio,
+--       (
+--         CASE
+--           WHEN pe.amount_in_2 > 0
+--           THEN 1
+--           ELSE 2
+--         END
+--       ) 
+--     FROM pool_event as pe
+--     JOIN pool as pl
+--       ON pe.pool_id = pl.id
+--     WHERE pe.type = 'Sync'
+--     ORDER BY pe.timestamp;
+--   end; $$
+--   LANGUAGE plpgsql;
+
+
+
 -- Pool candlestick function groups by pool events by timeframe and pool id and find their Max, min , first and last values
 CREATE FUNCTION pool_candlestick (
   duration text
@@ -184,6 +248,77 @@ CREATE FUNCTION pool_candlestick (
     ORDER BY org.pool_id, org.timeframe;
   end; $$
   LANGUAGE plpgsql;
+
+-- Additional pool_candlestick that evaluates buy/sell ratios
+-- It has an additional field "which_token" to indicate for which token ration was calculated
+-- CREATE FUNCTION pool_candlestick (
+--   duration text
+-- )
+--   RETURNS TABLE (
+--     timeframe timestamptz,
+--     pool_id BIGINT,
+--     low_1 decimal,
+--     high_1 decimal,
+--     low_2 decimal,
+--     high_2 decimal,
+--     open_1 decimal,
+--     close_1 decimal,
+--     open_2 decimal,
+--     close_2 decimal,
+--     which_token int
+--   )
+--   AS $$
+--   BEGIN
+--     RETURN QUERY  
+--     SELECT 
+--       org.timeframe,
+--       org.pool_id,
+--       MIN(org.ratio_1),
+--       MAX(org.ratio_1),
+--       MIN(org.ratio_2),
+--       MAX(org.ratio_2),
+--       (
+--         SELECT DISTINCT ON (sub.timeframe)
+--           sub.ratio_1
+--         FROM pool_ratio(duration) as sub
+--         WHERE 
+--           org.timeframe = sub.timeframe AND 
+--           MIN(org.exact_time) = sub.exact_time AND
+--           which_token = 1
+--       ),
+--       (
+--         SELECT DISTINCT ON (sub.timeframe)
+--           sub.ratio_1
+--         FROM pool_ratio(duration) as sub
+--         WHERE 
+--           org.timeframe = sub.timeframe AND 
+--           MAX(org.exact_time) = sub.exact_time AND
+--           which_token = 1
+--       ),
+--       (
+--         SELECT DISTINCT ON (sub.timeframe)
+--           sub.ratio_2
+--         FROM pool_ratio(duration) as sub
+--         WHERE 
+--           org.timeframe = sub.timeframe AND 
+--           MIN(org.exact_time) = sub.exact_time AND
+--           which_token = 2
+--       ),
+--       (
+--         SELECT DISTINCT ON (sub.timeframe)
+--           sub.ratio_2
+--         FROM pool_ratio(duration) as sub
+--         WHERE 
+--           org.timeframe = sub.timeframe AND 
+--           MAX(org.exact_time) = sub.exact_time AND
+--           which_token = 2
+--       ),
+--       org.which_token
+--     FROM pool_ratio(duration) as org
+--     GROUP BY org.timeframe, org.pool_id, org.which_token
+--     ORDER BY org.pool_id, org.timeframe;
+--   end; $$
+--   LANGUAGE plpgsql;
 
 
 -- Additional pools for minute, hour and day candlestick data
