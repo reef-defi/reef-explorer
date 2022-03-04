@@ -24,6 +24,6 @@ select_permissions:
     - high_2
     - open_1
     - open_2
-    # - which_token
+    - which_token
     filter: {}
   role: public
