@@ -1,5 +1,5 @@
 table:
-  name: pool_volume
+  name: pool_supply
   schema: public
 object_relationships:
 - name: pool
@@ -16,7 +16,7 @@ select_permissions:
     columns:
     - pool_id
     - timestamp
-    - reserved_1
-    - reserved_2
+    - supply
+    - total_supply
     filter: {}
   role: public

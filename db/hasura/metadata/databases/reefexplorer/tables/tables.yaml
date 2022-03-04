@@ -15,4 +15,5 @@
 - "!include public_pool_hour_candlestick.yaml"
 - "!include public_pool_minute_candlestick.yaml"
 - "!include public_pool_volume.yaml"
+- "!include public_pool_supply.yaml"
 - "!include public_chain_info.yaml"

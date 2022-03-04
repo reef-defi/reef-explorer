@@ -1,4 +1,4 @@
-CREATE TYPE PoolType As Enum('Mint', 'Burn', 'Swap', 'Sync');
+CREATE TYPE PoolType As Enum('Mint', 'Burn', 'Swap', 'Sync', 'Transfer');
 
 CREATE SEQUENCE pool_event_sequence START 1;
 
@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS pool_event (
 
   reserved_1 NUMERIC(80, 0),
   reserved_2 NUMERIC(80, 0),
+  supply NUMERIC(80, 0),
   total_supply NUMERIC(80, 0),
 
   timestamp timestamptz NOT NULL,
@@ -73,6 +74,7 @@ CREATE INDEX IF NOT EXISTS pool_token_2 ON pool (token_2);
 CREATE INDEX IF NOT EXISTS pool_evm_event_id ON pool (evm_event_id);
 
 CREATE INDEX IF NOT EXISTS pool_event_type ON pool_event(type);
+CREATE INDEX IF NOT EXISTS pool_event_supply ON pool_event(supply);
 CREATE INDEX IF NOT EXISTS pool_event_pool_id ON pool_event(pool_id);
 CREATE INDEX IF NOT EXISTS pool_event_amount_1 ON pool_event(amount_1);
 CREATE INDEX IF NOT EXISTS pool_event_amount_2 ON pool_event(amount_2);
@@ -83,6 +85,7 @@ CREATE INDEX IF NOT EXISTS pool_event_to_address ON pool_event(to_address);
 CREATE INDEX IF NOT EXISTS pool_event_amount_in_1 ON pool_event(amount_in_1);
 CREATE INDEX IF NOT EXISTS pool_event_amount_in_2 ON pool_event(amount_in_2);
 CREATE INDEX IF NOT EXISTS pool_event_evm_event_id ON pool_event(evm_event_id);
+CREATE INDEX IF NOT EXISTS pool_event_total_supply ON pool_event(total_supply);
 CREATE INDEX IF NOT EXISTS pool_event_sender_address ON pool_event(sender_address);
 
 -- Pool ratio function prepares pool info in intermediat structure for easier candlestick calculatin
@@ -333,7 +336,15 @@ CREATE VIEW pool_volume AS
     pool_id,
     timestamp,
     reserved_1,
-    reserved_2,
-    total_supply
+    reserved_2
   FROM pool_event
   WHERE type = 'Sync';
+
+CREATE VIEW pool_supply AS
+  SELECT
+    pool_id,
+    timestamp,
+    supply,
+    total_supply
+  FROM pool_event
+  WHERE type = 'Transfer';

@@ -6,6 +6,9 @@ import config from '../config';
 import ReefswapPair from '../assets/ReefswapPair';
 import ReefswapFactory from '../assets/ReefswapFactoryAbi';
 import erc20Abi from '../assets/erc20Abi';
+import { BigNumber } from "ethers";
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 interface DefaultPairEvent {
   poolId: string;
@@ -33,7 +36,7 @@ interface PartialEvmEvent {
   contractaddress: string;
 }
 
-type PariEventType = 'Swap' | 'Burn' | 'Mint' | 'Sync';
+type PariEventType = 'Swap' | 'Burn' | 'Mint' | 'Sync' | 'Transfer';
 type PoolEventParameterDict = {[key: string]: any};
 
 interface PoolEventData {
@@ -45,6 +48,7 @@ interface PoolEventData {
   amount_in_2?: string;
   reserved_1?: string;
   reserved_2?: string;
+  supply?: string;
   total_supply?: string;
 }
 
@@ -79,7 +83,7 @@ const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): P
 
 type PoolEventKey = keyof PoolEventData;
 
-const poolEventInsertSequence: PoolEventKey[] = ['to_address', 'sender_address', 'amount_1', 'amount_2', 'amount_in_1', 'amount_in_2', 'reserved_1', 'reserved_2', 'total_supply'];
+const poolEventInsertSequence: PoolEventKey[] = ['to_address', 'sender_address', 'amount_1', 'amount_2', 'amount_in_1', 'amount_in_2', 'reserved_1', 'reserved_2', 'supply', 'total_supply'];
 
 const defaultPairProcess = async ({ poolId, eventId, timestamp }: DefaultPairEvent, type: PariEventType, data: PoolEventParameterDict): Promise<void> => {
   logger.info(`Processing ${type} event...`);
@@ -100,19 +104,44 @@ const defaultPairProcess = async ({ poolId, eventId, timestamp }: DefaultPairEve
   );
 };
 
-const processSync = async (event: ProcessPairEvent): Promise<void> => {
-  const poolPair = new Contract(event.address, ReefswapPair, nodeProvider.getProvider());
-  const totalSupply = await poolPair.totalSupply();
+const processTransfer = async (event: ProcessPairEvent): Promise<void> => {
+  const [addr1, addr2, amount] = event.data.args;
+  if (addr1 !== ZERO_ADDRESS && addr2 != ZERO_ADDRESS) { return; }
+  if (addr1 === ZERO_ADDRESS && addr2 === ZERO_ADDRESS) { return; }
+
+  const prevSupply = await queryv2<{total_supply: number}>(
+    `SELECT total_supply
+    FROM pool_event
+    WHERE type = 'Transfer' AND pool_id = $1
+    ORDER BY timestamp desc
+    LIMIT 1;
+    `,
+    [event.poolId]
+  );
+  const supply = prevSupply && prevSupply.length > 0 ? prevSupply[0].total_supply : 0
+  const isMint = addr1 === ZERO_ADDRESS;
+  const prev = BigNumber.from(supply.toString());
+  
+  const totalSupply = isMint ? prev.add(amount) : prev.sub(amount);
+
   await defaultPairProcess(
     event,
-    'Sync',
+    'Transfer',
     {
-      reserved_1: event.data.args[0].toString(),
-      reserved_2: event.data.args[1].toString(),
+      supply: `${!isMint ? "-" : ""}${amount.toString()}`,
       total_supply: totalSupply.toString(),
-    },
+    }
   );
-}
+} 
+
+const processSync = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
+  event,
+  'Sync',
+  {
+    reserved_1: event.data.args[0].toString(),
+    reserved_2: event.data.args[1].toString(),
+  },
+);
 
 const processMint = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
   event,
@@ -158,6 +187,7 @@ const processPairEvent = async (pairEvent: InitialPairEvent): Promise<void> => {
     case 'Burn': await processBurn({ ...pairEvent, data }); break;
     case 'Swap': await processSwap({ ...pairEvent, data }); break;
     case 'Sync': await processSync({ ...pairEvent, data }); break;
+    case 'Transfer': await processTransfer({...pairEvent, data}); break;
     default: break;
   }
 };
