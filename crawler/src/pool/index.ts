@@ -9,6 +9,7 @@ import erc20Abi from '../assets/erc20Abi';
 
 interface DefaultPairEvent {
   poolId: string;
+  address: string;
   eventId: string;
   timestamp: string;
 }
@@ -44,6 +45,7 @@ interface PoolEventData {
   amount_in_2?: string;
   reserved_1?: string;
   reserved_2?: string;
+  total_supply?: string;
 }
 
 const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): Promise<void> => {
@@ -77,31 +79,40 @@ const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): P
 
 type PoolEventKey = keyof PoolEventData;
 
-const poolEventInsertSequence: PoolEventKey[] = ['to_address', 'sender_address', 'amount_1', 'amount_2', 'amount_in_1', 'amount_in_2', 'reserved_1', 'reserved_2'];
+const poolEventInsertSequence: PoolEventKey[] = ['to_address', 'sender_address', 'amount_1', 'amount_2', 'amount_in_1', 'amount_in_2', 'reserved_1', 'reserved_2', 'total_supply'];
 
 const defaultPairProcess = async ({ poolId, eventId, timestamp }: DefaultPairEvent, type: PariEventType, data: PoolEventParameterDict): Promise<void> => {
   logger.info(`Processing ${type} event...`);
 
   const vals = poolEventInsertSequence.map((key) => data[key] || null);
+  const keys = poolEventInsertSequence.join(', ');
+  const indexes = poolEventInsertSequence
+    .map((_, index) => `$${index+5}`)
+    .join(', ')
 
-  await queryv2(
+    await queryv2(
     `INSERT INTO pool_event
-      (pool_id, evm_event_id, timestamp, type, to_address, sender_address, amount_1, amount_2, amount_in_1, amount_in_2, reserved_1, reserved_2)
+      (pool_id, evm_event_id, timestamp, type, ${keys})
     VALUES
-      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
+      ($1, $2, $3, $4, ${indexes});
     `,
     [poolId, eventId, timestamp, type, ...vals],
   );
 };
 
-const processSync = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
-  event,
-  'Sync',
-  {
-    reserved_1: event.data.args[0].toString(),
-    reserved_2: event.data.args[1].toString(),
-  },
-);
+const processSync = async (event: ProcessPairEvent): Promise<void> => {
+  const poolPair = new Contract(event.address, ReefswapPair, nodeProvider.getProvider());
+  const totalSupply = await poolPair.totalSupply();
+  await defaultPairProcess(
+    event,
+    'Sync',
+    {
+      reserved_1: event.data.args[0].toString(),
+      reserved_2: event.data.args[1].toString(),
+      total_supply: totalSupply.toString(),
+    },
+  );
+}
 
 const processMint = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
   event,
@@ -193,6 +204,7 @@ export default async (eventId: string): Promise<void> => {
       poolId,
       rawData: event.rawdata,
       timestamp: event.timestamp,
+      address: event.contractaddress,
     });
   }
 };
