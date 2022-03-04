@@ -79,7 +79,3 @@ const errorHandler = (err: Error, req: Request, res: Response) => {
 
 app.use(errorHandler);
 
-app.listen(config.httpPort, async () => {
-  await getProvider().api.isReadyOrError;
-  console.log(`Reef explorer API is running on port ${config.httpPort}.`);
-});
