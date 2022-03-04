@@ -1,5 +1,5 @@
 table:
-  name: pool_volume
+  name: pool_day_volume
   schema: public
 object_relationships:
 - name: pool
@@ -15,8 +15,8 @@ select_permissions:
     allow_aggregations: true
     columns:
     - pool_id
-    - timestamp
-    - reserved_1
-    - reserved_2
+    - timeframe
+    - amount_1
+    - amount_2
     filter: {}
   role: public

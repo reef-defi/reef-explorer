@@ -330,21 +330,128 @@ CREATE VIEW pool_hour_candlestick AS
 CREATE VIEW pool_day_candlestick AS
   SELECT * FROM pool_candlestick('day');
 
--- Pool volume data
-CREATE VIEW pool_volume AS 
-  SELECT
-    pool_id,
-    timestamp,
-    reserved_1,
-    reserved_2
-  FROM pool_event
-  WHERE type = 'Sync';
+-- Pool supply data
+CREATE FUNCTION pool_prepare_supply_data (
+  duration text
+)
+  RETURNS TABLE (
+  	exact_time timestamptz,
+    timeframe timestamptz,
+    pool_id bigint,
+    total_supply numeric,
+    supply numeric
+  )
+  AS $$
+  BEGIN
+    RETURN QUERY
+    SELECT
+      pe.timestamp,
+      date_trunc(duration, pe.timestamp),
+      pe.pool_id,
+      pe.total_supply,
+      pe.supply
+    FROM pool_event as pe
+    WHERE pe.type = 'Transfer'
+    ORDER BY timestamp;
+  end; $$
+  LANGUAGE plpgsql;
 
-CREATE VIEW pool_supply AS
+CREATE FUNCTION pool_supply (
+  duration text
+) RETURNS TABLE (
+  pool_id bigint,
+  timeframe timestamptz,
+  total_supply numeric,
+  supply numeric
+)
+AS $$
+BEGIN
+  RETURN QUERY
   SELECT
-    pool_id,
-    timestamp,
-    supply,
-    total_supply
-  FROM pool_event
-  WHERE type = 'Transfer';
+    p.pool_id,
+    p.timeframe,
+    (
+      SELECT DISTINCT ON (sub.timeframe)
+        sub.total_supply
+      FROM pool_prepare_supply_data(duration) as sub
+      WHERE MAX(p.exact_time) = sub.exact_time
+    ),
+    (
+      SELECT DISTINCT ON (sub.timeframe)
+        sub.supply
+      FROM pool_prepare_supply_data(duration) as sub
+      WHERE MAX(p.exact_time) = sub.exact_time
+    )
+  FROM pool_prepare_supply_data(duration) as p
+  GROUP BY p.timeframe, p.pool_id
+  ORDER BY p.timeframe;
+end; $$
+LANGUAGE plpgsql;
+
+-- Pool supply views
+CREATE VIEW pool_day_supply AS
+  SELECT * FROM pool_supply('day');
+
+CREATE VIEW pool_hour_supply AS
+  SELECT * FROM pool_supply('hour');
+
+CREATE VIEW pool_minute_supply AS
+  SELECT * FROM pool_supply('minute');
+
+-- Pool volume data
+CREATE FUNCTION pool_prepare_volume_data (
+  duration text
+)
+  RETURNS TABLE (
+  	exact_time timestamptz,
+    timeframe timestamptz,
+    pool_id bigint,
+    amount_1 numeric,
+    amount_2 numeric
+  )
+  AS $$
+  BEGIN
+    RETURN QUERY
+    SELECT
+      pe.timestamp,
+      date_trunc(duration, pe.timestamp),
+      pe.pool_id,
+      pe.amount_1,
+      pe.amount_2
+    FROM pool_event as pe
+    WHERE pe.type = 'Swap';
+  end; $$
+  LANGUAGE plpgsql;
+
+CREATE FUNCTION pool_volume (
+  duration text
+)
+  RETURNS TABLE (
+  	pool_id bigint,
+    timeframe timestamptz,
+    amount_1 numeric,
+    amount_2 numeric
+  )
+  AS $$
+  BEGIN
+    RETURN QUERY
+    SELECT
+      p.pool_id,
+      p.timeframe,
+      SUM(p.amount_1),
+      SUM(p.amount_1)
+    FROM pool_prepare_volume_data(duration) as p
+    GROUP BY p.pool_id, p.timeframe
+    ORDER BY p.timeframe;
+  end; $$
+  LANGUAGE plpgsql;
+
+-- Pool volume views
+CREATE VIEW pool_day_volume AS
+  SELECT * FROM pool_volume('day');
+
+CREATE VIEW pool_hour_volume AS
+  SELECT * FROM pool_volume('hour');
+
+CREATE VIEW pool_minute_volume AS
+  SELECT * FROM pool_volume('minute');
