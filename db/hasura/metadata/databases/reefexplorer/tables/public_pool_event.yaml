@@ -24,6 +24,7 @@ select_permissions:
     - amount_in_2
     - reserved_1
     - reserved_2
+    - total_supply
     - timestamp
     filter: {}
   role: public
