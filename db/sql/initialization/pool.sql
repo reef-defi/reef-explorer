@@ -439,7 +439,7 @@ CREATE FUNCTION pool_volume (
       p.pool_id,
       p.timeframe,
       SUM(p.amount_1),
-      SUM(p.amount_1)
+      SUM(p.amount_2)
     FROM pool_prepare_volume_data(duration) as p
     GROUP BY p.pool_id, p.timeframe
     ORDER BY p.timeframe;
