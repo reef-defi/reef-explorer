@@ -4,7 +4,7 @@ services:
     build:
       context: ${HARDHAT_EXAMPLES_BUILD_CONTEXT}
     image: ${HARDHAT_EXAMPLES_IMAGE}
-    command: yarn hardhat run scripts/integration-test.js
+    command: node scripts/integration-test.js
     tty: true
     stdin_open: true
     networks:

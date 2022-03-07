@@ -24,4 +24,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: ./resources/integration-test.sh
+    - run: make net=dev env=prod up
+    - run: docker-compose --env-file .env -f resources/docker-compose-integration.yml run --rm hardhat_examples
