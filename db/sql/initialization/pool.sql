@@ -166,7 +166,7 @@ CREATE FUNCTION pool_ratio (
           )
           ELSE 1
         END
-      ) as token_2_ratio,
+      ),
       (
         CASE
           WHEN pe.amount_in_2 > 0
@@ -455,3 +455,80 @@ CREATE VIEW pool_hour_volume AS
 
 CREATE VIEW pool_minute_volume AS
   SELECT * FROM pool_volume('minute');
+
+-- Pool fees
+CREATE FUNCTION pool_prepare_fee_data (
+  duration text
+)
+  RETURNS TABLE (
+  	pool_id bigint,
+    timeframe timestamptz,
+    fee_1 numeric,
+    fee_2 numeric,
+    which_token int
+  )
+  AS $$
+  BEGIN
+    RETURN QUERY
+    SELECT
+      pe.pool_id,
+      date_trunc(duration, pe.timestamp),
+      (
+        CASE
+          WHEN pe.amount_in_1 > 0
+          THEN pe.amount_in_1 * 0.003
+          ELSE 0
+        END
+      ),
+      (
+        CASE
+          WHEN pe.amount_in_2 > 0
+          THEN pe.amount_in_2 * 0.003
+          ELSE 0
+     	END
+      ),
+      (
+        CASE
+          WHEN pe.amount_in_1 > 0
+          THEN 1 -- Token 2 was bought 
+          ELSE 2 -- Token 1 was bought 
+     	END
+      )
+    FROM pool_event as pe
+    WHERE pe.type = 'Swap';
+  end; $$
+  LANGUAGE plpgsql;
+
+CREATE FUNCTION pool_fee (
+  duration text
+)
+  RETURNS TABLE (
+  	pool_id bigint,
+    which_token int,
+    timeframe timestamptz,
+    fee_1 numeric,
+    fee_2 numeric
+  )
+  AS $$
+  BEGIN
+    RETURN QUERY
+    SELECT
+      org.pool_id,
+      org.which_token,
+      org.timeframe,
+      SUM(org.fee_1),
+      SUM(org.fee_2)
+    FROM pool_prepare_fee_data(duration) as org
+    GROUP BY org.pool_id, org.which_token, org.timeframe
+    ORDER BY org.timeframe;
+  end; $$
+  LANGUAGE plpgsql;
+
+CREATE VIEW pool_day_fee AS
+  SELECT * FROM pool_fee('day');
+
+CREATE VIEW pool_hour_fee AS
+  SELECT * FROM pool_fee('hour');
+  
+CREATE VIEW pool_minute_fee AS
+  SELECT * FROM pool_fee('minute');

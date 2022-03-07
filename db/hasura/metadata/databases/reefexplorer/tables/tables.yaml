@@ -20,4 +20,7 @@
 - "!include public_pool_day_supply.yaml"
 - "!include public_pool_hour_supply.yaml"
 - "!include public_pool_minute_supply.yaml"
+- "!include public_pool_day_fee.yaml"
+- "!include public_pool_hour_fee.yaml"
+- "!include public_pool_minute_fee.yaml"
 - "!include public_chain_info.yaml"
