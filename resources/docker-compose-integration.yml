@@ -1,0 +1,16 @@
+version: "3.4"
+services:
+  hardhat_examples:
+    build:
+      context: ${HARDHAT_EXAMPLES_BUILD_CONTEXT}
+    image: ${HARDHAT_EXAMPLES_IMAGE}
+    command: node scripts/integration-test.js
+    tty: true
+    stdin_open: true
+    networks:
+      - reefscan
+
+networks:
+  reefscan:
+    external: true
+    driver: bridge
