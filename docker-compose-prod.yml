@@ -2,9 +2,7 @@ version: '3.7'
 
 services:
   substrate-node:
-    build:
-      context: ${NODE_BUILD_CONTEXT}
-    image: ${NODE_IMAGE}
+    image: taulepton/reef:v8
     volumes:
       - substrate-data:/data
     ports:
