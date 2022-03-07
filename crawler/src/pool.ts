@@ -45,7 +45,7 @@ const checkIfEventExists = async (id: string): Promise<boolean> => {
 const checkIfPoolEventExists = async (id: string): Promise<boolean> => {
   const events = await findPoolEvent(id);
   return events.length > 0;
-}
+};
 
 const findInitialIndex = async (): Promise<string> => {
   let currentEvmEventPointer = await getCurrentPoolPointer();
@@ -60,11 +60,11 @@ const findInitialIndex = async (): Promise<string> => {
 
 const isCurrentPointerInGap = async (id: string): Promise<boolean> => {
   const events = await queryv2<unknown>(
-    'SELECT id FROM evm_event WHERE id > $1 LIMIT 1;', 
-    [id]
-  )
+    'SELECT id FROM evm_event WHERE id > $1 LIMIT 1;',
+    [id],
+  );
   return events.length > 0;
-}
+};
 
 const poolEvents = async () => {
   let currentEvmEventPointer = await findInitialIndex();
@@ -101,5 +101,5 @@ Promise.resolve()
     logger.error('Finished');
     Sentry
       .close(2000)
-      .then(() => process.exit(-1))
+      .then(() => process.exit(-1));
   });

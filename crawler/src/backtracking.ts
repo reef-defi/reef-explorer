@@ -57,5 +57,5 @@ Promise.resolve()
     logger.error('Finished');
     Sentry
       .close(2000)
-      .then(() => process.exit(-1))
+      .then(() => process.exit(-1));
   });

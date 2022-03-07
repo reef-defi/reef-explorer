@@ -1,4 +1,4 @@
-import { utils, Contract } from 'ethers';
+import { utils, Contract, BigNumber } from 'ethers';
 import { RawEventData } from '../crawler/types';
 import { nodeProvider, queryv2 } from '../utils/connector';
 import logger from '../utils/logger';
@@ -6,9 +6,8 @@ import config from '../config';
 import ReefswapPair from '../assets/ReefswapPair';
 import ReefswapFactory from '../assets/ReefswapFactoryAbi';
 import erc20Abi from '../assets/erc20Abi';
-import { BigNumber } from "ethers";
 
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 interface DefaultPairEvent {
   poolId: string;
@@ -55,13 +54,13 @@ interface PoolEventData {
 const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): Promise<void> => {
   const contractInterface = new utils.Interface(ReefswapFactory);
   const data = contractInterface.parseLog(rawData);
-  
+
   // We are only interested PairCreate events
   if (data.name !== 'PairCreated') {
     return;
   }
   logger.info(`Reefswap Factory PairCreate event detected on evm even id: ${evmEventId}`);
-  
+
   const [tokenAddress1, tokenAddress2, poolAddress] = data.args as string[];
 
   const pool = new Contract(poolAddress, ReefswapPair, nodeProvider.getProvider());
@@ -91,10 +90,10 @@ const defaultPairProcess = async ({ poolId, eventId, timestamp }: DefaultPairEve
   const vals = poolEventInsertSequence.map((key) => data[key] || null);
   const keys = poolEventInsertSequence.join(', ');
   const indexes = poolEventInsertSequence
-    .map((_, index) => `$${index+5}`)
-    .join(', ')
+    .map((_, index) => `$${index + 5}`)
+    .join(', ');
 
-    await queryv2(
+  await queryv2(
     `INSERT INTO pool_event
       (pool_id, evm_event_id, timestamp, type, ${keys})
     VALUES
@@ -108,7 +107,7 @@ const defaultPairProcess = async ({ poolId, eventId, timestamp }: DefaultPairEve
 // With each Transfer event we also accumulate total supply of each pool
 const processTransfer = async (event: ProcessPairEvent): Promise<void> => {
   const [addr1, addr2, amount] = event.data.args;
-  if (addr1 !== ZERO_ADDRESS && addr2 != ZERO_ADDRESS) { return; }
+  if (addr1 !== ZERO_ADDRESS && addr2 !== ZERO_ADDRESS) { return; }
   if (addr1 === ZERO_ADDRESS && addr2 === ZERO_ADDRESS) { return; }
 
   const prevSupply = await queryv2<{total_supply: number}>(
@@ -118,23 +117,23 @@ const processTransfer = async (event: ProcessPairEvent): Promise<void> => {
     ORDER BY timestamp desc
     LIMIT 1;
     `,
-    [event.poolId]
+    [event.poolId],
   );
-  const supply = prevSupply && prevSupply.length > 0 ? prevSupply[0].total_supply : 0
+  const supply = prevSupply && prevSupply.length > 0 ? prevSupply[0].total_supply : 0;
   const isMint = addr1 === ZERO_ADDRESS;
   const prev = BigNumber.from(supply.toString());
-  
+
   const totalSupply = isMint ? prev.add(amount) : prev.sub(amount);
 
   await defaultPairProcess(
     event,
     'Transfer',
     {
-      supply: `${!isMint ? "-" : ""}${amount.toString()}`,
+      supply: `${!isMint ? '-' : ''}${amount.toString()}`,
       total_supply: totalSupply.toString(),
-    }
+    },
   );
-} 
+};
 
 const processSync = async (event: ProcessPairEvent): Promise<void> => defaultPairProcess(
   event,
@@ -189,7 +188,7 @@ const processPairEvent = async (pairEvent: InitialPairEvent): Promise<void> => {
     case 'Burn': await processBurn({ ...pairEvent, data }); break;
     case 'Swap': await processSwap({ ...pairEvent, data }); break;
     case 'Sync': await processSync({ ...pairEvent, data }); break;
-    case 'Transfer': await processTransfer({...pairEvent, data}); break;
+    case 'Transfer': await processTransfer({ ...pairEvent, data }); break;
     default: break;
   }
 };
