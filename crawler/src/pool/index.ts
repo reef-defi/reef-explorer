@@ -53,15 +53,15 @@ interface PoolEventData {
 }
 
 const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): Promise<void> => {
-  logger.info('Reefswap Factory event detected!');
   const contractInterface = new utils.Interface(ReefswapFactory);
   const data = contractInterface.parseLog(rawData);
-
+  
   // We are only interested PairCreate events
   if (data.name !== 'PairCreated') {
     return;
   }
-
+  logger.info(`Reefswap Factory PairCreate event detected on evm even id: ${evmEventId}`);
+  
   const [tokenAddress1, tokenAddress2, poolAddress] = data.args as string[];
 
   const pool = new Contract(poolAddress, ReefswapPair, nodeProvider.getProvider());
@@ -86,7 +86,7 @@ type PoolEventKey = keyof PoolEventData;
 const poolEventInsertSequence: PoolEventKey[] = ['to_address', 'sender_address', 'amount_1', 'amount_2', 'amount_in_1', 'amount_in_2', 'reserved_1', 'reserved_2', 'supply', 'total_supply'];
 
 const defaultPairProcess = async ({ poolId, eventId, timestamp }: DefaultPairEvent, type: PariEventType, data: PoolEventParameterDict): Promise<void> => {
-  logger.info(`Processing ${type} event...`);
+  logger.info(`Processing ${type} event on evm event id: ${eventId}`);
 
   const vals = poolEventInsertSequence.map((key) => data[key] || null);
   const keys = poolEventInsertSequence.join(', ');
@@ -104,6 +104,8 @@ const defaultPairProcess = async ({ poolId, eventId, timestamp }: DefaultPairEve
   );
 };
 
+// From transfer function we detect the amount of liquidity added/removed from pool
+// With each Transfer event we also accumulate total supply of each pool
 const processTransfer = async (event: ProcessPairEvent): Promise<void> => {
   const [addr1, addr2, amount] = event.data.args;
   if (addr1 !== ZERO_ADDRESS && addr2 != ZERO_ADDRESS) { return; }
@@ -216,7 +218,7 @@ const findPoolID = async (address: string): Promise<string|undefined> => {
 };
 
 export default async (eventId: string): Promise<void> => {
-  logger.info(`Processing event: ${eventId}`);
+  // logger.info(`Processing event: ${eventId}`);
   const event = await findEvmEvent(eventId);
 
   // Check if event is Reefswap factory create pool event. If so add new pool in DB
