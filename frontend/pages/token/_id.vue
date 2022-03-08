@@ -23,7 +23,9 @@
 
           <h4 class="text-center mb-4">
             <p class="mt-3">
-              <b-badge class="ml-2" variant="info">ERC-20 token</b-badge>
+              <b-badge class="ml-2" variant="info">{{
+                contractType.toUpperCase()
+              }}</b-badge>
               <b-badge
                 v-if="contract.verified_contract"
                 class="ml-2"
@@ -201,16 +203,15 @@ export default {
       return {
         ...data,
         address: this.address,
-        fullName: `${data.name} (${data.symbol})`,
       }
     },
     tokenName() {
       const data = this.tokenData
-      if (data) {
+      if (data.name && data.symbol) {
         return `${data.name} (${data.symbol})`
       }
 
-      return this.shortHash(this.address)
+      return this.contractName
     },
   },
   watch: {
@@ -266,6 +267,12 @@ export default {
         result({ data }) {
           if (data.contract[0] && data.contract[0].verified_contract) {
             const name = data.contract[0].verified_contract.name
+
+            this.contractType = data.contract[0].verified_contract.type.replace(
+              'ERC',
+              'ERC-'
+            )
+            this.contractName = data.contract[0].verified_contract.name
 
             this.contract = data.contract[0]
             this.contract.abi =
