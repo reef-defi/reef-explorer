@@ -24,16 +24,13 @@
             </THead>
 
             <Row v-for="(item, index) in tokens" :key="index">
-              <Cell
-                v-if="item.contract_data && item.contract_data.name"
-                :link="`/token/${item.address}`"
-              >
+              <Cell v-if="item.contract_data" :link="`/token/${item.address}`">
                 <img
                   v-if="item.contract_data.token_icon_url"
                   :src="item.contract_data.token_icon_url"
                   class="identicon"
                 />
-                <span>{{ item.contract_data.name }}</span>
+                <span>{{ item.contract_data.name || item.name }}</span>
                 <font-awesome-icon
                   v-if="item.verified_contract"
                   v-b-tooltip.hover
@@ -139,7 +136,7 @@ export default {
               limit: $perPage
               offset: $offset
               where: {
-                type: { _eq: "ERC20" }
+                type: { _neq: "other" }
                 address: $contractAddress
                 contract: { extrinsic: $blockHeight }
               }
@@ -147,6 +144,7 @@ export default {
             ) {
               address
               contract_data
+              name
               contract {
                 timestamp
                 token_holders_aggregate(where: { balance: { _gt: "0" } }) {
@@ -186,7 +184,7 @@ export default {
       totaltokens: {
         query: gql`
           query contract_aggregate {
-            verified_contract_aggregate(where: { type: { _eq: "ERC20" } }) {
+            verified_contract_aggregate(where: { type: { _neq: "other" } }) {
               aggregate {
                 count
               }
