@@ -22,13 +22,13 @@
               <b-badge
                 v-if="
                   contract.verified_contract &&
-                  contract.verified_contract.type === 'ERC20'
+                  contract.verified_contract.type !== 'other'
                 "
                 :to="`/token/${contract.address}`"
                 class="ml-2"
                 variant="info"
               >
-                ERC-20 token
+                {{ contract.verified_contract.type.replace('ERC', 'ERC-') }}
               </b-badge>
               <b-badge
                 v-if="contract.verified_contract"
@@ -335,12 +335,18 @@ export default {
     tokenData() {
       const data = this.contract?.verified_contract?.contract_data
 
-      if (!data) return null
+      if (!data) {
+        return null
+      }
+      const fullName =
+        data.name && data.symbol
+          ? `${data.name} (${data.symbol})`
+          : this.contract.verified_contract.name
 
       return {
         ...data,
+        fullName,
         address: this.address,
-        fullName: `${data.name} (${data.symbol})`,
       }
     },
     decodedArguments() {
