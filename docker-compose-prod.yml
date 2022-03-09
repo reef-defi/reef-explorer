@@ -102,7 +102,7 @@ services:
       - reefscan
 
   pool:
-    image: reef-explorer-crawler
+    image: reef-crawler:${VERSION}
     command: /wait-for http://graphql:8080/healthz -t 0 -- yarn start-pool
     restart: always
     environment:
