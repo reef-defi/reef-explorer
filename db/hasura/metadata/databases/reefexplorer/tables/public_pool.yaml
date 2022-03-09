@@ -1,0 +1,27 @@
+table:
+  name: pool
+  schema: public
+object_relationships:
+- name: evm_event
+  using:
+    foreign_key_constraint_on: evm_event_id
+- name: token_contract_1
+  using:
+    foreign_key_constraint_on: token_1
+- name: token_contract_2
+  using:
+    foreign_key_constraint_on: token_2
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - id
+    - evm_event_id
+    - address
+    - token_1
+    - token_2
+    - pool_decimal
+    - decimal_1
+    - decimal_2
+    filter: {}
+  role: public

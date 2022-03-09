@@ -22,6 +22,7 @@ Sentry.init({
   environment: config.environment,
 });
 Sentry.setTag('component', 'api');
+Sentry.setTag('network', config.network);
 
 const cors = require('cors');
 

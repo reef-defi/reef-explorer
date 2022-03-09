@@ -15,7 +15,10 @@ Sentry.init({
       root: global.__dirname,
     }),
   ],
+  environment: config.environment,
 });
+Sentry.setTag('component', 'backtracking');
+Sentry.setTag('network', config.network);
 
 interface Address {
   address: string;
@@ -52,5 +55,7 @@ Promise.resolve()
     Sentry.captureException(error);
     await nodeProvider.closeProviders();
     logger.error('Finished');
-    process.exit(-1);
+    Sentry
+      .close(2000)
+      .then(() => process.exit(-1));
   });

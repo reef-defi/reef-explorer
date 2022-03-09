@@ -1,0 +1,22 @@
+table:
+  name: pool_minute_volume
+  schema: public
+object_relationships:
+- name: pool
+  using:
+    manual_configuration:
+      remote_table:
+        schema: public
+        name: pool
+      column_mapping:
+        pool_id: id
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - pool_id
+    - timeframe
+    - amount_1
+    - amount_2
+    filter: {}
+  role: public

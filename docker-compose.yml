@@ -76,6 +76,7 @@ services:
       - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
       - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
     depends_on:
       - 'postgres'
       - 'substrate-node'
@@ -97,6 +98,32 @@ services:
       - POSTGRES_USER=${DB_USER} #reefexplorer
       - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+      - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
+    depends_on:
+      - 'postgres'
+      - 'substrate-node'
+    networks:
+      - reefscan
+
+  pool:
+    image: reef-explorer-crawler-dev
+    command: /wait-for http://graphql:8080/healthz -t 0 -- yarn dev-pool
+    volumes:
+      - pool-modules:/usr/app/node_modules
+      - ./crawler:/usr/app/
+    restart: always
+    environment:
+      - FACTORY_ADDRESS=${FACTORY_ADDRESS}
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - SENTRY_DNS=${SENTRY_DNS}
+      - POSTGRES_PORT=${DB_PORT} #5432
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER} #reefexplorer
+      - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
+      - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+      - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
     depends_on:
       - 'postgres'
       - 'substrate-node'
@@ -124,6 +151,7 @@ services:
       - RECAPTCHA_SECRET=6LfNcPIaAAAAADSldnLXXxSrXIYH532l0cSsfDEU
       - SENTRY_DNS=${SENTRY_DNS}
       - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
     ports:
       - ${API_PORT}:${API_PORT}
     depends_on:
@@ -155,6 +183,7 @@ volumes:
   substrate-data: {}
   crawler-modules: {}
   backtracking-modules: {}
+  pool-modules: {}
   api-modules: {}
   frontend-modules: {}
 

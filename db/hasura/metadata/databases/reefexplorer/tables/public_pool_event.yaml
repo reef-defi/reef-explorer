@@ -1,0 +1,31 @@
+table:
+  name: pool_event
+  schema: public
+object_relationships:
+- name: pool
+  using:
+    foreign_key_constraint_on: pool_id
+- name: evm_event
+  using:
+    foreign_key_constraint_on: evm_event_id
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - id
+    - pool_id
+    - evm_event_id
+    - to_address
+    - sender_address
+    - type
+    - amount_1
+    - amount_2
+    - amount_in_1
+    - amount_in_2
+    - reserved_1
+    - reserved_2
+    - supply
+    - total_supply
+    - timestamp
+    filter: {}
+  role: public

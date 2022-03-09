@@ -17,6 +17,9 @@
     "profile-backtracking": "tsc && node --prof --max-old-space-size=16384 ./dist/backtracking.js",
     "dev-backtracking": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/backtracking.ts",
     
+    "dev-pool": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/pool.ts",
+    "start-pool": "node --max-old-space-size=16384 ./dist/pool.js",
+
     "test": "echo skip",
     "lint": "eslint --fix --ext .ts ./src/"
   },

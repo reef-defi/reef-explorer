@@ -1,0 +1,22 @@
+table:
+  name: pool_day_supply
+  schema: public
+object_relationships:
+- name: pool
+  using:
+    manual_configuration:
+      remote_table:
+        schema: public
+        name: pool
+      column_mapping:
+        pool_id: id
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - pool_id
+    - timeframe
+    - supply
+    - total_supply
+    filter: {}
+  role: public
