@@ -14,9 +14,15 @@
 </template>
 
 <script>
+import moment from 'moment'
+import Vue from 'vue'
 import Header from '@/components/Header.vue'
 import Footer from '@/components/Footer.vue'
 import NavPanel from '@/components/NavPanel.vue'
+
+Vue.prototype.moment = moment
+moment.locale('en')
+moment.defaultFormat = 'DD-MM-YYYY HH:mm'
 
 export default {
   name: 'Index',

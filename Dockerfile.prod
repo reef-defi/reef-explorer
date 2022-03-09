@@ -20,4 +20,4 @@ COPY ${COMPONENT}/. ./
 
 RUN yarn run build
 
-ENTRYPOINT [ "/wait-for", "http://graphql:8080/healthz", "-t", "0", "--", "yarn", "start" ]
+CMD [ "/wait-for", "http://graphql:8080/healthz", "-t", "0", "--", "yarn", "start" ]

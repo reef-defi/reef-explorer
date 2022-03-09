@@ -4,7 +4,7 @@ import config from './config';
 import processBlocks, { processInitialBlocks } from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
-import { min, wait } from './utils/utils';
+import { min, wait, promiseWithTimeout } from './utils/utils';
 import logger from './utils/logger';
 import parseAndInsertContracts from './crawler/contracts';
 // Importing @sentry/tracing patches the global hub for tracing to work.
@@ -12,14 +12,16 @@ import parseAndInsertContracts from './crawler/contracts';
 
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
-  dsn: config.sentryDns, // TODO put this out! process.env.SENTRY_DSN
+  dsn: config.sentryDns,
   tracesSampleRate: 1.0,
   integrations: [
     new RewriteFrames({
       root: global.__dirname,
     }),
   ],
+  environment: config.environment,
 });
+Sentry.setTag('component', 'crawler');
 
 console.warn = () => {};
 
@@ -90,7 +92,15 @@ Promise.resolve()
   .catch(async (error) => {
     logger.error(error);
     Sentry.captureException(error);
-    await nodeProvider.closeProviders();
+
+    try {
+      await promiseWithTimeout(nodeProvider.closeProviders(), 200, Error('Failed to close proivders!'));
+    } catch (err) {
+      Sentry.captureException(err);
+    }
+
     logger.error('Finished');
-    process.exit(-1);
+    Sentry.close(2000).then(() => {
+      process.exit(-1);
+    });
   });

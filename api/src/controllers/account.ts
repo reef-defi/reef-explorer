@@ -1,7 +1,7 @@
-import { Response, Request } from 'express';
+import { Response, Request, NextFunction } from 'express';
 import { findUserTokens, findUserContracts } from '../services/account';
 import { AppRequest } from '../utils/types';
-import { ensure, errorStatus } from '../utils/utils';
+import { ensure } from '../utils/utils';
 
 interface AccountAddress {
   address: string;
@@ -11,23 +11,23 @@ interface AccountAddress {
 //   userAddress: string;
 // }
 
-export const accountTokens = async (req: AppRequest<AccountAddress>, res: Response) => {
+export const accountTokens = async (req: AppRequest<AccountAddress>, res: Response, next: NextFunction) => {
   try {
     ensure(!!req.body.address, 'Parameter address is missing');
     const tokens = await findUserTokens(req.body.address);
     res.send({ tokens: [...tokens] });
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    next(err);
   }
 };
 
-export const accountOwnedContracts = async (req: Request, res: Response) => {
+export const accountOwnedContracts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     ensure(!!req.params.address, 'Url paramter account address is missing');
     const contracts = await findUserContracts(req.params.address);
     res.send({ contracts: [...contracts] });
   } catch (err) {
-    res.status(errorStatus(err)).send(err.message);
+    next(err);
   }
 };
 
