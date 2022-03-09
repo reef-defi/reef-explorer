@@ -108,7 +108,7 @@ services:
 
   pool:
     image: reef-explorer-crawler-dev
-    command: yarn dev-pool
+    command: /wait-for http://graphql:8080/healthz -t 0 -- yarn dev-pool
     volumes:
       - pool-modules:/usr/app/node_modules
       - ./crawler:/usr/app/
