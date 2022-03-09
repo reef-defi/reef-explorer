@@ -21,8 +21,8 @@ array_relationships:
     foreign_key_constraint_on:
       column: token_address
       table:
-        schema: public
         name: token_holder
+        schema: public
 select_permissions:
 - permission:
     allow_aggregations: true

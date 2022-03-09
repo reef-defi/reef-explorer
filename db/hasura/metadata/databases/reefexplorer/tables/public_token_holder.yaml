@@ -2,12 +2,12 @@ table:
   name: token_holder
   schema: public
 object_relationships:
-- name: contract
-  using:
-    foreign_key_constraint_on: token_address
 - name: account
   using:
     foreign_key_constraint_on: signer
+- name: contract
+  using:
+    foreign_key_constraint_on: token_address
 select_permissions:
 - permission:
     allow_aggregations: true
