@@ -1,4 +1,4 @@
-FROM node:fermium
+FROM node:bullseye
 
 ARG COMPONENT
 
@@ -18,4 +18,4 @@ COPY ${COMPONENT}/. ./
 
 RUN yarn run build
 
-ENTRYPOINT [ "yarn", "start" ]
+CMD [ "yarn", "start" ]
