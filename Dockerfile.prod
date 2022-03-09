@@ -18,4 +18,4 @@ COPY ${COMPONENT}/. ./
 
 RUN yarn run build
 
-ENTRYPOINT [ "yarn", "start" ]
+CMD [ "yarn", "start" ]
