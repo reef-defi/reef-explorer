@@ -34,12 +34,12 @@ services:
       - reefscan
 
   graphql:
-    image: hasura/graphql-engine:v2.1.1.cli-migrations-v3
+    image: reef-graphql:${VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile.graphql
     ports:
       - 8080:8080
-    volumes:
-      - './db/hasura/metadata:/hasura-metadata'
-      - './db/hasura/migrations:/hasura-migrations'
     depends_on:
       - 'postgres'
     restart: always
@@ -54,7 +54,7 @@ services:
       - reefscan
 
   crawler:
-    image: reef-explorer-crawler
+    image: reef-crawler:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -81,7 +81,7 @@ services:
       - reefscan
 
   backtracking:
-    image: reef-explorer-crawler
+    image: reef-crawler:${VERSION}
     command: /wait-for http://graphql:8080/healthz -t 0 -- yarn start-backtracking
     restart: always
     environment:
@@ -99,7 +99,7 @@ services:
       - reefscan
 
   api:
-    image: reef-explorer-api
+    image: reef-api:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -126,12 +126,12 @@ services:
       - reefscan
 
   frontend:
+    image: reef-frontend:${VERSION}
     build: 
       context: .
       dockerfile: Dockerfile.prod
       args:
         COMPONENT: frontend
-    image: reef-explorer-frontend
     ports:
       - ${FE_PORT}:${FE_PORT}
     environment:
