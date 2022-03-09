@@ -23,3 +23,6 @@ down:
 
 purge:
 	$(foreach volume,$(VOLUMES),docker volume rm reef-explorer-$(net)-$(env)_$(volume);)
+
+hasura:
+	export $$(cat .env | xargs) && cd db/hasura && hasura console --admin-secret $$GQL_ADMIN_PW

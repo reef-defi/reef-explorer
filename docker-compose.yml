@@ -20,18 +20,6 @@ services:
     shm_size: 1gb
     volumes:
       - 'db-data:/var/lib/postgresql/data'
-      - './db/sql/initialization/init.sql:/docker-entrypoint-initdb.d/00_init.sql'
-      - './db/sql/initialization/block.sql:/docker-entrypoint-initdb.d/01_block.sql'
-      - './db/sql/initialization/account.sql:/docker-entrypoint-initdb.d/02_account.sql'
-      - './db/sql/initialization/extrinsic.sql:/docker-entrypoint-initdb.d/03_extrinsic.sql'
-      - './db/sql/initialization/event.sql:/docker-entrypoint-initdb.d/04_event.sql'
-      - './db/sql/initialization/contract.sql:/docker-entrypoint-initdb.d/05_contract.sql'
-      - './db/sql/initialization/evmEvent.sql:/docker-entrypoint-initdb.d/06_evmEvent.sql'
-      - './db/sql/initialization/transfer.sql:/docker-entrypoint-initdb.d/07_transfer.sql'
-      - './db/sql/initialization/staking.sql:/docker-entrypoint-initdb.d/08_staking.sql'
-      - './db/sql/initialization/tokenHolder.sql:/docker-entrypoint-initdb.d/08_tokenHolder.sql'
-      - './db/sql/initialization/newlyVerifiedContract.sql:/docker-entrypoint-initdb.d/09_newlyVerifiedContract.sql'
-      - './db/sql/initialization/chainInfo.sql:/docker-entrypoint-initdb.d/10_chainInfo.sql'
     ports:
       - 5432:5432
     environment:
@@ -51,6 +39,7 @@ services:
       - 8080:8080
     volumes:
       - './db/hasura/metadata:/hasura-metadata'
+      - './db/hasura/migrations:/hasura-migrations'
     depends_on:
       - 'postgres'
     restart: always
@@ -95,7 +84,7 @@ services:
 
   backtracking:
     image: reef-explorer-crawler-dev
-    command: yarn dev-backtracking
+    command: /wait-for http://graphql:8080/healthz -t 0 -- yarn dev-backtracking
     volumes:
       - backtracking-modules:/usr/app/node_modules
       - ./crawler:/usr/app/
