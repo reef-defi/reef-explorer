@@ -21,9 +21,8 @@ jobs:
       - run: ./resources/increment_version.sh .env
       - run: docker-compose -f docker-compose-prod.yml build
       - run: docker-compose -f docker-compose-prod.yml push
-      - run: |
-        git config --global user.name 'frisitano'
-        git config --global user.email 'francesco.risitano95@gmail.com'
-        git add -u
-        git commit -m 'New release'
-        git push
+      - run: git config --global user.name 'frisitano'
+      - run: git config --global user.email 'francesco.risitano95@gmail.com'
+      - run: git add -u
+      - run: git commit -m 'New release'
+      - run: git push
