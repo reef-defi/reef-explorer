@@ -21,4 +21,5 @@ jobs:
       - run: git tag ${VERSION}
       - run: git add -u
       - run: git commit -m "New release ${VERSION}"
+      - run: git push
       - run: git push --tags
