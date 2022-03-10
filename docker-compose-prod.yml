@@ -34,7 +34,7 @@ services:
       - reefscan
 
   graphql:
-    image: reef-graphql:${VERSION}
+    image: taulepton/reef-graphql:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile.graphql
@@ -54,7 +54,7 @@ services:
       - reefscan
 
   crawler:
-    image: reef-crawler:${VERSION}
+    image: taulepton/reef-crawler:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -82,7 +82,7 @@ services:
       - reefscan
 
   backtracking:
-    image: reef-crawler:${VERSION}
+    image: taulepton/reef-crawler:${VERSION}
     command: /wait-for http://graphql:8080/healthz -t 0 -- yarn start-backtracking
     restart: always
     environment:
@@ -102,7 +102,7 @@ services:
       - reefscan
 
   pool:
-    image: reef-crawler:${VERSION}
+    image: taulepton/reef-crawler:${VERSION}
     command: /wait-for http://graphql:8080/healthz -t 0 -- yarn start-pool
     restart: always
     environment:
@@ -123,7 +123,7 @@ services:
       - reefscan
 
   api:
-    image: reef-api:${VERSION}
+    image: taulepton/reef-api:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile.prod
@@ -151,7 +151,7 @@ services:
       - reefscan
 
   frontend:
-    image: reef-frontend:${VERSION}
+    image: taulepton/reef-frontend:${VERSION}
     build: 
       context: .
       dockerfile: Dockerfile.prod

@@ -1,0 +1,24 @@
+name: reef-explorer publish images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - run: VERSION=$(./resources/increment_version.sh .env)
+      - run: docker-compose -f docker-compose-prod.yml build
+      - run: docker-compose -f docker-compose-prod.yml push
+      - run: git config --global user.name 'frisitano'
+      - run: git config --global user.email 'francesco.risitano95@gmail.com'
+      - run: git add -u
+      - run: git commit -m "New release ${VERSION}"
+      - run: git tag ${VERSION}
+      - run: git push
