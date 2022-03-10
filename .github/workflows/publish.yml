@@ -1,11 +1,6 @@
 name: reef-explorer publish images
 
 on:
-  push:
-    branches: [ develop ]
-  pull_request:
-    branches: "**"
-
   workflow_dispatch:
 
 jobs:
@@ -18,11 +13,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - run: ./resources/increment_version.sh .env
+      - run: VERSION=$(./resources/increment_version.sh .env)
       - run: docker-compose -f docker-compose-prod.yml build
       - run: docker-compose -f docker-compose-prod.yml push
       - run: git config --global user.name 'frisitano'
       - run: git config --global user.email 'francesco.risitano95@gmail.com'
       - run: git add -u
-      - run: git commit -m 'New release'
+      - run: git commit -m "New release ${VERSION}"
+      - run: git tag ${VERSION}
       - run: git push
