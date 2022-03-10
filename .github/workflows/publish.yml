@@ -13,12 +13,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - run: export VERSION=$(./resources/increment_version.sh .env)
+      - run: echo "VERSION=$(./resources/increment_version.sh .env)" >> $GITHUB_ENV
       - run: docker-compose -f docker-compose-prod.yml build
       - run: docker-compose -f docker-compose-prod.yml push
       - run: git config --global user.name 'frisitano'
       - run: git config --global user.email 'francesco.risitano95@gmail.com'
-      - run: git add -u
       - run: git tag ${VERSION}
+      - run: git add -u
       - run: git commit -m "New release ${VERSION}"
-      - run: git push
+      - run: git push --tags
