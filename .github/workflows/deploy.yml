@@ -12,8 +12,8 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SERVER_SSH_KEY }}
+          name: id_rsa
           known_hosts: ${{ secrets.SERVER_KNOWN_HOSTS }}
       - run: echo "DOCKER_HOST=${{ secrets.SERVER_DOCKER_HOST }}" >> $GITHUB_ENV
-      - run: make net=dev env=prod cmd=pull execute
-      - run: make net=dev env=prod up
-      
+      - run: make net=testnet env=prod cmd=pull execute
+      - run: make net=testnet env=prod up
