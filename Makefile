@@ -14,6 +14,9 @@ endif
 up:
 	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) up -d
 
+execute:
+	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) $(cmd)
+
 down:
 	docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) down
 
