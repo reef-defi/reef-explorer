@@ -16,7 +16,6 @@ select_permissions:
     columns:
     - pool_id
     - timeframe
-    - which_token
     - fee_1
     - fee_2
     filter: {}
