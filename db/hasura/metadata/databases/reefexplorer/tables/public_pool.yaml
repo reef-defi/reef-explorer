@@ -11,6 +11,43 @@ object_relationships:
 - name: token_contract_2
   using:
     foreign_key_constraint_on: token_2
+array_relationships:
+- name: candlestick
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_day_candlestick
+        schema: public
+- name: fee
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_day_fee
+        schema: public
+- name: supply
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_day_supply
+        schema: public
+- name: volume
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_day_volume
+        schema: public
 select_permissions:
 - permission:
     allow_aggregations: true
