@@ -75,6 +75,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
       - ENVIRONMENT=${ENVIRONMENT}
       - NETWORK=${NETWORK}
+      - SUBCONTRACT_INTERVAL=${SUBCONTRACT_INTERVAL}
     depends_on:
       - 'postgres'
       - 'substrate-node'
