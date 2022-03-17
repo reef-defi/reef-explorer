@@ -1,0 +1,86 @@
+table:
+  name: verified_pool
+  schema: public
+object_relationships:
+- name: evm_event
+  using:
+    manual_configuration:
+      column_mapping:
+        evm_event_id: id
+      insertion_order: null
+      remote_table:
+        name: evm_event
+        schema: public
+- name: token_contract_1
+  using:
+    manual_configuration:
+      column_mapping:
+        token_1: address
+      insertion_order: null
+      remote_table:
+        name: contract
+        schema: public
+- name: token_contract_2
+  using:
+    manual_configuration:
+      column_mapping:
+        token_2: address
+      insertion_order: null
+      remote_table:
+        name: contract
+        schema: public
+array_relationships:
+- name: candlestick
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_hour_candlestick
+        schema: public
+- name: fee
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_hour_fee
+        schema: public
+- name: supply
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_hour_supply
+        schema: public
+- name: volume
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_hour_volume
+        schema: public
+select_permissions:
+- permission:
+    allow_aggregations: true
+    columns:
+    - id
+    - evm_event_id
+    - address
+    - token_1
+    - token_2
+    - pool_decimal
+    - decimal_1
+    - decimal_2
+    - name_1
+    - name_2
+    - symbol_1
+    - symbol_2
+    filter: {}
+  role: public
