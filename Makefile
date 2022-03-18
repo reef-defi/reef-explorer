@@ -1,5 +1,6 @@
 
 VOLUMES = db-data crawler-modules backtracking-modules api-modules frontend-modules
+services ?=
 
 ifeq ($(env), dev)
 	VOLUMES += substrate-data
@@ -12,10 +13,10 @@ else
 endif
 
 up:
-	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) up -d
+	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) up -d $(services)
 
 execute:
-	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) $(cmd)
+	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) $(cmd) $(services)
 
 down:
 	docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) down
