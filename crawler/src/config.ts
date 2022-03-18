@@ -20,6 +20,7 @@ export default {
   environment: process.env.ENVIRONMENT,
   reefswapFactoryAddress: process.env.FACTORY_ADDRESS || '',
   network: process.env.NETWORK,
+  subcontractInterval: process.env.SUBCONTRACT_INTERVAL || 100,
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',

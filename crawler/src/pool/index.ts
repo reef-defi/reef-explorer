@@ -62,7 +62,7 @@ const processFactoryEvent = async (evmEventId: string, rawData: RawEventData): P
   logger.info(`Reefswap Factory PairCreate event detected on evm even id: ${evmEventId}`);
 
   const [tokenAddress1, tokenAddress2, poolAddress] = data.args as string[];
-  
+
   // TODO extend pool with additional token names and symbols or remove decimal_1 and decimal_2
   const pool = new Contract(poolAddress, ReefswapPair, nodeProvider.getProvider());
   const token1 = new Contract(tokenAddress1, erc20Abi, nodeProvider.getProvider());

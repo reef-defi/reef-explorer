@@ -29,6 +29,7 @@ console.warn = () => {};
 const processNextBlock = async () => {
   let BLOCKS_PER_STEP = config.startBlockSize;
   let currentBlockIndex = await lastBlockInDatabase();
+  let updateSubContractsCounter = 0;
 
   while (true) {
     const chainHead = nodeProvider.lastBlockId();
@@ -69,7 +70,11 @@ const processNextBlock = async () => {
     }
 
     // Missing Contracts - Inefficient pattern
-    await parseAndInsertContracts(finalizedHead);
+    updateSubContractsCounter += 1;
+    if (updateSubContractsCounter > config.subcontractInterval) {
+      await parseAndInsertContracts(finalizedHead);
+      updateSubContractsCounter = 0;
+    }
 
     await wait(config.pollInterval);
   }
