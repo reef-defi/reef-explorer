@@ -1,7 +1,11 @@
-name: reef-explorer Produce Release
+name: reef-explorer Build & Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      services:
+        description: 'What services would you like to build e.g. "graphql crawler"'
+        type: string
 
 jobs:
   publish:
@@ -14,12 +18,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: echo "VERSION=$(./resources/increment_version.sh .env)" >> $GITHUB_ENV
-      - run: docker-compose -f docker-compose-prod.yml build
-      - run: docker-compose -f docker-compose-prod.yml push
-      - run: git config --global user.name 'frisitano'
-      - run: git config --global user.email 'francesco.risitano95@gmail.com'
-      - run: git tag ${VERSION}
-      - run: git add -u
-      - run: git commit -m "New release ${VERSION}"
-      - run: git push
-      - run: git push --tags
+      - run: docker-compose -f docker-compose-prod.yml build ${{ github.event.inputs.services }}
+      - run: docker-compose -f docker-compose-prod.yml push ${{ github.event.inputs.services }}
+      - if: github.ref == 'refs/heads/develop'
+        run: |
+          git config --global user.name 'frisitano'
+          git config --global user.email 'francesco.risitano95@gmail.com'
+          git tag ${VERSION}
+          git add -u
+          git commit -m "New release ${VERSION}"
+          git push
+          git push --tags
