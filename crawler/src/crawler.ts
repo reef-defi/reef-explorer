@@ -70,7 +70,7 @@ const processNextBlock = async () => {
     }
 
     // Missing Contracts - Inefficient pattern
-    updateSubContractsCounter++;
+    updateSubContractsCounter += 1;
     if (updateSubContractsCounter > config.subcontractInterval) {
       await parseAndInsertContracts(finalizedHead);
       updateSubContractsCounter = 0;
