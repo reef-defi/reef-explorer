@@ -19,7 +19,7 @@ execute:
 	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) $(cmd) $(services)
 
 down:
-	docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) down
+	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) down
 
 purge:
 	$(foreach volume,$(VOLUMES),docker volume rm reef-explorer-$(net)-$(env)_$(volume);)
