@@ -173,4 +173,3 @@ volumes:
 
 networks:
   reefscan:
-    name: reefscan
