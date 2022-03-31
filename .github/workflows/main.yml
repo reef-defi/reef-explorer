@@ -25,4 +25,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: make net=dev env=prod up
-    - run: docker-compose --env-file .env -f resources/docker-compose-integration.yml run --rm hardhat_examples
+    - run: docker-compose -p reef-explorer-dev-prod --env-file .env -f resources/docker-compose-integration.yml run --rm hardhat_examples
