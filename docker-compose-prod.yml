@@ -6,8 +6,8 @@ services:
     volumes:
       - substrate-data:/data
     ports:
-      - ${NODE_PORT}:${NODE_PORT}
-      - ${NODE_WS}:${NODE_WS}
+      - ${EXPOSE_NODE_PORT}:${NODE_PORT}
+      - ${EXPOSE_NODE_WS}:${NODE_WS}
     # TODO paramaterise chain
     command: -d /data --rpc-max-payload 1024 --ws-max-connections ${NODE_MAX_CONS} ${NODE_CHAIN_CMD} ${NODE_CHAIN} --pruning=archive --rpc-cors "*" --ws-port ${NODE_WS} --port ${NODE_PORT} --unsafe-ws-external --no-prometheus --no-telemetry
     restart: always
@@ -21,7 +21,7 @@ services:
     volumes:
       - 'db-data:/var/lib/postgresql/data'
     ports:
-      - 5432:5432
+      - ${EXPOSE_DB}:5432
     environment:
       POSTGRES_USER: ${DB_USER} #'reefexplorer'
       POSTGRES_PASSWORD: ${DB_PW} #'reefexplorer'
@@ -39,7 +39,7 @@ services:
       context: .
       dockerfile: Dockerfile.graphql
     ports:
-      - 8080:8080
+      - ${EXPOSE_GQL_PORT}:8080
     depends_on:
       - 'postgres'
     restart: always
@@ -144,7 +144,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT}
       - NETWORK=${NETWORK}
     ports:
-      - ${API_PORT}:${API_PORT}
+      - ${EXPOSE_API_PORT}:${API_PORT}
     depends_on:
       - postgres
       - substrate-node
@@ -159,7 +159,7 @@ services:
       args:
         COMPONENT: frontend
     ports:
-      - ${FE_PORT}:${FE_PORT}
+      - ${EXPOSE_FE_PORT}:${FE_PORT}
     environment:
       - HOST=0.0.0.0
     networks:
@@ -173,4 +173,3 @@ volumes:
 
 networks:
   reefscan:
-    name: reefscan

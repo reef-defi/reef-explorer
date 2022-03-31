@@ -6,6 +6,9 @@ on:
       services:
         description: 'What services would you like to build e.g. "graphql crawler"'
         type: string
+      network:
+        description: 'What network would you like to deploy "mainnet / testnet'
+        type: string
 
 jobs:
   publish:
@@ -21,5 +24,5 @@ jobs:
       - run: echo "DOCKER_HOST=${{ secrets.SERVER_DOCKER_HOST }}" >> $GITHUB_ENV
       - if: github.ref != 'refs/heads/develop'
         run: ./resources/increment_version.sh .env
-      - run: make net=testnet env=prod cmd=pull services=${{ github.event.inputs.services }} execute
-      - run: make net=testnet env=prod services=${{ github.event.inputs.services }} up
+      - run: make net=${{ github.event.inputs.network }} env=prod cmd=pull services=${{ github.event.inputs.services }} execute
+      - run: make net=${{ github.event.inputs.network }} env=prod services=${{ github.event.inputs.services }} up
