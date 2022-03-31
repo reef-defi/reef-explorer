@@ -8,9 +8,9 @@ services:
     tty: true
     stdin_open: true
     networks:
-      - reefscan
+      - reef-explorer-dev-prod_reefscan
 
 networks:
-  reefscan:
+  reef-explorer-dev-prod_reefscan:
     external: true
     driver: bridge
