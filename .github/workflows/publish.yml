@@ -18,8 +18,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: echo "VERSION=$(./resources/increment_version.sh .env)" >> $GITHUB_ENV
-      - run: docker-compose -f docker-compose-prod.yml build ${{ github.event.inputs.services }}
-      - run: docker-compose -f docker-compose-prod.yml push ${{ github.event.inputs.services }}
+      - run: make net=mainnet env=prod cmd=build services=${{ github.event.inputs.services }} execute
+      - run: make net=mainnet env=prod cmd=push services=${{ github.event.inputs.services }} execute
       - if: github.ref == 'refs/heads/develop'
         run: |
           git config --global user.name 'frisitano'
