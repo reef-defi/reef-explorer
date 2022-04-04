@@ -165,7 +165,6 @@ export default {
         result({ data }) {
           this.stakingRewards = data.staking.map((stakeEv) => {
             const timestamp = new Date(stakeEv.timestamp).getTime() / 1000
-            console.log(stakeEv.event.extrinsic.signed_data)
             return {
               timestamp,
               timeago: timestamp,
@@ -173,7 +172,7 @@ export default {
               address: stakeEv.signer,
               block_id: stakeEv.event.block_id,
               hash: stakeEv.event.extrinsic.hash,
-              fee: stakeEv.event.extrinsic.signed_data.fee.partialFee,
+              fee: stakeEv.event.extrinsic.signed_data?.fee.partialFee || 0,
               extrinsicIndex: stakeEv.event.extrinsic.index,
             }
           })
