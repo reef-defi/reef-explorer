@@ -238,16 +238,14 @@ export default {
           return !this.accountId
         },
         result({ data }) {
-          this.transfers = data.transfer.map(
-            (t) => ({
-              ...t,
-              extrinsic_hash: t.extrinsic.hash,
-              to_address: t.to_address || t.to_evm_address,
-              from_address: t.from_address || t.from_evm_address,
-              symbol: t.token.verified_contract?.contract_data?.symbol,
-              decimals: t.token.verified_contract?.contract_data?.decimals,
-            })
-          )
+          this.transfers = data.transfer.map((t) => ({
+            ...t,
+            extrinsic_hash: t.extrinsic.hash,
+            to_address: t.to_address || t.to_evm_address,
+            from_address: t.from_address || t.from_evm_address,
+            symbol: t.token.verified_contract?.contract_data?.symbol,
+            decimals: t.token.verified_contract?.contract_data?.decimals,
+          }))
           this.totalRows = this.transfers.length
           this.loading = false
         },
