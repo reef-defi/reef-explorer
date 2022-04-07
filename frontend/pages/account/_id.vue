@@ -336,9 +336,9 @@ export default {
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    
-      @media not all and (min-resolution:.001dpcm) { 
-        @supports (-webkit-appearance:none) {
+
+      @media not all and (min-resolution: 0.001dpcm) {
+        @supports (-webkit-appearance: none) {
           display: inline-block !important;
         }
       }
