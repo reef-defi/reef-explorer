@@ -335,7 +335,7 @@ export default {
       //noinspection CssInvalidPropertyValue
       background-clip: text;
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      //-webkit-text-fill-color: transparent;
     }
   }
 
