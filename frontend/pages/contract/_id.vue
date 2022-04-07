@@ -123,7 +123,7 @@
               </Cell>
             </Row>
             <Row>
-              <Cell>Reef locked</Cell>
+              <Cell>Contract balance</Cell>
               <Cell>
                 <span>{{ formatAmount(this.balance) }}</span>
               </Cell>
