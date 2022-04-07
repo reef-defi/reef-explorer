@@ -122,6 +122,12 @@
                 </nuxt-link>
               </Cell>
             </Row>
+            <Row>
+              <Cell>Contract balance</Cell>
+              <Cell>
+                <span>{{ formatAmount(this.balance) }}</span>
+              </Cell>
+            </Row>
             <!--TODO Ziga
             <Row v-if="contract.value">
               <Cell>{{ $t('details.contract.value') }}</Cell>
@@ -284,6 +290,10 @@ import { ethers } from 'ethers'
 // import cbor from 'cbor'
 import Hash from 'ipfs-only-hash'
 import { Promised } from 'vue-promised'
+import { Contract } from 'ethers'
+import { Provider } from '@reef-defi/evm-provider'
+import { WsProvider } from '@polkadot/api'
+import ERC20Abi from '../../assets/erc20Abi.json'
 import ContractExecute from '../../components/ContractExecute.vue'
 import ContractTransactions from '~/components/ContractTransactions'
 import ReefIdenticon from '@/components/ReefIdenticon.vue'
@@ -308,9 +318,11 @@ export default {
   data() {
     return {
       network,
+      balance: 0,
       loading: true,
       address: this.toContractAddress(this.$route.params.id),
       contract: undefined,
+      provider: undefined,
       tab: 'general',
     }
   },
@@ -453,7 +465,7 @@ export default {
             address: this.address,
           }
         },
-        result({ data }) {
+        async result({ data }) {
           if (data.contract[0]) {
             this.contract = data.contract[0]
             const name = data.contract[0].verified_contract?.name
@@ -479,6 +491,19 @@ export default {
                 '0x' + this.contract.bytecode_context
             }
           }
+
+          const provider = new Provider({
+            provider: new WsProvider(network.nodeWs),
+          })
+          await provider.api.isReady
+          const contract = new Contract(
+            '0x0000000000000000000000000000000001000000',
+            ERC20Abi,
+            provider
+          )
+          const balance = await contract.balanceOf(this.address)
+          await provider.api.disconnect()
+          this.balance = balance.toString()
           this.loading = false
         },
       },
