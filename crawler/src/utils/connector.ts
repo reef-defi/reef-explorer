@@ -6,15 +6,12 @@ import 'cross-fetch/polyfill';
 import {ApolloClient, InMemoryCache, NormalizedCacheObject} from "@apollo/client/core"
 
 const dbProvider: Pool = new Pool({ ...APP_CONFIG.postgresConfig });
-export type GraphqlServer = ApolloClient<NormalizedCacheObject>;
 export const nodeProvider = new NodeProvider(APP_CONFIG.nodeUrls);
+
+export type GraphqlServer = ApolloClient<NormalizedCacheObject>;
 export const liveGraphqlServer: GraphqlServer = new ApolloClient({
   uri: APP_CONFIG.liveGraphqlUrl,
   cache: new InMemoryCache()
-});
-export const localGraphqlServer: GraphqlServer = new ApolloClient({
-  uri: APP_CONFIG.localGraphqlUrl,
-  cache: new InMemoryCache(),
 });
 
 export const insert = async (statement: string): Promise<void> => {
