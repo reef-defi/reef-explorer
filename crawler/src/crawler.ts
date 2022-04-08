@@ -81,14 +81,14 @@ const processNextBlock = async () => {
     /**
      * Verification contract sync will only be triggered when:
      * - sync is enabled
-     * - crawler is in "listening" mode 
-     * - on every nth interval 
+     * - crawler is in "listening" mode
+     * - on every nth interval
      */
     updateVerifiedContracts += 1;
     if (
-      config.verifiedContractSync &&
-      (finalizedHead - currentBlockIndex) <= 3 &&
-      updateVerifiedContracts > config.verifiedContractSyncInterval
+      config.verifiedContractSync
+      && (finalizedHead - currentBlockIndex) <= 3
+      && updateVerifiedContracts > config.verifiedContractSyncInterval
     ) {
       await syncVerifiedContracts();
       updateVerifiedContracts = 0;
@@ -108,7 +108,7 @@ Promise.resolve()
     logger.info('...success');
   })
   .then(() => {
-    logger.info(`Contract verification sync: ${config.verifiedContractSync}`)
+    logger.info(`Contract verification sync: ${config.verifiedContractSync}`);
   })
   .then(processNextBlock)
   .then(async () => {

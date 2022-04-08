@@ -1,9 +1,8 @@
-
-import { gql } from "@apollo/client/core";
-import { GraphqlServer, liveGraphqlServer, queryv2 } from "../utils/connector";
-import logger from '../utils/logger';
+import { gql } from '@apollo/client/core';
 import format from 'pg-format';
-import { toChecksumAddress } from "../utils/utils";
+import { GraphqlServer, liveGraphqlServer, queryv2 } from '../utils/connector';
+import logger from '../utils/logger';
+import { toChecksumAddress } from '../utils/utils';
 
 interface VerifiedContractAddresses {
   verified_contract: {
@@ -33,20 +32,17 @@ interface AddressesVar {
   address: {} | { _in: string[] };
 }
 
-const loadVerifiedContractAddresses = async (server: GraphqlServer): Promise<string[]> =>
-  server.query<VerifiedContractAddresses>({
-    query: gql`
+const loadVerifiedContractAddresses = async (server: GraphqlServer): Promise<string[]> => server.query<VerifiedContractAddresses>({
+  query: gql`
       query verified_addresses {
         verified_contract {
           address
         }
       }    
-    `
-  })
-  .then((res) => 
-    res.data.verified_contract
-      .map(({address}) => address)
-  );
+    `,
+})
+  .then((res) => res.data.verified_contract
+    .map(({ address }) => address));
 
 const insertVerifiedContracts = async (contracts: VerifiedContract[]): Promise<void> => {
   await queryv2(
@@ -56,25 +52,23 @@ const insertVerifiedContracts = async (contracts: VerifiedContract[]): Promise<v
       VALUES 
         %L
       ON CONFLICT DO NOTHING;`,
-      contracts.map((c) => 
-        [
-          toChecksumAddress(c.address), 
-          c.name, 
-          c.filename, 
-          JSON.stringify(c.source), 
-          c.optimization, 
-          c.compiler_version, 
-          JSON.stringify(c.compiled_data), 
-          JSON.stringify(c.args), 
-          c.runs, 
-          c.target, 
-          c.type, 
-          JSON.stringify(c.contract_data)
-        ]
-      )
-    )
-  )
-}
+      contracts.map((c) => [
+        toChecksumAddress(c.address),
+        c.name,
+        c.filename,
+        JSON.stringify(c.source),
+        c.optimization,
+        c.compiler_version,
+        JSON.stringify(c.compiled_data),
+        JSON.stringify(c.args),
+        c.runs,
+        c.target,
+        c.type,
+        JSON.stringify(c.contract_data),
+      ]),
+    ),
+  );
+};
 
 const loadVerifiedContracts = async (addresses: string[]): Promise<VerifiedContract[]> => liveGraphqlServer
   .query<LoadedVerifiedContracts, AddressesVar>({
@@ -99,17 +93,16 @@ const loadVerifiedContracts = async (addresses: string[]): Promise<VerifiedContr
         }
       }    
     `,
-    variables: { address: { _in: addresses } }
+    variables: { address: { _in: addresses } },
   })
   .then((res) => res.data.verified_contract);
 
-const localVerifiedContractsAddresses = async (): Promise<string[]> => 
-  queryv2<{address: string}>('SELECT address FROM verified_contract')
-    .then((res) => res.map(({address}) => address))
-    .then((res) => res.map((val) => val.toLocaleLowerCase()));
+const localVerifiedContractsAddresses = async (): Promise<string[]> => queryv2<{address: string}>('SELECT address FROM verified_contract')
+  .then((res) => res.map(({ address }) => address))
+  .then((res) => res.map((val) => val.toLocaleLowerCase()));
 
 export default async (): Promise<void> => {
-  logger.info('Loading verified contract addresses')
+  logger.info('Loading verified contract addresses');
   const localVerifiedContracts = await localVerifiedContractsAddresses();
   const liveVerifiedContracts = await loadVerifiedContractAddresses(liveGraphqlServer);
 
@@ -119,12 +112,12 @@ export default async (): Promise<void> => {
   if (missingContracts.length === 0) {
     return;
   }
-  
-  logger.info(`Loading following missing contracts: \n- ${missingContracts.join("\n- ")}`);
+
+  logger.info(`Loading following missing contracts: \n- ${missingContracts.join('\n- ')}`);
   const contracts = await loadVerifiedContracts(missingContracts);
 
   logger.info('Inserting missing contracts');
   await insertVerifiedContracts(contracts);
 
   logger.info('Verified contract sync complete');
-}
+};

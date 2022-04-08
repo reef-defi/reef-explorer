@@ -1,9 +1,9 @@
 import { Pool } from 'pg';
 import format from 'pg-format';
+import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client/core';
 import APP_CONFIG from '../config';
 import NodeProvider from './NodeProvider';
 import 'cross-fetch/polyfill';
-import {ApolloClient, InMemoryCache, NormalizedCacheObject} from "@apollo/client/core"
 
 const dbProvider: Pool = new Pool({ ...APP_CONFIG.postgresConfig });
 export const nodeProvider = new NodeProvider(APP_CONFIG.nodeUrls);
@@ -11,7 +11,7 @@ export const nodeProvider = new NodeProvider(APP_CONFIG.nodeUrls);
 export type GraphqlServer = ApolloClient<NormalizedCacheObject>;
 export const liveGraphqlServer: GraphqlServer = new ApolloClient({
   uri: APP_CONFIG.liveGraphqlUrl,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache(),
 });
 
 export const insert = async (statement: string): Promise<void> => {
