@@ -4,7 +4,7 @@ import config from './config';
 import processBlocks, { processInitialBlocks } from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
-import { min, wait } from './utils/utils';
+import { min, promiseWithTimeout, wait } from './utils/utils';
 import logger from './utils/logger';
 import parseAndInsertSubContracts from './crawler/contracts';
 import syncVerifiedContracts from './crawler/syncVerifiedContracts';
