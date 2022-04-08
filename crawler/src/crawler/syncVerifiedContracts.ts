@@ -1,26 +1,15 @@
 
 import { gql } from "@apollo/client/core";
-import { GraphqlServer, localGraphqlServer,  queryv2 } from "../utils/connector";
+import { GraphqlServer, liveGraphqlServer, queryv2 } from "../utils/connector";
 import logger from '../utils/logger';
 import format from 'pg-format';
+import { toChecksumAddress } from "../utils/utils";
 
 interface VerifiedContractAddresses {
   verified_contract: {
-    address: string[];
-  }
+    address: string;
+  }[]
 }
-const loadVerifiedContractAddresses = async (server: GraphqlServer): Promise<string[]> =>
-  server.query<VerifiedContractAddresses>({
-    query: gql`
-      query verified_addresses {
-        verified_contract {
-          address
-        }
-      }    
-    `
-  })
-  .then((res) => res.data.verified_contract.address);
-
 interface VerifiedContract {
   address: string;
   name: string;
@@ -36,47 +25,63 @@ interface VerifiedContract {
   contract_data: any;
 }
 
+interface LoadedVerifiedContracts {
+  verified_contract: VerifiedContract[];
+}
+
+interface AddressesVar {
+  address: {} | { _in: string[] };
+}
+
+const loadVerifiedContractAddresses = async (server: GraphqlServer): Promise<string[]> =>
+  server.query<VerifiedContractAddresses>({
+    query: gql`
+      query verified_addresses {
+        verified_contract {
+          address
+        }
+      }    
+    `
+  })
+  .then((res) => 
+    res.data.verified_contract
+      .map(({address}) => address)
+  );
+
 const insertVerifiedContracts = async (contracts: VerifiedContract[]): Promise<void> => {
   await queryv2(
     format(
       `INSERT INTO verified_contract
         (address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
       VALUES 
-        %l
+        %L
       ON CONFLICT DO NOTHING;`,
       contracts.map((c) => 
         [
-          c.address, 
+          toChecksumAddress(c.address), 
           c.name, 
           c.filename, 
-          c.source, 
+          JSON.stringify(c.source), 
           c.optimization, 
           c.compiler_version, 
-          c.compiled_data, 
-          c.args, 
+          JSON.stringify(c.compiled_data), 
+          JSON.stringify(c.args), 
           c.runs, 
           c.target, 
           c.type, 
-          c.contract_data
+          JSON.stringify(c.contract_data)
         ]
       )
     )
   )
 }
 
-interface LoadedVerifiedContracts {
-  verified_contract: VerifiedContract[];
-}
-
-interface AddressesVar {
-  addresses: string[];
-}
-const loadVerifiedContracts = async (addresses: string[]): Promise<VerifiedContract[]> => localGraphqlServer
+const loadVerifiedContracts = async (addresses: string[]): Promise<VerifiedContract[]> => liveGraphqlServer
   .query<LoadedVerifiedContracts, AddressesVar>({
     query: gql`
-      query verified_contracts($addresses: String[]!) {
+      query verified_contracts($address: String_comparison_exp!) {
         verified_contract(
-          where: { address: { _in: $addresses}}
+          where: { address: $address }
         ) {
           address
           args
@@ -94,28 +99,32 @@ const loadVerifiedContracts = async (addresses: string[]): Promise<VerifiedContr
         }
       }    
     `,
-    variables: { addresses }
+    variables: { address: { _in: addresses } }
   })
   .then((res) => res.data.verified_contract);
 
+const localVerifiedContractsAddresses = async (): Promise<string[]> => 
+  queryv2<{address: string}>('SELECT address FROM verified_contract')
+    .then((res) => res.map(({address}) => address))
+    .then((res) => res.map((val) => val.toLocaleLowerCase()));
+
 export default async (): Promise<void> => {
-  console.log('Loading addresses')
-  const localVerifiedContracts = await loadVerifiedContractAddresses(localGraphqlServer);
-  console.log(localVerifiedContracts)
-  // const liveVerifiedContracts = await loadVerifiedContractAddresses(localGraphqlServer);
-  // console.log(liveVerifiedContracts)
+  logger.info('Loading verified contract addresses')
+  const localVerifiedContracts = await localVerifiedContractsAddresses();
+  const liveVerifiedContracts = await loadVerifiedContractAddresses(liveGraphqlServer);
 
-  // const missingContracts = liveVerifiedContracts
-  //   .filter((address) => !localVerifiedContracts.includes(address));
+  const missingContracts = liveVerifiedContracts
+    .filter((address) => !localVerifiedContracts.includes(address.toLocaleLowerCase()));
 
-  // if (missingContracts.length === 0) {
-  //   return;
-  // }
-  // logger.info(`Loading following missing contracts: \n- ${missingContracts.join("\n- ")}`);
-  // const contracts = await loadVerifiedContracts(missingContracts);
+  if (missingContracts.length === 0) {
+    return;
+  }
+  
+  logger.info(`Loading following missing contracts: \n- ${missingContracts.join("\n- ")}`);
+  const contracts = await loadVerifiedContracts(missingContracts);
 
-  // logger.info('Inserting missing contracts');
-  // await insertVerifiedContracts(contracts);
+  logger.info('Inserting missing contracts');
+  await insertVerifiedContracts(contracts);
 
-  // logger.info('Verified contract sync complete');
+  logger.info('Verified contract sync complete');
 }
