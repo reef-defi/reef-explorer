@@ -42,7 +42,7 @@ import {
 } from './evmEvent';
 import { insertContracts, insertEvmEvents } from '../queries/evmEvent';
 import logger from '../utils/logger';
-import insertStaking, { stakingEra } from '../queries/staking';
+import { stakingEras, stakingRewards } from './staking';
 import insertTokenHolders from '../queries/tokenHoldes';
 import { extractTransferAccounts, processTokenTransfers } from './transfer';
 import {
@@ -324,22 +324,13 @@ export default async (fromId: number, toId: number): Promise<number> => {
   // Free memory
   accounts = [];
 
-  // Currently our chain does not have staking Slash
-  // If needed:
-  // logger.info('Inserting staking slashes');
-  // await insertStaking(events.filter(isEventStakingSlash), 'Slash');
-
   // Staking Reward
   logger.info('Inserting staking rewards');
-  await insertStaking(events.filter(isEventStakingReward), 'Reward');
-
+  await stakingRewards(events.filter(isEventStakingReward), 'Reward');
+  
   // Staking Era
-  // await resolvePromisesAsChunks(
-  //   events
-  //     .filter(isEventPayoutStarted)
-  //     .map(stakingEra)
-  // )
-  await stakingEra();
+  await stakingEras(events.filter(isEventPayoutStarted));
+
   // Transfers
   logger.info('Inserting transfers');
   await insertTransfers(transfers);
