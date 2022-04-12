@@ -4,9 +4,10 @@ import config from './config';
 import processBlocks, { processInitialBlocks } from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
-import { min, wait, promiseWithTimeout } from './utils/utils';
+import { min, promiseWithTimeout, wait } from './utils/utils';
 import logger from './utils/logger';
-import parseAndInsertContracts from './crawler/contracts';
+import parseAndInsertSubContracts from './crawler/contracts';
+import syncVerifiedContracts from './crawler/syncVerifiedContracts';
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // import * as Tracing from "@sentry/tracing";
 
@@ -30,6 +31,7 @@ const processNextBlock = async () => {
   let BLOCKS_PER_STEP = config.startBlockSize;
   let currentBlockIndex = await lastBlockInDatabase();
   let updateSubContractsCounter = 0;
+  let updateVerifiedContracts = 0;
 
   while (true) {
     const chainHead = nodeProvider.lastBlockId();
@@ -72,8 +74,24 @@ const processNextBlock = async () => {
     // Missing Contracts - Inefficient pattern
     updateSubContractsCounter += 1;
     if (updateSubContractsCounter > config.subcontractInterval) {
-      await parseAndInsertContracts(finalizedHead);
+      await parseAndInsertSubContracts(finalizedHead);
       updateSubContractsCounter = 0;
+    }
+
+    /**
+     * Verification contract sync will only be triggered when:
+     * - sync is enabled
+     * - crawler is in "listening" mode
+     * - on every nth interval
+     */
+    updateVerifiedContracts += 1;
+    if (
+      config.verifiedContractSync
+      && (finalizedHead - currentBlockIndex) <= 3
+      && updateVerifiedContracts > config.verifiedContractSyncInterval
+    ) {
+      await syncVerifiedContracts();
+      updateVerifiedContracts = 0;
     }
 
     await wait(config.pollInterval);
@@ -88,6 +106,9 @@ Promise.resolve()
     logger.info('Removing unfinished blocks...');
     await deleteUnfinishedBlocks();
     logger.info('...success');
+  })
+  .then(() => {
+    logger.info(`Contract verification sync: ${config.verifiedContractSync}`);
   })
   .then(processNextBlock)
   .then(async () => {

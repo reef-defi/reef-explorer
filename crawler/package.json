@@ -11,15 +11,12 @@
     "prod": "tsc -p tsconfig.production.json && node --max-old-space-size=16384 ./dist/crawler.js",
     "profile": "tsc && node --prof --max-old-space-size=16384 ./dist/crawler.js",
     "dev": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/crawler.ts",
-    
     "start-backtracking": "node --max-old-space-size=16384 ./dist/backtracking.js",
     "prod-backtracking": "tsc -p tsconfig.production.json && node --max-old-space-size=16384 ./dist/backtracking.js",
     "profile-backtracking": "tsc && node --prof --max-old-space-size=16384 ./dist/backtracking.js",
     "dev-backtracking": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/backtracking.ts",
-    
     "dev-pool": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/pool.ts",
     "start-pool": "node --max-old-space-size=16384 ./dist/pool.js",
-
     "test": "echo skip",
     "lint": "eslint --fix --ext .ts ./src/"
   },
@@ -40,10 +37,13 @@
     "typescript": "^4.5.2"
   },
   "dependencies": {
+    "@apollo/client": "^3.5.10",
     "@reef-defi/evm-provider": "^1.0.6",
     "@sentry/integrations": "^6.16.1",
     "@sentry/node": "^6.16.1",
     "@sentry/tracing": "^6.16.1",
+    "cross-fetch": "^3.1.5",
+    "graphql": "^16.3.0",
     "pg": "^8.7.1",
     "pg-format": "^1.0.4",
     "pino": "^7.5.1",

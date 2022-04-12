@@ -63,7 +63,7 @@ export const extrinsicBodyToTransfer = async ({
     ? (await nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress))).toString()
     : 'null';
 
-  const amount = BigNumber.from(args[args.length-1]).toString();
+  const amount = BigNumber.from(args[args.length - 1]).toString();
   const feeAmount = BigNumber.from(signedData!.fee.partialFee).toString();
   const denom = extrinsic.method.section === 'currencies' ? args[1].token : 'REEF';
 
