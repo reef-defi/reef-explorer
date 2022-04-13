@@ -5,9 +5,9 @@ services:
     volumes:
       - populate-modules:/usr/app/node_modules
       - ./../crawler:/usr/app/
-    command: node ./dist/populate/populate_${script}.js
+    command: node  --max-old-space-size=16384 ./dist/populate/populate_${script}.js
     networks:
-      - reef-explorer-testnet-dev_reefscan
+      - reef-explorer-testnet-prod_reefscan
     environment:
       - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
       - SENTRY_DNS=${SENTRY_DNS}
@@ -23,6 +23,6 @@ volumes:
   populate-modules: {} 
 
 networks:
-  reef-explorer-testnet-dev_reefscan:
+  reef-explorer-testnet-prod_reefscan:
     external: true
     driver: bridge

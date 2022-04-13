@@ -1,11 +1,11 @@
 import { accountHeadToBody } from "../crawler/event";
 import { insertStaking, processStakingEvent, stakingToAccount } from "../crawler/staking";
-import { NeededStakingValues, Staking } from "../crawler/types";
+import { NeededStakingValues } from "../crawler/types";
 import { insertAccounts } from "../queries/event";
 import { nodeProvider, queryv2 } from "../utils/connector";
 import logger from "../utils/logger";
 import { dropDuplicates, resolvePromisesAsChunks } from "../utils/utils";
-import { BigNumber } from "ethers";
+import { BigNumber } from 'ethers';
 
 interface StakingEvent {
   id: number;
@@ -53,4 +53,6 @@ const main = async () => {
   logger.info('Complete!')
 };
 
-main().catch((err) => logger.error(err));
+main()
+.then(() => process.exit())
+.catch((err) => logger.error(err));
