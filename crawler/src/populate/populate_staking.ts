@@ -1,58 +1,61 @@
-import { accountHeadToBody } from "../crawler/event";
-import { insertStaking, processStakingEvent, stakingToAccount } from "../crawler/staking";
-import { NeededStakingValues } from "../crawler/types";
-import { insertAccounts } from "../queries/event";
-import { nodeProvider, queryv2 } from "../utils/connector";
-import logger from "../utils/logger";
-import { dropDuplicates, resolvePromisesAsChunks } from "../utils/utils";
 import { BigNumber } from 'ethers';
+import { accountHeadToBody } from '../crawler/event';
+import { insertStaking, processStakingEvent, stakingToAccount } from '../crawler/staking';
+import { NeededStakingValues } from '../crawler/types';
+import { insertAccounts } from '../queries/event';
+import { nodeProvider, queryv2 } from '../utils/connector';
+import logger from '../utils/logger';
+import { dropDuplicates, resolvePromisesAsChunks } from '../utils/utils';
 
 interface StakingEvent {
   id: number;
   block_id: number;
   extrinsic_id: number;
-  timestamp: string;  
+  timestamp: string;
   data: [string, string];
 }
 
 const main = async () => {
   await nodeProvider.initializeProviders();
 
-  logger.info('Removing staking data')
-  await queryv2(`DELETE FROM staking WHERE id > 0;`)
+  logger.info('Removing staking data');
+  await queryv2('DELETE FROM staking WHERE id > 0;');
 
   logger.info('Loading staking events');
-  const stakingEvents = await queryv2<StakingEvent>(`SELECT * FROM event WHERE method = 'Reward' OR method = 'Rewarded';`)
-    .then((res) => res.map(({id, block_id, data: [address, amount], timestamp}): NeededStakingValues => ({ 
+  /* eslint-disable camelcase */
+  const stakingEvents = await queryv2<StakingEvent>('SELECT * FROM event WHERE method = \'Reward\' OR method = \'Rewarded\';')
+    .then((res) => res.map(({
+      id, block_id, data: [address, amount], timestamp,
+    }): NeededStakingValues => ({
       id,
       blockId: block_id,
       data: [address, BigNumber.from(amount).toString()],
       timestamp: new Date(timestamp).toISOString(),
-    })))
+    })));
 
-  logger.info('Processing staking events and extracting reward destination mapping')
-  const staking = await resolvePromisesAsChunks(stakingEvents.map(processStakingEvent))
+  logger.info('Processing staking events and extracting reward destination mapping');
+  const staking = await resolvePromisesAsChunks(stakingEvents.map(processStakingEvent));
 
-  logger.info('Updating account balances')
+  logger.info('Updating account balances');
   const accountHeaders = dropDuplicates(
     staking.map(stakingToAccount),
-    "address"
+    'address',
   );
 
-  logger.info('Loading account balances')
+  logger.info('Loading account balances');
   const accounts = await resolvePromisesAsChunks(
-    accountHeaders.map(accountHeadToBody)
+    accountHeaders.map(accountHeadToBody),
   );
-  
+
   logger.info('Inserting accounts');
   await insertAccounts(accounts);
 
   logger.info('Inserting staking');
   await insertStaking(staking);
 
-  logger.info('Complete!')
+  logger.info('Complete!');
 };
 
 main()
-.then(() => process.exit())
-.catch((err) => logger.error(err));
+  .then(() => process.exit())
+  .catch((err) => logger.error(err));

@@ -263,7 +263,7 @@ export default async (fromId: number, toId: number): Promise<number> => {
   const events = extrinsics
     .flatMap(extrinsicToEventHeader)
     .map(eventToBody(eid));
-  
+
   logger.info('Inserting events');
   await insertEvents(events);
 
@@ -272,11 +272,13 @@ export default async (fromId: number, toId: number): Promise<number> => {
   const staking = await resolvePromisesAsChunks(
     events
       .filter(isEventStakingReward)
-      .map((e) => processStakingEvent({...e, 
+      .map((e) => processStakingEvent({
+        ...e,
         data: [
           e.event.event.data[0].toString(),
           e.event.event.data[1].toString(),
-        ]}))
+        ],
+      })),
   );
 
   // Transfers
@@ -307,7 +309,7 @@ export default async (fromId: number, toId: number): Promise<number> => {
   const allAccounts: AccountHead[] = [];
   allAccounts.push(...transfers.flatMap(extractTransferAccounts));
   allAccounts.push(...events.flatMap(accountNewOrKilled));
-  allAccounts.push(...staking.map(stakingToAccount))
+  allAccounts.push(...staking.map(stakingToAccount));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)

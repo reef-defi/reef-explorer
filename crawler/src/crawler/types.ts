@@ -8,7 +8,6 @@ import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import { Vec } from '@polkadot/types';
 import { utils } from 'ethers';
 
-
 export type Address = string;
 export type EventId = number;
 export type Signer = string;
@@ -69,7 +68,6 @@ export interface ExtrinsicBody extends ExtrinsicHead {
   signedData?: SignedExtrinsicData;
   index: number;
 }
-
 
 export interface EventHead {
   event: Event;
