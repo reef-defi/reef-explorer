@@ -17,6 +17,7 @@
     "dev-backtracking": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/backtracking.ts",
     "dev-pool": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/pool.ts",
     "start-pool": "node --max-old-space-size=16384 ./dist/pool.js",
+    "populate-staking": "node --max-old-space-size=16384 ./dist/populate/populate_staking.js",
     "test": "echo skip",
     "lint": "eslint --fix --ext .ts ./src/"
   },
