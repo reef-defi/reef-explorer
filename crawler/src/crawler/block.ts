@@ -27,9 +27,7 @@ import {
   accountHeadToBody,
   accountNewOrKilled,
   extrinsicToEventHeader,
-  isEventPayoutStarted,
   isEventStakingReward,
-  isEventStakingSlash,
   isExtrinsicEvent,
 } from './event';
 import { range, dropDuplicates, resolvePromisesAsChunks } from '../utils/utils';
@@ -42,7 +40,7 @@ import {
 } from './evmEvent';
 import { insertContracts, insertEvmEvents } from '../queries/evmEvent';
 import logger from '../utils/logger';
-import { stakingEras, stakingRewards } from './staking';
+import { insertStaking, processStakingEvent, stakingToAccount } from './staking';
 import insertTokenHolders from '../queries/tokenHoldes';
 import { extractTransferAccounts, processTokenTransfers } from './transfer';
 import {
@@ -265,9 +263,17 @@ export default async (fromId: number, toId: number): Promise<number> => {
   const events = extrinsics
     .flatMap(extrinsicToEventHeader)
     .map(eventToBody(eid));
-
+  
   logger.info('Inserting events');
   await insertEvents(events);
+
+  // Staking
+  logger.info('Resolving staking events');
+  const staking = await resolvePromisesAsChunks(
+    events
+      .filter(isEventStakingReward)
+      .map(processStakingEvent)
+  );
 
   // Transfers
   logger.info('Extracting native transfers');
@@ -297,6 +303,7 @@ export default async (fromId: number, toId: number): Promise<number> => {
   const allAccounts: AccountHead[] = [];
   allAccounts.push(...transfers.flatMap(extractTransferAccounts));
   allAccounts.push(...events.flatMap(accountNewOrKilled));
+  allAccounts.push(...staking.map(stakingToAccount))
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
@@ -326,10 +333,7 @@ export default async (fromId: number, toId: number): Promise<number> => {
 
   // Staking Reward
   logger.info('Inserting staking rewards');
-  await stakingRewards(events.filter(isEventStakingReward), 'Reward');
-  
-  // Staking Era
-  await stakingEras(events.filter(isEventPayoutStarted));
+  await insertStaking(staking);
 
   // Transfers
   logger.info('Inserting transfers');

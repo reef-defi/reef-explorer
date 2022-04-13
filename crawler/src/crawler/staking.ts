@@ -1,7 +1,7 @@
-import { EventBody } from './types';
+import { AccountHead, EventBody } from './types';
 import { insertV2, nodeProvider } from '../utils/connector';
 import logger from '../utils/logger';
-import { resolvePromisesAsChunks } from '../utils/utils';
+
 type StakingType = 'Slash' | 'Reward';
 
 type EventId = number;
@@ -17,6 +17,7 @@ interface ValidatorReward {
 }
 
 interface Staking extends ValidatorReward {
+  blockId: number;
   eventId: EventId;
   type: StakingType;
   timestamp: Timestamp;
@@ -30,32 +31,35 @@ const stakingToInsert = (staking: Staking): StakingInsert => [
   staking.timestamp
 ];
 
-const eventToStaking = (event: EventBody, type: StakingType): Staking => ({
-  type,
-  eventId: event.id,
-  timestamp: event.timestamp,
-  signer: event.event.event.data[0].toString(),
-  amount: event.event.event.data[1].toString(),
+export const stakingToAccount = ({signer, blockId, timestamp}: Staking): AccountHead => ({
+  blockId,
+  timestamp, 
+  active: true,
+  address: signer,
 });
 
-const insertStaking = async (stakingRewards: StakingInsert[]): Promise<void> => insertV2(
-  `INSERT INTO staking
-    (event_id, signer, amount, type, timestamp)
-  VALUES
-    %L;`, 
-  stakingRewards
-); 
-
-const stakingEra = async ({id, event, timestamp}: EventBody): Promise<Staking> => {
+export const processStakingEvent = async ({id, event, timestamp, blockId}: EventBody): Promise<Staking> => {
   const {data} = event.event;
-  const eraIndex = data[0].toString();
-  const signer = data[1].toString();
+  const [addr, amount] = data;
+  let signer = addr.toString();
 
   logger.info(`Extracting era validator: ${signer} staking reward`)
-  const amount = await nodeProvider.query((provider) => provider.api.query.staking.erasStakers(eraIndex, signer))
+ 
+  const blockHash = await nodeProvider.query(
+    (provider) => provider.api.rpc.chain.getBlockHash(blockId)
+  );
+  const rewardDestination = await nodeProvider.query(
+    (provider) => provider.api.query.staking.payee.at(blockHash, "5CDo1enKQhb7EXYh91yfANuxRS7VdEfuHb8SxQRvw173jpPd")
+  );
+  
+  if (rewardDestination.isAccount) {
+    signer = rewardDestination.asAccount.toString();
+    console.log(signer);
+  }
 
   return {
     signer,
+    blockId,
     timestamp,
     eventId: id,
     type: 'Reward',
@@ -63,16 +67,10 @@ const stakingEra = async ({id, event, timestamp}: EventBody): Promise<Staking> =
   };
 }
 
-export const stakingEras = async (events: EventBody[]): Promise<void> => {
-  const staking = await resolvePromisesAsChunks(events.map(stakingEra));
-  await insertStaking(staking.map(stakingToInsert));
-}
-
-export const stakingRewards = async (
-  events: EventBody[],
-  type: StakingType,
-): Promise<void> => insertStaking(
-  events
-    .map((e) => eventToStaking(e, type))
-    .map(stakingToInsert)
+export const insertStaking = async (stakingRewards: Staking[]): Promise<void> => insertV2(
+  `INSERT INTO staking
+    (event_id, signer, amount, type, timestamp)
+  VALUES
+    %L;`, 
+  stakingRewards.map(stakingToInsert)
 );

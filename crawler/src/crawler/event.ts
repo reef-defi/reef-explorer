@@ -41,10 +41,6 @@ export const accountNewOrKilled = (eventHead: EventHead): AccountHead[] => {
     return eventToAccountHead(eventHead, false);
   } if (nodeProvider.getProvider().api.events.balances.Reserved.is(event.event)) {
     return eventToAccountHead(eventHead);
-  } if (isEventPayoutStarted(eventHead)) {
-    return [
-      { blockId, address: event.event.data[1].toString(), active: true, timestamp }
-    ]
   } if (nodeProvider.getProvider().api.events.balances.Transfer.is(event.event)) {
     const res: any = event.event.data.toJSON();
     return [
@@ -92,7 +88,6 @@ export const accountHeadToBody = async (
     evmNonce,
   };
 };
-export const isEventPayoutStarted = ({event: { event }}: EventHead): boolean => nodeProvider.getProvider().api.events.staking.PayoutStarted.is(event);
 
 export const isEventStakingReward = ({ event: { event } }: EventHead): boolean => nodeProvider.getProvider().api.events.staking.Rewarded.is(event);
 
