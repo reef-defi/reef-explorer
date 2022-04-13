@@ -1,0 +1,28 @@
+version: "3.4"
+services:
+  populate:
+    image: reef-explorer-crawler-dev
+    volumes:
+      - populate-modules:/usr/app/node_modules
+      - ./../crawler:/usr/app/
+    command: node ./dist/populate/populate_${script}.js
+    networks:
+      - reef-explorer-testnet-dev_reefscan
+    environment:
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - SENTRY_DNS=${SENTRY_DNS}
+      - POSTGRES_PORT=${DB_PORT} #5432
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER} #reefexplorer
+      - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
+      - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+      - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
+
+volumes:
+  populate-modules: {} 
+
+networks:
+  reef-explorer-testnet-dev_reefscan:
+    external: true
+    driver: bridge
