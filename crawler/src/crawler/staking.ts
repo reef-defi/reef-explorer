@@ -1,27 +1,7 @@
-import { AccountHead, EventBody } from './types';
+import { AccountHead, EventBody, Staking, StakingInsert } from './types';
 import { insertV2, nodeProvider } from '../utils/connector';
 import logger from '../utils/logger';
 
-type StakingType = 'Slash' | 'Reward';
-
-type EventId = number;
-type Signer = string;
-type Amount = string;
-type Timestamp = string;
-
-type StakingInsert = [EventId, Signer, Amount, StakingType, Timestamp];
-
-interface ValidatorReward {
-  signer: string;
-  amount: string;
-}
-
-interface Staking extends ValidatorReward {
-  blockId: number;
-  eventId: EventId;
-  type: StakingType;
-  timestamp: Timestamp;
-}
 
 const stakingToInsert = (staking: Staking): StakingInsert => [
   staking.eventId,
@@ -43,18 +23,21 @@ export const processStakingEvent = async ({id, event, timestamp, blockId}: Event
   const [addr, amount] = data;
   let signer = addr.toString();
 
-  logger.info(`Extracting era validator: ${signer} staking reward`)
+  logger.info(`Extracting account reward destination for: ${signer}`)
  
+  // Retrieving block hash to extract correct reward destination mapping
   const blockHash = await nodeProvider.query(
     (provider) => provider.api.rpc.chain.getBlockHash(blockId)
   );
+  // Retrieving reward destination mapping for specific block and user
   const rewardDestination = await nodeProvider.query(
-    (provider) => provider.api.query.staking.payee.at(blockHash, "5CDo1enKQhb7EXYh91yfANuxRS7VdEfuHb8SxQRvw173jpPd")
+    (provider) => provider.api.query.staking.payee.at(blockHash, signer)
   );
   
+  // If account has speficied different reward destination we switch the staking signer to that one
   if (rewardDestination.isAccount) {
+    logger.info(`Redirecting staking rewards from: ${signer} to: ${rewardDestination.asAccount.toString()}`)
     signer = rewardDestination.asAccount.toString();
-    console.log(signer);
   }
 
   return {

@@ -8,6 +8,12 @@ import type { HeaderExtended } from '@polkadot/api-derive/type/types';
 import { Vec } from '@polkadot/types';
 import { utils } from 'ethers';
 
+
+type EventId = number;
+type Signer = string;
+type Amount = string;
+type Timestamp = string;
+
 export interface BlockHash {
   id: number;
   hash: BH;
@@ -271,4 +277,19 @@ export interface CompleteEvmData {
   parsed?: any;
   status: 'Success' | 'Error';
   type: 'Verified' | 'Unverified';
+}
+
+// Staking
+
+type StakingType = 'Slash' | 'Reward';
+
+export type StakingInsert = [EventId, Signer, Amount, StakingType, Timestamp];
+
+export interface Staking {
+  blockId: number;
+  eventId: EventId;
+  type: StakingType;
+  timestamp: Timestamp;
+  signer: Signer;
+  amount: Amount;
 }
