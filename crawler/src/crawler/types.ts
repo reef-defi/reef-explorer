@@ -9,10 +9,11 @@ import { Vec } from '@polkadot/types';
 import { utils } from 'ethers';
 
 
-type EventId = number;
-type Signer = string;
-type Amount = string;
-type Timestamp = string;
+export type Address = string;
+export type EventId = number;
+export type Signer = string;
+export type Amount = string;
+export type Timestamp = string;
 
 export interface BlockHash {
   id: number;
@@ -68,6 +69,7 @@ export interface ExtrinsicBody extends ExtrinsicHead {
   signedData?: SignedExtrinsicData;
   index: number;
 }
+
 
 export interface EventHead {
   event: Event;
@@ -284,6 +286,13 @@ export interface CompleteEvmData {
 type StakingType = 'Slash' | 'Reward';
 
 export type StakingInsert = [EventId, Signer, Amount, StakingType, Timestamp];
+
+export interface NeededStakingValues {
+  id: number;
+  blockId: number;
+  timestamp: string;
+  data: [Address, Amount]
+}
 
 export interface Staking {
   blockId: number;

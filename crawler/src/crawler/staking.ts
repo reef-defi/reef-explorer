@@ -1,4 +1,4 @@
-import { AccountHead, EventBody, Staking, StakingInsert } from './types';
+import { AccountHead, NeededStakingValues, Staking, StakingInsert } from './types';
 import { insertV2, nodeProvider } from '../utils/connector';
 import logger from '../utils/logger';
 
@@ -18,13 +18,11 @@ export const stakingToAccount = ({signer, blockId, timestamp}: Staking): Account
   address: signer,
 });
 
-export const processStakingEvent = async ({id, event, timestamp, blockId}: EventBody): Promise<Staking> => {
-  const {data} = event.event;
-  const [addr, amount] = data;
-  let signer = addr.toString();
+export const processStakingEvent = async <T extends NeededStakingValues,> ({id, data, timestamp, blockId}: T): Promise<Staking> => {
+  let [signer, amount] = data;
 
-  logger.info(`Extracting account reward destination for: ${signer}`)
- 
+  // logger.info(`Extracting account reward destination for: ${signer}`)
+  
   // Retrieving block hash to extract correct reward destination mapping
   const blockHash = await nodeProvider.query(
     (provider) => provider.api.rpc.chain.getBlockHash(blockId)
@@ -41,12 +39,12 @@ export const processStakingEvent = async ({id, event, timestamp, blockId}: Event
   }
 
   return {
+    amount,
     signer,
     blockId,
     timestamp,
     eventId: id,
     type: 'Reward',
-    amount: amount.toString(),
   };
 }
 

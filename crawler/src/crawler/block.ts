@@ -272,7 +272,11 @@ export default async (fromId: number, toId: number): Promise<number> => {
   const staking = await resolvePromisesAsChunks(
     events
       .filter(isEventStakingReward)
-      .map(processStakingEvent)
+      .map((e) => processStakingEvent({...e, 
+        data: [
+          e.event.event.data[0].toString(),
+          e.event.event.data[1].toString(),
+        ]}))
   );
 
   // Transfers
