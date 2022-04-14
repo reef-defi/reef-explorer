@@ -2,7 +2,59 @@
 
 Open source block explorer for [Reef chain](https://reef.io) hosted at [https://reefscan.com](https://reefscan.com)
 
-## Dependencies
+The `reef-explorer` stack is containerised using docker and is run using a 
+container orchestration tool.  We have provided a docker-compose manifest to run
+the stack.  Operation using `Makefile` can be see below:
+
+To start:
+```
+make net=testnet env=prod up
+```
+
+To stop:
+```
+make net=testnet env=prod down
+```
+
+To purge data:
+```
+make net=testnet env=prod purge
+```
+
+To re/build specific container:
+```
+make net=testnet env=prod serv=crawler build
+```
+
+To launch hasura console:
+```
+make hasura
+```
+
+To re/populate the data using a script in `crawler/populate` folder:
+```
+make net=testnet env=prod script=staking populate
+```
+
+net can take the following options:
+- dev
+- testnet
+- mainnet
+
+env can take the following options:
+- dev - provides hot reloading capabilties useful for development
+- prod - uses production ready patterns to generate images
+
+That will build and start all the required dockers:
+
+- PostgreSQL
+- Hasura GraphQL server
+- Reef chain node
+- Nodejs crawler
+- API
+
+
+## Local dependencies
 
 In Ubuntu 20.04 server you can do:
 
@@ -40,46 +92,6 @@ cd reef-explorer
 yarn
 ```
 
-### Backend
-The `reef-explorer` stack is containerised using docker and is run using a 
-container orchestration tool.  We have provided a docker-compose manifest to run
-the stack.  Operation using `Makefile` can be see below:
-
-To start:
-```
-make net=testnet env=prod up
-```
-
-To stop:
-```
-make net=testnet env=prod down
-```
-
-To purge data:
-```
-make net=testnet env=prod purge
-```
-
-net can take the following options:
-- dev
-- testnet
-- mainnet
-
-env can take the following options:
-- dev - provides hot reloading capabilties useful for development
-- prod - uses production ready patterns to generate images
-
-That will build and start all the required dockers:
-
-- PostgreSQL
-- Hasura GraphQL server
-- Reef chain node
-- Nodejs crawler
-- API
-
-### Hasura console
-
-After that you can access Hasura console at http://server_ip_address:8080
 
 ### Nginx configuration
 
@@ -237,40 +249,13 @@ yarn workspace frontend dev
 yarn workspace frontend generate
 ```
 
-## Howto
+# Release notes
 
-#### Clean dockers
+## `v10`
+In the `v10` release, we introduced new populating command, which allows users to run scripts to re/populate the DB. When populating data it is highly recommended that the crawling process is stopped with additional backup in place.
 
-Clean all docker containers and related images and persistent volumens except those related to `substrate-node`.
-
-```bash
-yarn workspace backend docker:clean
+Example of how to repopulate staking rewards:
 ```
-
-#### Database backup
-
-Create PostgreSQL database backup:
-
-```bash
-yarn workspace backend docker:postgres:backup
+make net=testnet env=prod script=staking populate
 ```
-
-#### Create Reef-node blockchain database backup
-
-```bash
-bash docker/backend/scripts/backup.sh
-```
-
-#### Restore Reef-node database backup
-
-```bash
-bash docker/backend/scripts/restore-backup.sh
-```
-
-#### Contract table backup
-
-Create contracts table backup:
-
-```bash
-yarn workspace backend docker:postgres:backup:contracts
-```
+Populate staking script is saved in `crawler/populate/populate_staking.js` and its purpose is to repair old staking rewards and their destination addresses. 
