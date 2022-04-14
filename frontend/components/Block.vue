@@ -95,7 +95,7 @@
         <Cell>{{ extrinsic.args }}</Cell>
         <Cell align="center">
           <font-awesome-icon
-            v-if="!extrinsic.error_message"
+            v-if="extrinsic.success"
             icon="check"
             class="text-success"
           />
