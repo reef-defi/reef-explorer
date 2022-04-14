@@ -40,6 +40,10 @@ const main = async () => {
   const staking: Staking[] = [];
   /* eslint-disable no-plusplus */
   for (let index = 0; index < stakingEventsLength; index++) {
+    if (index % 100 === 0) {
+      /* eslint-disable no-mixed-operators */
+      logger.info(`Current processing index: ${index}, current percentage: ${(index / stakingEventsLength * 100).toFixed(2)} %`);
+    }
     staking.push(await processStakingEvent(stakingEvents[index]));
   }
 
