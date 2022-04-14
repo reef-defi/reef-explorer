@@ -102,7 +102,7 @@
             transfer.symbol,
             transfer.decimals,
             true
-          )
+          ).replaceAll(',', '')
         }}</Cell>
       </Row>
 
