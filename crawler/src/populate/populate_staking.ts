@@ -38,7 +38,8 @@ const main = async () => {
 
   logger.info('Processing staking events and extracting reward destination mapping');
   const staking: Staking[] = [];
-  for (let index = 0; index < stakingEventsLength; index ++) {
+  /* eslint-disable no-plusplus */
+  for (let index = 0; index < stakingEventsLength; index++) {
     staking.push(await processStakingEvent(stakingEvents[index]));
   }
 
