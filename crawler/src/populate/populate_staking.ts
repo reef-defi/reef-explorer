@@ -1,7 +1,7 @@
 import { BigNumber } from 'ethers';
 import { accountHeadToBody } from '../crawler/event';
 import { insertStaking, processStakingEvent, stakingToAccount } from '../crawler/staking';
-import { NeededStakingValues } from '../crawler/types';
+import { NeededStakingValues, Staking } from '../crawler/types';
 import { insertAccounts } from '../queries/event';
 import { nodeProvider, queryv2 } from '../utils/connector';
 import logger from '../utils/logger';
@@ -34,7 +34,10 @@ const main = async () => {
     })));
 
   logger.info('Processing staking events and extracting reward destination mapping');
-  const staking = await resolvePromisesAsChunks(stakingEvents.map(processStakingEvent));
+  const staking: Staking[] = [];
+  for (const event of stakingEvents) {
+    staking.push(await processStakingEvent(event))
+  }
 
   logger.info('Updating account balances');
   const accountHeaders = dropDuplicates(
