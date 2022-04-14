@@ -58,12 +58,12 @@ export default {
             to_evm_address
             from_evm_address
             timestamp
-            success
             extrinsic {
               id
               hash
               index
               error_message
+              status
               events(where: { method: { _eq: "Transfer" } }) {
                 data
                 extrinsic_id
@@ -93,6 +93,9 @@ export default {
           this.transfer = data.transfer[0]
           this.transfer.to_address =
             this.transfer.to_address || this.transfer.to_evm_address
+
+          this.transfer.success =
+            data.transfer[0].extrinsic.status === 'success'
 
           if (this.transfer.to_address === 'deleted') {
             this.transfer.to_address =
