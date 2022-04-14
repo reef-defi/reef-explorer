@@ -35,8 +35,9 @@ const main = async () => {
 
   logger.info('Processing staking events and extracting reward destination mapping');
   const staking: Staking[] = [];
+  /* eslint-disable no-restricted-syntax */
   for (const event of stakingEvents) {
-    staking.push(await processStakingEvent(event))
+    staking.push(await processStakingEvent(event));
   }
 
   logger.info('Updating account balances');
