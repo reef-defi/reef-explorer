@@ -123,6 +123,7 @@ export default {
               hash
               docs
               type
+              status
             }
           }
         `,
@@ -135,7 +136,10 @@ export default {
           }
         },
         result({ data }) {
-          this.parsedExtrinsics = data.extrinsic
+          this.parsedExtrinsics = data.extrinsic.map((e) => ({
+            ...e,
+            success: e.status === 'success',
+          }))
         },
       },
     },

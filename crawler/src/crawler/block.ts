@@ -28,7 +28,6 @@ import {
   accountNewOrKilled,
   extrinsicToEventHeader,
   isEventStakingReward,
-  isEventStakingSlash,
   isExtrinsicEvent,
 } from './event';
 import { range, dropDuplicates, resolvePromisesAsChunks } from '../utils/utils';
@@ -41,7 +40,7 @@ import {
 } from './evmEvent';
 import { insertContracts, insertEvmEvents } from '../queries/evmEvent';
 import logger from '../utils/logger';
-import insertStaking from '../queries/staking';
+import { insertStaking, processStakingEvent, stakingToAccount } from './staking';
 import insertTokenHolders from '../queries/tokenHoldes';
 import { extractTransferAccounts, processTokenTransfers } from './transfer';
 import {
@@ -268,6 +267,20 @@ export default async (fromId: number, toId: number): Promise<number> => {
   logger.info('Inserting events');
   await insertEvents(events);
 
+  // Staking
+  logger.info('Resolving staking events');
+  const staking = await resolvePromisesAsChunks(
+    events
+      .filter(isEventStakingReward)
+      .map((e) => processStakingEvent({
+        ...e,
+        data: [
+          e.event.event.data[0].toString(),
+          e.event.event.data[1].toString(),
+        ],
+      })),
+  );
+
   // Transfers
   logger.info('Extracting native transfers');
   let transfers = await resolvePromisesAsChunks(
@@ -296,6 +309,7 @@ export default async (fromId: number, toId: number): Promise<number> => {
   const allAccounts: AccountHead[] = [];
   allAccounts.push(...transfers.flatMap(extractTransferAccounts));
   allAccounts.push(...events.flatMap(accountNewOrKilled));
+  allAccounts.push(...staking.map(stakingToAccount));
   allAccounts.push(
     ...extrinsics
       .filter(isExtrinsicEvmClaimAccount)
@@ -323,13 +337,9 @@ export default async (fromId: number, toId: number): Promise<number> => {
   // Free memory
   accounts = [];
 
-  // Staking Slash
-  logger.info('Inserting staking slashes');
-  await insertStaking(events.filter(isEventStakingSlash), 'Slash');
-
   // Staking Reward
   logger.info('Inserting staking rewards');
-  await insertStaking(events.filter(isEventStakingReward), 'Reward');
+  await insertStaking(staking);
 
   // Transfers
   logger.info('Inserting transfers');

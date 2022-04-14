@@ -24,6 +24,9 @@ execute:
 down:
 	export $$(cat .env.$(net) | xargs) && docker-compose -p reef-explorer-$(net)-$(env) -f $(COMPOSE-MANIFEST) down
 
+populate:
+	export $$(cat .env | xargs) && docker-compose -f resources/docker-compose-populate.yml run --rm populate
+
 purge:
 	$(foreach volume,$(VOLUMES),docker volume rm reef-explorer-$(net)-$(env)_$(volume);)
 
