@@ -100,8 +100,9 @@
           formatAmount(
             transfer.amount,
             transfer.symbol,
-            transfer.decimals
-          )
+            transfer.decimals,
+            true
+          ).replaceAll(',', '')
         }}</Cell>
       </Row>
 
