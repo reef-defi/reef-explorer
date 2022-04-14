@@ -35,11 +35,7 @@
         <Cell class="list-view__age">
           <font-awesome-icon :icon="['far', 'clock']" />
           <span>{{ getAge(getUnixTimestamp(extrinsic.timestamp)) }}</span>
-          <span
-            >({{
-              formatTimestamp(getUnixTimestamp(extrinsic.timestamp))
-            }})</span
-          >
+          <span>({{ formatTimestamp(extrinsic.timestamp) }})</span>
         </Cell>
       </Row>
 

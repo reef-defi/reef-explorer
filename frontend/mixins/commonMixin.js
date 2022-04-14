@@ -222,7 +222,7 @@ export default {
       return moment(date).fromNow()
     },
     formatTimestamp: (timestamp) => {
-      return moment(timestamp).format()
+      return new Date(timestamp).toLocaleString()
     },
     getAge(timestamp) {
       const date = toMomentDate(timestamp)

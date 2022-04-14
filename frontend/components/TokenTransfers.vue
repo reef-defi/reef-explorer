@@ -72,7 +72,7 @@
 
           <Cell align="center">
             <font-awesome-icon
-              v-if="item.success"
+              v-if="item.extrinsic.status === 'success'"
               icon="check"
               class="text-success"
             />
@@ -147,6 +147,7 @@ export default {
                 block_id
                 index
                 signer
+                status
               }
               to_address
               from_address
@@ -154,7 +155,6 @@ export default {
               from_evm_address
               amount
               timestamp
-              success
             }
           }
         `,

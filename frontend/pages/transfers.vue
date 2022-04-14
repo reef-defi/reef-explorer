@@ -165,6 +165,8 @@ export default {
                 index
                 block_id
                 args
+                status
+                error_message
               }
               from_account {
                 address
@@ -180,7 +182,6 @@ export default {
               }
               to_evm_address
               from_evm_address
-              success
               amount
               timestamp
               denom
@@ -201,7 +202,6 @@ export default {
         async result({ data }) {
           const converted = data.transfer.map(
             ({
-              success,
               timestamp,
               from_account: from,
               to_account: to,
@@ -212,7 +212,7 @@ export default {
               token,
             }) => ({
               amount,
-              success,
+              success: extrinsic.status === 'success',
               timestamp,
               hash: extrinsic.hash,
               idx: extrinsic.index,

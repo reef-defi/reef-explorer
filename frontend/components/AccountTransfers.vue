@@ -209,6 +209,7 @@ export default {
                 section
                 method
                 hash
+                status
               }
               to_address
               from_address
@@ -223,7 +224,6 @@ export default {
                 }
               }
               fee_amount
-              success
               error_message
               timestamp
             }
@@ -241,6 +241,7 @@ export default {
           this.transfers = data.transfer.map((t) => ({
             ...t,
             extrinsic_hash: t.extrinsic.hash,
+            success: t.extrinsic.status === 'success',
             to_address: t.to_address || t.to_evm_address,
             from_address: t.from_address || t.from_evm_address,
             symbol: t.token.verified_contract?.contract_data?.symbol,
