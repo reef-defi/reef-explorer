@@ -100,8 +100,7 @@
           formatAmount(
             transfer.amount,
             transfer.symbol,
-            transfer.decimals,
-            true
+            transfer.decimals
           )
         }}</Cell>
       </Row>
