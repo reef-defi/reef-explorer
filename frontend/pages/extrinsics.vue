@@ -37,11 +37,7 @@
               <Cell class="list-view__age">
                 <font-awesome-icon :icon="['far', 'clock']" />
                 <span>{{ getAge(getUnixTimestamp(item.timestamp)) }}</span>
-                <span
-                  >({{
-                    formatTimestamp(getUnixTimestamp(item.timestamp))
-                  }})</span
-                >
+                <span>({{ formatTimestamp(item.timestamp) }})</span>
               </Cell>
 
               <Cell>{{ item.section }} ➡ {{ item.method }}</Cell>
