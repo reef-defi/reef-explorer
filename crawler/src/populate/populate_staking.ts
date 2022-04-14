@@ -33,11 +33,13 @@ const main = async () => {
       timestamp: new Date(timestamp).toISOString(),
     })));
 
+  const stakingEventsLength = stakingEvents.length;
+  logger.info(`There are ${stakingEventsLength} staking events`);
+
   logger.info('Processing staking events and extracting reward destination mapping');
   const staking: Staking[] = [];
-  /* eslint-disable no-restricted-syntax */
-  for (const event of stakingEvents) {
-    staking.push(await processStakingEvent(event));
+  for (let index = 0; index < stakingEventsLength; index ++) {
+    staking.push(await processStakingEvent(stakingEvents[index]));
   }
 
   logger.info('Updating account balances');
