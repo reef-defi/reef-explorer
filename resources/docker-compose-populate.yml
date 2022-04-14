@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   populate:
-    image: reef-explorer-crawler-${env}
+    image: taulepton/reef-crawler:v10-staking-era
     volumes:
       - populate-modules:/usr/app/node_modules
       - ./../crawler:/usr/app/
