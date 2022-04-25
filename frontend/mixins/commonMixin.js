@@ -40,32 +40,20 @@ export default {
         return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
       }
     },
-    formatAmount(amount, symbol, decimals, exactDecimalValue) {
+    formatAmount(amount, symbol, decimals) {
       if (!symbol) {
         symbol = network.tokenSymbol
       }
       if (!decimals) {
         decimals = network.tokenDecimals
       }
-      let prefix = ''
 
-      const valueBN = new BigNumber(amount).div(new BigNumber(10).pow(decimals))
-      const fixedFullDecimalNr = valueBN.toFixed(null)
-      if (
-        !exactDecimalValue &&
-        fixedFullDecimalNr > 0 &&
-        fixedFullDecimalNr < 0.01
-      ) {
-        prefix = '~'
-      }
-      const fixedDecimalNr = exactDecimalValue
-        ? fixedFullDecimalNr
-        : valueBN.toFixed(2)
-      const fixedString = `${fixedDecimalNr.replace(
-        /(\d)(?=(\d{3})+(?!\d))/g,
-        '$1,'
-      )}`
-      return `${prefix}${fixedString} ${symbol}`
+      const fullAmount = new BigNumber(amount)
+      const amo = fullAmount.div(new BigNumber(10).pow(decimals))
+
+      const value =
+        `${amount}`.length > decimals ? amo.toFixed(2) : amo.toFormat()
+      return `${value} ${symbol}`
     },
     formatTokenAmount(amount, decimals, denom) {
       return `${new BigNumber(amount)
