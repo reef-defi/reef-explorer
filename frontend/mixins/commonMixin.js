@@ -48,12 +48,9 @@ export default {
         decimals = network.tokenDecimals
       }
 
-      const fullAmount = new BigNumber(amount)
-      const amo = fullAmount.div(new BigNumber(10).pow(decimals))
+      const amo = new BigNumber(amount).div(new BigNumber(10).pow(decimals))
 
-      const value =
-        `${amount}`.length > decimals ? amo.toFixed(2) : amo.toFormat()
-      return `${value} ${symbol}`
+      return `${amo.toFormat()} ${symbol}`
     },
     formatTokenAmount(amount, decimals, denom) {
       return `${new BigNumber(amount)
