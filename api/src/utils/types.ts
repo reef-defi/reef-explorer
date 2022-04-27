@@ -84,6 +84,7 @@ export interface AutomaticContractVerificationReq {
   optimization: string;
   compilerVersion: string;
 }
+export type AutomaticContractVerificationKey = keyof AutomaticContractVerificationReq;
 
 export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
   token: string;

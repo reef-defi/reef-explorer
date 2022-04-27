@@ -98,7 +98,15 @@ export const contractVerificationRequestInsert = async ({
   );
 };
 
+export const ensureVerificationRequest = async (verification: AutomaticContractVerificationReq): Promise<void> => {
+  const source = JSON.parse(verification.source);
+  const args = JSON.parse(verification.arguments);
+  ensure(Array.isArray(args), "Arguments has to be presented as an array!");
+  ensure(typeof source === 'object', "Source has to be presented as an object!");
+}
+
 export const verify = async (verification: AutomaticContractVerificationReq): Promise<void> => {
+  await ensureVerificationRequest(verification);
   const verif = { ...verification, address: toChecksumAddress(verification.address) };
   const deployedBytecode = await findContractBytecode(verif.address);
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
