@@ -1,15 +1,15 @@
-import { query } from "../utils/connector";
-import verifyContract from "./contract-compiler/compiler";
-import verifyContractArguments from "./contract-compiler/argumentEncoder";
+import { query } from '../utils/connector';
+import verifyContract from './contract-compiler/compiler';
+import verifyContractArguments from './contract-compiler/argumentEncoder';
 import {
   ABI,
   AutomaticContractVerificationReq,
   ContractType,
   License,
   Target,
-} from "../utils/types";
-import { ensure, toChecksumAddress } from "../utils/utils";
-import resolveContractData from "./contract-compiler/erc-checkers";
+} from '../utils/types';
+import { ensure, toChecksumAddress } from '../utils/utils';
+import resolveContractData from './contract-compiler/erc-checkers';
 
 interface Bytecode {
   bytecode: string;
@@ -49,8 +49,7 @@ interface UpdateContract {
   data: string;
 }
 
-const FIND_CONTRACT_BYTECODE =
-  "SELECT bytecode FROM contract WHERE address = $1";
+const FIND_CONTRACT_BYTECODE = 'SELECT bytecode FROM contract WHERE address = $1';
 
 const INSERT_VERIFIED_CONTRACT = `INSERT INTO verified_contract
   (address, name, filename, source,  optimization, compiler_version, compiled_data,  args, runs, target, type, contract_data)
@@ -64,12 +63,11 @@ VALUES
   ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 ON CONFLICT DO NOTHING;`;
 
-const CONTRACT_VERIFICATION_STATUS =
-  "SELECT * FROM verification_request WHERE address ILIKE $1;";
+const CONTRACT_VERIFICATION_STATUS = 'SELECT * FROM verification_request WHERE address ILIKE $1;';
 
 const findContractBytecode = async (address: string): Promise<string> => {
   const bytecodes = await query<Bytecode>(FIND_CONTRACT_BYTECODE, [address]);
-  ensure(bytecodes.length > 0, "Contract does not exist", 404);
+  ensure(bytecodes.length > 0, 'Contract does not exist', 404);
   return bytecodes[0].bytecode;
 };
 
@@ -133,26 +131,24 @@ export const contractVerificationRequestInsert = async ({
 };
 
 export const ensureVerificationRequest = async (
-  verification: AutomaticContractVerificationReq
+  verification: AutomaticContractVerificationReq,
 ): Promise<void> => {
   const source = JSON.parse(verification.source);
   const args = JSON.parse(verification.arguments);
-  ensure(Array.isArray(args), "Arguments has to be presented as an array!");
+  ensure(Array.isArray(args), 'Arguments has to be presented as an array!');
   ensure(
-    typeof source === "object" && !Array.isArray(source) && source !== null,
-    "Source has to be presented as an object!"
+    typeof source === 'object' && !Array.isArray(source) && source !== null,
+    'Source has to be presented as an object!',
   );
 
-  Object.keys(source).forEach((key) =>
-    ensure(
-      typeof source[key] === "string",
-      `Source value on key ${key} is not string!`
-    )
-  );
+  Object.keys(source).forEach((key) => ensure(
+    typeof source[key] === 'string',
+    `Source value on key ${key} is not string!`,
+  ));
 };
 
 export const verify = async (
-  verification: AutomaticContractVerificationReq
+  verification: AutomaticContractVerificationReq,
 ): Promise<void> => {
   await ensureVerificationRequest(verification);
   const verif = {
@@ -166,7 +162,7 @@ export const verify = async (
   await contractVerificationRequestInsert({
     ...verif,
     success: true,
-    optimization: verif.optimization === "true",
+    optimization: verif.optimization === 'true',
     args: verif.arguments,
   });
 
@@ -180,12 +176,12 @@ export const verify = async (
     abi: fullAbi,
     data: JSON.stringify(data),
     args: verif.arguments,
-    optimization: verif.optimization === "true",
+    optimization: verif.optimization === 'true',
   });
 };
 
 export const contractVerificationStatus = async (
-  id: string
+  id: string,
 ): Promise<boolean> => {
   const result = await query<Status>(CONTRACT_VERIFICATION_STATUS, [
     toChecksumAddress(id),
@@ -194,9 +190,8 @@ export const contractVerificationStatus = async (
 };
 
 export const findVeririedContract = async (
-  address: string
-): Promise<ContracVerificationInsert[]> =>
-  query<ContracVerificationInsert>(
-    "SELECT * FROM verified_contract WHERE address ILIKE $1",
-    [toChecksumAddress(address)]
-  );
+  address: string,
+): Promise<ContracVerificationInsert[]> => query<ContracVerificationInsert>(
+  'SELECT * FROM verified_contract WHERE address ILIKE $1',
+  [toChecksumAddress(address)],
+);
