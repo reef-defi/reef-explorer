@@ -23,7 +23,7 @@ export const submitVerification = async (req: AppRequest<AutomaticContractVerifi
     if (err.status === 404) {
       await contractVerificationRequestInsert({
         ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
-      });
+      }).catch();
     }
     next(err);
   }
@@ -42,7 +42,7 @@ export const formVerification = async (req: AppRequest<ManualContractVerificatio
     if (err.status === 404) {
       await contractVerificationRequestInsert({
         ...req.body, success: false, optimization: req.body.optimization === 'true', args: req.body.arguments, errorMessage: err.message,
-      });
+      }).catch();
     }
     next(err);
   }
