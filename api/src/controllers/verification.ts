@@ -1,4 +1,4 @@
-import { Response, NextFunction } from 'express';
+import { Response } from 'express';
 import { authenticationToken } from '../services/utils';
 import {
   contractVerificationRequestInsert,
@@ -12,7 +12,9 @@ import {
   ManualContractVerificationReq,
 } from '../utils/types';
 import { ensure, toChecksumAddress } from '../utils/utils';
-import { automaticVerificationValidator, formVerificationValidator, idValidator, validateData, verificationStatusValidator } from './validators';
+import {
+  automaticVerificationValidator, formVerificationValidator, idValidator, validateData, verificationStatusValidator,
+} from './validators';
 
 interface ContractVerificationID {
   id: string;

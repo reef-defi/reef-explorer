@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import {
-  Fragment, JsonFragment, FunctionFragment, EventFragment, ConstructorFragment
+  Fragment, JsonFragment, FunctionFragment, EventFragment, ConstructorFragment,
 } from '@ethersproject/abi';
 
 export interface AppRequest <T> extends Request {

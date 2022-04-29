@@ -1,9 +1,9 @@
 import { utils } from 'ethers';
+import {
+  Fragment, JsonFragment, FunctionFragment, EventFragment, ConstructorFragment,
+} from '@ethersproject/abi';
 import { ABI, ABIFragment } from '../../utils/types';
 import { ensure } from '../../utils/utils';
-import {
-  Fragment, JsonFragment, FunctionFragment, EventFragment, ConstructorFragment
-} from '@ethersproject/abi';
 
 interface ParamererInput {
   type: string;

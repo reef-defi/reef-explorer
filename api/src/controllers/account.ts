@@ -1,4 +1,4 @@
-import { Response} from 'express';
+import { Response } from 'express';
 import { findUserTokens, findUserContracts } from '../services/account';
 import { AppRequest } from '../utils/types';
 import { nativeAddressValidator, validateData } from './validators';
@@ -14,7 +14,7 @@ export const accountTokens = async (req: AppRequest<AccountAddress>, res: Respon
 };
 
 export const accountOwnedContracts = async (req: AppRequest<{}>, res: Response) => {
-  validateData({address: req.params.address}, nativeAddressValidator);
+  validateData({ address: req.params.address }, nativeAddressValidator);
   const contracts = await findUserContracts(req.params.address);
   res.send({ contracts: [...contracts] });
 };

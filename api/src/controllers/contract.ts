@@ -1,20 +1,20 @@
-import { Response, NextFunction } from "express";
+import { Response } from 'express';
 import {
   findContractDB,
   findERC20Token,
   findTokenAccountTokenBalance,
   findTokenInfo,
   getERC20Tokens,
-} from "../services/contract";
-import { AppRequest, TokenBalanceParam } from "../utils/types";
-import { ensure, toChecksumAddress } from "../utils/utils";
-import { accountTokenBodyValidator, evmAddressValidator, validateData } from "./validators";
+} from '../services/contract';
+import { AppRequest, TokenBalanceParam } from '../utils/types';
+import { ensure, toChecksumAddress } from '../utils/utils';
+import { accountTokenBodyValidator, evmAddressValidator, validateData } from './validators';
 
 export const findToken = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-  validateData({address: req.params.address}, evmAddressValidator);
+  validateData({ address: req.params.address }, evmAddressValidator);
   const token = await findTokenInfo(toChecksumAddress(req.params.address));
   res.send(token);
 };
@@ -23,9 +23,9 @@ export const findContract = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-  validateData({address: req.params.address}, evmAddressValidator);
+  validateData({ address: req.params.address }, evmAddressValidator);
   const contracts = await findContractDB(req.params.address);
-  ensure(contracts.length > 0, "Contract does not exist");
+  ensure(contracts.length > 0, 'Contract does not exist');
   res.send(contracts[0]);
 };
 
@@ -45,7 +45,7 @@ export const accountTokenBalance = async (
 
   const tokenBalances = await findTokenAccountTokenBalance(
     req.body.accountAddress.toLowerCase(),
-    toChecksumAddress(req.body.contractAddress)
+    toChecksumAddress(req.body.contractAddress),
   );
 
   if (tokenBalances.length === 0) {
