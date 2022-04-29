@@ -1,6 +1,9 @@
 import { utils } from 'ethers';
 import { ABI, ABIFragment } from '../../utils/types';
 import { ensure } from '../../utils/utils';
+import {
+  Fragment, JsonFragment, FunctionFragment, EventFragment, ConstructorFragment
+} from '@ethersproject/abi';
 
 interface ParamererInput {
   type: string;
@@ -58,7 +61,7 @@ const encodeParameters = ({ inputs }: Parameters): string => {
   return encodedParams;
 };
 
-const prepareForEncode = (args: string[], constructor: ABIFragment): Parameters => {
+const prepareForEncode = (args: string[], constructor: ConstructorFragment): Parameters => {
   ensure(constructor.inputs.length === args.length, 'Constructor input does not match the length of given arguments');
   return {
     funcName: constructor.name,
@@ -80,7 +83,7 @@ export default (deployedBytecode: string, abi: ABI, stringArgs: string): void =>
   }
 
   const constructor = filteredAbi[0];
-  const encoderData = prepareForEncode(args, constructor);
+  const encoderData = prepareForEncode(args, constructor as ConstructorFragment);
   const encoded = encodeParameters(encoderData);
 
   ensure(deployedBytecode.endsWith(encoded), 'Contract arguments are not the same');

@@ -123,7 +123,7 @@ const compileContracts = async (name: string, filename: string, source: string, 
   const compiler = await loadCompiler(compilerVersion);
   const contracts = JSON.parse(source);
 
-  const solcData = prepareSolcData(contracts, target, optimizer, runs);
+  const solcData = prepareSolcData(contracts, target, optimizer || false, runs);
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
 
   const error = compressErrors(compilerResult);
