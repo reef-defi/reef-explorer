@@ -32,7 +32,8 @@ export const submitVerification = async (
         ...req.body,
         success: false,
         optimization: req.body.optimization === 'true',
-        args: req.body.arguments,
+        args: JSON.stringify(req.body.arguments),
+        source: JSON.stringify(req.body.source),
         errorMessage: err.message,
       });
       throw err;
@@ -55,7 +56,8 @@ export const formVerification = async (
         ...req.body,
         success: false,
         optimization: req.body.optimization === 'true',
-        args: req.body.arguments,
+        args: JSON.stringify(req.body.arguments),
+        source: JSON.stringify(req.body.source),
         errorMessage: err.message,
       });
       throw err;

@@ -8,13 +8,13 @@ interface AccountAddress {
 }
 
 export const accountTokens = async (req: AppRequest<AccountAddress>, res: Response) => {
-  validateData(req.body, nativeAddressValidator);
+  validateData(req.body.address, nativeAddressValidator);
   const tokens = await findUserTokens(req.body.address);
   res.send({ tokens: [...tokens] });
 };
 
 export const accountOwnedContracts = async (req: AppRequest<{}>, res: Response) => {
-  validateData({ address: req.params.address }, nativeAddressValidator);
+  validateData(req.params.address, nativeAddressValidator);
   const contracts = await findUserContracts(req.params.address);
   res.send({ contracts: [...contracts] });
 };
