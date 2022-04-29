@@ -4,6 +4,10 @@ import { ensure } from "../utils/utils";
 
 const ajv = new Ajv();
 
+interface ID { id: string; }
+interface Status { status: string; }
+interface Address { address: string; }
+
 // ajv rules
 const evmAddressProps = {minLength: 42, maxLength: 42};
 const nativeAddressProps = {minLength: 48, maxLength: 48};
@@ -46,7 +50,7 @@ const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
   required: [...submitVerificationSchema.required, "token"],
 }
 
-const verificationStatusSchema: JSONSchemaType<{status: string}> = {
+const verificationStatusSchema: JSONSchemaType<Status> = {
   type: "object",
   properties: {
     status: { type: "string" },
@@ -54,7 +58,7 @@ const verificationStatusSchema: JSONSchemaType<{status: string}> = {
   required: ["status"],
 };
 
-const idSchema: JSONSchemaType<{id: string}> = {
+const idSchema: JSONSchemaType<ID> = {
   type: "object",
   properties: {
     id: { type: "string" },
@@ -62,7 +66,7 @@ const idSchema: JSONSchemaType<{id: string}> = {
   required: ["id"],
 };
 
-const evmAddressSchema: JSONSchemaType<{address: string}> = {
+const evmAddressSchema: JSONSchemaType<Address> = {
   type: "object",
   properties: {
     address: { type: "string", ...evmAddressProps},
@@ -70,7 +74,7 @@ const evmAddressSchema: JSONSchemaType<{address: string}> = {
   required: ["address"],
 };
 
-const nativeAddressSchema: JSONSchemaType<{address: string}> = {
+const nativeAddressSchema: JSONSchemaType<Address> = {
   type: "object",
   properties: {
     address: { type: "string", ...nativeAddressProps},

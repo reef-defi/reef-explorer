@@ -14,7 +14,7 @@ export const accountTokens = async (req: AppRequest<AccountAddress>, res: Respon
 };
 
 export const accountOwnedContracts = async (req: AppRequest<{}>, res: Response) => {
-  validateData(req.params, nativeAddressValidator);
+  validateData({address: req.params.address}, nativeAddressValidator);
   const contracts = await findUserContracts(req.params.address);
   res.send({ contracts: [...contracts] });
 };

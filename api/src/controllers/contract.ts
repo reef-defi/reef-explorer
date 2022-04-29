@@ -14,16 +14,16 @@ export const findToken = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-    ensure(!!req.params.address, "Url paramter address is missing");
-    const token = await findTokenInfo(toChecksumAddress(req.params.address));
-    res.send(token);
+  validateData({address: req.params.address}, evmAddressValidator);
+  const token = await findTokenInfo(toChecksumAddress(req.params.address));
+  res.send(token);
 };
 
 export const findContract = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-  validateData(req.params, evmAddressValidator);
+  validateData({address: req.params.address}, evmAddressValidator);
   const contracts = await findContractDB(req.params.address);
   ensure(contracts.length > 0, "Contract does not exist");
   res.send(contracts[0]);
