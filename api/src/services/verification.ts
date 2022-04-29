@@ -130,27 +130,9 @@ export const contractVerificationRequestInsert = async ({
   await query(INSERT_CONTRACT_VERIFICATION_REQUEST, args1);
 };
 
-export const ensureVerificationRequest = async (
-  verification: AutomaticContractVerificationReq,
-): Promise<void> => {
-  const source = JSON.parse(verification.source);
-  const args = JSON.parse(verification.arguments);
-  ensure(Array.isArray(args), 'Arguments has to be presented as an array!');
-  ensure(
-    typeof source === 'object' && !Array.isArray(source) && source !== null,
-    'Source has to be presented as an object!',
-  );
-
-  Object.keys(source).forEach((key) => ensure(
-    typeof source[key] === 'string',
-    `Source value on key ${key} is not string!`,
-  ));
-};
-
 export const verify = async (
   verification: AutomaticContractVerificationReq,
 ): Promise<void> => {
-  await ensureVerificationRequest(verification);
   const verif = {
     ...verification,
     address: toChecksumAddress(verification.address),
@@ -158,12 +140,15 @@ export const verify = async (
   const deployedBytecode = await findContractBytecode(verif.address);
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
   verifyContractArguments(deployedBytecode, abi, verif.arguments);
+  const args = JSON.stringify(verif.arguments);
+  const source = JSON.stringify(verif.source);
   // Confirming verification request
   await contractVerificationRequestInsert({
     ...verif,
+    args,
+    source,
     success: true,
     optimization: verif.optimization === 'true',
-    args: verif.arguments,
   });
 
   // Resolving contract additional information
@@ -172,10 +157,11 @@ export const verify = async (
   // Inserting contract into verified contract table
   await insertVerifiedContract({
     ...verif,
+    args,
     type,
+    source,
     abi: fullAbi,
     data: JSON.stringify(data),
-    args: verif.arguments,
     optimization: verif.optimization === 'true',
   });
 };
