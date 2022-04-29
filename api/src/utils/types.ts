@@ -69,7 +69,7 @@ export type License =
 
 export type ABIFragment = Fragment | JsonFragment | FunctionFragment | EventFragment | ConstructorFragment;
 export type ABI = ReadonlyArray<ABIFragment>;
-export type Arguments = string[];
+export type Arguments = any[];
 export type Source = {[filename: string]: string};
 
 // Request types
@@ -79,11 +79,10 @@ export interface AutomaticContractVerificationReq {
   source: Source;
   target: Target;
   address: string;
-  bytecode: string;
   filename: string;
   license: License;
   arguments: Arguments;
-  optimization: string;
+  optimization: boolean;
   compilerVersion: string;
 }
 export type AutomaticContractVerificationKey = keyof AutomaticContractVerificationReq;

@@ -148,7 +148,7 @@ export const verify = async (
     args,
     source,
     success: true,
-    optimization: verif.optimization === 'true',
+    optimization: verif.optimization,
   });
 
   // Resolving contract additional information
@@ -162,7 +162,7 @@ export const verify = async (
     source,
     abi: fullAbi,
     data: JSON.stringify(data),
-    optimization: verif.optimization === 'true',
+    optimization: verif.optimization,
   });
 };
 
