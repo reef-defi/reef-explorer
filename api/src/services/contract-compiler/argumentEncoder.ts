@@ -1,8 +1,6 @@
 import { utils } from 'ethers';
-import {
-  Fragment, JsonFragment, FunctionFragment, EventFragment, ConstructorFragment,
-} from '@ethersproject/abi';
-import { ABI, ABIFragment } from '../../utils/types';
+import { ConstructorFragment } from '@ethersproject/abi';
+import { ABI } from '../../utils/types';
 import { ensure } from '../../utils/utils';
 
 interface ParamererInput {
@@ -74,8 +72,7 @@ const prepareForEncode = (args: string[], constructor: ConstructorFragment): Par
   };
 };
 
-export default (deployedBytecode: string, abi: ABI, stringArgs: string): void => {
-  const args = JSON.parse(stringArgs);
+export default (deployedBytecode: string, abi: ABI, args: string[]): void => {
   const filteredAbi = abi.filter((fun) => fun.type === 'constructor');
   if (filteredAbi.length === 0) {
     ensure(args.length === 0, 'Contract does not have any arguments');

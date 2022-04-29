@@ -1,4 +1,4 @@
-import { ABI, AutomaticContractVerificationReq, Target } from '../../utils/types';
+import { ABI, AutomaticContractVerificationReq, Source, Target } from '../../utils/types';
 import { ensure } from '../../utils/utils';
 
 const solc = require('solc');
@@ -119,11 +119,10 @@ const extractAbis = (contracts: any): AB => Object.keys(contracts)
   );
 // .map((name) => contracts[name].abi);
 
-const compileContracts = async (name: string, filename: string, source: string, compilerVersion: string, target: Target, optimizer?: boolean, runs = 200): Promise<Compile> => {
+const compileContracts = async (name: string, filename: string, source: Source, compilerVersion: string, target: Target, optimizer?: boolean, runs = 200): Promise<Compile> => {
   const compiler = await loadCompiler(compilerVersion);
-  const contracts = JSON.parse(source);
 
-  const solcData = prepareSolcData(contracts, target, optimizer || false, runs);
+  const solcData = prepareSolcData(source, target, optimizer || false, runs);
   const compilerResult = JSON.parse(compiler.compile(JSON.stringify(solcData)));
 
   const error = compressErrors(compilerResult);
