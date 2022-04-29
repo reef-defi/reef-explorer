@@ -24,14 +24,19 @@ export const submitVerification = async (
   req: AppRequest<AutomaticContractVerificationReq>,
   res: Response,
 ) => {
+  console.log("Notr")
+  console.log(req.body)
+  console.log(req.body.source)
+  console.log(req.body.arguments)
   validateData(req.body, automaticVerificationValidator);
+  console.log("Data validated")
   req.body.address = toChecksumAddress(req.body.address);
+  console.log("Checksum")
   await verify(req.body)
     .catch(async (err) => {
       await contractVerificationRequestInsert({
         ...req.body,
         success: false,
-        optimization: req.body.optimization === 'true',
         args: JSON.stringify(req.body.arguments),
         source: JSON.stringify(req.body.source),
         errorMessage: err.message,
@@ -55,7 +60,7 @@ export const formVerification = async (
       await contractVerificationRequestInsert({
         ...req.body,
         success: false,
-        optimization: req.body.optimization === 'true',
+        optimization: req.body.optimization,
         args: JSON.stringify(req.body.arguments),
         source: JSON.stringify(req.body.source),
         errorMessage: err.message,

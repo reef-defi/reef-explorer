@@ -12,20 +12,20 @@ interface Address { address: string; }
 const nativeAddressSchema: JSONSchemaType<string> = {
   type: "string",
   // Matchin reef native address with '5' and 47 other chars 
-  pattern: '/5[0-9a-fA-F]{47}/',
+  pattern: '5[0-9a-zA-Z]{47}',
   minLength: 48,
   maxLength: 48,
 }
 const evmAddressSchema: JSONSchemaType<string> = {
   type: "string",
   // Matchin evm address with '0x' and 40 other chars 
-  pattern: '/0x[0-9a-fA-F]{40}/',
+  pattern: '0x[0-9a-fA-F]{40}',
   minLength: 42,
   maxLength: 42,
 }
 const argumentValidatorSchema: JSONSchemaType<Arguments> = {
   type: "array",
-  items: { type: "string"}
+  items: {}
 }
 const sourceValidatorSchema: JSONSchemaType<Source> = {
   type: 'object',
@@ -33,12 +33,15 @@ const sourceValidatorSchema: JSONSchemaType<Source> = {
   // Source filename must finish with .sol
   propertyNames: {
     type: "string",
-    pattern: /.+\.sol/g,
+    // pattern: /.sol/g,
   },
-  // Each value in source must be of type string
-  unevaluatedProperties: {
-    type: "string"
+  properties: {
+    
   }
+  // Each value in source must be of type string
+  // unevaluatedProperties: {
+  //   type: "string"
+  // }
 }
 
 // Object validator schemas
@@ -68,22 +71,22 @@ const accountTokenBalanceSchema: JSONSchemaType<TokenBalanceParam> = {
   required: ['accountAddress', 'contractAddress'],
   additionalProperties: false,
 };
+
 const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq> = {
   type: 'object',
   properties: {
-    address: nativeAddressSchema,
+    address: evmAddressSchema,
     arguments: argumentValidatorSchema,
-    bytecode: { type: 'string', minLength: 2 },
+    name: { type: 'string' },
+    runs: { type: 'number' },
     compilerVersion: { type: 'string' },
     filename: { type: 'string' },
     license: { type: 'string' },
-    name: { type: 'string' },
-    optimization: { type: 'string' },
-    runs: { type: 'number' },
+    optimization: { type: 'boolean' },
     source: sourceValidatorSchema,
     target: { type: 'string' },
   },
-  required: ['address', 'arguments', 'bytecode', 'compilerVersion', 'filename', 'license', 'name', 'optimization', 'runs', 'source', 'target'],
+  required: ['address', 'arguments', 'compilerVersion', 'filename', 'license', 'name', 'optimization', 'runs', 'source', 'target'],
   additionalProperties: false,
 };
 const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
