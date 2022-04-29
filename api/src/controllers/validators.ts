@@ -4,8 +4,11 @@ import { ensure } from "../utils/utils";
 
 const ajv = new Ajv();
 
+// ajv rules
 const evmAddressProps = {minLength: 42, maxLength: 42};
 const nativeAddressProps = {minLength: 48, maxLength: 48};
+
+// ajv schemas 
 const accountTokenBalanceSchema: JSONSchemaType<TokenBalanceParam> = {
   type: "object",
   properties: {
@@ -43,7 +46,7 @@ const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
   required: [...submitVerificationSchema.required, "token"],
 }
 
-const verificationStatus: JSONSchemaType<{status: string}> = {
+const verificationStatusSchema: JSONSchemaType<{status: string}> = {
   type: "object",
   properties: {
     status: { type: "string" },
@@ -51,16 +54,35 @@ const verificationStatus: JSONSchemaType<{status: string}> = {
   required: ["status"],
 };
 
-const nativeAddress: JSONSchemaType<{address: string}> = {
+const idSchema: JSONSchemaType<{id: string}> = {
+  type: "object",
+  properties: {
+    id: { type: "string" },
+  },
+  required: ["id"],
+};
+
+const evmAddressSchema: JSONSchemaType<{address: string}> = {
+  type: "object",
+  properties: {
+    address: { type: "string", ...evmAddressProps},
+  },
+  required: ["address"],
+};
+
+const nativeAddressSchema: JSONSchemaType<{address: string}> = {
   type: "object",
   properties: {
     address: { type: "string", ...nativeAddressProps},
   },
   required: ["address"],
-}
+};
 
-export const nativeAddressValidator = ajv.compile(nativeAddress);
-export const verificationStatusValidator = ajv.compile(verificationStatus);
+// available validators
+export const idValidator = ajv.compile(idSchema);
+export const evmAddressValidator = ajv.compile(evmAddressSchema);
+export const nativeAddressValidator = ajv.compile(nativeAddressSchema);
+export const verificationStatusValidator = ajv.compile(verificationStatusSchema);
 export const formVerificationValidator = ajv.compile(formVerificationSchema);
 export const accountTokenBodyValidator = ajv.compile(accountTokenBalanceSchema);
 export const automaticVerificationValidator = ajv.compile(submitVerificationSchema);
@@ -71,6 +93,6 @@ export const validateData = <T,>(data: T, fun: ValidateFunction<T>): void => {
   const message = (fun.errors || [])
     .map((error) => error.message || "")
     .filter((message) => message)
-    .join("");
-  ensure(isValid, message);
+    .join(", ");
+  ensure(isValid, message, 400);
 }

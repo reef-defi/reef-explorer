@@ -8,7 +8,7 @@ import {
 } from "../services/contract";
 import { AppRequest, TokenBalanceParam } from "../utils/types";
 import { ensure, toChecksumAddress } from "../utils/utils";
-import { accountTokenBodyValidator, validateData } from "./validators";
+import { accountTokenBodyValidator, evmAddressValidator, validateData } from "./validators";
 
 export const findToken = async (
   req: AppRequest<{}>,
@@ -23,10 +23,10 @@ export const findContract = async (
   req: AppRequest<{}>,
   res: Response,
 ) => {
-    ensure(!!req.params.address, "Url paramter address is missing");
-    const contracts = await findContractDB(req.params.address);
-    ensure(contracts.length > 0, "Contract does not exist");
-    res.send(contracts[0]);
+  validateData(req.params, evmAddressValidator);
+  const contracts = await findContractDB(req.params.address);
+  ensure(contracts.length > 0, "Contract does not exist");
+  res.send(contracts[0]);
 };
 
 export const getAllERC20Tokens = async (

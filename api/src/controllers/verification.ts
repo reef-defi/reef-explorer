@@ -12,7 +12,7 @@ import {
   ManualContractVerificationReq,
 } from '../utils/types';
 import { ensure, toChecksumAddress } from '../utils/utils';
-import { automaticVerificationValidator, formVerificationValidator, validateData, verificationStatusValidator } from './validators';
+import { automaticVerificationValidator, formVerificationValidator, idValidator, validateData, verificationStatusValidator } from './validators';
 
 interface ContractVerificationID {
   id: string;
@@ -65,7 +65,7 @@ export const verificationStatus = async (
   req: AppRequest<ContractVerificationID>,
   res: Response,
 ) => {
-  ensure(!!req.body.id, 'Parameter id is missing');
+  validateData(req.body, idValidator);
   const status = await contractVerificationStatus(req.body.id);
   res.send(status);
 };
