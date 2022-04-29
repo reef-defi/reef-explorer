@@ -1,4 +1,7 @@
 import { utils } from 'ethers';
+import { Response, Request, NextFunction } from 'express';
+import { accountTokenBalance } from '../controllers/contract';
+import { AppRequest, TokenBalanceParam } from './types';
 
 export class StatusError extends Error {
   status: number;
@@ -31,3 +34,11 @@ export const dropKey = <T, Key extends keyof T> (obj: T, key: Key): Omit<T, Key>
   delete newObj[key];
   return newObj;
 };
+
+type Fun= (req: Request, res: Response, next: NextFunction) => Promise<any>;
+export const asyncHandler = (fun: Fun) => 
+  (req: Request, res: Response, next: NextFunction): Promise<void> => 
+    fun(req, res, next).catch(next);
+
+const test = asyncHandler(accountTokenBalance)
+
