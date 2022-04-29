@@ -1,5 +1,5 @@
 import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv';
-import { AutomaticContractVerificationReq, ManualContractVerificationReq, TokenBalanceParam } from '../utils/types';
+import { Arguments, AutomaticContractVerificationReq, ManualContractVerificationReq, Source, TokenBalanceParam } from '../utils/types';
 import { ensure } from '../utils/utils';
 
 const ajv = new Ajv();
@@ -8,49 +8,40 @@ interface ID { id: string; }
 interface Status { status: string; }
 interface Address { address: string; }
 
-// ajv rules
-const evmAddressProps = { minLength: 42, maxLength: 42 };
-const nativeAddressProps = { minLength: 48, maxLength: 48 };
-
-// ajv schemas
-const accountTokenBalanceSchema: JSONSchemaType<TokenBalanceParam> = {
+// basic ajv schemas
+const nativeAddressSchema: JSONSchemaType<string> = {
+  type: "string",
+  // Matchin reef native address with '5' and 47 other chars 
+  pattern: '/5[0-9a-fA-F]{47}/',
+  minLength: 48,
+  maxLength: 48,
+}
+const evmAddressSchema: JSONSchemaType<string> = {
+  type: "string",
+  // Matchin evm address with '0x' and 40 other chars 
+  pattern: '/0x[0-9a-fA-F]{40}/',
+  minLength: 42,
+  maxLength: 42,
+}
+const argumentValidatorSchema: JSONSchemaType<Arguments> = {
+  type: "array",
+  items: { type: "string"}
+}
+const sourceValidatorSchema: JSONSchemaType<Source> = {
   type: 'object',
-  properties: {
-    accountAddress: { type: 'string', ...nativeAddressProps },
-    contractAddress: { type: 'string', ...evmAddressProps },
+  required: [],
+  // Source filename must finish with .sol
+  propertyNames: {
+    type: "string",
+    pattern: /.+\.sol/g,
   },
-  required: ['accountAddress', 'contractAddress'],
-  additionalProperties: false,
-};
+  // Each value in source must be of type string
+  unevaluatedProperties: {
+    type: "string"
+  }
+}
 
-const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq> = {
-  type: 'object',
-  properties: {
-    address: { type: 'string', ...nativeAddressProps },
-    arguments: { type: 'string' },
-    bytecode: { type: 'string', minLength: 2 },
-    compilerVersion: { type: 'string' },
-    filename: { type: 'string' },
-    license: { type: 'string' },
-    name: { type: 'string' },
-    optimization: { type: 'string' },
-    runs: { type: 'number' },
-    source: { type: 'string' },
-    target: { type: 'string' },
-  },
-  required: ['address', 'arguments', 'bytecode', 'compilerVersion', 'filename', 'license', 'name', 'optimization', 'runs', 'source', 'target'],
-  additionalProperties: false,
-};
-
-const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
-  type: 'object',
-  properties: {
-    ...submitVerificationSchema.properties!,
-    token: { type: 'string' },
-  },
-  required: [...submitVerificationSchema.required, 'token'],
-};
-
+// Object validator schemas
 const verificationStatusSchema: JSONSchemaType<Status> = {
   type: 'object',
   properties: {
@@ -67,20 +58,41 @@ const idSchema: JSONSchemaType<ID> = {
   required: ['id'],
 };
 
-const evmAddressSchema: JSONSchemaType<Address> = {
+// combined ajv schemas
+const accountTokenBalanceSchema: JSONSchemaType<TokenBalanceParam> = {
   type: 'object',
   properties: {
-    address: { type: 'string', ...evmAddressProps },
+    accountAddress: nativeAddressSchema,
+    contractAddress: evmAddressSchema,
   },
-  required: ['address'],
+  required: ['accountAddress', 'contractAddress'],
+  additionalProperties: false,
 };
-
-const nativeAddressSchema: JSONSchemaType<Address> = {
+const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq> = {
   type: 'object',
   properties: {
-    address: { type: 'string', ...nativeAddressProps },
+    address: nativeAddressSchema,
+    arguments: argumentValidatorSchema,
+    bytecode: { type: 'string', minLength: 2 },
+    compilerVersion: { type: 'string' },
+    filename: { type: 'string' },
+    license: { type: 'string' },
+    name: { type: 'string' },
+    optimization: { type: 'string' },
+    runs: { type: 'number' },
+    source: sourceValidatorSchema,
+    target: { type: 'string' },
   },
-  required: ['address'],
+  required: ['address', 'arguments', 'bytecode', 'compilerVersion', 'filename', 'license', 'name', 'optimization', 'runs', 'source', 'target'],
+  additionalProperties: false,
+};
+const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
+  type: 'object',
+  properties: {
+    ...submitVerificationSchema.properties!,
+    token: { type: 'string' },
+  },
+  required: [...submitVerificationSchema.required, 'token'],
 };
 
 // available validators
