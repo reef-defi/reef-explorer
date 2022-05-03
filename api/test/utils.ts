@@ -14,7 +14,7 @@ export interface ContractStorage {
 
 export const argumentTester = ({bytecode, abi, arguments: args}: ContractStorage): boolean => {
   try {
-    verifyContractArguments(bytecode, abi, args);
+    verifyContractArguments(bytecode, abi, JSON.parse(args));
     return true;
   } catch (err) {
     return false;
@@ -26,7 +26,7 @@ export const argumentCustomTester = (contract: ContractStorage, args: any[]): bo
 
 export const argumentErrorTester = (bytecode: string, abi: ABI, args: string): string => {
   try {
-    verifyContractArguments(bytecode, abi, `[\"${args}\"]`)
+    verifyContractArguments(bytecode, abi, JSON.parse(args))
     return "";
   } catch (err) {
     console.log(err);
@@ -47,7 +47,6 @@ export const sourceTester = async ({name, filename, sources, bytecode}: Contract
 
       address: "",
       arguments: "",
-      bytecode: "",
       license: "unlicense"
     });
     return true;
