@@ -146,7 +146,8 @@ const compileContracts = async (name: string, filename: string, source: Source, 
 export default async (deployedBytecode: string, {
   name, filename, source, compilerVersion, target, optimization, runs,
 }: AutomaticContractVerificationReq): Promise<VerifyContract> => {
-  const { abi, fullAbi, fullBytecode } = await compileContracts(name, filename, source, compilerVersion, target, optimization, runs);
+  const src = JSON.parse(source);
+  const { abi, fullAbi, fullBytecode } = await compileContracts(name, filename, src, compilerVersion, target, optimization === "true", runs);
   const parsedBytecode = preprocess(fullBytecode);
   const rpcBytecode = preprocess(deployedBytecode);
 

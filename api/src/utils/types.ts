@@ -1,10 +1,14 @@
-import { Request } from 'express';
+import { Request } from "express";
 import {
-  Fragment, JsonFragment, FunctionFragment, EventFragment, ConstructorFragment,
-} from '@ethersproject/abi';
+  Fragment,
+  JsonFragment,
+  FunctionFragment,
+  EventFragment,
+  ConstructorFragment,
+} from "@ethersproject/abi";
 
-export interface AppRequest <T> extends Request {
-  body: T
+export interface AppRequest<T> extends Request {
+  body: T;
 }
 
 export interface ERC721Data {
@@ -17,23 +21,23 @@ export interface ERC20Data extends ERC721Data {
 }
 
 interface VerifiedERC20 {
-  type: 'ERC20',
-  data: ERC20Data
+  type: "ERC20";
+  data: ERC20Data;
 }
 interface VerifiedERC721 {
-  type: 'ERC721',
-  data: ERC721Data
+  type: "ERC721";
+  data: ERC721Data;
 }
 interface VerifiedERC1155 {
-  type: 'ERC1155',
-  data: {}
+  type: "ERC1155";
+  data: {};
 }
 interface VerifiedOther {
-  type: 'other',
-  data: {}
+  type: "other";
+  data: {};
 }
 
-export type ContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
+export type ContractType = "other" | "ERC20" | "ERC721" | "ERC1155";
 export type ContractResolve =
   | VerifiedERC20
   | VerifiedERC721
@@ -42,52 +46,71 @@ export type ContractResolve =
 
 // Basic types
 export type Target =
-  | 'london'
-  | 'berlin'
-  | 'istanbul'
-  | 'petersburg'
-  | 'constantinople'
-  | 'byzantium'
-  | 'spuriousDragon'
-  | 'homestead'
-  | 'tangerineWhistle';
+  | "london"
+  | "berlin"
+  | "istanbul"
+  | "petersburg"
+  | "constantinople"
+  | "byzantium"
+  | "spuriousDragon"
+  | "homestead"
+  | "tangerineWhistle";
 
 export type License =
-  | 'none'
-  | 'unlicense'
-  | 'MIT'
-  | 'GNU GPLv2'
-  | 'GNU GPLv3'
-  | 'GNU LGPLv2.1'
-  | 'GNU LGPLv3'
-  | 'BSD-2-Clause'
-  | 'BSD-3-Clause'
-  | 'MPL-2.0'
-  | 'OSL-3.0'
-  | 'Apache-2.0'
-  | 'GNU AGPLv3';
+  | "none"
+  | "unlicense"
+  | "MIT"
+  | "GNU GPLv2"
+  | "GNU GPLv3"
+  | "GNU LGPLv2.1"
+  | "GNU LGPLv3"
+  | "BSD-2-Clause"
+  | "BSD-3-Clause"
+  | "MPL-2.0"
+  | "OSL-3.0"
+  | "Apache-2.0"
+  | "GNU AGPLv3";
 
-export type ABIFragment = Fragment | JsonFragment | FunctionFragment | EventFragment | ConstructorFragment;
+export const compilerTargets: Target[] = [
+  "berlin",
+  "byzantium",
+  "constantinople",
+  "homestead",
+  "istanbul",
+  "london",
+  "petersburg",
+  "spuriousDragon",
+  "tangerineWhistle",
+];
+export type ABIFragment =
+  | Fragment
+  | JsonFragment
+  | FunctionFragment
+  | EventFragment
+  | ConstructorFragment;
 export type ABI = ReadonlyArray<ABIFragment>;
-export type Arguments = any[];
-export type Source = {[filename: string]: string};
+export type Argument = string | boolean | Argument[];
+export type Arguments = any[]; // Argument[];
+export type Source = { [filename: string]: string };
 
 // Request types
 export interface AutomaticContractVerificationReq {
   name: string;
   runs: number;
-  source: Source;
+  source: string;
   target: Target;
   address: string;
   filename: string;
   license: License;
-  arguments: Arguments;
-  optimization: boolean;
+  arguments: string; // Arguments;
+  optimization: string;
   compilerVersion: string;
 }
-export type AutomaticContractVerificationKey = keyof AutomaticContractVerificationReq;
+export type AutomaticContractVerificationKey =
+  keyof AutomaticContractVerificationReq;
 
-export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
+export interface ManualContractVerificationReq
+  extends AutomaticContractVerificationReq {
   token: string;
 }
 export interface PoolReq {
