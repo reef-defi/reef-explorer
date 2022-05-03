@@ -133,8 +133,8 @@ export const contractVerificationRequestInsert = async ({
 export const verify = async (
   verification: AutomaticContractVerificationReq,
 ): Promise<void> => {
-
-  const verif = {...verification,
+  const verif = {
+    ...verification,
     address: toChecksumAddress(verification.address),
   };
   const args = verif.arguments;
@@ -142,13 +142,13 @@ export const verify = async (
   const deployedBytecode = await findContractBytecode(verif.address);
   const { abi, fullAbi } = await verifyContract(deployedBytecode, verif);
   verifyContractArguments(deployedBytecode, abi, JSON.parse(args));
-  
+
   // Confirming verification request
   await contractVerificationRequestInsert({
     ...verif,
     args,
     success: true,
-    optimization: verification.optimization === "true",    
+    optimization: verification.optimization === 'true',
   });
   // Resolving contract additional information
   const { type, data } = await resolveContractData(verif.address, abi);
@@ -160,7 +160,7 @@ export const verify = async (
     type,
     abi: fullAbi,
     data: JSON.stringify(data),
-    optimization: verification.optimization === "true",
+    optimization: verification.optimization === 'true',
   });
 };
 

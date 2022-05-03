@@ -1,4 +1,6 @@
-import { ABI, AutomaticContractVerificationReq, Source, Target } from '../../utils/types';
+import {
+  ABI, AutomaticContractVerificationReq, Source, Target,
+} from '../../utils/types';
 import { ensure } from '../../utils/utils';
 
 const solc = require('solc');
@@ -147,7 +149,7 @@ export default async (deployedBytecode: string, {
   name, filename, source, compilerVersion, target, optimization, runs,
 }: AutomaticContractVerificationReq): Promise<VerifyContract> => {
   const src = JSON.parse(source);
-  const { abi, fullAbi, fullBytecode } = await compileContracts(name, filename, src, compilerVersion, target, optimization === "true", runs);
+  const { abi, fullAbi, fullBytecode } = await compileContracts(name, filename, src, compilerVersion, target, optimization === 'true', runs);
   const parsedBytecode = preprocess(fullBytecode);
   const rpcBytecode = preprocess(deployedBytecode);
 

@@ -25,9 +25,9 @@ export const submitVerification = async (
   res: Response,
 ) => {
   validateData(req.body, automaticVerificationValidator);
-  
+
   req.body.address = toChecksumAddress(req.body.address);
-  
+
   await verify(req.body)
     .catch(async (err) => {
       await contractVerificationRequestInsert({
@@ -35,7 +35,7 @@ export const submitVerification = async (
         success: false,
         args: req.body.arguments,
         errorMessage: err.message,
-        optimization: req.body.optimization === "true",
+        optimization: req.body.optimization === 'true',
       });
       throw err;
     });
@@ -56,7 +56,7 @@ export const formVerification = async (
       await contractVerificationRequestInsert({
         ...req.body,
         success: false,
-        optimization: req.body.optimization === "true",
+        optimization: req.body.optimization === 'true',
         args: JSON.stringify(req.body.arguments),
         source: JSON.stringify(req.body.source),
         errorMessage: err.message,

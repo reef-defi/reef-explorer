@@ -1,11 +1,11 @@
-import { Request } from "express";
+import { Request } from 'express';
 import {
   Fragment,
   JsonFragment,
   FunctionFragment,
   EventFragment,
   ConstructorFragment,
-} from "@ethersproject/abi";
+} from '@ethersproject/abi';
 
 export interface AppRequest<T> extends Request {
   body: T;
@@ -21,23 +21,23 @@ export interface ERC20Data extends ERC721Data {
 }
 
 interface VerifiedERC20 {
-  type: "ERC20";
+  type: 'ERC20';
   data: ERC20Data;
 }
 interface VerifiedERC721 {
-  type: "ERC721";
+  type: 'ERC721';
   data: ERC721Data;
 }
 interface VerifiedERC1155 {
-  type: "ERC1155";
+  type: 'ERC1155';
   data: {};
 }
 interface VerifiedOther {
-  type: "other";
+  type: 'other';
   data: {};
 }
 
-export type ContractType = "other" | "ERC20" | "ERC721" | "ERC1155";
+export type ContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
 export type ContractResolve =
   | VerifiedERC20
   | VerifiedERC721
@@ -46,41 +46,41 @@ export type ContractResolve =
 
 // Basic types
 export type Target =
-  | "london"
-  | "berlin"
-  | "istanbul"
-  | "petersburg"
-  | "constantinople"
-  | "byzantium"
-  | "spuriousDragon"
-  | "homestead"
-  | "tangerineWhistle";
+  | 'london'
+  | 'berlin'
+  | 'istanbul'
+  | 'petersburg'
+  | 'constantinople'
+  | 'byzantium'
+  | 'spuriousDragon'
+  | 'homestead'
+  | 'tangerineWhistle';
 
 export type License =
-  | "none"
-  | "unlicense"
-  | "MIT"
-  | "GNU GPLv2"
-  | "GNU GPLv3"
-  | "GNU LGPLv2.1"
-  | "GNU LGPLv3"
-  | "BSD-2-Clause"
-  | "BSD-3-Clause"
-  | "MPL-2.0"
-  | "OSL-3.0"
-  | "Apache-2.0"
-  | "GNU AGPLv3";
+  | 'none'
+  | 'unlicense'
+  | 'MIT'
+  | 'GNU GPLv2'
+  | 'GNU GPLv3'
+  | 'GNU LGPLv2.1'
+  | 'GNU LGPLv3'
+  | 'BSD-2-Clause'
+  | 'BSD-3-Clause'
+  | 'MPL-2.0'
+  | 'OSL-3.0'
+  | 'Apache-2.0'
+  | 'GNU AGPLv3';
 
 export const compilerTargets: Target[] = [
-  "berlin",
-  "byzantium",
-  "constantinople",
-  "homestead",
-  "istanbul",
-  "london",
-  "petersburg",
-  "spuriousDragon",
-  "tangerineWhistle",
+  'berlin',
+  'byzantium',
+  'constantinople',
+  'homestead',
+  'istanbul',
+  'london',
+  'petersburg',
+  'spuriousDragon',
+  'tangerineWhistle',
 ];
 export type ABIFragment =
   | Fragment
