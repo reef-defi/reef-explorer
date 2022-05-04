@@ -56,8 +56,6 @@
 
 <script>
 import { gql } from 'graphql-tag'
-// eslint-disable-next-line no-unused-vars
-import moment from 'moment'
 import commonMixin from '@/mixins/commonMixin.js'
 
 export default {
@@ -84,11 +82,11 @@ export default {
             evm_event(
               limit: 10
               where: { contract_address: $contractAddress }
-              order_by: {
-                block_id: desc
-                extrinsic_index: desc
-                event_index: desc
-              }
+              order_by: [
+                { block_id: desc }
+                { extrinsic_index: desc }
+                { event_index: desc }
+              ]
             ) {
               event {
                 extrinsic {

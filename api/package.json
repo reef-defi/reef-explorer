@@ -17,6 +17,7 @@
     "@sentry/integrations": "^6.17.9",
     "@sentry/node": "^6.17.9",
     "@sentry/tracing": "^6.17.9",
+    "ajv": "^8.11.0",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",

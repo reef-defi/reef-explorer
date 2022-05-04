@@ -1,10 +1,14 @@
 import { Request } from 'express';
 import {
-  Fragment, JsonFragment, FunctionFragment, EventFragment,
+  Fragment,
+  JsonFragment,
+  FunctionFragment,
+  EventFragment,
+  ConstructorFragment,
 } from '@ethersproject/abi';
 
-export interface AppRequest <T> extends Request {
-  body: T
+export interface AppRequest<T> extends Request {
+  body: T;
 }
 
 export interface ERC721Data {
@@ -17,20 +21,20 @@ export interface ERC20Data extends ERC721Data {
 }
 
 interface VerifiedERC20 {
-  type: 'ERC20',
-  data: ERC20Data
+  type: 'ERC20';
+  data: ERC20Data;
 }
 interface VerifiedERC721 {
-  type: 'ERC721',
-  data: ERC721Data
+  type: 'ERC721';
+  data: ERC721Data;
 }
 interface VerifiedERC1155 {
-  type: 'ERC1155',
-  data: {}
+  type: 'ERC1155';
+  data: {};
 }
 interface VerifiedOther {
-  type: 'other',
-  data: {}
+  type: 'other';
+  data: {};
 }
 
 export type ContractType = 'other' | 'ERC20' | 'ERC721' | 'ERC1155';
@@ -67,8 +71,27 @@ export type License =
   | 'Apache-2.0'
   | 'GNU AGPLv3';
 
-export type ABIFragment = Fragment | JsonFragment | FunctionFragment | EventFragment;
+export const compilerTargets: Target[] = [
+  'berlin',
+  'byzantium',
+  'constantinople',
+  'homestead',
+  'istanbul',
+  'london',
+  'petersburg',
+  'spuriousDragon',
+  'tangerineWhistle',
+];
+export type ABIFragment =
+  | Fragment
+  | JsonFragment
+  | FunctionFragment
+  | EventFragment
+  | ConstructorFragment;
 export type ABI = ReadonlyArray<ABIFragment>;
+export type Argument = string | boolean | Argument[];
+export type Arguments = any[]; // Argument[];
+export type Source = { [filename: string]: string };
 
 // Request types
 export interface AutomaticContractVerificationReq {
@@ -77,15 +100,17 @@ export interface AutomaticContractVerificationReq {
   source: string;
   target: Target;
   address: string;
-  bytecode: string;
   filename: string;
   license: License;
-  arguments: string;
+  arguments: string; // Arguments;
   optimization: string;
   compilerVersion: string;
 }
+export type AutomaticContractVerificationKey =
+  keyof AutomaticContractVerificationReq;
 
-export interface ManualContractVerificationReq extends AutomaticContractVerificationReq {
+export interface ManualContractVerificationReq
+  extends AutomaticContractVerificationReq {
   token: string;
 }
 export interface PoolReq {
@@ -93,6 +118,10 @@ export interface PoolReq {
   tokenAddress2: string;
 }
 
+export interface TokenBalanceParam {
+  accountAddress: string;
+  contractAddress: string;
+}
 // interface DefaultToken {
 //   name: string;
 //   address: string;
