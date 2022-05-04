@@ -1,5 +1,5 @@
 import {
-  REEF_CONTRACT_ADDRESS, resolvePromisesAsChunks, REEF_DEFAULT_DATA, dropDuplicatesMultiKey, dropDuplicates,
+  REEF_CONTRACT_ADDRESS, resolvePromisesAsChunks, REEF_DEFAULT_DATA, dropDuplicatesMultiKey, dropDuplicates, removeUndefinedItem,
 } from '../utils/utils';
 import {
   isErc20TransferEvent, isErc721TransferEvent, isErc1155TransferSingleEvent, isErc1155TransferBatchEvent,
@@ -64,14 +64,22 @@ export const processEvmTokenHolders = async (evmLogs: EvmLogWithDecodedEvent[]):
     ['evmAddress', 'tokenAddress', 'nftId'],
   )
     .filter(({ evmAddress }) => evmAddress !== '0x0000000000000000000000000000000000000000')
+    // Balance of function is surrounded by a try-catch statement because every contract can be deleted.
+    // If a contract is deleted there is no on-chain data and the old data can not be reached.
+    // Therefore we are capturing these events and filtering them out.
     .map(async (head) => {
-      const balance = head.type === 'ERC1155'
-        ? await balanceOfErc1155(head.evmAddress, head.tokenAddress, head.nftId!, head.abi)
-        : await balanceOf(head.evmAddress, head.tokenAddress, head.abi);
-      return processTokenHolderHead(head, balance);
+      try {
+        const balance = head.type === 'ERC1155'
+          ? await balanceOfErc1155(head.evmAddress, head.tokenAddress, head.nftId!, head.abi)
+          : await balanceOf(head.evmAddress, head.tokenAddress, head.abi);
+        return processTokenHolderHead(head, balance);
+      } catch (e) {
+        return undefined;
+      }
     });
 
-  return resolvePromisesAsChunks(tokenHolders);
+  const results = await resolvePromisesAsChunks(tokenHolders);
+  return results.filter(removeUndefinedItem);
 };
 
 export const processNativeTokenHolders = (accounts: AccountBody[]): TokenHolder[] => dropDuplicates(accounts, 'address')
