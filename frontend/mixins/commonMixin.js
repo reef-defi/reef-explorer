@@ -15,6 +15,43 @@ const toMomentDate = (timestampOrDateString) => {
     : moment(timestampOrDateString)
 }
 
+// Function is ment to accept only whole numbers without decimal point!
+const formatLargeNumber = (num, dec = '000') => {
+  if (num.includes('.')) {
+    throw new Error(
+      'formatLargeNumber function is not ment to process decimal numbers!'
+    )
+  }
+  if (num.length > 12) {
+    return `${num.slice(0, num.length - 12)}.${num.slice(
+      num.length - 12,
+      num.length - 9
+    )}T`
+  } else if (num.length > 9) {
+    return `${num.slice(0, num.length - 9)}.${num.slice(
+      num.length - 9,
+      num.length - 6
+    )}B`
+  } else if (num.length > 6) {
+    return `${num.slice(0, num.length - 6)}.${num.slice(
+      num.length - 6,
+      num.length - 3
+    )}M`
+  } else if (num.length > 3) {
+    return `${num.slice(0, num.length - 3)}.${num.slice(num.length - 3)}k`
+  }
+  return `${num}.${dec.slice(0, 3)}`
+}
+const formatDecimalNumber = (num) => {
+  let firstNumberIndex = 0
+  for (; firstNumberIndex < num.length; firstNumberIndex++) {
+    if (num[firstNumberIndex] !== '0') {
+      break
+    }
+  }
+  return num.slice(0, Math.min(num.length, firstNumberIndex + 3))
+}
+
 export default {
   methods: {
     toContractAddress(address) {
@@ -38,6 +75,35 @@ export default {
           .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
       } else {
         return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+      }
+    },
+    formatShortAmount(amount, symbol, decimals) {
+      if (!symbol) {
+        symbol = network.tokenSymbol
+      }
+      if (!decimals) {
+        decimals = network.tokenDecimals
+      }
+      
+      const bn = new BigNumber(amount)
+        .div(new BigNumber(10).pow(decimals))
+        .toFormat()
+        .replaceAll(',', '')
+
+      const decimalPoint = bn.indexOf('.')
+
+      if (decimalPoint === -1) {
+        return `${formatLargeNumber(bn)} ${symbol}`
+      } else {
+        const intAmo = bn.slice(0, decimalPoint)
+        const decAmo = bn.slice(decimalPoint + 1, bn.length) + '000'
+        if (intAmo.length > 1) {
+          return `${formatLargeNumber(intAmo, decAmo)} ${symbol}`
+        } else if (intAmo === '0') {
+          return `0.${formatDecimalNumber(decAmo)} ${symbol}`
+        } else {
+          return `${intAmo}.${decAmo.slice(0, 3)} ${symbol}`
+        }
       }
     },
     formatAmount(amount, symbol, decimals) {
