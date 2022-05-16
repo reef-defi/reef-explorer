@@ -59,12 +59,16 @@
               </Cell>
               <Cell v-else />
 
-              <Cell align="right">{{ formatAmount(item.free_balance) }}</Cell>
-
-              <Cell align="right">{{ formatAmount(item.locked_balance) }}</Cell>
+              <Cell align="right">{{
+                formatShortAmount(item.free_balance)
+              }}</Cell>
 
               <Cell align="right">{{
-                formatAmount(item.available_balance)
+                formatShortAmount(item.locked_balance)
+              }}</Cell>
+
+              <Cell align="right">{{
+                formatShortAmount(item.available_balance)
               }}</Cell>
 
               <Cell>
@@ -121,12 +125,16 @@
               </Cell>
               <Cell v-else />
 
-              <Cell align="right">{{ formatAmount(item.free_balance) }}</Cell>
-
-              <Cell align="right">{{ formatAmount(item.locked_balance) }}</Cell>
+              <Cell align="right">{{
+                formatShortAmount(item.free_balance)
+              }}</Cell>
 
               <Cell align="right">{{
-                formatAmount(item.available_balance)
+                formatShortAmount(item.locked_balance)
+              }}</Cell>
+
+              <Cell align="right">{{
+                formatShortAmount(item.available_balance)
               }}</Cell>
 
               <Cell>

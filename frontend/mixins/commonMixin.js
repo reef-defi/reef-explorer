@@ -15,6 +15,51 @@ const toMomentDate = (timestampOrDateString) => {
     : moment(timestampOrDateString)
 }
 
+// Function is ment to accept only whole numbers without decimal point!
+const formatLargeNumber = (num, dec = '0') => {
+  if (num.includes('.')) {
+    throw new Error(
+      'formatLargeNumber function is not ment to process decimal numbers!'
+    )
+  }
+  let intAmo = num
+  let decAmo = dec
+  let postfix = ''
+  if (num.length > 12) {
+    intAmo = num.slice(0, num.length - 12)
+    decAmo = num.slice(num.length - 12, num.length - 9)
+    postfix = 'T'
+  } else if (num.length > 9) {
+    intAmo = num.slice(0, num.length - 9)
+    decAmo = num.slice(num.length - 9, num.length - 6)
+    postfix = 'B'
+  } else if (num.length > 6) {
+    intAmo = num.slice(0, num.length - 6)
+    decAmo = num.slice(num.length - 6, num.length - 3)
+    postfix = 'M'
+  } else if (num.length > 3) {
+    intAmo = num.slice(0, num.length - 3)
+    decAmo = num.slice(num.length - 3)
+    postfix = 'k'
+  }
+  decAmo = decAmo.replace(/0+/, '')
+  decAmo = decAmo !== '' ? '.' + decAmo.slice(0, 3) : ''
+  return `${intAmo}${decAmo}${postfix}`
+}
+
+const formatDecimalNumber = (num) => {
+  let firstNumberIndex = 0
+  for (; firstNumberIndex < num.length; firstNumberIndex++) {
+    if (num[firstNumberIndex] !== '0') {
+      break
+    }
+  }
+  num = num
+    .slice(0, Math.min(num.length, firstNumberIndex + 3))
+    .replace(/0+$/, '')
+  return num
+}
+
 export default {
   methods: {
     toContractAddress(address) {
@@ -38,6 +83,33 @@ export default {
           .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
       } else {
         return number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+      }
+    },
+    formatShortAmount(amount, symbol, decimals) {
+      if (!symbol) {
+        symbol = network.tokenSymbol
+      }
+      if (!decimals) {
+        decimals = network.tokenDecimals
+      }
+
+      const bn = new BigNumber(amount)
+        .div(new BigNumber(10).pow(decimals))
+        .toFormat()
+        .replaceAll(',', '')
+
+      const decimalPoint = bn.indexOf('.')
+
+      if (decimalPoint === -1) {
+        return `${formatLargeNumber(bn)} ${symbol}`
+      } else {
+        const intAmo = bn.slice(0, decimalPoint)
+        const decAmo = bn.slice(decimalPoint + 1, bn.length) + '000'
+        if (intAmo === '0') {
+          return `0.${formatDecimalNumber(decAmo)}`
+        } else {
+          return `${formatLargeNumber(intAmo, decAmo)} ${symbol}`
+        }
       }
     },
     formatAmount(amount, symbol, decimals) {

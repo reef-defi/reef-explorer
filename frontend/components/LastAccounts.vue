@@ -23,7 +23,7 @@
         <Cell :link="`/block?blockNumber=${item.block_id}`"
           ># {{ formatNumber(item.block_id) }}</Cell
         >
-        <Cell>{{ formatAmount(item.free_balance) }}</Cell>
+        <Cell>{{ formatShortAmount(item.free_balance) }}</Cell>
       </Row>
     </Table>
   </div>
