@@ -16,32 +16,37 @@ const toMomentDate = (timestampOrDateString) => {
 }
 
 // Function is ment to accept only whole numbers without decimal point!
-const formatLargeNumber = (num, dec = '000') => {
+const formatLargeNumber = (num, dec = '0') => {
   if (num.includes('.')) {
     throw new Error(
       'formatLargeNumber function is not ment to process decimal numbers!'
     )
   }
+  let intAmo = num
+  let decAmo = dec
+  let postfix = ''
   if (num.length > 12) {
-    return `${num.slice(0, num.length - 12)}.${num.slice(
-      num.length - 12,
-      num.length - 9
-    )}T`
+    intAmo = num.slice(0, num.length - 12)
+    decAmo = num.slice(num.length - 12, num.length - 9)
+    postfix = 'T'
   } else if (num.length > 9) {
-    return `${num.slice(0, num.length - 9)}.${num.slice(
-      num.length - 9,
-      num.length - 6
-    )}B`
+    intAmo = num.slice(0, num.length - 9)
+    decAmo = num.slice(num.length - 9, num.length - 6)
+    postfix = 'B'
   } else if (num.length > 6) {
-    return `${num.slice(0, num.length - 6)}.${num.slice(
-      num.length - 6,
-      num.length - 3
-    )}M`
+    intAmo = num.slice(0, num.length - 6)
+    decAmo = num.slice(num.length - 6, num.length - 3)
+    postfix = 'M'
   } else if (num.length > 3) {
-    return `${num.slice(0, num.length - 3)}.${num.slice(num.length - 3)}k`
+    intAmo = num.slice(0, num.length - 3)
+    decAmo = num.slice(num.length - 3)
+    postfix = 'k'
   }
-  return `${num}.${dec.slice(0, 3)}`
+  decAmo = decAmo.replace(/0+/, '')
+  decAmo = decAmo !== '' ? '.' + decAmo.slice(0, 3) : ''
+  return `${intAmo}${decAmo}${postfix}`
 }
+
 const formatDecimalNumber = (num) => {
   let firstNumberIndex = 0
   for (; firstNumberIndex < num.length; firstNumberIndex++) {
@@ -49,7 +54,10 @@ const formatDecimalNumber = (num) => {
       break
     }
   }
-  return num.slice(0, Math.min(num.length, firstNumberIndex + 3))
+  num = num
+    .slice(0, Math.min(num.length, firstNumberIndex + 3))
+    .replace(/0+$/, '')
+  return num
 }
 
 export default {
@@ -84,7 +92,7 @@ export default {
       if (!decimals) {
         decimals = network.tokenDecimals
       }
-      
+
       const bn = new BigNumber(amount)
         .div(new BigNumber(10).pow(decimals))
         .toFormat()
@@ -97,12 +105,10 @@ export default {
       } else {
         const intAmo = bn.slice(0, decimalPoint)
         const decAmo = bn.slice(decimalPoint + 1, bn.length) + '000'
-        if (intAmo.length > 1) {
-          return `${formatLargeNumber(intAmo, decAmo)} ${symbol}`
-        } else if (intAmo === '0') {
-          return `0.${formatDecimalNumber(decAmo)} ${symbol}`
+        if (intAmo === '0') {
+          return `0.${formatDecimalNumber(decAmo)}`
         } else {
-          return `${intAmo}.${decAmo.slice(0, 3)} ${symbol}`
+          return `${formatLargeNumber(intAmo, decAmo)} ${symbol}`
         }
       }
     },
