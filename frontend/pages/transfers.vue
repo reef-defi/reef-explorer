@@ -63,7 +63,7 @@
               </Cell>
 
               <Cell>{{
-                formatAmount(item.amount, item.symbol, item.decimals)
+                formatShortAmount(item.amount, item.symbol, item.decimals)
               }}</Cell>
 
               <Cell
