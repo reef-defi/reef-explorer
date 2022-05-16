@@ -50,6 +50,15 @@
           </Cell>
         </Row>
       </Table>
+
+      <div class="list-view__pagination">
+        <PerPage v-model="perPage" />
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="totalRows"
+          :per-page="perPage"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -70,6 +79,9 @@ export default {
     return {
       loading: true,
       transactions: [],
+      currentPage: 1,
+      totalRows: 1,
+      perPage: null,
     }
   },
   apollo: {
@@ -78,9 +90,12 @@ export default {
         query: gql`
           subscription evm_event_qry(
             $contractAddress: String_comparison_exp = {}
+            $perPage: Int!
+            $offset: Int!
           ) {
             evm_event(
-              limit: 10
+              limit: $perPage
+              offset: $offset
               where: { contract_address: $contractAddress }
               order_by: [
                 { block_id: desc }
@@ -106,6 +121,8 @@ export default {
             contractAddress: {
               _ilike: this.toContractAddress(this.contractId),
             },
+            perPage: this.perPage,
+            offset: (this.currentPage - 1) * this.perPage,
           }
         },
         result({ data }) {
@@ -116,6 +133,31 @@ export default {
             }, [])
           }
           this.loading = false
+        },
+      },
+      total_transactions: {
+        query: gql`
+          subscription evm_event_count_aggregation(
+            $contractAddress: String_comparison_exp = {}
+          ) {
+            evm_event_aggregate(where: { contract_address: $contractAddress }) {
+              aggregate {
+                count
+              }
+            }
+          }
+        `,
+        variables() {
+          return {
+            contractAddress: {
+              _ilike: this.toContractAddress(this.contractId),
+            },
+          }
+        },
+        result({ data }) {
+          console.log(data)
+          this.totalRows = data.evm_event_aggregate.aggregate.count
+          console.log(this.totalRows)
         },
       },
     },
