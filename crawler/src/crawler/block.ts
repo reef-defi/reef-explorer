@@ -1,9 +1,7 @@
 import { nodeProvider } from '../utils/connector';
 import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
 import {
-  extrinsicBodyToTransfer,
   extrinsicStatus,
-  isExtrinsicNativeTransfer,
   resolveSigner,
 } from './extrinsic';
 import {
@@ -42,7 +40,7 @@ import { insertContracts, insertEvmEvents } from '../queries/evmEvent';
 import logger from '../utils/logger';
 import { insertStaking, processStakingEvent, stakingToAccount } from './staking';
 import insertTokenHolders from '../queries/tokenHoldes';
-import { extractTransferAccounts, processTokenTransfers } from './transfer';
+import { extractTransferAccounts, processTokenTransfers, isTransferEvent, processTransferEvent } from './transfer';
 import {
   processEvmTokenHolders,
   processNativeTokenHolders,
@@ -287,8 +285,8 @@ export default async (fromId: number, toId: number, save = true): Promise<number
   // Transfers
   logger.info('Extracting native transfers');
   let transfers = await resolvePromisesAsChunks(
-    extrinsics.filter(isExtrinsicNativeTransfer).map(extrinsicBodyToTransfer),
-  );
+    events.filter(isTransferEvent).map(processTransferEvent)
+  )
 
   // EVM Logs
   logger.info('Retrieving EVM log if contract is ERC20 token');
