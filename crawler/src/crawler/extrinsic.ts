@@ -1,14 +1,8 @@
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
-import { BigNumber } from 'ethers';
-import {
-  Extrinsic,
-  Event,
-  ExtrinsicStatus,
-  ExtrinsicBody,
-  Transfer,
-} from './types';
-import { REEF_CONTRACT_ADDRESS } from '../utils/utils';
 import { nodeProvider } from '../utils/connector';
+import {
+  Event, Extrinsic, ExtrinsicStatus,
+} from './types';
 
 export const resolveSigner = (extrinsic: Extrinsic): string => extrinsic.signer?.toString() || 'deleted';
 
