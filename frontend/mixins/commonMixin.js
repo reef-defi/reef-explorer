@@ -106,7 +106,7 @@ export default {
         const intAmo = bn.slice(0, decimalPoint)
         const decAmo = bn.slice(decimalPoint + 1, bn.length) + '000'
         if (intAmo === '0') {
-          return `0.${formatDecimalNumber(decAmo)}`
+          return `0.${formatDecimalNumber(decAmo)} ${symbol}`
         } else {
           return `${formatLargeNumber(intAmo, decAmo)} ${symbol}`
         }
