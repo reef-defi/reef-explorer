@@ -1,9 +1,12 @@
 import { BigNumber } from 'ethers';
-import { resolvePromisesAsChunks } from '../utils/utils';
+import { nodeProvider } from '../utils/connector';
+import { REEF_CONTRACT_ADDRESS, resolvePromisesAsChunks } from '../utils/utils';
 import {
   isErc20TransferEvent, isErc721TransferEvent, isErc1155TransferSingleEvent, isErc1155TransferBatchEvent,
 } from './evmEvent';
-import { AccountHead, EvmLogWithDecodedEvent, Transfer } from './types';
+import {
+  AccountHead, EventBody, EvmLogWithDecodedEvent, Transfer,
+} from './types';
 import { findNativeAddress } from './utils';
 
 const evmLogToTransfer = async ({
@@ -114,3 +117,32 @@ export const extractTransferAccounts = ({
     blockId, address: toAddress, active: true, timestamp,
   },
 ];
+
+export const isTransferEvent = ({ event: { event } }: EventBody) => nodeProvider.getProvider().api.events.balances.Transfer.is(event);
+
+export const processTransferEvent = async ({
+  event: { event: { data } }, status, signedData, extrinsicId, blockId, timestamp,
+}: EventBody): Promise<Transfer> => {
+  const [fromAddress, toAddress, amount] = data;
+  const [toEvmAddress, fromEvmAddress] = await Promise.all([
+    nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress)),
+    nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress)),
+  ]);
+  const feeAmount = BigNumber.from(signedData!.fee.partialFee).toString();
+  return {
+    amount: amount.toString(),
+    blockId,
+    feeAmount,
+    timestamp,
+    extrinsicId,
+    tokenAddress: REEF_CONTRACT_ADDRESS,
+    toAddress: toAddress.toString(),
+    fromAddress: fromAddress.toString(),
+    toEvmAddress: toEvmAddress.toString(),
+    fromEvmAddress: fromEvmAddress.toString(),
+    denom: 'REEF',
+    type: 'Native',
+    success: status.type === 'success',
+    errorMessage: status.type === 'error' ? status.message : '',
+  };
+};

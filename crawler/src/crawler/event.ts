@@ -1,7 +1,7 @@
 import { nodeProvider } from '../utils/connector';
 import { toChecksumAddress } from '../utils/utils';
 import {
-  AccountBody, AccountHead, EventHead, ExtrinsicBody, Event,
+  AccountBody, AccountHead, Event, EventHead, ExtrinsicBody,
 } from './types';
 
 export const extrinsicToEventHeader = ({
@@ -10,6 +10,8 @@ export const extrinsicToEventHeader = ({
   events,
   timestamp,
   index: extrinsicIndex,
+  status,
+  signedData,
 }: ExtrinsicBody): EventHead[] => events.map((event, index) => ({
   event,
   index,
@@ -17,6 +19,8 @@ export const extrinsicToEventHeader = ({
   timestamp,
   extrinsicId: id,
   extrinsicIndex,
+  status,
+  signedData,
 }));
 
 const eventToAccountHead = (
