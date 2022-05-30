@@ -148,8 +148,31 @@ export default {
     }
   },
   methods: {
+    numbersToString(arr) {
+      return arr.map((val) => {
+        if (Array.isArray(val)) {
+          return this.numbersToString(val)
+        } else if (typeof val === 'number') {
+          return val.toLocaleString('fullwide', { useGrouping: false })
+        }
+
+        return val
+      })
+    },
+    prepareParameters(parameters) {
+      if (parameters === '') {
+        return []
+      }
+      const params = parameters.replaceAll(
+        /0x[0-9a-fA-f]{40}/g,
+        (match) => `"${match}"`
+      )
+      const result = JSON.parse(`[${params}]`)
+      return this.numbersToString(result)
+    },
     async onSubmit(event) {
       event.preventDefault()
+
       //
       // Call contract write function
       //
@@ -179,7 +202,8 @@ export default {
               wallet
             )
 
-            this.result = await contract[this.functionName](...this.arguments)
+            const args = this.prepareParameters(this.arguments.join(', '))
+            this.result = await contract[this.functionName](...args)
 
             // hide success alert after 20s
             setTimeout(() => {

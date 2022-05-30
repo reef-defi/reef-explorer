@@ -246,7 +246,6 @@
           </Data>
 
           <!-- Execute -->
-
           <ContractExecute
             v-if="tab === 'execute'"
             :contract-id="address"
@@ -255,25 +254,15 @@
           />
 
           <!-- Verified Source -->
-
           <FileExplorer
             v-if="tab === 'source'"
             :data="contract.verified_contract.source"
           />
-          <!-- ABI -->
 
+          <!-- ABI -->
           <File v-if="tab === 'abi'" :data="contract.abi" />
 
-          <!-- Execute -->
-
-          <ContractExecute
-            v-if="tab === 'execute'"
-            :contract-id="address"
-            :contract-name="contract.verified_contract.name"
-            :contract-abi="contract.abi"
-          />
           <!-- Transactions -->
-
           <ContractTransactions
             v-if="tab === 'transactions'"
             :contract-id="address"
