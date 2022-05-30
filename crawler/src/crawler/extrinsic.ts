@@ -43,6 +43,7 @@ export const extrinsicStatus = (extrinsicEvents: Event[]): ExtrinsicStatus => ex
 export const isExtrinsicNativeTransfer = ({ extrinsic }: ExtrinsicBody): boolean => extrinsic.method.section === 'balances'
   || extrinsic.method.section === 'currencies';
 
+
 export const extrinsicBodyToTransfer = async ({
   id,
   status,
@@ -62,6 +63,12 @@ export const extrinsicBodyToTransfer = async ({
   const fromEvmAddress = fromAddress !== 'deleted'
     ? (await nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress))).toString()
     : 'null';
+
+
+  // Handling transfer all events
+  if (extrinsic.method.method === 'transfer_all') {
+
+  }
 
   const amount = BigNumber.from(args[args.length - 1]).toString();
   const feeAmount = BigNumber.from(signedData!.fee.partialFee).toString();
