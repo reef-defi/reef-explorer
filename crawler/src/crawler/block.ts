@@ -213,7 +213,7 @@ export const processInitialBlocks = async (
   return transactions;
 };
 
-export default async (fromId: number, toId: number, save=true): Promise<number> => {
+export default async (fromId: number, toId: number, save = true): Promise<number> => {
   let transactions = 0;
   const blockIds = range(fromId, toId);
   nodeProvider.setDbBlockId(toId - 1);
@@ -256,7 +256,6 @@ export default async (fromId: number, toId: number, save=true): Promise<number> 
   // Free memory
   blocks = [];
   extrinsicHeaders = [];
-  
 
   // Events
   logger.info('Extracting and compressing extrinisc events');
@@ -264,13 +263,12 @@ export default async (fromId: number, toId: number, save=true): Promise<number> 
     .flatMap(extrinsicToEventHeader)
     .map(eventToBody(eid));
 
-
   if (save) {
     logger.info('Inserting extriniscs');
     await insertExtrinsics(extrinsics.map(extrinsicToInsert));
     logger.info('Inserting events');
     await insertEvents(events);
-  }  
+  }
 
   // Staking
   logger.info('Resolving staking events');
@@ -342,17 +340,17 @@ export default async (fromId: number, toId: number, save=true): Promise<number> 
     await insertAccounts(accounts);
     // Free memory
     accounts = [];
-  
+
     // Staking Reward
     logger.info('Inserting staking rewards');
     await insertStaking(staking);
-  
+
     // Transfers
     logger.info('Inserting transfers');
     await insertTransfers(transfers);
-  
+
     transfers = [];
-  
+
     // Contracts
     logger.info('Extracting new contracts');
     let contracts = extrinsics
@@ -361,17 +359,17 @@ export default async (fromId: number, toId: number, save=true): Promise<number> 
     logger.info('Inserting contracts');
     await insertContracts(contracts);
     contracts = [];
-  
+
     logger.info('Inserting evm events');
     await insertEvmEvents(events);
-  
+
     // Token holders
     await insertTokenHolders(tokenHolders);
-  
+
     logger.info('Finalizing blocks');
     await updateBlockFinalized(fromId, toId);
   }
-  
+
   logger.info('Complete!');
   return transactions;
 };
