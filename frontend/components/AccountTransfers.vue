@@ -90,10 +90,10 @@
           </Cell>
 
           <Cell align="right">{{
-            formatAmount(item.amount, item.symbol, item.decimals)
+            formatShortAmount(item.amount, item.symbol, item.decimals)
           }}</Cell>
 
-          <Cell align="right">{{ formatAmount(item.fee_amount) }}</Cell>
+          <Cell align="right">{{ formatShortAmount(item.fee_amount) }}</Cell>
 
           <Cell align="center">
             <font-awesome-icon

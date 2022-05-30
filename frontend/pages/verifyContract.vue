@@ -435,7 +435,7 @@ export default {
       }
       try {
         // generate recaptcha token
-        const token = await this.$recaptcha.getResponse()
+        await this.$recaptcha.getResponse()
         ensure(this.contractName !== '', 'Contract name must not be empty')
         ensure(
           this.contractFilename !== '',
@@ -462,7 +462,6 @@ export default {
         )
 
         const body = {
-          token,
           runs: this.runs,
           target: this.target,
           address: this.address,
