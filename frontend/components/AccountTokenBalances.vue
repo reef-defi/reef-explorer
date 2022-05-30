@@ -41,10 +41,10 @@
 
           <Cell align="right">
             {{
-              formatTokenAmount(
+              formatShortAmount(
                 item.balance,
-                item.token_decimals,
-                item.token_symbol
+                item.token_symbol,
+                item.token_decimals
               )
             }}
           </Cell>
@@ -164,7 +164,9 @@ export default {
             contract_id: balance.contract.address,
             holder_account_id: balance.signer,
             holder_evm_address: balance.account.evm_address,
-            balance: balance.balance,
+            balance: balance.balance.toLocaleString('fullwide', {
+              useGrouping: false,
+            }),
             token_decimals: balance.info?.decimals || 1,
             token_name: balance.contract.verified_contract.name,
             token_symbol: balance.info?.symbol || '', // TODO check
