@@ -163,10 +163,6 @@ export default {
       if (parameters === '') {
         return []
       }
-      const params = parameters.replaceAll(
-        /0x[0-9a-fA-f]{40}/g,
-        (match) => `"${match}"`
-      )
       const result = JSON.parse(`[${params}]`)
       return this.numbersToString(result)
     },
