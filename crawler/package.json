@@ -25,6 +25,7 @@
     "@types/pg": "^8.6.1",
     "@types/pg-format": "^1.0.2",
     "@types/pino": "^7.0.5",
+    "@typescript-eslint/eslint-plugin": "^5.27.1",
     "eslint": "^8.6.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-node": "^4.1.0",
