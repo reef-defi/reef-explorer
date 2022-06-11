@@ -1,4 +1,4 @@
-import Ajv, { JSONSchemaType, ValidateFunction } from "ajv";
+import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv';
 import {
   AutomaticContractVerificationReq,
   compilerTargets,
@@ -6,8 +6,8 @@ import {
   ManualContractVerificationReq,
   Target,
   TokenBalanceParam,
-} from "../utils/types";
-import { ensure } from "../utils/utils";
+} from '../utils/types';
+import { ensure } from '../utils/utils';
 
 const ajv = new Ajv();
 
@@ -21,35 +21,35 @@ interface Status {
 
 // basic ajv schemas
 const nativeAddressSchema: JSONSchemaType<string> = {
-  type: "string",
+  type: 'string',
   // Matchin reef native address with '5' and 47 other chars
-  pattern: "5[0-9a-zA-Z]{47}",
+  pattern: '5[0-9a-zA-Z]{47}',
 };
 const evmAddressSchema: JSONSchemaType<string> = {
-  type: "string",
+  type: 'string',
   // Matchin evm address with '0x' and 40 other chars
-  pattern: "0x[0-9a-fA-F]{40}",
+  pattern: '0x[0-9a-fA-F]{40}',
 };
 const filenameSchema: JSONSchemaType<string> = {
-  type: "string",
-  pattern: ".+.sol",
+  type: 'string',
+  pattern: '.+.sol',
 };
 
 const optimizationSchema: JSONSchemaType<string> = {
-  type: "string",
-  pattern: "true|false",
+  type: 'string',
+  pattern: 'true|false',
 };
 const licencesSchema: JSONSchemaType<License> = {
-  type: "string",
+  type: 'string',
   // pattern: compilerLicenses.join('|'),
 };
 const targetSchema: JSONSchemaType<Target> = {
-  type: "string",
-  pattern: compilerTargets.join("|"),
+  type: 'string',
+  pattern: compilerTargets.join('|'),
 };
 const compilerVersionSchema: JSONSchemaType<string> = {
-  type: "string",
-  pattern: "v[0-9]+.[0-9]+.[0-9]+.*",
+  type: 'string',
+  pattern: 'v[0-9]+.[0-9]+.[0-9]+.*',
 };
 
 // Constructing optional type of string, boolean and number
@@ -93,78 +93,77 @@ const compilerVersionSchema: JSONSchemaType<string> = {
 
 // This are only temporary aruments and source validators!
 const argumentSchema: JSONSchemaType<string> = {
-  type: "string",
+  type: 'string',
   // Arguments string must start and end with [ ], content is optional
-  pattern: "\\[.*\\]",
+  pattern: '\\[.*\\]',
 };
 const sourceSchema: JSONSchemaType<string> = {
-  type: "string",
+  type: 'string',
   // Source string must start and end with { }, content is necessary
-  pattern: "[{].+[}]",
+  pattern: '[{].+[}]',
 };
 
 // Object validator schemas
 const verificationStatusSchema: JSONSchemaType<Status> = {
-  type: "object",
+  type: 'object',
   properties: {
-    status: { type: "string" },
+    status: { type: 'string' },
   },
-  required: ["status"],
+  required: ['status'],
 };
 const idSchema: JSONSchemaType<ID> = {
-  type: "object",
+  type: 'object',
   properties: {
-    id: { type: "string" },
+    id: { type: 'string' },
   },
-  required: ["id"],
+  required: ['id'],
 };
 // combined ajv schemas
 const accountTokenBalanceSchema: JSONSchemaType<TokenBalanceParam> = {
-  type: "object",
+  type: 'object',
   properties: {
     accountAddress: nativeAddressSchema,
     contractAddress: evmAddressSchema,
   },
-  required: ["accountAddress", "contractAddress"],
+  required: ['accountAddress', 'contractAddress'],
   additionalProperties: false,
 };
 
-const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq> =
-  {
-    type: "object",
-    properties: {
-      address: evmAddressSchema,
-      arguments: argumentSchema,
-      name: { type: "string" },
-      runs: { type: "number" },
-      compilerVersion: compilerVersionSchema,
-      filename: filenameSchema,
-      license: licencesSchema,
-      optimization: optimizationSchema,
-      source: sourceSchema,
-      target: targetSchema,
-    },
-    required: [
-      "address",
-      "arguments",
-      "compilerVersion",
-      "filename",
-      "license",
-      "name",
-      "optimization",
-      "runs",
-      "source",
-      "target",
-    ],
-    additionalProperties: false,
-  };
+const submitVerificationSchema: JSONSchemaType<AutomaticContractVerificationReq> = {
+  type: 'object',
+  properties: {
+    address: evmAddressSchema,
+    arguments: argumentSchema,
+    name: { type: 'string' },
+    runs: { type: 'number' },
+    compilerVersion: compilerVersionSchema,
+    filename: filenameSchema,
+    license: licencesSchema,
+    optimization: optimizationSchema,
+    source: sourceSchema,
+    target: targetSchema,
+  },
+  required: [
+    'address',
+    'arguments',
+    'compilerVersion',
+    'filename',
+    'license',
+    'name',
+    'optimization',
+    'runs',
+    'source',
+    'target',
+  ],
+  additionalProperties: false,
+};
 const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
-  type: "object",
+  type: 'object',
   properties: {
     ...submitVerificationSchema.properties!,
-    token: { type: "string" },
+    token: { type: 'string' },
   },
-  required: [...submitVerificationSchema.required, "token"],
+  required: [...submitVerificationSchema.required, 'token'],
 };
 
 // available validators
@@ -172,19 +171,19 @@ export const idValidator = ajv.compile(idSchema);
 export const evmAddressValidator = ajv.compile(evmAddressSchema);
 export const nativeAddressValidator = ajv.compile(nativeAddressSchema);
 export const verificationStatusValidator = ajv.compile(
-  verificationStatusSchema
+  verificationStatusSchema,
 );
 export const formVerificationValidator = ajv.compile(formVerificationSchema);
 export const accountTokenBodyValidator = ajv.compile(accountTokenBalanceSchema);
 export const automaticVerificationValidator = ajv.compile(
-  submitVerificationSchema
+  submitVerificationSchema,
 );
 
 export const validateData = <T>(data: T, fun: ValidateFunction<T>): void => {
   const isValid = fun(data);
   const message = (fun.errors || [])
-    .map((error) => error.message || "")
+    .map((error) => error.message || '')
     .filter((msg) => msg)
-    .join(", ");
+    .join(', ');
   ensure(isValid, message, 400);
 };
