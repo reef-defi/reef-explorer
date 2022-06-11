@@ -163,7 +163,7 @@ export default {
       if (parameters === '') {
         return []
       }
-      const result = JSON.parse(`[${params}]`)
+      const result = JSON.parse(`[${parameters}]`)
       return this.numbersToString(result)
     },
     async onSubmit(event) {
