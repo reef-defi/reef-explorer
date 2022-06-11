@@ -13,7 +13,7 @@
     "lint": "eslint --fix --ext .ts ./src/"
   },
   "dependencies": {
-    "@reef-defi/evm-provider": "^1.0.6",
+    "@reef-defi/evm-provider": "^1.0.7",
     "@sentry/integrations": "^6.17.9",
     "@sentry/node": "^6.17.9",
     "@sentry/tracing": "^6.17.9",
@@ -36,6 +36,7 @@
     "@types/node": "^16.11.6",
     "@types/pg": "^8.6.1",
     "@types/pg-format": "^1.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.27.1",
     "chai": "^4.3.4",
     "eslint": "^8.6.0",
     "eslint-config-airbnb-base": "^15.0.0",
