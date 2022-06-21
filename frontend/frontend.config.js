@@ -4,7 +4,7 @@ export const network = {
   tokenSymbol: 'REEF',
   tokenDecimals: 18,
   ss58Format: 42,
-  coinGeckoDenom: 'reef-finance',
+  coinGeckoDenom: 'reef',
   nodeWs: 'ws://localhost:9944',
   backendWs: 'ws://localhost:8080/v1/graphql',
   backendHttp: 'http://localhost:8080/v1/graphql',
