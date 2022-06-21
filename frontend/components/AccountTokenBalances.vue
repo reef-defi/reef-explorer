@@ -168,8 +168,10 @@ export default {
               useGrouping: false,
             }),
             token_name: balance.contract.verified_contract.contract_data.name,
-            token_symbol: balance.contract.verified_contract.contract_data.symbol, // TODO check
-            token_decimals: balance.contract.verified_contract.contract_data.decimals,
+            token_symbol:
+              balance.contract.verified_contract.contract_data.symbol, // TODO check
+            token_decimals:
+              balance.contract.verified_contract.contract_data.decimals,
           }))
           this.totalRows = this.balances.length
           this.loading = false
