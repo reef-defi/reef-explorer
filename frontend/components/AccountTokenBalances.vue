@@ -167,9 +167,11 @@ export default {
             balance: balance.balance.toLocaleString('fullwide', {
               useGrouping: false,
             }),
-            token_name: balance.contract.verified_contract.name,
-            token_symbol: balance.contract.verified_contract.symbol, // TODO check
-            token_decimals: balance.contract.verified_contract.decimals,
+            token_name: balance.contract.verified_contract.contract_data.name,
+            token_symbol:
+              balance.contract.verified_contract.contract_data.symbol, // TODO check
+            token_decimals:
+              balance.contract.verified_contract.contract_data.decimals,
           }))
           this.totalRows = this.balances.length
           this.loading = false
