@@ -122,6 +122,19 @@ export interface TokenBalanceParam {
   accountAddress: string;
   contractAddress: string;
 }
+
+export interface QueryVerifiedPoolsWithUserLPReq {
+  offset: number;
+  limit: number;
+  signer: string;
+}
+
+export interface ContractData {
+  name: string;
+  symbol: string;
+  decimals: number;
+}
+
 // interface DefaultToken {
 //   name: string;
 //   address: string;
