@@ -173,6 +173,7 @@ const verifiedPoolsWithUserLPSchema: JSONSchemaType<QueryVerifiedPoolsWithUserLP
     limit: { type: 'number' },
     offset: { type: 'number' },
     signer: { type: 'string' },
+    search: { type: 'string', nullable: true }
   },
   required: ['limit', 'offset', 'signer']
 }
