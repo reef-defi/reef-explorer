@@ -3,6 +3,7 @@ import { AppRequest, ContractData, QueryVerifiedPoolsWithUserLPReq } from '../ut
 import { query } from '../utils/connector';
 import { validateData, verifiedPoolsWithUserLPValidator } from './validators';
 
+/* eslint-disable no-tabs */
 const DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY = `
 SELECT 
 	p.address, 
