@@ -127,6 +127,7 @@ export interface QueryVerifiedPoolsWithUserLPReq {
   offset: number;
   limit: number;
   signer: string;
+  search?: string;
 }
 
 export interface ContractData {
