@@ -168,15 +168,15 @@ const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
 };
 
 const verifiedPoolsWithUserLPSchema: JSONSchemaType<QueryVerifiedPoolsWithUserLPReq> = {
-  type: "object",
+  type: 'object',
   properties: {
     limit: { type: 'number' },
     offset: { type: 'number' },
     signer: { type: 'string' },
-    search: { type: 'string', nullable: true }
+    search: { type: 'string', nullable: true },
   },
-  required: ['limit', 'offset', 'signer']
-}
+  required: ['limit', 'offset', 'signer'],
+};
 
 // available validators
 export const idValidator = ajv.compile(idSchema);
@@ -190,7 +190,7 @@ export const accountTokenBodyValidator = ajv.compile(accountTokenBalanceSchema);
 export const automaticVerificationValidator = ajv.compile(
   submitVerificationSchema,
 );
-export const verifiedPoolsWithUserLPValidator = ajv.compile(verifiedPoolsWithUserLPSchema)
+export const verifiedPoolsWithUserLPValidator = ajv.compile(verifiedPoolsWithUserLPSchema);
 
 export const validateData = <T>(data: T, fun: ValidateFunction<T>): void => {
   const isValid = fun(data);
