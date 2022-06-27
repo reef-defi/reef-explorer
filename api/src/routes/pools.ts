@@ -4,7 +4,7 @@ import { asyncHandler } from '../utils/utils';
 
 const router = Router();
 
-router.post('/user-pools', asyncHandler(queryVerifiedUserPools));
-router.post('/with-user-lp', asyncHandler(queryVerifiedPoolsWithUserLP));
+router.post('/list', asyncHandler(queryVerifiedPoolsWithUserLP));
+router.post('/users-list', asyncHandler(queryVerifiedUserPools));
 
 export default router;

@@ -3,41 +3,91 @@ import { AppRequest, ContractData, QueryVerifiedPoolsWithUserLPReq } from '../ut
 import { query } from '../utils/connector';
 import { validateData, verifiedPoolsWithUserLPValidator } from './validators';
 
+/* eslint-disable no-tabs */
 const DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY = `
-SELECT p.address, p.token_1, p.token_2, pe.reserved_1, pe.reserved_2, ulp.user_locked_amount_1, ulp.user_locked_amount_2, v1.contract_data as contract_data_1, v2.contract_data as contract_data_2
-FROM pool_event as pe,
-(
-SELECT pr.pool_id, MAX(pr.timestamp) as max_timestamp
-FROM pool_event as pr 
-WHERE pr.type = 'Sync'
-GROUP BY pr.pool_id
-) lt
-JOIN verified_pool as p ON (p.id = pool_id)
+SELECT 
+	p.address, 
+	p.token_1, 
+	p.token_2, 
+	dv.day_volume_1,
+	dv.day_volume_2,
+	dl.prev_day_volume_1, 
+	dl.prev_day_volume_2, 
+	ulp.user_locked_amount_1,
+	ulp.user_locked_amount_2,
+	pr.reserved_1,
+	pr.reserved_2,
+	v1.contract_data as contract_data_1, 
+	v2.contract_data as contract_data_2
+FROM verified_pool as p
+LEFT JOIN (
+	SELECT 
+		pool_id, 
+		SUM(amount_1) as day_volume_1,
+		SUM(amount_2) as day_volume_2
+	FROM (
+		SELECT DISTINCT ON (pool_id, timeframe)
+			* 
+		FROM pool_hour_volume
+		WHERE timeframe > NOW() - INTERVAL '1 DAY'
+	) day_volume
+	GROUP BY pool_id
+) as dv ON p.id = dv.pool_id
+LEFT JOIN (
+	SELECT 
+		pool_id, 
+		SUM(amount_1) as prev_day_volume_1,
+		SUM(amount_2) as prev_day_volume_2
+	FROM (
+		SELECT DISTINCT ON (pool_id, timeframe)
+			* 
+		FROM pool_hour_volume
+		WHERE
+			timeframe < NOW() - INTERVAL '1 DAY' AND 
+			timeframe > NOW() - INTERVAL '2 DAY'
+	) prev_day_volume
+	GROUP BY pool_id
+) as dl ON p.id = dl.pool_id
 {USER_JOIN} JOIN (
-SELECT pe.pool_id, SUM(pe.amount_1) as user_locked_amount_1, SUM(pe.amount_2) as user_locked_amount_2
-FROM pool_event as pe
-JOIN evm_event as ee ON pe.evm_event_id = ee.id
-JOIN event as e ON ee.event_id = e.id
-JOIN extrinsic as ex ON e.extrinsic_id = ex.id
-WHERE signer ILIKE $1 AND (pe.type = 'Mint' OR pe.type = 'Burn')
-GROUP BY pe.pool_id
+	SELECT 
+		pe.pool_id, 
+		SUM(pe.amount_1) as user_locked_amount_1, 
+		SUM(pe.amount_2) as user_locked_amount_2
+	FROM pool_event as pe
+	JOIN evm_event as ee ON pe.evm_event_id = ee.id
+	JOIN event as e ON ee.event_id = e.id
+	JOIN extrinsic as ex ON e.extrinsic_id = ex.id
+	WHERE 
+		signer ILIKE $1 AND 
+		(pe.type = 'Mint' OR pe.type = 'Burn')
+	GROUP BY pe.pool_id
 ) as ulp ON ulp.pool_id = p.id
+LEFT JOIN (
+	SELECT DISTINCT ON (pool_id)
+		pool_id,
+		reserved_1,
+		reserved_2
+	FROM pool_event
+	WHERE type = 'Sync'
+	ORDER BY pool_id asc, timestamp desc
+) as pr ON pr.pool_id = p.id
 JOIN verified_contract as v1 ON v1.address = p.token_1
 JOIN verified_contract as v2 ON v2.address = p.token_2
-WHERE pe.pool_id = lt.pool_id AND pe.timestamp = lt.max_timestamp AND pe.type = 'Sync' {SEARCH}
+{SEARCH}
 LIMIT $2
 OFFSET $3
 `;
 
-const ADDITIONAL_SEARCH = `AND (
-p.address ILIKE $4 OR 
-p.token_1 ILIKE $4 OR 
-p.token_2 ILIKE $4 OR 
-v1.contract_data->>'name' ILIKE $4 OR
-v2.contract_data->>'name' ILIKE $4 OR
-v1.contract_data->>'symbol' ILIKE $4 OR
-v2.contract_data->>'symbol' ILIKE $4
-)`;
+const ADDITIONAL_SEARCH = `WHERE (
+  p.address ILIKE $4 OR 
+  p.token_1 ILIKE $4 OR 
+  p.token_2 ILIKE $4 OR 
+  v1.contract_data->>'name' ILIKE $4 OR
+  v2.contract_data->>'name' ILIKE $4 OR
+  v1.contract_data->>'symbol' ILIKE $4 OR
+  v2.contract_data->>'symbol' ILIKE $4
+)
+`;
 
 const VERIFIED_POOLS_WITH_USER_LP_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
   .replace('{USER_JOIN}', 'LEFT')
