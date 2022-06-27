@@ -3,6 +3,7 @@ import { RewriteFrames } from '@sentry/integrations';
 import express, { Response, Request, NextFunction } from 'express';
 import morgan from 'morgan';
 import config from './utils/config';
+import poolsRouter from './routes/pools';
 import accountRouter from './routes/account';
 import contractRouter from './routes/contract';
 import verificationRouter from './routes/verification';
@@ -38,6 +39,7 @@ app.use(cors());
 app.use(morgan('dev'));
 
 app.use('/api', contractRouter);
+app.use('/api/pools', poolsRouter);
 app.use('/api/account', accountRouter);
 app.use('/api/verificator', verificationRouter);
 

@@ -48,6 +48,15 @@ array_relationships:
       remote_table:
         name: pool_day_volume
         schema: public
+- name: pool_event
+  using:
+    manual_configuration:
+      column_mapping:
+        id: pool_id
+      insertion_order: null
+      remote_table:
+        name: pool_event
+        schema: public
 select_permissions:
 - permission:
     allow_aggregations: true

@@ -4,6 +4,7 @@ import {
   compilerTargets,
   License,
   ManualContractVerificationReq,
+  QueryVerifiedPoolsWithUserLPReq,
   Target,
   TokenBalanceParam,
 } from '../utils/types';
@@ -166,6 +167,17 @@ const formVerificationSchema: JSONSchemaType<ManualContractVerificationReq> = {
   required: [...submitVerificationSchema.required, 'token'],
 };
 
+const verifiedPoolsWithUserLPSchema: JSONSchemaType<QueryVerifiedPoolsWithUserLPReq> = {
+  type: 'object',
+  properties: {
+    limit: { type: 'number' },
+    offset: { type: 'number' },
+    signer: { type: 'string' },
+    search: { type: 'string', nullable: true },
+  },
+  required: ['limit', 'offset', 'signer'],
+};
+
 // available validators
 export const idValidator = ajv.compile(idSchema);
 export const evmAddressValidator = ajv.compile(evmAddressSchema);
@@ -178,6 +190,7 @@ export const accountTokenBodyValidator = ajv.compile(accountTokenBalanceSchema);
 export const automaticVerificationValidator = ajv.compile(
   submitVerificationSchema,
 );
+export const verifiedPoolsWithUserLPValidator = ajv.compile(verifiedPoolsWithUserLPSchema);
 
 export const validateData = <T>(data: T, fun: ValidateFunction<T>): void => {
   const isValid = fun(data);
