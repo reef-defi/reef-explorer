@@ -22,23 +22,31 @@ SELECT
 FROM verified_pool as p
 LEFT JOIN (
 	SELECT 
-		pv.pool_id, 
-		SUM(pv.amount_1) as day_volume_1, 
-		SUM(pv.amount_2) as day_volume_2
-	FROM pool_hour_volume as pv
-	WHERE pv.timeframe > NOW() - INTERVAL '1 DAY'
-	GROUP BY pv.pool_id
+		pool_id, 
+		SUM(amount_1) as day_volume_1,
+		SUM(amount_2) as day_volume_2
+	FROM (
+		SELECT DISTINCT ON (pool_id, timeframe)
+			* 
+		FROM pool_hour_volume
+		WHERE timeframe > NOW() - INTERVAL '1 DAY'
+	) day_volume
+	GROUP BY pool_id
 ) as dv ON p.id = dv.pool_id
 LEFT JOIN (
 	SELECT 
-		pi.pool_id, 
-		SUM(pi.amount_1) as prev_day_volume_1, 
-		SUM(pi.amount_2) as prev_day_volume_2
-	FROM pool_hour_volume as pi
-	WHERE 
-		pi.timeframe < NOW() - INTERVAL '1 DAY' AND 
-		pi.timeframe > NOW() - INTERVAL '2 DAY'
-	GROUP BY pi.pool_id
+		pool_id, 
+		SUM(amount_1) as prev_day_volume_1,
+		SUM(amount_2) as prev_day_volume_2
+	FROM (
+		SELECT DISTINCT ON (pool_id, timeframe)
+			* 
+		FROM pool_hour_volume
+		WHERE
+			timeframe < NOW() - INTERVAL '1 DAY' AND 
+			timeframe > NOW() - INTERVAL '2 DAY'
+	) prev_day_volume
+	GROUP BY pool_id
 ) as dl ON p.id = dl.pool_id
 {USER_JOIN} JOIN (
 	SELECT 
