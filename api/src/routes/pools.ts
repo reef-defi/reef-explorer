@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import { queryVerifiedPoolsWithUserLP, countVerifiedPoolsWithUserLP, queryVerifiedUserPools, countVerifiedUserPools } from '../controllers/pools';
+import {
+  queryVerifiedPoolsWithUserLP, countVerifiedPoolsWithUserLP, queryVerifiedUserPools, countVerifiedUserPools,
+} from '../controllers/pools';
 import { asyncHandler } from '../utils/utils';
 
 const router = Router();

@@ -67,7 +67,7 @@ OFFSET $3
 
 const COUNT_ITEMS = `
   COUNT(*)
-`
+`;
 const SELECT_ITEMS = `
   p.address, 
   p.token_1, 
@@ -82,7 +82,7 @@ const SELECT_ITEMS = `
   pr.reserved_2,
   v1.contract_data as contract_data_1, 
   v2.contract_data as contract_data_2
-`
+`;
 
 const ADDITIONAL_SEARCH = `WHERE (
   p.address ILIKE $4 OR 
@@ -102,7 +102,7 @@ const VERIFIED_POOLS_WITH_USER_LP_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QU
 const VERIFIED_POOLS_WITH_USER_LP_WITH_SEARCH_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
   .replace('{USER_JOIN}', 'LEFT')
   .replace('{SELECT}', SELECT_ITEMS)
-  .replace('{SEARCH}', ADDITIONAL_SEARCH);  
+  .replace('{SEARCH}', ADDITIONAL_SEARCH);
 const USER_POOLS_ONLY_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
   .replace('{USER_JOIN}', 'INNER')
   .replace('{SELECT}', SELECT_ITEMS)
@@ -111,7 +111,7 @@ const USER_POOLS_ONLY_WITH_SEARCH_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QU
   .replace('{USER_JOIN}', 'INNER')
   .replace('{SELECT}', SELECT_ITEMS)
   .replace('{SEARCH}', ADDITIONAL_SEARCH);
-  
+
 const VERIFIED_POOLS_WITH_USER_LP_COUNT = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
   .replace('{USER_JOIN}', 'LEFT')
   .replace('{SELECT}', COUNT_ITEMS)
@@ -128,7 +128,6 @@ const USER_POOLS_ONLY_WITH_SEARCH_COUNT = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QU
   .replace('{USER_JOIN}', 'INNER')
   .replace('{SELECT}', COUNT_ITEMS)
   .replace('{SEARCH}', ADDITIONAL_SEARCH);
-
 
 interface VerifiedPoolsWithUserLPResult {
   address: string;
