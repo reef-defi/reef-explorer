@@ -19,7 +19,7 @@ array_relationships:
         id: pool_id
       insertion_order: null
       remote_table:
-        name: pool_day_candlestick
+        name: pool_hour_candlestick
         schema: public
 - name: fee
   using:
@@ -28,7 +28,7 @@ array_relationships:
         id: pool_id
       insertion_order: null
       remote_table:
-        name: pool_day_fee
+        name: pool_hour_fee
         schema: public
 - name: supply
   using:
@@ -37,7 +37,7 @@ array_relationships:
         id: pool_id
       insertion_order: null
       remote_table:
-        name: pool_day_supply
+        name: pool_hour_supply
         schema: public
 - name: volume
   using:
@@ -46,7 +46,7 @@ array_relationships:
         id: pool_id
       insertion_order: null
       remote_table:
-        name: pool_day_volume
+        name: pool_hour_volume
         schema: public
 - name: pool_event
   using:
