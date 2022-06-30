@@ -110,7 +110,7 @@ interface CountResult {
   count: number;
 }
 
-const poolQuery = async <T,>(req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, baseQuery: string): Promise<T[]> => {
+const poolQuery = async <T, >(req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, baseQuery: string): Promise<T[]> => {
   validateData(req.body, verifiedPoolsWithUserLPValidator);
   const args = [
     req.body.signer,
@@ -127,44 +127,43 @@ const poolQuery = async <T,>(req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, b
       args,
     );
   return result;
-}
-
+};
 
 export const queryVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
   const result = await poolQuery<VerifiedPoolsWithUserLPResult>(
-    req, 
+    req,
     DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
       .replace('{USER_JOIN}', 'LEFT')
-      .replace('{SELECT}', SELECT_ITEMS)
+      .replace('{SELECT}', SELECT_ITEMS),
   );
   res.send(result);
 };
 export const countVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
   const result = await poolQuery<CountResult>(
-    req, 
+    req,
     DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
       .replace('{USER_JOIN}', 'LEFT')
-      .replace('{SELECT}', COUNT_ITEMS)
+      .replace('{SELECT}', COUNT_ITEMS),
   );
   res.send(result[0].count);
 };
 
 export const queryVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
   const result = await poolQuery<VerifiedPoolsWithUserLPResult>(
-    req, 
+    req,
     DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
       .replace('{USER_JOIN}', 'INNER')
-      .replace('{SELECT}', SELECT_ITEMS)
+      .replace('{SELECT}', SELECT_ITEMS),
   );
   res.send(result);
 };
 
 export const countVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
   const result = await poolQuery<CountResult>(
-    req, 
+    req,
     DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
       .replace('{USER_JOIN}', 'INNER')
-      .replace('{SELECT}', COUNT_ITEMS)
+      .replace('{SELECT}', COUNT_ITEMS),
   );
   res.send(result[0].count);
 };
