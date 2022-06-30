@@ -155,7 +155,7 @@ export const queryVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerified
   const result = req.body.search
     ? await query<VerifiedPoolsWithUserLPResult>(
       VERIFIED_POOLS_WITH_USER_LP_WITH_SEARCH_QUERY,
-      [...args, req.body.search],
+      [...args, `${req.body.search}%`],
     )
     : await query<VerifiedPoolsWithUserLPResult>(
       VERIFIED_POOLS_WITH_USER_LP_QUERY,
@@ -173,7 +173,7 @@ export const countVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerified
   const result = req.body.search
     ? await query<CountResult>(
       VERIFIED_POOLS_WITH_USER_LP_WITH_SEARCH_COUNT,
-      [...args, req.body.search],
+      [...args, `${req.body.search}%`],
     )
     : await query<CountResult>(
       VERIFIED_POOLS_WITH_USER_LP_COUNT,
@@ -190,7 +190,7 @@ export const queryVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsW
     req.body.offset,
   ];
   const result = req.body.search
-    ? await query<VerifiedPoolsWithUserLPResult>(USER_POOLS_ONLY_WITH_SEARCH_QUERY, [...args, req.body.search])
+    ? await query<VerifiedPoolsWithUserLPResult>(USER_POOLS_ONLY_WITH_SEARCH_QUERY, [...args, `${req.body.search}%`])
     : await query<VerifiedPoolsWithUserLPResult>(USER_POOLS_ONLY_QUERY, args);
   res.send(result);
 };
@@ -203,7 +203,7 @@ export const countVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsW
     req.body.offset,
   ];
   const result = req.body.search
-    ? await query<CountResult>(USER_POOLS_ONLY_WITH_SEARCH_COUNT, [...args, req.body.search])
+    ? await query<CountResult>(USER_POOLS_ONLY_WITH_SEARCH_COUNT, [...args, `${req.body.search}%`])
     : await query<CountResult>(USER_POOLS_ONLY_COUNT, args);
   res.send(result[0].count);
 };
