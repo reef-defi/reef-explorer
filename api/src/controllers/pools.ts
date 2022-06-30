@@ -6,7 +6,7 @@ import { validateData, verifiedPoolsWithUserLPValidator } from './validators';
 /* eslint-disable no-tabs */
 const DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY = `
 SELECT {SELECT}
-FROM pool as p
+FROM verified_pool as p
 LEFT JOIN (
 	SELECT 
 		pool_id, 
@@ -58,8 +58,8 @@ LEFT JOIN (
 	WHERE type = 'Sync'
 	ORDER BY pool_id asc, timestamp desc
 ) as pr ON pr.pool_id = p.id
-LEFT JOIN verified_contract as v1 ON v1.address = p.token_1
-LEFT JOIN verified_contract as v2 ON v2.address = p.token_2
+JOIN verified_contract as v1 ON v1.address = p.token_1
+JOIN verified_contract as v2 ON v2.address = p.token_2
 {SEARCH}
 LIMIT $2
 OFFSET $3
@@ -163,7 +163,7 @@ export const queryVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerified
     );
   res.send(result);
 };
-export const queryVerifiedPoolsWithUserLPCount = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
+export const countVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
   validateData(req.body, verifiedPoolsWithUserLPValidator);
   const args = [
     req.body.signer,
@@ -195,7 +195,7 @@ export const queryVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsW
   res.send(result);
 };
 
-export const queryVerifiedUserPoolsCount = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
+export const countVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
   validateData(req.body, verifiedPoolsWithUserLPValidator);
   const args = [
     req.body.signer,
