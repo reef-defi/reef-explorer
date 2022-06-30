@@ -95,40 +95,6 @@ const ADDITIONAL_SEARCH = `WHERE (
 )
 `;
 
-const VERIFIED_POOLS_WITH_USER_LP_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'LEFT')
-  .replace('{SELECT}', SELECT_ITEMS)
-  .replace('{SEARCH}', '');
-const VERIFIED_POOLS_WITH_USER_LP_WITH_SEARCH_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'LEFT')
-  .replace('{SELECT}', SELECT_ITEMS)
-  .replace('{SEARCH}', ADDITIONAL_SEARCH);
-const USER_POOLS_ONLY_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'INNER')
-  .replace('{SELECT}', SELECT_ITEMS)
-  .replace('{SEARCH}', '');
-const USER_POOLS_ONLY_WITH_SEARCH_QUERY = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'INNER')
-  .replace('{SELECT}', SELECT_ITEMS)
-  .replace('{SEARCH}', ADDITIONAL_SEARCH);
-
-const VERIFIED_POOLS_WITH_USER_LP_COUNT = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'LEFT')
-  .replace('{SELECT}', COUNT_ITEMS)
-  .replace('{SEARCH}', '');
-const VERIFIED_POOLS_WITH_USER_LP_WITH_SEARCH_COUNT = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'LEFT')
-  .replace('{SELECT}', COUNT_ITEMS)
-  .replace('{SEARCH}', ADDITIONAL_SEARCH);
-const USER_POOLS_ONLY_COUNT = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'INNER')
-  .replace('{SELECT}', COUNT_ITEMS)
-  .replace('{SEARCH}', '');
-const USER_POOLS_ONLY_WITH_SEARCH_COUNT = DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
-  .replace('{USER_JOIN}', 'INNER')
-  .replace('{SELECT}', COUNT_ITEMS)
-  .replace('{SEARCH}', ADDITIONAL_SEARCH);
-
 interface VerifiedPoolsWithUserLPResult {
   address: string;
   token_1: string;
@@ -144,7 +110,7 @@ interface CountResult {
   count: number;
 }
 
-export const queryVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
+const poolQuery = async <T, >(req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, baseQuery: string): Promise<T[]> => {
   validateData(req.body, verifiedPoolsWithUserLPValidator);
   const args = [
     req.body.signer,
@@ -152,57 +118,52 @@ export const queryVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerified
     req.body.offset,
   ];
   const result = req.body.search
-    ? await query<VerifiedPoolsWithUserLPResult>(
-      VERIFIED_POOLS_WITH_USER_LP_WITH_SEARCH_QUERY,
+    ? await query<T>(
+      baseQuery.replace('{SEARCH}', ADDITIONAL_SEARCH),
       [...args, `${req.body.search}%`],
     )
-    : await query<VerifiedPoolsWithUserLPResult>(
-      VERIFIED_POOLS_WITH_USER_LP_QUERY,
+    : await query<T>(
+      baseQuery.replace('{SEARCH}', ''),
       args,
     );
+  return result;
+};
+
+export const queryVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
+  const result = await poolQuery<VerifiedPoolsWithUserLPResult>(
+    req,
+    DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
+      .replace('{USER_JOIN}', 'LEFT')
+      .replace('{SELECT}', SELECT_ITEMS),
+  );
   res.send(result);
 };
 export const countVerifiedPoolsWithUserLP = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
-  validateData(req.body, verifiedPoolsWithUserLPValidator);
-  const args = [
-    req.body.signer,
-    req.body.limit,
-    req.body.offset,
-  ];
-  const result = req.body.search
-    ? await query<CountResult>(
-      VERIFIED_POOLS_WITH_USER_LP_WITH_SEARCH_COUNT,
-      [...args, `${req.body.search}%`],
-    )
-    : await query<CountResult>(
-      VERIFIED_POOLS_WITH_USER_LP_COUNT,
-      args,
-    );
+  const result = await poolQuery<CountResult>(
+    req,
+    DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
+      .replace('{USER_JOIN}', 'LEFT')
+      .replace('{SELECT}', COUNT_ITEMS),
+  );
   res.send(result[0].count);
 };
 
 export const queryVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
-  validateData(req.body, verifiedPoolsWithUserLPValidator);
-  const args = [
-    req.body.signer,
-    req.body.limit,
-    req.body.offset,
-  ];
-  const result = req.body.search
-    ? await query<VerifiedPoolsWithUserLPResult>(USER_POOLS_ONLY_WITH_SEARCH_QUERY, [...args, `${req.body.search}%`])
-    : await query<VerifiedPoolsWithUserLPResult>(USER_POOLS_ONLY_QUERY, args);
+  const result = await poolQuery<VerifiedPoolsWithUserLPResult>(
+    req,
+    DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
+      .replace('{USER_JOIN}', 'INNER')
+      .replace('{SELECT}', SELECT_ITEMS),
+  );
   res.send(result);
 };
 
 export const countVerifiedUserPools = async (req: AppRequest<QueryVerifiedPoolsWithUserLPReq>, res: Response) => {
-  validateData(req.body, verifiedPoolsWithUserLPValidator);
-  const args = [
-    req.body.signer,
-    req.body.limit,
-    req.body.offset,
-  ];
-  const result = req.body.search
-    ? await query<CountResult>(USER_POOLS_ONLY_WITH_SEARCH_COUNT, [...args, `${req.body.search}%`])
-    : await query<CountResult>(USER_POOLS_ONLY_COUNT, args);
+  const result = await poolQuery<CountResult>(
+    req,
+    DEFAULT_VERIFIED_POOLS_WITH_USER_LP_QUERY
+      .replace('{USER_JOIN}', 'INNER')
+      .replace('{SELECT}', COUNT_ITEMS),
+  );
   res.send(result[0].count);
 };
