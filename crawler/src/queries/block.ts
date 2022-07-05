@@ -52,8 +52,15 @@ INSERT INTO block
     hash = EXCLUDED.hash;
 `, data.map(blockValuesStatement));
 
-export const updateBlockFinalized = async (fromID: number, toID: number) => query(
+export const insertBlock = async (
+  data: InsertInitialBlock
+): Promise<void> => insertMultipleBlocks([data]);
+
+export const updateBlocksFinalized = async (fromID: number, toID: number) => query(
   `UPDATE block SET finalized = true WHERE id >= ${fromID} AND id < ${toID};`,
+);
+export const updateBlockFinalized = async (id: number) => query(
+  `UPDATE block SET finalized = true WHERE id = ${id};`,
 );
 
 export const deleteUnfinishedBlocks = async () => query('DELETE FROM block WHERE finalized = false;');
