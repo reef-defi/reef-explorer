@@ -5,12 +5,47 @@ import { ProcessModule } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 import EndowedEvent from "./EndowedEvent";
 import KillAccountEvent from "./KillAccountEvent";
-import NativeTransferEvent from "./NativeTransferEvent";
+import NativeTransferEvent from "./transfer/NativeTransferEvent";
 import ReservedEvent from "./ReservedEvent";
 import StakingEvent from "./StakingEvent";
+import EvmLogEvent from "./EvmLogEvent";
+import { getContractDB } from "../../../queries/evmEvent";
+import { toChecksumAddress } from "../../../utils/utils";
+import { utils } from "ethers";
+import Erc20TransferEvent from "./transfer/Erc20TransferEvent";
+import Erc721TransferEvent from "./transfer/Erc721TransferEvent";
+import Erc1155SingleTransferEvent from "./transfer/Erc1155SingleTransferEvent";
+import Erc1155BatchTransferEvent from "./transfer/Erc1155BatchTransferEvent";
+import UnverifiedEvmLog from "./UnverifiedEvmLog";
 
 
-const selectEvent = (id: number, head: EventHead): ProcessModule => {
+const selectEvmLogEvent = async (id: number, head: EventHead): Promise<ProcessModule> => {
+  const eventData = (head.event.event.data.toJSON() as any);
+  const contract = await getContractDB(toChecksumAddress(eventData[0].address));
+
+  if (contract.length === 0)
+    return new UnverifiedEvmLog(id, head);
+  
+  const {type, compiled_data, name} = contract[0]
+  const abi = new utils.Interface(compiled_data[name]);
+  const decodedEvent = abi.parseLog({ 
+    topics: head.event.topics.map((t) => t.toString()), 
+    data: head.event.event.data.toString()
+  });
+
+  if (decodedEvent.name === 'Transfer' && type === 'ERC20')
+    return new Erc20TransferEvent(id, head, contract[0]);
+  if (decodedEvent.name === 'Transfer' && type === 'ERC721')
+    return new Erc721TransferEvent(id, head, contract[0]);
+  if (decodedEvent.name === 'TransferSingle' && type === 'ERC1155')
+    return new Erc1155SingleTransferEvent(id, head, contract[0]);
+  if (decodedEvent.name === 'TransferBatch' && type === 'ERC1155')
+    return new Erc1155BatchTransferEvent(id, head, contract[0]);
+    
+  return new EvmLogEvent(id, head, contract[0]);
+}
+
+const selectEvent = async (id: number, head: EventHead): Promise<ProcessModule> => {
   const event = head.event.event;
   const {events} = nodeProvider.getProvider().api;
 
@@ -25,6 +60,9 @@ const selectEvent = (id: number, head: EventHead): ProcessModule => {
   if (events.balances.Endowed.is(event))
     return new EndowedEvent(id, head);
 
+  if (head.event.event.method === 'Log' && head.event.event.section === 'evm')
+    return selectEvmLogEvent(id, head);
+
   return new DefaultEvent(id, head);
 }
 
@@ -36,7 +74,7 @@ const resolveEvent = async (
   accountManager: AccountManager
 ): Promise<ProcessModule> => {
   const id = await nextEventId();
-  const event = selectEvent(id, head);
+  const event = await selectEvent(id, head);
 
   // TODO Maybe call process outside this function
   await event.process(accountManager);

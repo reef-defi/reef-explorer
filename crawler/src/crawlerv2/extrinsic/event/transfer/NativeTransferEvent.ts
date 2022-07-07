@@ -1,10 +1,10 @@
 import { BigNumber } from "ethers";
-import { insertTransfers } from "../../../queries/extrinsic";
-import { nodeProvider } from "../../../utils/connector";
-import logger from "../../../utils/logger";
-import { REEF_CONTRACT_ADDRESS } from "../../../utils/utils";
-import AccountManager from "../../managers/AccountManager";
-import DefaultEvent from "./DefaultEvent";
+import { insertTransfers } from "../../../../queries/extrinsic";
+import { nodeProvider } from "../../../../utils/connector";
+import logger from "../../../../utils/logger";
+import { REEF_CONTRACT_ADDRESS } from "../../../../utils/utils";
+import AccountManager from "../../../managers/AccountManager";
+import DefaultEvent from "../DefaultEvent";
 
 class NativeTransferEvent extends DefaultEvent {
   to: string = "";
