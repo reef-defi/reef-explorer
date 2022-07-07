@@ -37,6 +37,8 @@ const resolveEvent = async (
 ): Promise<ProcessModule> => {
   const id = await nextEventId();
   const event = selectEvent(id, head);
+
+  // TODO Maybe call process outside this function
   await event.process(accountManager);
   return event;
 };

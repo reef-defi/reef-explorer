@@ -1,20 +1,18 @@
 import { BigNumber } from "ethers";
-import { TokenHolder } from "../../../crawler/types";
 import { insertTransfers } from "../../../queries/extrinsic";
 import { nodeProvider } from "../../../utils/connector";
 import logger from "../../../utils/logger";
 import { REEF_CONTRACT_ADDRESS } from "../../../utils/utils";
 import AccountManager from "../../managers/AccountManager";
-import TokenHolderEvent from "./TokenHolderEvent";
+import DefaultEvent from "./DefaultEvent";
 
-class NativeTransferEvent extends TokenHolderEvent {
+class NativeTransferEvent extends DefaultEvent {
   to: string = "";
   from: string = "";
   toEvm: string = "";
   fromEvm: string = "";
   fee: string = "";
   amount: string = "";
-  tokenHolders: TokenHolder[] = [];
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
@@ -34,13 +32,13 @@ class NativeTransferEvent extends TokenHolderEvent {
     this.toEvm = toEvmAddress.toString();
     this.fromEvm = fromEvmAddress.toString();
 
-    this.useNativeAccount(this.to, accountsManager);
-    this.useNativeAccount(this.from, accountsManager);
+    await accountsManager.use(this.to);
+    await accountsManager.use(this.from);
   }
 
   async save(): Promise<void> {
     await super.save();
-    
+
     logger.info('Inserting transfer')
     await insertTransfers([{
       denom: 'REEF',

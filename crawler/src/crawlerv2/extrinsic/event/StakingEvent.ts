@@ -1,9 +1,10 @@
 import { insertV2, nodeProvider } from "../../../utils/connector";
 import logger from "../../../utils/logger";
 import AccountManager from "../../managers/AccountManager";
+import DefaultEvent from "./DefaultEvent";
 import TokenHolderEvent from "./TokenHolderEvent";
 
-class StakingEvent extends TokenHolderEvent {
+class StakingEvent extends DefaultEvent {
   signer: string = "";
   amount: string = "0";
 
@@ -14,7 +15,7 @@ class StakingEvent extends TokenHolderEvent {
     this.amount = this.head.event.event.data[1].toString();
 
     // Marking controller account
-    this.useNativeAccount(this.signer, accountsManager);
+    await accountsManager.use(this.signer);
 
     // Retrieving block hash to extract correct reward destination mapping
     const blockHash = await nodeProvider.query(
@@ -31,7 +32,7 @@ class StakingEvent extends TokenHolderEvent {
       this.signer = rewardDestination.asAccount.toString();
 
       // Marking destination account
-      this.useNativeAccount(this.signer, accountsManager);
+      await accountsManager.use(this.signer);
     }
   }
 

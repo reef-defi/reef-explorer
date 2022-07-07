@@ -5,6 +5,7 @@ import DefaultEvent from "./DefaultEvent"
 import insertTokenHolders from "./../../../queries/tokenHoldes";
 import logger from "../../../utils/logger";
 
+// TODO probably not needed
 class TokenHolderEvent extends DefaultEvent {
   tokenHolders: TokenHolder[] = [];
 
