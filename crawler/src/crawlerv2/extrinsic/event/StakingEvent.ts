@@ -1,10 +1,9 @@
 import { insertV2, nodeProvider } from "../../../utils/connector";
 import logger from "../../../utils/logger";
 import AccountManager from "../../managers/AccountManager";
-import { ProcessModule } from "../../types";
-import DefaultEvent from "./DefaultEvent";
+import TokenHolderEvent from "./TokenHolderEvent";
 
-class StakingEvent extends DefaultEvent implements ProcessModule {
+class StakingEvent extends TokenHolderEvent {
   signer: string = "";
   amount: string = "0";
 
@@ -15,7 +14,7 @@ class StakingEvent extends DefaultEvent implements ProcessModule {
     this.amount = this.head.event.event.data[1].toString();
 
     // Marking controller account
-    await accountsManager.use(this.signer);
+    this.useNativeAccount(this.signer, accountsManager);
 
     // Retrieving block hash to extract correct reward destination mapping
     const blockHash = await nodeProvider.query(
@@ -32,7 +31,7 @@ class StakingEvent extends DefaultEvent implements ProcessModule {
       this.signer = rewardDestination.asAccount.toString();
 
       // Marking destination account
-      await accountsManager.use(this.signer)
+      this.useNativeAccount(this.signer, accountsManager);
     }
   }
 
@@ -41,6 +40,7 @@ class StakingEvent extends DefaultEvent implements ProcessModule {
     await super.save();
 
     // Saving processed staking
+    logger.info('Inserting staking event');
     await insertV2(
       `INSERT INTO staking
         (event_id, signer, amount, type, timestamp)

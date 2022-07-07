@@ -1,18 +1,20 @@
-import { nodeProvider } from "../../../utils/connector";
-import AccountManager from "../../managers/AccountManager";
-import { ProcessModule } from "../../types";
-import DefaultEvent from "./DefaultEvent";
 import { BigNumber } from "ethers";
+import { TokenHolder } from "../../../crawler/types";
 import { insertTransfers } from "../../../queries/extrinsic";
+import { nodeProvider } from "../../../utils/connector";
+import logger from "../../../utils/logger";
 import { REEF_CONTRACT_ADDRESS } from "../../../utils/utils";
+import AccountManager from "../../managers/AccountManager";
+import TokenHolderEvent from "./TokenHolderEvent";
 
-class NativeTransferEvent extends DefaultEvent implements ProcessModule {
+class NativeTransferEvent extends TokenHolderEvent {
   to: string = "";
   from: string = "";
   toEvm: string = "";
   fromEvm: string = "";
   fee: string = "";
   amount: string = "";
+  tokenHolders: TokenHolder[] = [];
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
@@ -31,10 +33,15 @@ class NativeTransferEvent extends DefaultEvent implements ProcessModule {
     this.from = fromAddress.toString();
     this.toEvm = toEvmAddress.toString();
     this.fromEvm = fromEvmAddress.toString();
+
+    this.useNativeAccount(this.to, accountsManager);
+    this.useNativeAccount(this.from, accountsManager);
   }
 
   async save(): Promise<void> {
     await super.save();
+    
+    logger.info('Inserting transfer')
     await insertTransfers([{
       denom: 'REEF',
       type: 'Native',
@@ -51,7 +58,6 @@ class NativeTransferEvent extends DefaultEvent implements ProcessModule {
       success: this.head.status.type === 'success',
       errorMessage: this.head.status.type === 'error' ? this.head.status.message : '',
     }]);
-    
   }
 }
 
