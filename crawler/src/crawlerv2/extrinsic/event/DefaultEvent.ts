@@ -1,5 +1,6 @@
 import { EventHead } from "../../../crawler/types";
 import { insertEvent } from "../../../queries/event";
+import AccountManager from "../../AccountManager";
 import { ProcessModule } from "../../types";
 
 class DefaultEvent implements ProcessModule {
@@ -9,7 +10,7 @@ class DefaultEvent implements ProcessModule {
     this.id = id;
     this.head = head;
   }
-  async process(): Promise<void> { }
+  async process(accountsManager: AccountManager): Promise<void> { }
   async save(): Promise<void> {
     await insertEvent({
       id: this.id,
