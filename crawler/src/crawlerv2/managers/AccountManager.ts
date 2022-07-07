@@ -1,7 +1,9 @@
-import { AccountBody } from "../../crawler/types";
+import { AccountBody, TokenHolder } from "../../crawler/types";
 import { insertAccounts } from "../../queries/event";
 import { nodeProvider } from "../../utils/connector";
-import { toChecksumAddress } from "../../utils/utils";
+import logger from "../../utils/logger";
+import { REEF_CONTRACT_ADDRESS, REEF_DEFAULT_DATA, toChecksumAddress } from "../../utils/utils";
+import insertTokenHolders from './../../queries/tokenHoldes';
 
 // Account manager stores used accounts and allows to trigger account save
 class AccountManager {
@@ -24,11 +26,27 @@ class AccountManager {
   }
 
   async save(): Promise<void> {
-    const usedAccounts = Object.keys(this.accounts);
+    const usedAccounts = Object.keys(this.accounts)
+      .map((address) => this.accounts[address]);
     // Saving used accounts
-    await insertAccounts(
-      usedAccounts.map((address) => this.accounts[address])
-    );
+    logger.info('Updating used accounts');
+    await insertAccounts(usedAccounts);
+
+    const tokenHolders: TokenHolder[] = usedAccounts
+      .map((account) => ({
+        timestamp: account.timestamp,
+        signerAddress: account.address,
+        tokenAddress: REEF_CONTRACT_ADDRESS,
+        info: { ...REEF_DEFAULT_DATA },
+        balance: account.freeBalance,
+        type: 'Account',
+        evmAddress: '',
+        nftId: null,
+      })) 
+
+    // Updating account native token holder
+    logger.info('Updating native token holders for used accounts');
+    await insertTokenHolders(tokenHolders);
   }
 
   private async accountInfo (address: string, active: boolean): Promise<AccountBody> {
