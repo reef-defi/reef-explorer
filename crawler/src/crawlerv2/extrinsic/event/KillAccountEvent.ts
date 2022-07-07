@@ -1,4 +1,4 @@
-import AccountManager from "../../AccountManager";
+import AccountManager from "../../managers/AccountManager";
 import { ProcessModule } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 

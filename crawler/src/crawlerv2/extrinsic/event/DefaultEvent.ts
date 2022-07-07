@@ -1,6 +1,6 @@
 import { EventHead } from "../../../crawler/types";
 import { insertEvent } from "../../../queries/event";
-import AccountManager from "../../AccountManager";
+import AccountManager from "../../managers/AccountManager";
 import { ProcessModule } from "../../types";
 
 class DefaultEvent implements ProcessModule {

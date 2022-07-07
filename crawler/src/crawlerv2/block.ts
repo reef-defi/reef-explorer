@@ -3,7 +3,7 @@ import { Block, BlockHash, Event, EventHead } from "../crawler/types";
 import { insertBlock, insertMultipleBlocks, updateBlockFinalized, updateBlocksFinalized } from "../queries/block";
 import { nodeProvider } from "../utils/connector";
 import logger from "../utils/logger";
-import AccountManager from "./AccountManager";
+import AccountManager from "./managers/AccountManager";
 import resolveExtrinsic from "./extrinsic";
 
 type EventMap = {[extrinsicId: number]: Event[]};

@@ -1,7 +1,7 @@
-import { AccountBody } from "../crawler/types";
-import { insertAccounts } from "../queries/event";
-import { nodeProvider } from "../utils/connector";
-import { toChecksumAddress } from "../utils/utils";
+import { AccountBody } from "../../crawler/types";
+import { insertAccounts } from "../../queries/event";
+import { nodeProvider } from "../../utils/connector";
+import { toChecksumAddress } from "../../utils/utils";
 
 // Account manager stores used accounts and allows to trigger account save
 class AccountManager {

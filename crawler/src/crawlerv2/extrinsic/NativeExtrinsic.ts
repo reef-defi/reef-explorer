@@ -2,7 +2,7 @@ import { ExtrinsicHead, SignedExtrinsicData } from "../../crawler/types";
 import { insertExtrinsic } from "../../queries/extrinsic";
 import { nodeProvider } from "../../utils/connector";
 import logger from "../../utils/logger";
-import AccountManager from "../AccountManager";
+import AccountManager from "../managers/AccountManager";
 import resolveEvent from "./event";
 import { ProcessModule } from "../types";
 

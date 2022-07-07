@@ -1,5 +1,5 @@
 import { ExtrinsicHead } from "../../crawler/types";
-import AccountManager from "../AccountManager";
+import AccountManager from "../managers/AccountManager";
 import { ProcessModule } from "../types";
 import EvmAccountsExtrinsic from "./EvmAccountsExtrinsic";
 import EvmExtrinsic from "./EvmExtrinsic";
