@@ -11,6 +11,7 @@ class DefaultEvent implements ProcessModule {
     this.head = head;
   }
   async process(accountsManager: AccountManager): Promise<void> { }
+
   async save(): Promise<void> {
     await insertEvent({
       id: this.id,
@@ -19,6 +20,7 @@ class DefaultEvent implements ProcessModule {
       status: this.head.status,
       blockId: this.head.blockId,
       timestamp: this.head.timestamp,
+      signedData: this.head.signedData,
       extrinsicId: this.head.extrinsicId,
       extrinsicIndex: this.head.extrinsicIndex,
     })

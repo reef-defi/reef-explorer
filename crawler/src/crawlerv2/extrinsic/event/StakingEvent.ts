@@ -14,6 +14,9 @@ class StakingEvent extends DefaultEvent implements ProcessModule {
     this.signer = this.head.event.event.data[0].toString();
     this.amount = this.head.event.event.data[1].toString();
 
+    // Marking controller account
+    await accountsManager.use(this.signer);
+
     // Retrieving block hash to extract correct reward destination mapping
     const blockHash = await nodeProvider.query(
       (provider) => provider.api.rpc.chain.getBlockHash(this.head.blockId),
@@ -27,13 +30,16 @@ class StakingEvent extends DefaultEvent implements ProcessModule {
     if (rewardDestination.isAccount) {
       logger.info(`Redirecting staking rewards from: ${this.signer} to: ${rewardDestination.asAccount.toString()}`);
       this.signer = rewardDestination.asAccount.toString();
+
+      // Marking destination account
+      await accountsManager.use(this.signer)
     }
   }
 
   async save(): Promise<void> {
     // Saving default event
     await super.save();
-    
+
     // Saving processed staking
     await insertV2(
       `INSERT INTO staking
