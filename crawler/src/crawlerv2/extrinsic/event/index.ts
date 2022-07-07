@@ -21,11 +21,15 @@ import UnverifiedEvmLog from "./UnverifiedEvmLog";
 
 const selectEvmLogEvent = async (id: number, head: EventHead): Promise<ProcessModule> => {
   const eventData = (head.event.event.data.toJSON() as any);
+  // Retrieving contract data from db
   const contract = await getContractDB(toChecksumAddress(eventData[0].address));
 
+  // If contract does not exist we can not verified evm log content
+  // therefore log is marked as unverified
   if (contract.length === 0)
     return new UnverifiedEvmLog(id, head);
   
+  // Decoding contract event
   const {type, compiled_data, name} = contract[0]
   const abi = new utils.Interface(compiled_data[name]);
   const decodedEvent = abi.parseLog({ 
@@ -33,6 +37,7 @@ const selectEvmLogEvent = async (id: number, head: EventHead): Promise<ProcessMo
     data: head.event.event.data.toString()
   });
 
+  // Trapping contracts of type Erc and where event name is Transfer like
   if (decodedEvent.name === 'Transfer' && type === 'ERC20')
     return new Erc20TransferEvent(id, head, contract[0]);
   if (decodedEvent.name === 'Transfer' && type === 'ERC721')
@@ -41,7 +46,7 @@ const selectEvmLogEvent = async (id: number, head: EventHead): Promise<ProcessMo
     return new Erc1155SingleTransferEvent(id, head, contract[0]);
   if (decodedEvent.name === 'TransferBatch' && type === 'ERC1155')
     return new Erc1155BatchTransferEvent(id, head, contract[0]);
-    
+  
   return new EvmLogEvent(id, head, contract[0]);
 }
 
@@ -49,6 +54,7 @@ const selectEvent = async (id: number, head: EventHead): Promise<ProcessModule> 
   const event = head.event.event;
   const {events} = nodeProvider.getProvider().api;
 
+  // Resolving native events
   if (events.staking.Rewarded.is(event)) 
     return new StakingEvent(id, head);
   if (events.system.KilledAccount.is(event)) 
@@ -60,6 +66,7 @@ const selectEvent = async (id: number, head: EventHead): Promise<ProcessModule> 
   if (events.balances.Endowed.is(event))
     return new EndowedEvent(id, head);
 
+  // Resolving evm events
   if (head.event.event.method === 'Log' && head.event.event.section === 'evm')
     return selectEvmLogEvent(id, head);
 
