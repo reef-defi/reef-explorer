@@ -6,20 +6,6 @@ import AccountManager from "../managers/AccountManager";
 import resolveEvent from "./event";
 import { ProcessModule } from "../types";
 
-const getSignedExtrinsicData = async (
-  extrinsicHash: string,
-): Promise<SignedExtrinsicData> => {
-  const [fee, feeDetails] = await Promise.all([
-    nodeProvider.query((provider) => provider.api.rpc.payment.queryInfo(extrinsicHash)),
-    nodeProvider.query((provider) => provider.api.rpc.payment.queryFeeDetails(extrinsicHash)),
-  ]);
-
-  return {
-    fee: fee.toJSON(),
-    feeDetails: feeDetails.toJSON(),
-  };
-};
-
 
 class NativeExtrinsic implements ProcessModule {
   id: number;
@@ -34,7 +20,7 @@ class NativeExtrinsic implements ProcessModule {
   async process(accountsManager: AccountManager): Promise<void> {
     // Extracting signed data
     this.signedData = this.head.extrinsic.isSigned
-      ? await getSignedExtrinsicData(this.head.extrinsic.toHex())
+      ? await this.getSignedData(this.head.extrinsic.toHex())
       : undefined;
 
     for (let index = 0; index < this.head.events.length; index += 1) {
@@ -73,6 +59,18 @@ class NativeExtrinsic implements ProcessModule {
     for (let event of this.events) {
       await event.save();
     }
+  }
+
+  private async getSignedData(hash: string): Promise<SignedExtrinsicData> {
+    const [fee, feeDetails] = await Promise.all([
+      nodeProvider.query((provider) => provider.api.rpc.payment.queryInfo(hash)),
+      nodeProvider.query((provider) => provider.api.rpc.payment.queryFeeDetails(hash)),
+    ]);
+  
+    return {
+      fee: fee.toJSON(),
+      feeDetails: feeDetails.toJSON(),
+    };
   }
 }
 
