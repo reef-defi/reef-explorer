@@ -121,4 +121,6 @@ const processBlock = async (blockId: number): Promise<void> => {
   // Updating block finalization
   logger.info(`Finalizing block ${blockId}`)
   await updateBlockFinalized(blockId);
-}
+};
+
+export default processBlock;

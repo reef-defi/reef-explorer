@@ -4,10 +4,10 @@ import { nodeProvider } from "../../utils/connector";
 import logger from "../../utils/logger";
 import { toChecksumAddress } from "../../utils/utils";
 import AccountManager from "../managers/AccountManager";
-import NativeExtrinsic from "./NativeExtrinsic";
+import Extrinsic from "./NativeExtrinsic";
 import {Contract} from "./../../crawler/types"
 
-class CreateContractExtrinsic extends NativeExtrinsic {
+class CreateContractExtrinsic extends Extrinsic {
   contract: Contract | undefined;
 
   private findContractEvent(events: Event[]): Event | undefined {

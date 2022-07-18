@@ -17,6 +17,7 @@ import Erc721TransferEvent from "./transfer/Erc721TransferEvent";
 import Erc1155SingleTransferEvent from "./transfer/Erc1155SingleTransferEvent";
 import Erc1155BatchTransferEvent from "./transfer/Erc1155BatchTransferEvent";
 import UnverifiedEvmLog from "./UnverifiedEvmLog";
+import ClaimEvmAccountEvent from "./ClaimEvmAccountEvent";
 
 
 const selectEvmLogEvent = async (id: number, head: EventHead): Promise<ProcessModule> => {
@@ -36,23 +37,32 @@ const selectEvmLogEvent = async (id: number, head: EventHead): Promise<ProcessMo
     topics: head.event.topics.map((t) => t.toString()), 
     data: head.event.event.data.toString()
   });
+  const eventName = `${decodedEvent.name}.${type}`;
 
-  // Trapping contracts of type Erc and where event name is Transfer like
-  if (decodedEvent.name === 'Transfer' && type === 'ERC20')
-    return new Erc20TransferEvent(id, head, contract[0]);
-  if (decodedEvent.name === 'Transfer' && type === 'ERC721')
-    return new Erc721TransferEvent(id, head, contract[0]);
-  if (decodedEvent.name === 'TransferSingle' && type === 'ERC1155')
-    return new Erc1155SingleTransferEvent(id, head, contract[0]);
-  if (decodedEvent.name === 'TransferBatch' && type === 'ERC1155')
-    return new Erc1155BatchTransferEvent(id, head, contract[0]);
-  
-  return new EvmLogEvent(id, head, contract[0]);
+  switch (eventName) {
+    case "Transfer.ERC20":
+      return new Erc20TransferEvent(id, head, contract[0]);
+    case "Transfer.ERC721":
+      return new Erc721TransferEvent(id, head, contract[0]);
+    case "TransferSingle.ERC1155":
+      return new Erc1155SingleTransferEvent(id, head, contract[0]);
+    case "TransferBatch.ERC1155":
+      return new Erc1155BatchTransferEvent(id, head, contract[0]);
+    default:
+      return new EvmLogEvent(id, head, contract[0]);
+  }
 }
 
 const selectEvent = async (id: number, head: EventHead): Promise<ProcessModule> => {
   const event = head.event.event;
   const {events} = nodeProvider.getProvider().api;
+
+  const eventCompression = `${event.section.toString()}.${event.method.toString()}`
+  switch(eventCompression) {
+    case 'evm.Log': return selectEvmLogEvent(id, head);
+    case 'evmAccounts.Claim': return new ClaimEvmAccountEvent(id, head);
+    default: return new DefaultEvent(id, head);
+  }
 
   // Resolving native events
   if (events.staking.Rewarded.is(event)) 
@@ -69,6 +79,9 @@ const selectEvent = async (id: number, head: EventHead): Promise<ProcessModule> 
   // Resolving evm events
   if (head.event.event.method === 'Log' && head.event.event.section === 'evm')
     return selectEvmLogEvent(id, head);
+  if (head.event.event.method === '' && head.event.event.section === '')
+    return new ClaimEvmAccountEvent(id, head);
+
 
   return new DefaultEvent(id, head);
 }

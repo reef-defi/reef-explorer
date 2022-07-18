@@ -7,7 +7,7 @@ import resolveEvent from "./event";
 import { ProcessModule } from "../types";
 
 
-class NativeExtrinsic implements ProcessModule {
+class Extrinsic implements ProcessModule {
   id: number;
   head: ExtrinsicHead;
   events: ProcessModule[] = [];
@@ -74,4 +74,4 @@ class NativeExtrinsic implements ProcessModule {
   }
 }
 
-export default NativeExtrinsic;
+export default Extrinsic;
