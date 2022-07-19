@@ -37,7 +37,7 @@ class DefaultErcTransferEvent extends EvmLogEvent {
       tokenAddress,
       toAddress: toAddress === '' ? 'null' : toAddress,
       fromAddress: fromAddress === '' ? 'null' : fromAddress,
-      feeAmount: BigNumber.from(this.head.signedData?.fee.partialFee).toString(),
+      feeAmount: '', // TODO signed data: BigNumber.from(this.head.signedData?.fee.partialFee).toString()
       amount: '0',
       type: 'ERC20',
     };

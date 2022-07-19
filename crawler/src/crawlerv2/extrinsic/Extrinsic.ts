@@ -17,26 +17,48 @@ class Extrinsic implements ProcessModule {
     this.id = id;
     this.head = head;
   }
+
+  private async getSignedData(hash: string): Promise<SignedExtrinsicData> {
+    const [fee, feeDetails] = await Promise.all([
+      nodeProvider.query((provider) => provider.api.rpc.payment.queryInfo(hash)),
+      nodeProvider.query((provider) => provider.api.rpc.payment.queryFeeDetails(hash)),
+    ]);
+  
+    return {
+      fee: fee.toJSON(),
+      feeDetails: feeDetails.toJSON(),
+    };
+  }
+
+  async init(): Promise<void> {
+    // Rebuilding event structure
+    for (let index = 0; index < this.head.events.length; index += 1) {
+      const event = await resolveEvent({
+        index,
+        extrinsicId: this.id,
+        status: this.head.status,
+        blockId: this.head.blockId,
+        event: this.head.events[index],
+        timestamp: this.head.timestamp,
+        extrinsicIndex: this.head.index,
+      });
+      // Initializing events
+      await event.init();
+      
+      // Saving events in extrinsic
+      this.events.push(event);
+    }
+  }
+
+
   async process(accountsManager: AccountManager): Promise<void> {
     // Extracting signed data
     this.signedData = this.head.extrinsic.isSigned
       ? await this.getSignedData(this.head.extrinsic.toHex())
       : undefined;
-
-    for (let index = 0; index < this.head.events.length; index += 1) {
-      const event = await resolveEvent({
-          index,
-          extrinsicId: this.id,
-          status: this.head.status,
-          blockId: this.head.blockId,
-          event: this.head.events[index],
-          timestamp: this.head.timestamp,
-          extrinsicIndex: this.head.index,
-          signedData: this.signedData,
-        }, 
-        accountsManager
-      );
-      this.events.push(event);
+    
+    for (let event of this.events) {
+      await event.process(accountsManager);
     }
   }
   async save(): Promise<void> {
@@ -55,22 +77,7 @@ class Extrinsic implements ProcessModule {
       docs: this.head.extrinsic.meta.docs.toLocaleString(),
       signed: this.head.extrinsic.signer?.toString() || 'deleted',
       errorMessage: this.head.status.type === 'error' ? this.head.status.message : '',
-    });
-    for (let event of this.events) {
-      await event.save();
-    }
-  }
-
-  private async getSignedData(hash: string): Promise<SignedExtrinsicData> {
-    const [fee, feeDetails] = await Promise.all([
-      nodeProvider.query((provider) => provider.api.rpc.payment.queryInfo(hash)),
-      nodeProvider.query((provider) => provider.api.rpc.payment.queryFeeDetails(hash)),
-    ]);
-  
-    return {
-      fee: fee.toJSON(),
-      feeDetails: feeDetails.toJSON(),
-    };
+    })
   }
 }
 

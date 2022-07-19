@@ -22,10 +22,9 @@ class NativeTransferEvent extends DefaultEvent {
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress)),
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress)),
     ]);
-    const feeAmount = BigNumber.from(this.head.signedData!.fee.partialFee).toString();
+    this.fee = '' // TODO BigNumber.from(this.head.signedData!.fee.partialFee).toString();
 
     this.amount = amount.toString();
-    this.fee = feeAmount.toString();
 
     this.to = toAddress.toString();
     this.from = fromAddress.toString();

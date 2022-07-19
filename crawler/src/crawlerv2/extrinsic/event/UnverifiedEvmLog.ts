@@ -23,7 +23,10 @@ class UnverifiedEvmLog extends DefaultEvent {
 
   async save(): Promise<void> {
     await super.save();
-
+    
+    if (!this.id) {
+      throw new Error('Event id is not claimed!');
+    }
     if (!this.data) {
       throw new Error('Evm log data is not defined, call process function before saving!');
     }

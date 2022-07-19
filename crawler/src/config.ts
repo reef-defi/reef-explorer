@@ -23,7 +23,7 @@ export default {
   subcontractInterval: process.env.SUBCONTRACT_INTERVAL || 100,
   verifiedContractSyncInterval: process.env.VERIFIED_CONTRACT_SYNC_INTERVAL || 100,
   liveGraphqlUrl: process.env.LIVE_GRAPHQL_URL || 'http://localhost:8080/v1/graphql',
-  verifiedContractSync: process.env.VERIFIED_CONTRACT_SYNC ? process.env.VERIFIED_CONTRACT_SYNC === 'true' : true,
+  verifiedContractSync: process.env.VERIFIED_CONTRACT_SYNC ? process.env.VERIFIED_CONTRACT_SYNC === 'true' : false,
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',

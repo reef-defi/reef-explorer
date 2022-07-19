@@ -7,8 +7,8 @@ import UnverifiedEvmLog from "./UnverifiedEvmLog";
 
 class EvmLogEvent extends UnverifiedEvmLog {
   contract: VerifiedContract;
-  constructor(id: number, head: EventHead, contract: VerifiedContract) {
-    super(id, head);
+  constructor(head: EventHead, contract: VerifiedContract) {
+    super(head);
     this.contract = contract;
   }
 

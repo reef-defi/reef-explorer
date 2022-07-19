@@ -1,20 +1,17 @@
 import { ExtrinsicHead } from "../../crawler/types";
-import AccountManager from "../managers/AccountManager";
+import { queryv2 } from "../../utils/connector";
 import { ProcessModule } from "../types";
-import Extrinsic from "./NativeExtrinsic";
+import Extrinsic from "./Extrinsic";
 
 // TODO Get get next ProcessModule id
-const nextExtrinsicId = async (): Promise<number> => 10;
+const nextExtrinsicId = async (): Promise<number> => (await queryv2<number>('SELECT id FROM extrinsic ORDER BY id DESC LIMIT 1'))[0] + 1;
 
 const resolveExtrinsic = async (
   head: ExtrinsicHead,
-  accounts: AccountManager
 ): Promise<ProcessModule> => {
   const id = await nextExtrinsicId();
+  console.log(id)
   const extrinsic = new Extrinsic(id, head);
-
-  // TODO maybe place process outside of resolve?
-  await extrinsic.process(accounts);
   return extrinsic;
 };
 

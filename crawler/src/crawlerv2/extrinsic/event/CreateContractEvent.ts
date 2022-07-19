@@ -24,6 +24,8 @@ class ContractCreateEvent extends DefaultEvent {
 
     const address = this.head.event.event.data[0].toString();
     const contractData = (await nodeProvider.query((provider) => provider.api.query.evm.accounts(address))).toJSON();
+
+    throw new Error('Extract contract hash form above data');
     const contractHash = ""; // TODO extract from contractData['contractInfo']
     const bytecode = (await nodeProvider.query((provider) => provider.api.query.evm.codes())).toString();
     const signer = ""; // TODO 
@@ -37,17 +39,17 @@ class ContractCreateEvent extends DefaultEvent {
 
     const { context: bytecodeContext, args: bytecodeArguments } = this.preprocessBytecode(bytecode);
     
-    this.contract = {
-      signer,
-      address,
-      bytecode,
-      gasLimit,
-      storageLimit,
-      bytecodeContext,
-      bytecodeArguments,
-      extrinsicId: this.id,
-      timestamp: this.head.timestamp,
-    }
+    // this.contract = {
+    //   signer,
+    //   address,
+    //   bytecode,
+    //   gasLimit,
+    //   storageLimit,
+    //   bytecodeContext,
+    //   bytecodeArguments,
+    //   extrinsicId: this.id,
+    //   timestamp: this.head.timestamp,
+    // }
 
     // Marking account update
     await accountsManager.use(signer);
@@ -64,3 +66,5 @@ class ContractCreateEvent extends DefaultEvent {
   }
 
 }
+
+export default ContractCreateEvent;

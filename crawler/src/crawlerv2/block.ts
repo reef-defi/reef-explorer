@@ -88,7 +88,7 @@ const processBlock = async (blockId: number): Promise<void> => {
   const accountManager = new AccountManager(blockId, block.timestamp);
 
   logger.info('Resolving extrinsics & events');
-  const resolvedExtrinsics = await Promise.all(
+  const extrinsics = await Promise.all(
     block.signedBlock.block.extrinsics.map(async (extr, index) => 
       resolveExtrinsic(
         {
@@ -98,11 +98,13 @@ const processBlock = async (blockId: number): Promise<void> => {
           timestamp: block.timestamp,
           events: mappedEvents[index],
           status: extrinsicStatus(mappedEvents[index]),
-        }, 
-        accountManager
+        }
       )
     )
   );
+  for (let extrinsic of extrinsics) {
+    await extrinsic.process(accountManager);
+  }
 
   // TODO subscribe to the db block with block id - 1 and await block finalization!
 
@@ -112,11 +114,9 @@ const processBlock = async (blockId: number): Promise<void> => {
 
   // Chain saving all extrinsic and events
   logger.info('Saving extrinsic & their events');
-  await Promise.all(
-    resolvedExtrinsics.map(async (re) => 
-      re.save()
-    )
-  );
+  for (let extrinsic of extrinsics) {
+    await extrinsic.save();
+  }
 
   // Updating block finalization
   logger.info(`Finalizing block ${blockId}`)
