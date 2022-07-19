@@ -3,6 +3,7 @@ import { insertContract } from "../../../queries/evmEvent";
 import { nodeProvider } from "../../../utils/connector";
 import logger from "../../../utils/logger";
 import AccountManager from "../../managers/AccountManager";
+import { ExtrinsicData } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 
 class ContractCreateEvent extends DefaultEvent {
@@ -55,8 +56,8 @@ class ContractCreateEvent extends DefaultEvent {
     await accountsManager.use(signer);
   }
 
-  async save(): Promise<void> {
-    await super.save();
+  async save(extrinsicData: ExtrinsicData): Promise<void> {
+    await super.save(extrinsicData);
 
     if (!this.contract) {
       throw new Error('Contract is undefined, call .process() method to prepare required data!');

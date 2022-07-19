@@ -1,9 +1,8 @@
-import { BigNumber } from "ethers";
-import { Transfer } from "../../../../crawler/types";
 import { findNativeAddress } from "../../../../crawler/utils";
 import { insertTransfers } from "../../../../queries/extrinsic";
 import logger from "../../../../utils/logger";
 import AccountManager from "../../../managers/AccountManager";
+import { ExtrinsicData, Transfer } from "../../../types";
 import EvmLogEvent from "../EvmLogEvent";
 
 class DefaultErcTransferEvent extends EvmLogEvent {
@@ -29,7 +28,6 @@ class DefaultErcTransferEvent extends EvmLogEvent {
     return {
       blockId: this.head.blockId,
       timestamp: this.head.timestamp,
-      extrinsicId: this.head.extrinsicId,
       toEvmAddress,
       success: true,
       fromEvmAddress,
@@ -43,11 +41,11 @@ class DefaultErcTransferEvent extends EvmLogEvent {
     };
   };
 
-  async save(): Promise<void> {
-    await super.save();
+  async save(extrinsicData: ExtrinsicData): Promise<void> {
+    await super.save(extrinsicData);
     
     logger.info('Inserting Erc transfers');
-    await insertTransfers(this.transfers);
+    await insertTransfers(this.transfers.map((transfer) => ({...transfer, extrinsicId: extrinsicData.id})));
   }
 };
 

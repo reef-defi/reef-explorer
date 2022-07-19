@@ -3,6 +3,7 @@ import { insertEvmLog } from "../../../queries/evmEvent";
 import logger from "../../../utils/logger";
 import { toChecksumAddress } from "../../../utils/utils";
 import AccountManager from "../../managers/AccountManager";
+import { ExtrinsicData } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 
 class UnverifiedEvmLog extends DefaultEvent {
@@ -21,8 +22,8 @@ class UnverifiedEvmLog extends DefaultEvent {
     };
   }
 
-  async save(): Promise<void> {
-    await super.save();
+  async save(extrinsicData: ExtrinsicData): Promise<void> {
+    await super.save(extrinsicData);
     
     if (!this.id) {
       throw new Error('Event id is not claimed!');
@@ -36,7 +37,7 @@ class UnverifiedEvmLog extends DefaultEvent {
       blockId: this.head.blockId,
       eventId: this.id,
       eventIndex: this.head.index,
-      extrinsicIndex: this.head.extrinsicIndex,
+      extrinsicIndex: extrinsicData.index,
     }]);
   }
 }

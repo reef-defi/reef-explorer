@@ -1,13 +1,14 @@
 import { utils } from "ethers";
-import { BytecodeLog, EventHead, VerifiedContract } from "../../../crawler/types";
+import { BytecodeLog, VerifiedContract } from "../../../crawler/types";
 import { toChecksumAddress } from "../../../utils/utils";
 import AccountManager from "../../managers/AccountManager";
+import { EventData } from "../../types";
 import UnverifiedEvmLog from "./UnverifiedEvmLog";
 
 
 class EvmLogEvent extends UnverifiedEvmLog {
   contract: VerifiedContract;
-  constructor(head: EventHead, contract: VerifiedContract) {
+  constructor(head: EventData, contract: VerifiedContract) {
     super(head);
     this.contract = contract;
   }

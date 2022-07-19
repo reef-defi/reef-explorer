@@ -1,21 +1,60 @@
-import { ExtrinsicHead, SignedExtrinsicData } from "../../crawler/types";
+import { GenericExtrinsic } from '@polkadot/types/extrinsic';
+import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import { AnyTuple } from '@polkadot/types/types';
+import { ExtrinsicStatus, SignedExtrinsicData } from "../../crawler/types";
 import { insertExtrinsic } from "../../queries/extrinsic";
 import { nodeProvider } from "../../utils/connector";
 import logger from "../../utils/logger";
 import AccountManager from "../managers/AccountManager";
-import resolveEvent from "./event";
-import { ProcessModule } from "../types";
+import DefaultEvent from "./event/DefaultEvent";
 
+type Extr = GenericExtrinsic<AnyTuple>
 
-class Extrinsic implements ProcessModule {
-  id: number;
-  head: ExtrinsicHead;
-  events: ProcessModule[] = [];
-  signedData: undefined|SignedExtrinsicData;
+const extractErrorMessage = (error: SpRuntimeDispatchError): string => {
+  if (error.isModule) {
+    const errorModule = error.asModule;
+    const { docs, name, section } = errorModule.registry.findMetaError(errorModule);
+    return `${section}.${name}: ${docs}`;
+  }
+  return error.toString();
+};
 
-  constructor(id: number, head: ExtrinsicHead) {
-    this.id = id;
-    this.head = head;
+const extrinsicStatus = (extrinsicEvents: DefaultEvent[]): ExtrinsicStatus => extrinsicEvents.reduce(
+  (prev, { head: { event: { event } } }) => {
+    if (
+      prev.type === 'unknown'
+        && nodeProvider.getProvider().api.events.system.ExtrinsicSuccess.is(event)
+    ) {
+      return { type: 'success' };
+    } if (nodeProvider.getProvider().api.events.system.ExtrinsicFailed.is(event)) {
+      const [dispatchedError] = event.data;
+      return {
+        type: 'error',
+        message: extractErrorMessage(dispatchedError),
+      };
+    }
+    return prev;
+  },
+    { type: 'unknown' } as ExtrinsicStatus,
+);
+
+class Extrinsic {
+  id?: number;
+  index: number;
+  blockId: number;
+  timestamp: string;
+  extrinsic: Extr;
+  // head: ExtrinsicHead;
+  events: DefaultEvent[];
+  status?: ExtrinsicStatus;
+  signedData?: SignedExtrinsicData;
+
+  constructor(blockId: number, index: number, timestamp: string, extrinsic: Extr, events: DefaultEvent[]) {
+    this.events = events;
+    this.blockId = blockId;
+    this.index = index;
+    this.timestamp = timestamp;
+    this.extrinsic = extrinsic;
   }
 
   private async getSignedData(hash: string): Promise<SignedExtrinsicData> {
@@ -30,54 +69,48 @@ class Extrinsic implements ProcessModule {
     };
   }
 
-  async init(): Promise<void> {
-    // Rebuilding event structure
-    for (let index = 0; index < this.head.events.length; index += 1) {
-      const event = await resolveEvent({
-        index,
-        extrinsicId: this.id,
-        status: this.head.status,
-        blockId: this.head.blockId,
-        event: this.head.events[index],
-        timestamp: this.head.timestamp,
-        extrinsicIndex: this.head.index,
-      });
-      // Initializing events
-      await event.init();
-      
-      // Saving events in extrinsic
-      this.events.push(event);
-    }
-  }
-
-
   async process(accountsManager: AccountManager): Promise<void> {
     // Extracting signed data
-    this.signedData = this.head.extrinsic.isSigned
-      ? await this.getSignedData(this.head.extrinsic.toHex())
+    this.signedData = this.extrinsic.isSigned
+      ? await this.getSignedData(this.extrinsic.toHex())
       : undefined;
     
-    for (let event of this.events) {
-      await event.process(accountsManager);
-    }
+    this.status = extrinsicStatus(this.events);
+    // Process all extrinsic events 
+    await Promise.all(this.events.map(async (event) => event.process(accountsManager)));
   }
+
   async save(): Promise<void> {
+    if (!this.id) {
+      throw new Error('Extrinsic id was not claimed!');
+    }
+    if (!this.status) {
+      throw new Error('Extrinsic status was not claimed!');
+    }
+
     logger.info('Inserting extrinsic');
     await insertExtrinsic({
       id: this.id,
-      index: this.head.index,
-      blockId: this.head.blockId,
+      index: this.index,
+      blockId: this.blockId,
       signedData: this.signedData,
-      timestamp: this.head.timestamp,
-      status: this.head.status.type,
-      hash: this.head.extrinsic.hash.toString(),
-      method: this.head.extrinsic.method.method,
-      section: this.head.extrinsic.method.section,
-      args: JSON.stringify(this.head.extrinsic.args),
-      docs: this.head.extrinsic.meta.docs.toLocaleString(),
-      signed: this.head.extrinsic.signer?.toString() || 'deleted',
-      errorMessage: this.head.status.type === 'error' ? this.head.status.message : '',
-    })
+      timestamp: this.timestamp,
+      status: this.status.type,
+      hash: this.extrinsic.hash.toString(),
+      method: this.extrinsic.method.method,
+      section: this.extrinsic.method.section,
+      args: JSON.stringify(this.extrinsic.args),
+      docs: this.extrinsic.meta.docs.toLocaleString(),
+      signed: this.extrinsic.signer?.toString() || 'deleted',
+      errorMessage: this.status.type === 'error' ? this.status.message : '',
+    });
+    const extrinsicData = {
+      id: this.id,
+      index: this.index,
+      signedData: this.signedData,
+      status: this.status
+    }
+    await Promise.all(this.events.map(async (event) => event.save(extrinsicData)));
   }
 }
 

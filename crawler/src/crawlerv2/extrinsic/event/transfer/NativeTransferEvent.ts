@@ -4,6 +4,7 @@ import { nodeProvider } from "../../../../utils/connector";
 import logger from "../../../../utils/logger";
 import { REEF_CONTRACT_ADDRESS } from "../../../../utils/utils";
 import AccountManager from "../../../managers/AccountManager";
+import { ExtrinsicData } from "../../../types";
 import DefaultEvent from "../DefaultEvent";
 
 class NativeTransferEvent extends DefaultEvent {
@@ -35,8 +36,8 @@ class NativeTransferEvent extends DefaultEvent {
     await accountsManager.use(this.from);
   }
 
-  async save(): Promise<void> {
-    await super.save();
+  async save(extrinsicData: ExtrinsicData): Promise<void> {
+    await super.save(extrinsicData);
 
     logger.info('Inserting transfer')
     await insertTransfers([{
@@ -50,10 +51,10 @@ class NativeTransferEvent extends DefaultEvent {
       blockId: this.head.blockId,
       fromEvmAddress: this.fromEvm,
       timestamp: this.head.timestamp,
-      extrinsicId: this.head.extrinsicId,
+      extrinsicId: extrinsicData.id,
       tokenAddress: REEF_CONTRACT_ADDRESS,
-      success: this.head.status.type === 'success',
-      errorMessage: this.head.status.type === 'error' ? this.head.status.message : '',
+      success: extrinsicData.status.type === 'success',
+      errorMessage: extrinsicData.status.type === 'error' ? extrinsicData.status.message : '',
     }]);
   }
 }

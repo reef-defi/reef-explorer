@@ -1,12 +1,14 @@
 import { extrinsicStatus } from "../crawler/extrinsic";
-import { Block, BlockHash, Event, EventHead } from "../crawler/types";
-import { insertBlock, insertMultipleBlocks, updateBlockFinalized, updateBlocksFinalized } from "../queries/block";
+import { Block, BlockHash, Event } from "../crawler/types";
+import { insertBlock, updateBlockFinalized } from "../queries/block";
 import { nodeProvider } from "../utils/connector";
 import logger from "../utils/logger";
+import resolveEvent from "./extrinsic/event";
+import DefaultEvent from "./extrinsic/event/DefaultEvent";
+import Extrinsic from "./extrinsic/Extrinsic";
 import AccountManager from "./managers/AccountManager";
-import resolveExtrinsic from "./extrinsic";
 
-type EventMap = {[extrinsicId: number]: Event[]};
+type EventMap = {[extrinsicId: number]: DefaultEvent[]};
 
 
 const blockBody = async ({ id, hash }: BlockHash): Promise<Block> => {
@@ -42,12 +44,12 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<Block> => {
   };
 };
 
-const reduceExtrinsicEvents = (acc: EventMap, event: Event): EventMap => {
-  const eventExtrinsic = event.phase.asApplyExtrinsic.toNumber();
+const reduceExtrinsicEvents = (acc: EventMap, event: DefaultEvent): EventMap => {
+  const eventExtrinsic = event.head.event.phase.asApplyExtrinsic.toNumber();
   if (!acc[eventExtrinsic]) {
     acc[eventExtrinsic] = [];
   }
-  acc[eventExtrinsic].push()
+  acc[eventExtrinsic].push(event)
   return acc;
 }
 
@@ -82,29 +84,28 @@ const processBlock = async (blockId: number): Promise<void> => {
   await insertBlock(blockBodyToInsert(block));
 
   // Storing events for each extrinsic
-  logger.info('Mapping events to extrinsic');
-  const mappedEvents = block.events.reduce(reduceExtrinsicEvents, {});
+  logger.info('Resolving events & mapping them to extrinsic');
+  const events = await Promise.all(block.events.map(async (event, index) => resolveEvent({
+    blockId,
+    event,
+    index,
+    timestamp: block.timestamp,
+  })))
+  const mappedEvents = events.reduce(reduceExtrinsicEvents, {});
 
   const accountManager = new AccountManager(blockId, block.timestamp);
 
-  logger.info('Resolving extrinsics & events');
-  const extrinsics = await Promise.all(
-    block.signedBlock.block.extrinsics.map(async (extr, index) => 
-      resolveExtrinsic(
-        {
-          blockId,
-          index,
-          extrinsic: extr,
-          timestamp: block.timestamp,
-          events: mappedEvents[index],
-          status: extrinsicStatus(mappedEvents[index]),
-        }
-      )
-    )
-  );
-  for (let extrinsic of extrinsics) {
-    await extrinsic.process(accountManager);
-  }
+  logger.info('Resolving extrinsics');
+  const extrinsics = block.signedBlock.block.extrinsics.map((extr, index) => new Extrinsic(
+    blockId,
+    index,
+    block.timestamp,
+    extr,
+    mappedEvents[index]
+  ));
+
+  logger.info('Processing extrinsics & events');
+  await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.process(accountManager)));
 
   // TODO subscribe to the db block with block id - 1 and await block finalization!
 
@@ -114,9 +115,7 @@ const processBlock = async (blockId: number): Promise<void> => {
 
   // Chain saving all extrinsic and events
   logger.info('Saving extrinsic & their events');
-  for (let extrinsic of extrinsics) {
-    await extrinsic.save();
-  }
+  await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.save()));
 
   // Updating block finalization
   logger.info(`Finalizing block ${blockId}`)

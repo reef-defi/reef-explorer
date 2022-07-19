@@ -2,7 +2,7 @@ import { utils } from "ethers";
 import { EventHead } from "../../../crawler/types";
 import { getContractDB } from "../../../queries/evmEvent";
 import { toChecksumAddress } from "../../../utils/utils";
-import { ProcessModule } from "../../types";
+import { EventData } from "../../types";
 import ClaimEvmAccountEvent from "./ClaimEvmAccountEvent";
 import ContractCreateEvent from "./CreateContractEvent";
 import DefaultEvent from "./DefaultEvent";
@@ -19,7 +19,7 @@ import NativeTransferEvent from "./transfer/NativeTransferEvent";
 import UnverifiedEvmLog from "./UnverifiedEvmLog";
 
 
-const selectEvmLogEvent = async (head: EventHead): Promise<ProcessModule> => {
+const selectEvmLogEvent = async (head: EventData): Promise<DefaultEvent> => {
   const eventData = (head.event.event.data.toJSON() as any);
   // Retrieving contract data from db
   const contract = await getContractDB(toChecksumAddress(eventData[0].address));
@@ -53,8 +53,8 @@ const selectEvmLogEvent = async (head: EventHead): Promise<ProcessModule> => {
 }
 
 const resolveEvent = async (
-  head: EventHead,
-): Promise<ProcessModule> => {
+  head: EventData,
+): Promise<DefaultEvent> => {
   // Compressing event section and method
   const eventCompression = `${head.event.event.section.toString()}.${head.event.event.method.toString()}`
 

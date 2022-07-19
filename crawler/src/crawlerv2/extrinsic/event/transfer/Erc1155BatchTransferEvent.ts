@@ -1,6 +1,6 @@
-import { Transfer } from "../../../../crawler/types";
 import logger from "../../../../utils/logger";
 import AccountManager from "../../../managers/AccountManager";
+import { Transfer } from "../../../types";
 import DefaultErcTransferEvent from "./DefaultErcTransferEvent";
 
 class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
