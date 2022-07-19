@@ -1,40 +1,40 @@
 table:
-  name: contract
   schema: public
+  name: contract
 object_relationships:
-- name: account
-  using:
-    foreign_key_constraint_on: signer
-- name: extrinsic
-  using:
-    foreign_key_constraint_on: extrinsic_id
-- name: verified_contract
-  using:
-    foreign_key_constraint_on:
-      column: address
-      table:
-        name: verified_contract
-        schema: public
+  - name: account
+    using:
+      foreign_key_constraint_on: signer
+  - name: extrinsic
+    using:
+      foreign_key_constraint_on: extrinsic_id
+  - name: verified_contract
+    using:
+      foreign_key_constraint_on:
+        column: address
+        table:
+          schema: public
+          name: verified_contract
 array_relationships:
-- name: token_holders
-  using:
-    foreign_key_constraint_on:
-      column: token_address
-      table:
-        name: token_holder
-        schema: public
+  - name: token_holders
+    using:
+      foreign_key_constraint_on:
+        column: token_address
+        table:
+          schema: public
+          name: token_holder
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - address
-    - extrinsic_id
-    - signer
-    - bytecode
-    - bytecode_context
-    - bytecode_arguments
-    - gas_limit
-    - storage_limit
-    - timestamp
-    filter: {}
-  role: public
+  - role: public
+    permission:
+      columns:
+        - address
+        - extrinsic_id
+        - signer
+        - bytecode
+        - bytecode_context
+        - bytecode_arguments
+        - gas_limit
+        - storage_limit
+        - timestamp
+      filter: {}
+      allow_aggregations: true

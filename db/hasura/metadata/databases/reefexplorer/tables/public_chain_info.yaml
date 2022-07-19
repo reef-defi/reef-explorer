@@ -1,10 +1,10 @@
 table:
-  name: chain_info
   schema: public
+  name: chain_info
 select_permissions:
-- permission:
-    columns:
-    - name
-    - count
-    filter: {}
-  role: public
+  - role: public
+    permission:
+      columns:
+        - name
+        - count
+      filter: {}

@@ -1,23 +1,23 @@
 table:
-  name: token_holder
   schema: public
+  name: token_holder
 object_relationships:
-- name: account
-  using:
-    foreign_key_constraint_on: signer
-- name: contract
-  using:
-    foreign_key_constraint_on: token_address
+  - name: account
+    using:
+      foreign_key_constraint_on: signer
+  - name: contract
+    using:
+      foreign_key_constraint_on: token_address
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - token_address
-    - signer
-    - balance
-    - info
-    - nft_id
-    - type
-    - evm_address
-    filter: {}
-  role: public
+  - role: public
+    permission:
+      columns:
+        - token_address
+        - signer
+        - balance
+        - info
+        - nft_id
+        - type
+        - evm_address
+      filter: {}
+      allow_aggregations: true

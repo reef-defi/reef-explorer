@@ -1,27 +1,27 @@
 table:
-  name: account
   schema: public
+  name: account
 object_relationships:
-- name: block
-  using:
-    foreign_key_constraint_on: block_id
+  - name: block
+    using:
+      foreign_key_constraint_on: block_id
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - block_id
-    - evm_nonce
-    - nonce
-    - active
-    - address
-    - evm_address
-    - identity
-    - available_balance
-    - free_balance
-    - locked_balance
-    - reserved_balance
-    - vested_balance
-    - voting_balance
-    - timestamp
-    filter: {}
-  role: public
+  - role: public
+    permission:
+      columns:
+        - block_id
+        - evm_nonce
+        - nonce
+        - active
+        - address
+        - evm_address
+        - identity
+        - available_balance
+        - free_balance
+        - locked_balance
+        - reserved_balance
+        - vested_balance
+        - voting_balance
+        - timestamp
+      filter: {}
+      allow_aggregations: true

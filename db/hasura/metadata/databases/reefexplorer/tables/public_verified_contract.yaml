@@ -1,26 +1,26 @@
 table:
-  name: verified_contract
   schema: public
+  name: verified_contract
 object_relationships:
-- name: contract
-  using:
-    foreign_key_constraint_on: address
+  - name: contract
+    using:
+      foreign_key_constraint_on: address
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - optimization
-    - address
-    - runs
-    - args
-    - compiled_data
-    - contract_data
-    - source
-    - compiler_version
-    - filename
-    - name
-    - target
-    - type
-    - timestamp
-    filter: {}
-  role: public
+  - role: public
+    permission:
+      columns:
+        - optimization
+        - address
+        - runs
+        - args
+        - compiled_data
+        - contract_data
+        - source
+        - compiler_version
+        - filename
+        - name
+        - target
+        - type
+        - timestamp
+      filter: {}
+      allow_aggregations: true
