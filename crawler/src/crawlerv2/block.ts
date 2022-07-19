@@ -45,11 +45,16 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<Block> => {
 };
 
 const reduceExtrinsicEvents = (acc: EventMap, event: DefaultEvent): EventMap => {
-  const eventExtrinsic = event.head.event.phase.asApplyExtrinsic.toNumber();
-  if (!acc[eventExtrinsic]) {
-    acc[eventExtrinsic] = [];
+  if (event.head.event.phase.isApplyExtrinsic) {
+    const eventExtrinsic = event.head.event.phase.asApplyExtrinsic.toNumber();
+  
+    if (!acc[eventExtrinsic]) {
+      acc[eventExtrinsic] = [];
+    }
+  
+    acc[eventExtrinsic].push(event)
   }
-  acc[eventExtrinsic].push(event)
+  
   return acc;
 }
 
@@ -71,6 +76,7 @@ const blockBodyToInsert = ({
 });
 
 const processBlock = async (blockId: number): Promise<void> => {
+  logger.info('--------------------------------')
   // Load block hash
   logger.info(`Loading block hash for: ${blockId}`)
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(blockId));
@@ -92,7 +98,6 @@ const processBlock = async (blockId: number): Promise<void> => {
     timestamp: block.timestamp,
   })))
   const mappedEvents = events.reduce(reduceExtrinsicEvents, {});
-
   const accountManager = new AccountManager(blockId, block.timestamp);
 
   logger.info('Resolving extrinsics');
@@ -110,7 +115,6 @@ const processBlock = async (blockId: number): Promise<void> => {
   // TODO subscribe to the db block with block id - 1 and await block finalization!
 
   // First saving all used accounts
-  logger.info('Updating used accounts')
   await accountManager.save();
 
   // Chain saving all extrinsic and events

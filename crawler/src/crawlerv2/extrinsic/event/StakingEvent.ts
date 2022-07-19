@@ -1,8 +1,8 @@
 import { insertV2, nodeProvider } from "../../../utils/connector";
 import logger from "../../../utils/logger";
 import AccountManager from "../../managers/AccountManager";
+import { ExtrinsicData } from "../../types";
 import DefaultEvent from "./DefaultEvent";
-import TokenHolderEvent from "./TokenHolderEvent";
 
 class StakingEvent extends DefaultEvent {
   signer: string = "";
@@ -36,9 +36,9 @@ class StakingEvent extends DefaultEvent {
     }
   }
 
-  async save(): Promise<void> {
+  async save(extrinsicData: ExtrinsicData): Promise<void> {
     // Saving default event
-    await super.save();
+    await super.save(extrinsicData);
 
     // Saving processed staking
     logger.info('Inserting staking event');

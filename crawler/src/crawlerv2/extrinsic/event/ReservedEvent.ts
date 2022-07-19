@@ -1,6 +1,5 @@
-import { ProcessModule } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 
-class ReservedEvent extends DefaultEvent implements ProcessModule { }
+class ReservedEvent extends DefaultEvent { }
 
 export default ReservedEvent;

@@ -1,8 +1,7 @@
 import AccountManager from "../../managers/AccountManager";
-import { ProcessModule } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 
-class KillAccountEvent extends DefaultEvent implements ProcessModule {
+class KillAccountEvent extends DefaultEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     // Process default event
     await super.process(accountsManager);
