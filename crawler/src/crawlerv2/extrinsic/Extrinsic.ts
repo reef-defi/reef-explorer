@@ -3,7 +3,7 @@ import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { ExtrinsicStatus, SignedExtrinsicData } from "../../crawler/types";
 import { insertExtrinsic } from "../../queries/extrinsic";
-import { nodeProvider } from "../../utils/connector";
+import { nodeProvider, queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
 import AccountManager from "../managers/AccountManager";
 import DefaultEvent from "./event/DefaultEvent";
@@ -41,10 +41,9 @@ const extrinsicStatus = (extrinsicEvents: DefaultEvent[]): ExtrinsicStatus => ex
 class Extrinsic {
   id?: number;
   index: number;
+  extrinsic: Extr;
   blockId: number;
   timestamp: string;
-  extrinsic: Extr;
-  // head: ExtrinsicHead;
   events: DefaultEvent[];
   status?: ExtrinsicStatus;
   signedData?: SignedExtrinsicData;
@@ -70,6 +69,9 @@ class Extrinsic {
   }
 
   async process(accountsManager: AccountManager): Promise<void> {
+    const result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
+    this.id = parseInt(result[0].nextval);
+
     // Extracting signed data
     this.signedData = this.extrinsic.isSigned
       ? await this.getSignedData(this.extrinsic.toHex())
@@ -88,7 +90,7 @@ class Extrinsic {
       throw new Error('Extrinsic status was not claimed!');
     }
 
-    logger.info('Inserting extrinsic');
+    logger.info(`Insertin ${this.id} extrinsic`);
     await insertExtrinsic({
       id: this.id,
       index: this.index,
@@ -104,12 +106,14 @@ class Extrinsic {
       signed: this.extrinsic.signer?.toString() || 'deleted',
       errorMessage: this.status.type === 'error' ? this.status.message : '',
     });
+
     const extrinsicData = {
       id: this.id,
       index: this.index,
+      status: this.status,
       signedData: this.signedData,
-      status: this.status
     }
+    
     await Promise.all(this.events.map(async (event) => event.save(extrinsicData)));
   }
 }
