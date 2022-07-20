@@ -24,7 +24,7 @@ const toTokenHolder = ({
   nftId,
 }: TokenHolder): any[] => [signerAddress === '' ? null : signerAddress, evmAddress === '' ? null : evmAddress, type, tokenAddress, nftId, balance, JSON.stringify(info !== null ? info : {}), timestamp];
 
-const insertAccountTokenHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
+export const insertAccountTokenHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
   `${TOKEN_HOLDER_INSERT_STATEMENT}
     ON CONFLICT (signer, token_address) WHERE evm_address IS NULL AND nft_id IS NULL DO UPDATE SET
     ${DO_UPDATE}
@@ -32,7 +32,7 @@ const insertAccountTokenHolders = async (tokenHolders: TokenHolder[]): Promise<v
   tokenHolders.map(toTokenHolder),
 );
 
-const insertContractTokenHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
+export const insertContractTokenHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
   `${TOKEN_HOLDER_INSERT_STATEMENT}
     ON CONFLICT (evm_address, token_address) WHERE signer IS NULL AND nft_id IS NULL DO UPDATE SET
     ${DO_UPDATE}
@@ -40,7 +40,7 @@ const insertContractTokenHolders = async (tokenHolders: TokenHolder[]): Promise<
   tokenHolders.map(toTokenHolder),
 );
 
-const insertAccountNftHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
+export const insertAccountNftHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
   `${TOKEN_HOLDER_INSERT_STATEMENT}
     ON CONFLICT (signer, token_address, nft_id) WHERE evm_address IS NULL AND nft_id IS NOT NULL DO UPDATE SET
     ${DO_UPDATE}
@@ -48,7 +48,7 @@ const insertAccountNftHolders = async (tokenHolders: TokenHolder[]): Promise<voi
   tokenHolders.map(toTokenHolder),
 );
 
-const insertContractNftHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
+export const insertContractNftHolders = async (tokenHolders: TokenHolder[]): Promise<void> => insertV2(
   `${TOKEN_HOLDER_INSERT_STATEMENT}
     ON CONFLICT (evm_address, token_address, nft_id) WHERE signer IS NULL AND nft_id IS NOT NULL DO UPDATE SET
     ${DO_UPDATE}

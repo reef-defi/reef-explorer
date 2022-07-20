@@ -23,6 +23,8 @@ export interface EventData {
   timestamp: string;
 }
 
+export type TransferType = 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
+
 export interface Transfer {
   blockId: number;
 
@@ -30,17 +32,13 @@ export interface Transfer {
   nftId?: string;
 
   amount: string;
-  feeAmount: string;
-  type: 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
+  type: TransferType;
 
   toAddress: string;
   fromAddress: string;
   tokenAddress: string;
   fromEvmAddress: string;
   toEvmAddress: string;
-
-  success: boolean;
-  errorMessage: string;
 
   timestamp: string;
 }

@@ -1,4 +1,3 @@
-import { BigNumber } from "ethers";
 import { insertTransfers } from "../../../../queries/extrinsic";
 import { nodeProvider } from "../../../../utils/connector";
 import logger from "../../../../utils/logger";

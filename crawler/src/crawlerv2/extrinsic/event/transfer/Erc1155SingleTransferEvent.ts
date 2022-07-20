@@ -1,3 +1,4 @@
+import { balanceOfErc1155 } from "../../../../crawler/utils";
 import logger from "../../../../utils/logger";
 import AccountManager from "../../../managers/AccountManager";
 import DefaultErcTransferEvent from "./DefaultErcTransferEvent";
@@ -6,15 +7,41 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
     logger.info('Processing Erc1155 single transfer event');
-    const [, from, to, nftId, amount] = this.data?.parsed.decodedEvent.args;
-    const base = await this.evmLogToTransfer(from, to, accountsManager);
+    const [, fromEvmAddress, toEvmAddress, nftId, amount] = this.data?.parsed.decodedEvent.args;
+    const abi = this.contract.compiled_data[this.contract.name];
+    const tokenAddress = this.contract.address;
+    const toAddress = await accountsManager.useEvm(toEvmAddress)
+    const fromAddress = await accountsManager.useEvm(fromEvmAddress)
+    
+    const toBalance = await balanceOfErc1155(toEvmAddress, tokenAddress, nftId, abi);
+    const fromBalance = await balanceOfErc1155(fromEvmAddress, tokenAddress, nftId, abi);
 
     this.transfers.push({
-      ...base,
+      blockId: this.head.blockId,
+      timestamp: this.head.timestamp,
+      fromAddress,
+      toAddress,
+      fromEvmAddress,
+      toEvmAddress,
+      tokenAddress,
+      denom: this.contract.contract_data?.symbol,
       type: 'ERC1155',
       nftId: nftId.toString(),
       amount: amount.toString(),
     });
+
+    this.addTokenHolder(
+      toAddress, 
+      toEvmAddress, 
+      toBalance,
+      nftId
+    );
+    this.addTokenHolder(
+      fromAddress,
+      fromEvmAddress,
+      fromBalance,
+      nftId
+    );
   }
 
 }

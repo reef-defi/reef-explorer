@@ -33,7 +33,6 @@ class DefaultEvent {
       status: extrinsicData.status,
       extrinsicId: extrinsicData.id,
       extrinsicIndex: extrinsicData.index,
-      signedData: extrinsicData.signedData,
     })
   }
 }

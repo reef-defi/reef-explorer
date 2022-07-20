@@ -1,23 +1,59 @@
+import { Contract } from "ethers";
+import { nodeProvider } from "../../../../utils/connector";
 import logger from "../../../../utils/logger";
 import AccountManager from "../../../managers/AccountManager";
-import { Transfer } from "../../../types";
 import DefaultErcTransferEvent from "./DefaultErcTransferEvent";
 
 class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
+  private async balanceOfBatch(address: string, tokenAddress: string, ids: string[]): Promise<string[]> {
+    const contract = new Contract(tokenAddress, this.contract.compiled_data[this.contract.name], nodeProvider.getProvider());
+    const result = await contract.balanceOfBatch([address], ids);
+    console.log('Balance of batch result: ', result);
+    // TODO remove any!
+    return result.map((amount: any) => amount.toString());
+  } 
+
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
 
     logger.info('Processing Erc1155 batch transfer event');
-    const [, from, to, nftIds, amounts] = this.data?.parsed.decodedEvent.args;
-    const base = await this.evmLogToTransfer(from, to, accountsManager);
+    const [, fromEvmAddress, toEvmAddress, nftIds, amounts] = this.data?.parsed.decodedEvent.args;
+    const tokenAddress = this.contract.address;
+    const toAddress = await accountsManager.useEvm(toEvmAddress)
+    const fromAddress = await accountsManager.useEvm(fromEvmAddress)
 
-    const transfers: Transfer[] = (nftIds as []).map((_, index) => ({
-      ...base,
-      type: 'ERC1155',
-      nftId: nftIds[index].toString(),
-      amount: amounts[index].toString(),
-    }))
-    this.transfers.push(...transfers);
+    const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
+    const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
+    
+    for(let index = 0; index < nftIds.length; index ++) {
+      // Adding transe
+      this.transfers.push({
+        blockId: this.head.blockId,
+        fromAddress,
+        fromEvmAddress,
+        timestamp: this.head.timestamp,
+        toAddress,
+        toEvmAddress,
+        tokenAddress,
+        type: 'ERC1155',
+        denom: this.contract.contract_data?.symbol,
+        nftId: nftIds[index].toString(),
+        amount: amounts[index].toString(),
+      });
+
+      this.addTokenHolder(
+        toAddress, 
+        toEvmAddress, 
+        toBalances[index],
+        nftIds[index]
+      );
+      this.addTokenHolder(
+        fromAddress,
+        fromEvmAddress,
+        fromBalances[index],
+        nftIds[index]
+      );
+    }
   }
 
 }

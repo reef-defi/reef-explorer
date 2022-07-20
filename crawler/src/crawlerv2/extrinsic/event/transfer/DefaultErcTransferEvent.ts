@@ -1,51 +1,51 @@
-import { findNativeAddress } from "../../../../crawler/utils";
+import { BigNumber } from "ethers";
+import { TokenHolder } from "../../../../crawler/types";
 import { insertTransfers } from "../../../../queries/extrinsic";
 import logger from "../../../../utils/logger";
-import AccountManager from "../../../managers/AccountManager";
 import { ExtrinsicData, Transfer } from "../../../types";
 import EvmLogEvent from "../EvmLogEvent";
 
 class DefaultErcTransferEvent extends EvmLogEvent {
   transfers: Transfer[] = [];
+  accountTokenHolders: TokenHolder[] = [];
+  contractTokenHolders: TokenHolder[] = [];
 
-  async evmLogToTransfer (fromEvmAddress: string, toEvmAddress: string, accountManager: AccountManager): Promise<Transfer> {
-    const [toAddress, fromAddress] = await Promise.all([
-      findNativeAddress(toEvmAddress),
-      findNativeAddress(fromEvmAddress),
-    ]);
-
-    // Marking used accounts
-    await accountManager.use(toAddress);
-    await accountManager.use(fromAddress);
-
-    const tokenAddress = this.data?.raw.address;
-    // TODO remove below statement when everything is tested
-    if (!tokenAddress) {
-      throw new Error('Token address is undefiend')
-    }
-
-    // Default return
-    return {
-      blockId: this.head.blockId,
+  addTokenHolder(
+    address: string,
+    evmAddress: string,
+    balance: string,
+    nftId='null'
+  ) {
+    // Creating new token holder
+    const tokenHolder: TokenHolder = {
+      nftId,
+      balance,
+      evmAddress,
       timestamp: this.head.timestamp,
-      toEvmAddress,
-      success: true,
-      fromEvmAddress,
-      errorMessage: '',
-      tokenAddress,
-      toAddress: toAddress === '' ? 'null' : toAddress,
-      fromAddress: fromAddress === '' ? 'null' : fromAddress,
-      feeAmount: '', // TODO signed data: BigNumber.from(this.head.signedData?.fee.partialFee).toString()
-      amount: '0',
-      type: 'ERC20',
+      info: this.contract.contract_data,
+      tokenAddress: this.contract.address,
+      type: address === "" ? "Contract" : "Account",
+      signerAddress: address === "" ? "null" : address,
     };
-  };
+
+    // Based on reciever type (contract/account) we extend holder accordingly
+    if (tokenHolder.type === 'Account') {
+      this.accountTokenHolders.push(tokenHolder);
+    } else {
+      this.contractTokenHolders.push(tokenHolder);
+    }
+  }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
     
     logger.info('Inserting Erc transfers');
-    await insertTransfers(this.transfers.map((transfer) => ({...transfer, extrinsicId: extrinsicData.id})));
+    await insertTransfers(this.transfers.map((transfer) => ({...transfer, 
+      success: true,
+      errorMessage: '',
+      extrinsicId: extrinsicData.id,
+      feeAmount: BigNumber.from(extrinsicData.signedData!.fee.partialFee).toString(),
+    })));
   }
 };
 
