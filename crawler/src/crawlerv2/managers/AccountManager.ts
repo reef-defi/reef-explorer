@@ -1,9 +1,10 @@
 import { AccountBody, TokenHolder } from "../../crawler/types";
+import { findNativeAddress } from "../../crawler/utils";
 import { insertAccounts } from "../../queries/event";
 import { nodeProvider } from "../../utils/connector";
 import logger from "../../utils/logger";
 import { REEF_CONTRACT_ADDRESS, REEF_DEFAULT_DATA, toChecksumAddress } from "../../utils/utils";
-import insertTokenHolders from './../../queries/tokenHoldes';
+import { insertAccountTokenHolders } from './../../queries/tokenHoldes';
 
 // Account manager stores used accounts and allows to trigger account save
 class AccountManager {
@@ -18,20 +19,44 @@ class AccountManager {
   }
 
   async use(address: string, active=true) {
-    // If account does not exist, we extract his info and store it 
+    // If account does not exist, we extract his info and store it
     if (!this.accounts[address]) {
-      this.accounts[address] = await this.accountInfo(address, active);
+      this.accounts[address] = await this.accountInfo(address);
     }
+
+    this.accounts[address].active = active;
     return this.accounts[address];
   }
 
+  async useEvm(evmAddress: string): Promise<string> {
+    // If the address is empty we do not process it
+    if (evmAddress === '0x0000000000000000000000000000000000') { // TODO replace with empty address for pools
+      return '';
+    }
+    const address = await findNativeAddress(evmAddress);
+
+    // Address can also be of contract and for this case node returns empty string
+    // We are only processing accounts in accounts manager!
+    if (address !== '') {
+      await this.use(address);
+    }
+
+    return address;
+  }
+
   async save(): Promise<void> {
-    const usedAccounts = Object.keys(this.accounts)
-      .map((address) => this.accounts[address]);
+    const accounts = Object.keys(this.accounts)
+    const usedAccounts = accounts.map((address) => this.accounts[address]);
+
+    if (usedAccounts.length === 0) {
+      return;
+    }
+
     // Saving used accounts
-    logger.info('Updating used accounts');
+    logger.info(`Updating accounts: \n\t${accounts.join(', \n\t- ')}`)
     await insertAccounts(usedAccounts);
 
+    // Converting accounts into token holders
     const tokenHolders: TokenHolder[] = usedAccounts
       .map((account) => ({
         timestamp: account.timestamp,
@@ -46,10 +71,10 @@ class AccountManager {
 
     // Updating account native token holder
     logger.info('Updating native token holders for used accounts');
-    await insertTokenHolders(tokenHolders);
+    await insertAccountTokenHolders(tokenHolders)
   }
 
-  private async accountInfo (address: string, active: boolean): Promise<AccountBody> {
+  private async accountInfo (address: string): Promise<AccountBody> {
     const [evmAddress, balances, identity] = await Promise.all([
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(address)),
       nodeProvider.query((provider) => provider.api.derive.balances.all(address)),
@@ -69,9 +94,9 @@ class AccountManager {
       : 0;
   
     return {
-      active,
       address,
       evmNonce,
+      active: true,
       evmAddress: evmAddr,
       blockId: this.blockId,
       timestamp: this.blockTimestamp,
