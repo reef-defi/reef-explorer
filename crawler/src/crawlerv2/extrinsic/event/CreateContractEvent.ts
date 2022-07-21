@@ -1,20 +1,14 @@
 import { insertV2, nodeProvider } from "../../../utils/connector";
 import logger from "../../../utils/logger";
-import { ensure } from "../../../utils/utils";
+import { ensure, toChecksumAddress } from "../../../utils/utils";
 import AccountManager from "../../managers/AccountManager";
 import { ExtrinsicData } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 
-interface Bytecode {
-  bytecode: string;
-  args: string;
-  context: string;
-}
 
 class ContractCreateEvent extends DefaultEvent {
   address?: string;
   maintainer?: string;
-  bytecode?: Bytecode
 
   private preprocessBytecode(bytecode: string) {
     const start = bytecode.indexOf('6080604052');
@@ -31,29 +25,25 @@ class ContractCreateEvent extends DefaultEvent {
     await super.process(accountsManager);
 
     // V9
-    const [, address] = this.head.event.event.data;
+    // const [, address] = this.head.event.event.data;
     // V8
-    // const [address] = this.head.event.event.data;
-
-    this.address = address.toString()
+    const [address] = this.head.event.event.data;
+    
+    this.address = toChecksumAddress(address.toString());
     logger.info(`New contract created: \n\t -${this.address}`)
     
     const contractData: any = (await nodeProvider.query((provider) => provider.api.query.evm.accounts(this.address))).toJSON();
-    const codeHash: string = contractData['contractInfo']['codeHash'];
     this.maintainer = await accountsManager.useEvm(contractData['contractInfo']['maintainer']);
-    const bytecode = (await nodeProvider.query((provider) => provider.api.query.evm.codes(codeHash))).toString();
-    const { context, args } = this.preprocessBytecode(bytecode);
-    this.bytecode = { bytecode, context, args }
   }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
 
     ensure(!!this.address, 'Contract address was unclaimed. Call process function before save')
-    ensure(!!this.bytecode, 'Contract bytecode was unclaimed. Call process function before save')
     ensure(!!this.maintainer, 'Contract maintainer was unclaimed. Call process function before save')
-    // ensure(!!this.limits, 'Contract limits was unclaimed. Call process function before save')
     
+    const bytecode = extrinsicData.args[0].toString();
+    const {context, args} = this.preprocessBytecode(bytecode);
     const gasLimit = extrinsicData.args[2].toString();
     const storageLimit = extrinsicData.args[3].toString();
     logger.info('Inserting contract');
@@ -64,7 +54,7 @@ class ContractCreateEvent extends DefaultEvent {
     VALUES
       %L
     ON CONFLICT (address) DO NOTHING;`,
-        [[this.address, extrinsicData.id, this.maintainer, this.bytecode?.bytecode, this.bytecode?.context, this.bytecode?.args, gasLimit, storageLimit, this.head.timestamp]]
+        [[this.address, extrinsicData.id, this.maintainer, bytecode, context, args, gasLimit, storageLimit, this.head.timestamp]]
     )
   }
 
