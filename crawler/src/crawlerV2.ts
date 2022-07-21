@@ -1,14 +1,13 @@
-import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
+import * as Sentry from '@sentry/node';
 import config from './config';
-import processBlocks, { processInitialBlocks } from './crawler/block';
+import processBlock from './crawlerv2/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider, queryv2 } from './utils/connector';
-import { min, promiseWithTimeout, wait } from './utils/utils';
 import logger from './utils/logger';
-import parseAndInsertSubContracts from './crawler/contracts';
-import syncVerifiedContracts from './crawler/syncVerifiedContracts';
-import processBlock from './crawlerv2/block';
+import Performance from './utils/Performance';
+import Queue from './utils/Queue';
+import { promiseWithTimeout, wait } from './utils/utils';
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // import * as Tracing from "@sentry/tracing";
 
@@ -28,71 +27,30 @@ Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
-const processNextBlock = async () => {
-  // let BLOCKS_PER_STEP = config.startBlockSize;
+
+const MAX_LEN = 100;
+
+const crawler = async () => {
   let currentBlockIndex = await lastBlockInDatabase();
-  let updateSubContractsCounter = 0;
-  let updateVerifiedContracts = 0;
+  currentBlockIndex++;
+  let queue = new Queue<Promise<void>>(MAX_LEN);
+  let per = new Performance(MAX_LEN);
 
-  while (true) {
-    // const chainHead = nodeProvider.lastBlockId();
-    const finalizedHead = nodeProvider.lastFinalizedBlockId();
-
-    while (currentBlockIndex < finalizedHead) {
-      currentBlockIndex ++;
-      await processBlock(currentBlockIndex);
-
-      // const start = Date.now();
-
-      // let transactions = 0;
-
-    //   // // Processing unfinalized blocks
-    //   transactions += await processInitialBlocks(to, from + difference);
-
-    //   // Processing finalized blocks
-    //   transactions += await processBlocks(from, to);
-
-    //   currentBlockIndex = to - 1;
-    //   const ms = Date.now() - start;
-    //   const time = ms / 1000;
-    //   const bps = finalizedDifference / time;
-
-    //   logger.info(
-    //     `n nodes: ${
-    //       config.nodeUrls.length
-    //     }\tn blocks: ${finalizedDifference}\tbps: ${bps.toFixed(
-    //       3,
-    //     )}\tn transactions: ${transactions}\ttps: ${(transactions / time).toFixed(
-    //       3,
-    //     )}\ttime: ${time.toFixed(3)} s\tblock from ${from} to ${to}`,
-    //   );
-    //   BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, config.maxBlocksPerStep);
+  while(true) {
+    while(currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {
+      queue.push(processBlock(currentBlockIndex));
+      currentBlockIndex++;
     }
-
-    // // Missing Contracts - Inefficient pattern
-    // updateSubContractsCounter += 1;
-    // if (updateSubContractsCounter > config.subcontractInterval) {
-    //   await parseAndInsertSubContracts(finalizedHead);
-    //   updateSubContractsCounter = 0;
-    // }
-
-    /**
-     * Verification contract sync will only be triggered when:
-     * - sync is enabled
-     * - crawler is in "listening" mode
-     * - on every nth interval
-     */
-    updateVerifiedContracts += 1;
-    if (
-      config.verifiedContractSync
-      && (finalizedHead - currentBlockIndex) <= 3
-      && updateVerifiedContracts > config.verifiedContractSyncInterval
-    ) {
-      await syncVerifiedContracts();
-      updateVerifiedContracts = 0;
+    if (queue.isEmpty()) {
+      await wait(config.pollInterval);
+      continue 
     }
-
-    await wait(config.pollInterval);
+    
+    const start = Date.now();
+    await queue.pop();
+    const diff = Date.now() - start;
+    per.push(diff);
+    per.log();
   }
 };
 
@@ -104,13 +62,13 @@ Promise.resolve()
     logger.info('Removing unfinished blocks...');
     await deleteUnfinishedBlocks();
 
-    // await queryv2('DELETE FROM block WHERE id > 3800');
+    await queryv2('DELETE FROM block WHERE id > 1');
     logger.info('...success');
   })
   .then(() => {
     logger.info(`Contract verification sync: ${config.verifiedContractSync}`);
   })
-  .then(processNextBlock)
+  .then(crawler)
   .then(async () => {
     await nodeProvider.closeProviders();
     logger.info('Finished');
