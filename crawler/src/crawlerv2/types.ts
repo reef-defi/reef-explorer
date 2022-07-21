@@ -1,7 +1,7 @@
-import { Extrinsic, ExtrinsicStatus, SignedExtrinsicData } from "../crawler/types";
-import AccountManager from "./managers/AccountManager";
+import { ExtrinsicStatus, SignedExtrinsicData } from "../crawler/types";
 
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import type { AnyTuple } from '@polkadot/types/types';
 
 // export interface ProcessModule {
 //   process(accountsManager: AccountManager): Promise<void>;
@@ -14,6 +14,7 @@ export interface ExtrinsicData {
   index: number;
   status: ExtrinsicStatus;
   signedData?: SignedExtrinsicData;
+  args: AnyTuple;
 }
 
 export interface EventData {

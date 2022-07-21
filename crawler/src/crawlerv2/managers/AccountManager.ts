@@ -29,9 +29,9 @@ class AccountManager {
   }
 
   async useEvm(evmAddress: string): Promise<string> {
-    // If the address is empty we do not process it
-    if (evmAddress === '0x0000000000000000000000000000000000') { // TODO replace with empty address for pools
-      return '';
+    // Node/Empty/Root address is presented as 0x
+    if (evmAddress === '0x0000000000000000000000000000000000000000') {
+      return '0x';
     }
     const address = await findNativeAddress(evmAddress);
 
@@ -53,7 +53,7 @@ class AccountManager {
     }
 
     // Saving used accounts
-    logger.info(`Updating accounts: \n\t${accounts.join(', \n\t- ')}`)
+    logger.info(`Updating accounts: \n\t- ${accounts.join(', \n\t- ')}`)
     await insertAccounts(usedAccounts);
 
     // Converting accounts into token holders

@@ -3,7 +3,7 @@ import { RewriteFrames } from '@sentry/integrations';
 import config from './config';
 import processBlocks, { processInitialBlocks } from './crawler/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
-import { nodeProvider } from './utils/connector';
+import { nodeProvider, queryv2 } from './utils/connector';
 import { min, promiseWithTimeout, wait } from './utils/utils';
 import logger from './utils/logger';
 import parseAndInsertSubContracts from './crawler/contracts';
@@ -69,12 +69,12 @@ const processNextBlock = async () => {
     //   BLOCKS_PER_STEP = min(BLOCKS_PER_STEP * 2, config.maxBlocksPerStep);
     }
 
-    // Missing Contracts - Inefficient pattern
-    updateSubContractsCounter += 1;
-    if (updateSubContractsCounter > config.subcontractInterval) {
-      await parseAndInsertSubContracts(finalizedHead);
-      updateSubContractsCounter = 0;
-    }
+    // // Missing Contracts - Inefficient pattern
+    // updateSubContractsCounter += 1;
+    // if (updateSubContractsCounter > config.subcontractInterval) {
+    //   await parseAndInsertSubContracts(finalizedHead);
+    //   updateSubContractsCounter = 0;
+    // }
 
     /**
      * Verification contract sync will only be triggered when:
@@ -103,6 +103,8 @@ Promise.resolve()
   .then(async () => {
     logger.info('Removing unfinished blocks...');
     await deleteUnfinishedBlocks();
+
+    // await queryv2('DELETE FROM block WHERE id > 3800');
     logger.info('...success');
   })
   .then(() => {
