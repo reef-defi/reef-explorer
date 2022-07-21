@@ -37,15 +37,18 @@ const crawler = async () => {
   let per = new Performance(MAX_LEN);
 
   while(true) {
+    // Starting to process some amount of blocks
     while(currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {
       queue.push(processBlock(currentBlockIndex));
       currentBlockIndex++;
     }
+    // If queue is empty crawler has nothing to do 
     if (queue.isEmpty()) {
       await wait(config.pollInterval);
       continue 
     }
     
+    // Waiting for the first block to finish and measuring performance
     const start = Date.now();
     await queue.pop();
     const diff = Date.now() - start;

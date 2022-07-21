@@ -7,6 +7,7 @@ import ContractCreateEvent from "./CreateContractEvent";
 import DefaultEvent from "./DefaultEvent";
 import EndowedEvent from "./EndowedEvent";
 import EvmLogEvent from "./EvmLogEvent";
+import ExecutedFailedEvent from "./ExecutedFailedEvent";
 import KillAccountEvent from "./KillAccountEvent";
 import ReservedEvent from "./ReservedEvent";
 import StakingEvent from "./StakingEvent";
@@ -16,12 +17,14 @@ import Erc20TransferEvent from "./transfer/Erc20TransferEvent";
 import Erc721TransferEvent from "./transfer/Erc721TransferEvent";
 import NativeTransferEvent from "./transfer/NativeTransferEvent";
 import UnverifiedEvmLog from "./UnverifiedEvmLog";
+import UnverifiedExecutedFailedEvent from "./UnverifiedExecutedFailedEvent";
 
 
-const selectEvmLogEvent = async (head: EventData): Promise<DefaultEvent> => {
-  const eventData = (head.event.event.data.toJSON() as any);
+const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => {
+  const address = head.event.event.data[0].toString();
+
   // Retrieving contract data from db
-  const contract = await getContractDB(toChecksumAddress(eventData[0].address));
+  const contract = await getContractDB(toChecksumAddress(address));
 
   // If contract does not exist we can not verified evm log content
   // therefore log is marked as unverified
@@ -37,6 +40,7 @@ const selectEvmLogEvent = async (head: EventData): Promise<DefaultEvent> => {
   });
   const eventName = `${decodedEvent.name}.${type}`;
 
+  // Handling transfer events
   switch (eventName) {
     case "Transfer.ERC20":
       return new Erc20TransferEvent(head, contract[0]);
@@ -51,6 +55,20 @@ const selectEvmLogEvent = async (head: EventData): Promise<DefaultEvent> => {
   }
 }
 
+const selectExecutionFailedEvent = async (head: EventData): Promise<UnverifiedExecutedFailedEvent> => {
+ const address = head.event.event.data[0].toString();
+  
+  // Retrieving contract data from db
+  const contract = await getContractDB(toChecksumAddress(address));
+
+  // If contract does not exist we can not verified evm log content
+  // therefore log is marked as unverified
+  if (contract.length === 0)
+    return new UnverifiedExecutedFailedEvent(head);
+   
+  return new ExecutedFailedEvent(head);
+}
+
 const resolveEvent = async (
   head: EventData,
 ): Promise<DefaultEvent> => {
@@ -60,15 +78,19 @@ const resolveEvent = async (
   // Decoding native events
   switch(eventCompression) {
     case 'evm.Log': return selectEvmLogEvent(head);
-    case 'evm.ExecutedFailed': throw new Error('Not done')
+    case 'evm.ExecutedFailed': return selectExecutionFailedEvent(head);
     case 'evm.Created': return new ContractCreateEvent(head);
+
     case 'evmAccounts.ClaimAccount': return new ClaimEvmAccountEvent(head);
+
     case 'balances.Endowed': return new EndowedEvent(head);
     case 'balances.Reserved': return new ReservedEvent(head);
     case 'balances.Transfer': return new NativeTransferEvent(head);
+    
     case 'staking.Rewarded': return new StakingEvent(head);
-    // TODO detect kill account!
+    
     case 'system.KilledAccount': return new KillAccountEvent(head);
+
     default: return new DefaultEvent(head);
   }
 };
