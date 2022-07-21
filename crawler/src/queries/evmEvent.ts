@@ -6,6 +6,7 @@ import {
 } from '../crawler/types';
 import { insert, insertV2, query, queryv2 } from '../utils/connector';
 import { toChecksumAddress } from '../utils/utils';
+import logger from '../utils/logger';
 
 const contractToValues = ({
   address,
@@ -153,6 +154,7 @@ interface InsertEvmLog extends CompleteEvmData {
   blockId: number;
   eventIndex: number;
   extrinsicIndex: number;
+  method: 'Log' | 'ExecutedFailed'
 }
 
 export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {
@@ -162,24 +164,25 @@ export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {
         INSERT INTO evm_event
           (event_id, contract_address, data_raw, data_parsed, method, topic_0, topic_1, topic_2, topic_3, block_id, extrinsic_index, event_index, status, type)
         VALUES 
-          %L
-      `),
+          %L;
+      `,
       logs.map((log) => [
         log.eventId,
         log.raw.address,
-        log.raw,
-        log.parsed || null,
-        log.parsed.method || null,
-        log.raw.topics[0],
-        log.raw.topics[1],
-        log.raw.topics[2],
-        log.raw.topics[3],
+        JSON.stringify(log.raw),
+        JSON.stringify(log.parsed) || null,
+        log.method,
+        log.raw.topics[0] || null,
+        log.raw.topics[1] || null,
+        log.raw.topics[2] || null,
+        log.raw.topics[3] || null,
         log.blockId,
         log.extrinsicIndex,
         log.eventIndex,
         log.status,
         log.type,
       ])
+      )
     )
   }
 };
