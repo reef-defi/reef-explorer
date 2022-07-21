@@ -60,14 +60,15 @@ const resolveEvent = async (
   // Decoding native events
   switch(eventCompression) {
     case 'evm.Log': return selectEvmLogEvent(head);
+    case 'evm.ExecutedFailed': throw new Error('Not done')
     case 'evm.Created': return new ContractCreateEvent(head);
-    case 'evmAccounts.Claim': return new ClaimEvmAccountEvent(head);
+    case 'evmAccounts.ClaimAccount': return new ClaimEvmAccountEvent(head);
     case 'balances.Endowed': return new EndowedEvent(head);
     case 'balances.Reserved': return new ReservedEvent(head);
     case 'balances.Transfer': return new NativeTransferEvent(head);
     case 'staking.Rewarded': return new StakingEvent(head);
     // TODO detect kill account!
-    case '***': return new KillAccountEvent(head);
+    case 'system.KilledAccount': return new KillAccountEvent(head);
     default: return new DefaultEvent(head);
   }
 };
