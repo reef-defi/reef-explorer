@@ -18,7 +18,7 @@ class UnverifiedEvmLog extends DefaultEvent {
     address = toChecksumAddress(address);
 
     this.data = {
-      raw: { address, topics, data }, parsed: {}, status: 'Success', type: 'Unverified',
+      raw: { address, topics, data }, parsed: null, status: 'Success', type: 'Unverified',
     };
   }
 
@@ -38,6 +38,7 @@ class UnverifiedEvmLog extends DefaultEvent {
       eventId: this.id,
       eventIndex: this.head.index,
       extrinsicIndex: extrinsicData.index,
+      method: 'Log'
     }]);
   }
 }

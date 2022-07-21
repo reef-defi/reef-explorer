@@ -22,12 +22,14 @@ class EvmLogEvent extends UnverifiedEvmLog {
     address = toChecksumAddress(address);
 
     this.data = {
-      raw: { address, topics, data }, parsed: {}, status: 'Success', type: 'Unverified',
+      raw: { address, topics, data }, parsed: null, status: 'Success', type: 'Unverified',
     };
     const {compiled_data, name} = this.contract;
-    const iface = new utils.Interface(compiled_data[name]);
-    this.data.parsed = iface.parseLog({ topics, data });
-    this.data.type = 'Verified';
+    try {
+      const iface = new utils.Interface(compiled_data[name]);
+      this.data.parsed = iface.parseLog({ topics, data });
+      this.data.type = 'Verified';
+    } catch(e) {}
   }
 
 };
