@@ -1,13 +1,20 @@
-import { Contract } from "../../../crawler/types";
-import { insertContract } from "../../../queries/evmEvent";
-import { nodeProvider } from "../../../utils/connector";
+import { insertV2, nodeProvider } from "../../../utils/connector";
 import logger from "../../../utils/logger";
+import { ensure } from "../../../utils/utils";
 import AccountManager from "../../managers/AccountManager";
 import { ExtrinsicData } from "../../types";
 import DefaultEvent from "./DefaultEvent";
 
+interface Bytecode {
+  bytecode: string;
+  args: string;
+  context: string;
+}
+
 class ContractCreateEvent extends DefaultEvent {
-  contract: Contract | undefined;
+  address?: string;
+  maintainer?: string;
+  bytecode?: Bytecode
 
   private preprocessBytecode(bytecode: string) {
     const start = bytecode.indexOf('6080604052');
@@ -23,47 +30,42 @@ class ContractCreateEvent extends DefaultEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
 
-    const address = this.head.event.event.data[0].toString();
-    const contractData = (await nodeProvider.query((provider) => provider.api.query.evm.accounts(address))).toJSON();
+    // V9
+    const [, address] = this.head.event.event.data;
+    // V8
+    // const [address] = this.head.event.event.data;
 
-    throw new Error('Extract contract hash form above data');
-    const contractHash = ""; // TODO extract from contractData['contractInfo']
-    const bytecode = (await nodeProvider.query((provider) => provider.api.query.evm.codes())).toString();
-    const signer = ""; // TODO 
-    const gasLimit = "" // TODO
-    const storageLimit = "" // TODO
-    // const reserveEvent = this.head.events.find((evn) => nodeProvider.getProvider().api.events.balances.Reserved.is(evn.event))!;
-    // const signer = reserveEvent.event.data[0].toString();
-    // const bytecode = args[0].toString();
-    // const gasLimit = args[2].toString();
-    // const storageLimit = args[3].toString();
-
-    const { context: bytecodeContext, args: bytecodeArguments } = this.preprocessBytecode(bytecode);
+    this.address = address.toString()
+    logger.info(`New contract created: \n\t -${this.address}`)
     
-    // this.contract = {
-    //   signer,
-    //   address,
-    //   bytecode,
-    //   gasLimit,
-    //   storageLimit,
-    //   bytecodeContext,
-    //   bytecodeArguments,
-    //   extrinsicId: this.id,
-    //   timestamp: this.head.timestamp,
-    // }
-
-    // Marking account update
-    await accountsManager.use(signer);
+    const contractData: any = (await nodeProvider.query((provider) => provider.api.query.evm.accounts(this.address))).toJSON();
+    const codeHash: string = contractData['contractInfo']['codeHash'];
+    this.maintainer = await accountsManager.useEvm(contractData['contractInfo']['maintainer']);
+    const bytecode = (await nodeProvider.query((provider) => provider.api.query.evm.codes(codeHash))).toString();
+    const { context, args } = this.preprocessBytecode(bytecode);
+    this.bytecode = { bytecode, context, args }
   }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
 
-    if (!this.contract) {
-      throw new Error('Contract is undefined, call .process() method to prepare required data!');
-    }
+    ensure(!!this.address, 'Contract address was unclaimed. Call process function before save')
+    ensure(!!this.bytecode, 'Contract bytecode was unclaimed. Call process function before save')
+    ensure(!!this.maintainer, 'Contract maintainer was unclaimed. Call process function before save')
+    // ensure(!!this.limits, 'Contract limits was unclaimed. Call process function before save')
+    
+    const gasLimit = extrinsicData.args[2].toString();
+    const storageLimit = extrinsicData.args[3].toString();
     logger.info('Inserting contract');
-    await insertContract(this.contract);
+
+    await insertV2(`
+    INSERT INTO contract
+      (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit, timestamp)
+    VALUES
+      %L
+    ON CONFLICT (address) DO NOTHING;`,
+        [[this.address, extrinsicData.id, this.maintainer, this.bytecode?.bytecode, this.bytecode?.context, this.bytecode?.args, gasLimit, storageLimit, this.head.timestamp]]
+    )
   }
 
 }

@@ -1,5 +1,4 @@
 import { utils } from "ethers";
-import { EventHead } from "../../../crawler/types";
 import { getContractDB } from "../../../queries/evmEvent";
 import { toChecksumAddress } from "../../../utils/utils";
 import { EventData } from "../../types";

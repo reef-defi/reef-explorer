@@ -6,6 +6,7 @@ import { insertExtrinsic } from "../../queries/extrinsic";
 import { nodeProvider, queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
 import AccountManager from "../managers/AccountManager";
+import { ExtrinsicData } from '../types';
 import DefaultEvent from "./event/DefaultEvent";
 
 type Extr = GenericExtrinsic<AnyTuple>
@@ -107,11 +108,12 @@ class Extrinsic {
       errorMessage: this.status.type === 'error' ? this.status.message : '',
     });
 
-    const extrinsicData = {
+    const extrinsicData: ExtrinsicData = {
       id: this.id,
       index: this.index,
       status: this.status,
       signedData: this.signedData,
+      args: this.extrinsic.args,
     }
     
     await Promise.all(this.events.map(async (event) => event.save(extrinsicData)));
