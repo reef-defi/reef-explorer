@@ -16,7 +16,7 @@ interface InsertInitialBlock {
 
 export const lastBlockInDatabase = async (): Promise<number> => {
   const result = await query<BlockID>(
-    'SELECT ID FROM block ORDER By id DESC LIMIT 1',
+    'SELECT ID FROM block WHERE finalized = true ORDER By id DESC LIMIT 1',
   );
   return result.length === 0 ? -1 : parseInt(result[0].id, 10);
 };

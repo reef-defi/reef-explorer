@@ -1,7 +1,7 @@
 import { extrinsicStatus } from "../crawler/extrinsic";
 import { Block, BlockHash, Event } from "../crawler/types";
 import { insertBlock, updateBlockFinalized } from "../queries/block";
-import { nodeProvider } from "../utils/connector";
+import { nodeProvider, queryv2 } from "../utils/connector";
 import logger from "../utils/logger";
 import resolveEvent from "./extrinsic/event";
 import DefaultEvent from "./extrinsic/event/DefaultEvent";
@@ -113,7 +113,10 @@ const processBlock = async (blockId: number): Promise<void> => {
   await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.process(accountManager)));
 
   // TODO subscribe to the db block with block id - 1 and await block finalization!
-
+  let res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId-1])
+  while (res.length === 0) {
+    res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId-1]);
+  }
   // First saving all used accounts
   await accountManager.save();
 
