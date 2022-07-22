@@ -1,5 +1,5 @@
-import DefaultEvent from "./DefaultEvent";
+import SignerAddressCapture from "./SignerAddressCapture";
 
-class ReservedEvent extends DefaultEvent { }
+class ReservedEvent extends SignerAddressCapture { }
 
 export default ReservedEvent;
