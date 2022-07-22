@@ -12,16 +12,14 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
 
     logger.info('Processing Erc721 transfer event');
     const tokenAddress = this.contract.address;
-    const [from, to, nftId] = this.data?.parsed.decodedEvent.args;
+    const [from, to, nftID] = this.data?.parsed.args;
     const abi = this.contract.compiled_data[this.contract.name];
+    const nftId = nftID.toString();
     const toEvmAddress = to.toString();
     const fromEvmAddress = from.toString();
     const toAddress = await accountsManager.useEvm(toEvmAddress)
     const fromAddress = await accountsManager.useEvm(fromEvmAddress)
-
-    const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
-    const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
-
+    
     this.transfers.push({
       amount: '1',
       blockId: this.head.blockId,
@@ -35,19 +33,25 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
       denom: this.contract.contract_data?.symbol,
       nftId,
     });
-
-    this.addTokenHolder(
-      toAddress, 
-      toEvmAddress, 
-      toBalance,
-      nftId
-    );
-    this.addTokenHolder(
-      fromAddress,
-      fromEvmAddress,
-      fromBalance,
-      nftId
-    );
+    
+    if (toAddress !== "0x") {
+      const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
+      this.addTokenHolder(
+        toAddress, 
+        toEvmAddress, 
+        toBalance,
+        nftId
+        );
+      }
+    if (fromAddress !== "0x") {
+      const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
+      this.addTokenHolder(
+        fromAddress,
+        fromEvmAddress,
+        fromBalance,
+        nftId
+      );
+    }
   }
 }
 

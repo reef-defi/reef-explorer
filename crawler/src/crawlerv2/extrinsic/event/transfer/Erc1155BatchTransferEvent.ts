@@ -7,7 +7,7 @@ import DefaultErcTransferEvent from "./DefaultErcTransferEvent";
 class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
   private async balanceOfBatch(address: string, tokenAddress: string, ids: string[]): Promise<string[]> {
     const contract = new Contract(tokenAddress, this.contract.compiled_data[this.contract.name], nodeProvider.getProvider());
-    const result = await contract.balanceOfBatch([address], ids);
+    const result = await contract.balanceOfBatch(Array(ids.length).fill(address), ids);
     console.log('Balance of batch result: ', result);
     // TODO remove any!
     return result.map((amount: any) => amount.toString());
@@ -17,11 +17,10 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
     await super.process(accountsManager);
 
     logger.info('Processing Erc1155 batch transfer event');
-    const [, fromEvmAddress, toEvmAddress, nftIds, amounts] = this.data?.parsed.decodedEvent.args;
+    const [, fromEvmAddress, toEvmAddress, nftIds, amounts] = this.data?.parsed.args;
     const tokenAddress = this.contract.address;
     const toAddress = await accountsManager.useEvm(toEvmAddress)
     const fromAddress = await accountsManager.useEvm(fromEvmAddress)
-
     const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
     const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
     
@@ -45,13 +44,13 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
         toAddress, 
         toEvmAddress, 
         toBalances[index],
-        nftIds[index]
+        nftIds[index].toString()
       );
       this.addTokenHolder(
         fromAddress,
         fromEvmAddress,
         fromBalances[index],
-        nftIds[index]
+        nftIds[index].toString()
       );
     }
   }

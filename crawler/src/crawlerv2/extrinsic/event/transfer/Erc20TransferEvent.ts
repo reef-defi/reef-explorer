@@ -15,7 +15,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     await super.process(accountsManager);
     logger.info("Processing Erc20 transfer event");
 
-    const [from, to, amount] = this.data?.parsed.decodedEvent.args;
+    const [from, to, amount] = this.data?.parsed.args;
     const toEvmAddress = to.toString();
     const fromEvmAddress = from.toString();
     const tokenAddress = this.contract.address;
@@ -25,9 +25,6 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     const toAddress = await accountsManager.useEvm(to);
     const fromAddress = await accountsManager.useEvm(from);
 
-    const toBalance = await balanceOf(tokenAddress, toEvmAddress, abi);
-    const fromBalance = await balanceOf(tokenAddress, fromEvmAddress, abi);
-
     this.transfers.push({
       type: "ERC20",
       toEvmAddress,
@@ -35,22 +32,31 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       fromEvmAddress,
       blockId: this.head.blockId,
       timestamp: this.head.timestamp,
-      toAddress: toAddress === "" ? "null" : toAddress,
-      fromAddress: fromAddress === "" ? "null" : fromAddress,
       amount: amount.toString(),
       denom: this.contract.contract_data?.symbol,
+      toAddress: toAddress === '' ? 'null' : toAddress,
+      fromAddress: fromAddress === '' ? 'null' : fromAddress,
     });
+    
+    if (toAddress !== '0x') {
+      const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
+      console.log(toBalance)      
+      this.addTokenHolder(
+        toAddress, 
+        toEvmAddress, 
+        toBalance
+      );
+    }
 
-    this.addTokenHolder(
-      toAddress, 
-      toEvmAddress, 
-      toBalance
-    );
-    this.addTokenHolder(
-      fromAddress,
-      fromEvmAddress,
-      fromBalance
-    );
+    if (fromAddress !== '0x') {
+      const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
+      console.log(fromBalance)
+      this.addTokenHolder(
+        fromAddress,
+        fromEvmAddress,
+        fromBalance
+      );
+    }
   }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
@@ -63,6 +69,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(",\n\t- ")}`
       );
+      console.log(this.accountTokenHolders)
       await insertAccountTokenHolders(this.accountTokenHolders);
     }
 

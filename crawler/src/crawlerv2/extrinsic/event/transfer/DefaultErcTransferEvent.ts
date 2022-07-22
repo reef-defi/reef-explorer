@@ -14,18 +14,19 @@ class DefaultErcTransferEvent extends EvmLogEvent {
     address: string,
     evmAddress: string,
     balance: string,
-    nftId='null'
+    nftId:string|null=null
   ) {
+    if (address === '0x') { return; }
     // Creating new token holder
     const tokenHolder: TokenHolder = {
       nftId,
       balance,
-      evmAddress,
+      evmAddress: address !== '' ? evmAddress : '',
       timestamp: this.head.timestamp,
       info: this.contract.contract_data,
       tokenAddress: this.contract.address,
       type: address === "" ? "Contract" : "Account",
-      signerAddress: address === "" ? "null" : address,
+      signerAddress: address,
     };
 
     // Based on reciever type (contract/account) we extend holder accordingly

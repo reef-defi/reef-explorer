@@ -1,4 +1,5 @@
 import { utils } from "ethers";
+import { BytecodeLog } from "../../../crawler/types";
 import { getContractDB } from "../../../queries/evmEvent";
 import { toChecksumAddress } from "../../../utils/utils";
 import { EventData } from "../../types";
@@ -21,10 +22,9 @@ import UnverifiedExecutedFailedEvent from "./UnverifiedExecutedFailedEvent";
 
 
 const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => {
-  const address = head.event.event.data[0].toString();
-
+  const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
   // Retrieving contract data from db
-  const contract = await getContractDB(toChecksumAddress(address));
+  const contract = await getContractDB(toChecksumAddress(contractData.address));
 
   // If contract does not exist we can not verified evm log content
   // therefore log is marked as unverified
@@ -34,10 +34,9 @@ const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => 
   // Decoding contract event
   const {type, compiled_data, name} = contract[0]
   const abi = new utils.Interface(compiled_data[name]);
-  const decodedEvent = abi.parseLog({ 
-    topics: head.event.topics.map((t) => t.toString()), 
-    data: head.event.event.data.toString()
-  });
+  // console.log(abi)
+  // console.log(head.event.event.data.toJSON())
+  const decodedEvent = abi.parseLog(contractData);
   const eventName = `${decodedEvent.name}.${type}`;
 
   // Handling transfer events
@@ -56,10 +55,10 @@ const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => 
 }
 
 const selectExecutionFailedEvent = async (head: EventData): Promise<UnverifiedExecutedFailedEvent> => {
- const address = head.event.event.data[0].toString();
-  
+  const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
+
   // Retrieving contract data from db
-  const contract = await getContractDB(toChecksumAddress(address));
+  const contract = await getContractDB(toChecksumAddress(contractData.address));
 
   // If contract does not exist we can not verified evm log content
   // therefore log is marked as unverified
