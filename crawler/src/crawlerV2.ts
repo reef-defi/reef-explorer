@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/node';
 import config from './config';
 import processBlock from './crawlerv2/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
-import { nodeProvider, queryv2 } from './utils/connector';
+import { nodeProvider } from './utils/connector';
 import logger from './utils/logger';
 import Performance from './utils/Performance';
 import Queue from './utils/Queue';
@@ -28,7 +28,7 @@ Sentry.setTag('network', config.network);
 console.warn = () => {};
 
 
-const MAX_LEN = 100;
+const MAX_LEN = 128;
 
 const crawler = async () => {
   let currentBlockIndex = await lastBlockInDatabase();
@@ -42,6 +42,7 @@ const crawler = async () => {
       queue.push(processBlock(currentBlockIndex));
       currentBlockIndex++;
     }
+
     // If queue is empty crawler has nothing to do 
     if (queue.isEmpty()) {
       await wait(config.pollInterval);
@@ -60,13 +61,8 @@ const crawler = async () => {
 Promise.resolve()
   .then(async () => {
     await nodeProvider.initializeProviders();
-  })
-  .then(async () => {
     logger.info('Removing unfinished blocks...');
     await deleteUnfinishedBlocks();
-
-    await queryv2('DELETE FROM block WHERE id > 1');
-    logger.info('...success');
   })
   .then(() => {
     logger.info(`Contract verification sync: ${config.verifiedContractSync}`);

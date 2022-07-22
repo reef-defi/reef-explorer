@@ -34,8 +34,6 @@ const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => 
   // Decoding contract event
   const {type, compiled_data, name} = contract[0]
   const abi = new utils.Interface(compiled_data[name]);
-  // console.log(abi)
-  // console.log(head.event.event.data.toJSON())
   const decodedEvent = abi.parseLog(contractData);
   const eventName = `${decodedEvent.name}.${type}`;
 

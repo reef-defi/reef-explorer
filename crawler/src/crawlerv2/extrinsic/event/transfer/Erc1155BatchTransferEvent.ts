@@ -8,8 +8,6 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
   private async balanceOfBatch(address: string, tokenAddress: string, ids: string[]): Promise<string[]> {
     const contract = new Contract(tokenAddress, this.contract.compiled_data[this.contract.name], nodeProvider.getProvider());
     const result = await contract.balanceOfBatch(Array(ids.length).fill(address), ids);
-    console.log('Balance of batch result: ', result);
-    // TODO remove any!
     return result.map((amount: any) => amount.toString());
   } 
 
@@ -23,7 +21,7 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
     const fromAddress = await accountsManager.useEvm(fromEvmAddress)
     const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
     const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
-    
+
     for(let index = 0; index < nftIds.length; index ++) {
       // Adding transe
       this.transfers.push({

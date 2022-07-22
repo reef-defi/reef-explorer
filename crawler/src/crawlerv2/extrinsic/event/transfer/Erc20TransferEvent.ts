@@ -40,7 +40,6 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     
     if (toAddress !== '0x') {
       const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
-      console.log(toBalance)      
       this.addTokenHolder(
         toAddress, 
         toEvmAddress, 
@@ -50,7 +49,6 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
 
     if (fromAddress !== '0x') {
       const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
-      console.log(fromBalance)
       this.addTokenHolder(
         fromAddress,
         fromEvmAddress,
@@ -69,7 +67,6 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(",\n\t- ")}`
       );
-      console.log(this.accountTokenHolders)
       await insertAccountTokenHolders(this.accountTokenHolders);
     }
 

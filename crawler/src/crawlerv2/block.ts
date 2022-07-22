@@ -112,7 +112,7 @@ const processBlock = async (blockId: number): Promise<void> => {
   logger.info('Processing extrinsics & events');
   await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.process(accountManager)));
 
-  // TODO subscribe to the db block with block id - 1 and await block finalization!
+  logger.info('Waiting for the previous block to finish');
   let res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId-1])
   while (res.length === 0) {
     res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId-1]);
