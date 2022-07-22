@@ -69,9 +69,20 @@ class Extrinsic {
     };
   }
 
+  private async getId(): Promise<number> {
+    let result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
+    let id = parseInt(result[0].nextval); 
+    let exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
+    while (exist.length > 0) {
+      result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
+      id = parseInt(result[0].nextval); 
+      exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
+    }
+    return id;
+  }
+
   async process(accountsManager: AccountManager): Promise<void> {
-    const result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
-    this.id = parseInt(result[0].nextval);
+    this.id = await this.getId();
 
     // Extracting signed data
     this.signedData = this.extrinsic.isSigned
@@ -79,7 +90,8 @@ class Extrinsic {
       : undefined;
     
     this.status = extrinsicStatus(this.events);
-    // Process all extrinsic events 
+    // Process all extrinsic events
+    logger.info('Processing extrinsic events')
     await Promise.all(this.events.map(async (event) => event.process(accountsManager)));
   }
 
