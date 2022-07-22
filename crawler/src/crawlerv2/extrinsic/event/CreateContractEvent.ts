@@ -7,8 +7,11 @@ import DefaultEvent from "./DefaultEvent";
 
 
 class ContractCreateEvent extends DefaultEvent {
+  skip=false;
   address?: string;
   maintainer?: string;
+
+  static extistingContracts: Set<string> = new Set()
 
   private preprocessBytecode(bytecode: string) {
     const start = bytecode.indexOf('6080604052');
@@ -30,6 +33,11 @@ class ContractCreateEvent extends DefaultEvent {
     const [address] = this.head.event.event.data;
     
     this.address = toChecksumAddress(address.toString());
+    if (ContractCreateEvent.extistingContracts.has(this.address)) {
+      this.skip = true;
+      return;
+    }
+    ContractCreateEvent.extistingContracts.add(this.address);
     logger.info(`New contract created: \n\t -${this.address}`)
     
     const contractData: any = (await nodeProvider.query((provider) => provider.api.query.evm.accounts(this.address))).toJSON();
@@ -38,6 +46,8 @@ class ContractCreateEvent extends DefaultEvent {
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
+
+    if(this.skip) { return; }
 
     ensure(!!this.address, 'Contract address was unclaimed. Call process function before save')
     ensure(!!this.maintainer, 'Contract maintainer was unclaimed. Call process function before save')
