@@ -77,7 +77,7 @@ export interface EventHead {
   index: number;
   extrinsicIndex: number;
   status: ExtrinsicStatus;
-  // signedData?: SignedExtrinsicData;
+  signedData?: SignedExtrinsicData;
 }
 export interface EventBody extends EventHead {
   id: number;
