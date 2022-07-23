@@ -1,5 +1,7 @@
 import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
+import { createClient } from 'celery-node';
+import { AsyncResult } from 'celery-node/dist/app/result';
 import config from './config';
 import processBlock, { processUnfinalizedBlock } from './crawlerv2/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
@@ -27,6 +29,12 @@ Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
+const client = createClient('amqp://', 'amqp://');
+
+const processBlockTask = client.createTask('query.block');
+
+const MAX_LEN = 1;
+
 const crawler = async () => {
   let currentBlockIndex = await lastBlockInDatabase();
   currentBlockIndex++;
@@ -39,8 +47,8 @@ const crawler = async () => {
 
   while (true) {
     // Starting to process some amount of blocks
-    while (currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {
-      queue.push(processBlock(currentBlockIndex));
+    while(currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {
+      queue.push(processBlockTask.applyAsync([currentBlockIndex]));
       currentBlockIndex++;
     }
 
@@ -52,7 +60,7 @@ const crawler = async () => {
 
     // Waiting for the first block to finish and measuring performance
     const start = Date.now();
-    await queue.pop();
+    await queue.pop().get();
     const diff = Date.now() - start;
     per.push(diff);
     per.log();
