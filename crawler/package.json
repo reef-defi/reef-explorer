@@ -16,6 +16,7 @@
     "profile-backtracking": "tsc && node --prof --max-old-space-size=16384 ./dist/backtracking.js",
     "dev-backtracking": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/backtracking.ts",
     "dev-pool": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/pool.ts",
+    "dev-worker": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/worker.ts",
     "start-pool": "node --max-old-space-size=16384 ./dist/pool.js",
     "test": "echo skip",
     "lint": "eslint --fix --ext .ts ./src/"
@@ -43,6 +44,8 @@
     "@sentry/integrations": "^6.16.1",
     "@sentry/node": "^6.16.1",
     "@sentry/tracing": "^6.16.1",
+    "celery": "^0.0.0",
+    "celery-node": "^0.5.9",
     "cross-fetch": "^3.1.5",
     "graphql": "^16.3.0",
     "pg": "^8.7.1",
