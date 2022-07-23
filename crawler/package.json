@@ -8,9 +8,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.production.json",
     "start": "node --max-old-space-size=16384 ./dist/crawler.js",
-    "prod": "tsc -p tsconfig.production.json && node --max-old-space-size=16384 ./dist/crawler.js",
+    "prod": "tsc -p tsconfig.production.json && node --max-old-space-size=16384 ./dist/crawlerV2.js",
     "profile": "tsc && node --prof --max-old-space-size=16384 ./dist/crawler.js",
-    "dev": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/crawler.ts",
+    "dev": "NODE_OPTIONS=--max-old-space-size=16384 nodemon ./src/crawlerV2.ts",
     "start-backtracking": "node --max-old-space-size=16384 ./dist/backtracking.js",
     "prod-backtracking": "tsc -p tsconfig.production.json && node --max-old-space-size=16384 ./dist/backtracking.js",
     "profile-backtracking": "tsc && node --prof --max-old-space-size=16384 ./dist/backtracking.js",

@@ -22,7 +22,11 @@
         "ts": "never"
       }
     ],
+    "camelcase": "warn",
+    "no-unused-vars": "warn",
     "max-len": "off",
+    "no-continue": "off",
+    "no-plusplus": "off",
     "import/no-extraneous-dependencies": "off",
     "no-await-in-loop": "off"
   },
