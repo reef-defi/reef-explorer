@@ -56,8 +56,7 @@ const selectExecutionFailedEvent = async (head: EventData): Promise<DefaultEvent
   // Retrieving contract data from db
   const contract = await getContractDB(toChecksumAddress(contractData.address));
 
-  // If contract does not exist we can not verified evm log content
-  // therefore log is marked as unverified
+  // If contract does not exist we can not verified evm execution failed content
   if (contract.length === 0) return new UnverifiedExecutedFailedEvent(head);
 
   return new ExecutedFailedEvent(head, contract[0]);

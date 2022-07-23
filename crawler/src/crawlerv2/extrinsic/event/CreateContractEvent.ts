@@ -28,10 +28,11 @@ class ContractCreateEvent extends DefaultEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
 
-    // V9
-    // const [, address] = this.head.event.event.data;
-    // V8
-    const [address] = this.head.event.event.data;
+    const address = this.head.event.event.data.length > 1
+      // V9
+      ? this.head.event.event.data[1]
+      // V8
+      : this.head.event.event.data[0];
 
     this.address = toChecksumAddress(address.toString());
     if (ContractCreateEvent.extistingContracts.has(this.address)) {
