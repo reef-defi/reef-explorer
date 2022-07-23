@@ -1,10 +1,10 @@
-import { utils } from "ethers";
-import { BytecodeLog, VerifiedContract } from "../../../crawler/types";
-import { toChecksumAddress } from "../../../utils/utils";
-import AccountManager from "../../managers/AccountManager";
-import { EventData } from "../../types";
-import UnverifiedEvmLog from "./UnverifiedEvmLog";
-
+import { utils } from 'ethers';
+import { BytecodeLog, VerifiedContract } from '../../../crawler/types';
+import logger from '../../../utils/logger';
+import { toChecksumAddress } from '../../../utils/utils';
+import AccountManager from '../../managers/AccountManager';
+import { EventData } from '../../types';
+import UnverifiedEvmLog from './UnverifiedEvmLog';
 
 class EvmLogEvent extends UnverifiedEvmLog {
   contract: VerifiedContract;
@@ -25,14 +25,15 @@ class EvmLogEvent extends UnverifiedEvmLog {
     this.data = {
       raw: { address, topics, data }, parsed: null,
     };
-    const {compiled_data, name} = this.contract;
+    const { compiled_data, name } = this.contract;
     try {
       const iface = new utils.Interface(compiled_data[name]);
       this.data.parsed = iface.parseLog({ topics, data });
       this.type = 'Verified';
-    } catch(e) {}
+    } catch (e) {
+      logger.warn('Contract event was not compiled...');
+    }
   }
-
-};
+}
 
 export default EvmLogEvent;

@@ -1,13 +1,13 @@
 import { GenericExtrinsic } from '@polkadot/types/extrinsic';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
-import { ExtrinsicStatus, SignedExtrinsicData } from "../../crawler/types";
-import { insertExtrinsic } from "../../queries/extrinsic";
-import { nodeProvider, queryv2 } from "../../utils/connector";
-import logger from "../../utils/logger";
-import AccountManager from "../managers/AccountManager";
+import { ExtrinsicStatus, SignedExtrinsicData } from '../../crawler/types';
+import { insertExtrinsic } from '../../queries/extrinsic';
+import { nodeProvider, queryv2 } from '../../utils/connector';
+import logger from '../../utils/logger';
+import AccountManager from '../managers/AccountManager';
 import { ExtrinsicData } from '../types';
-import DefaultEvent from "./event/DefaultEvent";
+import DefaultEvent from './event/DefaultEvent';
 
 type Extr = GenericExtrinsic<AnyTuple>
 
@@ -41,12 +41,19 @@ const extrinsicStatus = (extrinsicEvents: DefaultEvent[]): ExtrinsicStatus => ex
 
 class Extrinsic {
   id?: number;
+
   index: number;
+
   extrinsic: Extr;
+
   blockId: number;
+
   timestamp: string;
+
   events: DefaultEvent[];
+
   status?: ExtrinsicStatus;
+
   signedData?: SignedExtrinsicData;
 
   constructor(blockId: number, index: number, timestamp: string, extrinsic: Extr, events: DefaultEvent[]) {
@@ -57,12 +64,12 @@ class Extrinsic {
     this.extrinsic = extrinsic;
   }
 
-  private async getSignedData(hash: string): Promise<SignedExtrinsicData> {
+  private static async getSignedData(hash: string): Promise<SignedExtrinsicData> {
     const [fee, feeDetails] = await Promise.all([
       nodeProvider.query((provider) => provider.api.rpc.payment.queryInfo(hash)),
       nodeProvider.query((provider) => provider.api.rpc.payment.queryFeeDetails(hash)),
     ]);
-  
+
     return {
       fee: fee.toJSON(),
       feeDetails: feeDetails.toJSON(),
@@ -71,11 +78,11 @@ class Extrinsic {
 
   private async getId(): Promise<number> {
     let result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
-    let id = parseInt(result[0].nextval); 
+    let id = parseInt(result[0].nextval, 10);
     let exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
     while (exist.length > 0) {
       result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
-      id = parseInt(result[0].nextval); 
+      id = parseInt(result[0].nextval, 10);
       exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
     }
     return id;
@@ -86,12 +93,12 @@ class Extrinsic {
 
     // Extracting signed data
     this.signedData = this.extrinsic.isSigned
-      ? await this.getSignedData(this.extrinsic.toHex())
+      ? await Extrinsic.getSignedData(this.extrinsic.toHex())
       : undefined;
-    
+
     this.status = extrinsicStatus(this.events);
     // Process all extrinsic events
-    logger.info('Processing extrinsic events')
+    logger.info('Processing extrinsic events');
     await Promise.all(this.events.map(async (event) => event.process(accountsManager)));
   }
 
@@ -126,8 +133,8 @@ class Extrinsic {
       status: this.status,
       signedData: this.signedData,
       args: this.extrinsic.args,
-    }
-    
+    };
+
     await Promise.all(this.events.map(async (event) => event.save(extrinsicData)));
   }
 }

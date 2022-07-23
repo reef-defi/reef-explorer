@@ -1,18 +1,23 @@
-import { insertTransfers } from "../../../../queries/extrinsic";
-import { nodeProvider } from "../../../../utils/connector";
-import logger from "../../../../utils/logger";
-import { REEF_CONTRACT_ADDRESS } from "../../../../utils/utils";
-import AccountManager from "../../../managers/AccountManager";
-import { ExtrinsicData } from "../../../types";
-import DefaultEvent from "../DefaultEvent";
+import { insertTransfers } from '../../../../queries/extrinsic';
+import { nodeProvider } from '../../../../utils/connector';
+import logger from '../../../../utils/logger';
+import { REEF_CONTRACT_ADDRESS } from '../../../../utils/utils';
+import AccountManager from '../../../managers/AccountManager';
+import { ExtrinsicData } from '../../../types';
+import DefaultEvent from '../DefaultEvent';
 
 class NativeTransferEvent extends DefaultEvent {
-  to: string = "";
-  from: string = "";
-  toEvm: string = "";
-  fromEvm: string = "";
-  fee: string = "";
-  amount: string = "";
+  to: string = '';
+
+  from: string = '';
+
+  toEvm: string = '';
+
+  fromEvm: string = '';
+
+  fee: string = '';
+
+  amount: string = '';
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
@@ -22,7 +27,7 @@ class NativeTransferEvent extends DefaultEvent {
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress)),
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress)),
     ]);
-    this.fee = '' // TODO BigNumber.from(this.head.signedData!.fee.partialFee).toString();
+    this.fee = ''; // TODO BigNumber.from(this.head.signedData!.fee.partialFee).toString();
 
     this.amount = amount.toString();
 
@@ -38,7 +43,7 @@ class NativeTransferEvent extends DefaultEvent {
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
 
-    logger.info('Inserting transfer')
+    logger.info('Inserting transfer');
     await insertTransfers([{
       denom: 'REEF',
       type: 'Native',

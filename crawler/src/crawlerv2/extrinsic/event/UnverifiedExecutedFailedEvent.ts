@@ -1,7 +1,7 @@
-import UnverifiedEvmLog from "./UnverifiedEvmLog";
+import UnverifiedEvmLog from './UnverifiedEvmLog';
 
 class UnverifiedExecutedFailedEvent extends UnverifiedEvmLog {
-  method: "Log" | "ExecutedFailed" = 'ExecutedFailed';
+  method: 'Log' | 'ExecutedFailed' = 'ExecutedFailed';
 }
 
 export default UnverifiedExecutedFailedEvent;

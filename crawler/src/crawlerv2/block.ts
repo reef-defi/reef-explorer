@@ -1,15 +1,14 @@
-import { extrinsicStatus } from "../crawler/extrinsic";
-import { Block, BlockHash, Event } from "../crawler/types";
-import { insertBlock, updateBlockFinalized } from "../queries/block";
-import { nodeProvider, queryv2 } from "../utils/connector";
-import logger from "../utils/logger";
-import resolveEvent from "./extrinsic/event";
-import DefaultEvent from "./extrinsic/event/DefaultEvent";
-import Extrinsic from "./extrinsic/Extrinsic";
-import AccountManager from "./managers/AccountManager";
+import { extrinsicStatus } from '../crawler/extrinsic';
+import { Block, BlockHash, Event } from '../crawler/types';
+import { insertBlock, updateBlockFinalized } from '../queries/block';
+import { nodeProvider, queryv2 } from '../utils/connector';
+import logger from '../utils/logger';
+import resolveEvent from './extrinsic/event';
+import DefaultEvent from './extrinsic/event/DefaultEvent';
+import Extrinsic from './extrinsic/Extrinsic';
+import AccountManager from './managers/AccountManager';
 
 type EventMap = {[extrinsicId: number]: DefaultEvent[]};
-
 
 const blockBody = async ({ id, hash }: BlockHash): Promise<Block> => {
   const provider = nodeProvider.getProvider();
@@ -47,16 +46,16 @@ const blockBody = async ({ id, hash }: BlockHash): Promise<Block> => {
 const reduceExtrinsicEvents = (acc: EventMap, event: DefaultEvent): EventMap => {
   if (event.head.event.phase.isApplyExtrinsic) {
     const eventExtrinsic = event.head.event.phase.asApplyExtrinsic.toNumber();
-  
+
     if (!acc[eventExtrinsic]) {
       acc[eventExtrinsic] = [];
     }
-  
-    acc[eventExtrinsic].push(event)
+
+    acc[eventExtrinsic].push(event);
   }
-  
+
   return acc;
-}
+};
 
 const blockBodyToInsert = ({
   id,
@@ -76,17 +75,17 @@ const blockBodyToInsert = ({
 });
 
 const processBlock = async (blockId: number): Promise<void> => {
-  logger.info('--------------------------------')
+  logger.info('--------------------------------');
   // Load block hash
-  logger.info(`Loading block hash for: ${blockId}`)
+  logger.info(`Loading block hash for: ${blockId}`);
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(blockId));
-  
+
   // Load block
-  logger.info(`Loading block for: ${blockId}`)
-  const block = await blockBody({id: blockId, hash});
+  logger.info(`Loading block for: ${blockId}`);
+  const block = await blockBody({ id: blockId, hash });
 
   // Inserting initial block and marking it as unfinalized
-  logger.info(`Inserting unfinalized block: ${blockId}`)
+  logger.info(`Inserting unfinalized block: ${blockId}`);
   await insertBlock(blockBodyToInsert(block));
 
   // Storing events for each extrinsic
@@ -96,7 +95,7 @@ const processBlock = async (blockId: number): Promise<void> => {
     event,
     index,
     timestamp: block.timestamp,
-  })))
+  })));
   const mappedEvents = events.reduce(reduceExtrinsicEvents, {});
   const accountManager = new AccountManager(blockId, block.timestamp);
 
@@ -106,16 +105,16 @@ const processBlock = async (blockId: number): Promise<void> => {
     index,
     block.timestamp,
     extr,
-    mappedEvents[index]
+    mappedEvents[index],
   ));
 
   logger.info('Processing extrinsics & events');
   await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.process(accountManager)));
 
   logger.info('Waiting for the previous block to finish');
-  let res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId-1])
+  let res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId - 1]);
   while (res.length === 0) {
-    res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId-1]);
+    res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId - 1]);
   }
   // First saving all used accounts
   await accountManager.save();
@@ -125,7 +124,7 @@ const processBlock = async (blockId: number): Promise<void> => {
   await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.save()));
 
   // Updating block finalization
-  logger.info(`Finalizing block ${blockId}`)
+  logger.info(`Finalizing block ${blockId}`);
   await updateBlockFinalized(blockId);
 };
 

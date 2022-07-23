@@ -53,7 +53,7 @@ INSERT INTO block
 `, data.map(blockValuesStatement));
 
 export const insertBlock = async (
-  data: InsertInitialBlock
+  data: InsertInitialBlock,
 ): Promise<void> => insertMultipleBlocks([data]);
 
 export const updateBlocksFinalized = async (fromID: number, toID: number) => query(

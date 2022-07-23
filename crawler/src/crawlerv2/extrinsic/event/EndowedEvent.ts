@@ -1,4 +1,4 @@
-import SignerAddressCapture from "./SignerAddressCapture";
+import SignerAddressCapture from './SignerAddressCapture';
 
 class EndowedEvent extends SignerAddressCapture { }
 

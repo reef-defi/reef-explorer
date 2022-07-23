@@ -1,7 +1,6 @@
-import { ExtrinsicStatus, RawEventData, SignedExtrinsicData } from "../crawler/types";
-
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import type { AnyTuple } from '@polkadot/types/types';
+import { ExtrinsicStatus, RawEventData, SignedExtrinsicData } from '../crawler/types';
 
 // export interface ProcessModule {
 //   process(accountsManager: AccountManager): Promise<void>;

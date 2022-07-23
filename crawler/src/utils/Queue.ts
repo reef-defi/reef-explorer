@@ -1,6 +1,6 @@
-
 class Queue<T> {
   maxLength?: number;
+
   values: T[] = [];
 
   constructor(maxLength?: number) {
@@ -8,7 +8,7 @@ class Queue<T> {
   }
 
   push(value: T) {
-    this.values.push(value)
+    this.values.push(value);
   }
 
   pop(): T {
@@ -17,15 +17,18 @@ class Queue<T> {
     }
     return this.values.splice(0, 1)[0];
   }
+
   len(): number {
     return this.values.length;
   }
+
   isFull(): boolean {
     if (!this.maxLength) {
       return false;
     }
     return this.maxLength <= this.values.length;
   }
+
   isEmpty(): boolean {
     return this.values.length === 0;
   }

@@ -1,12 +1,13 @@
-import { utils as ethersUtils } from 'ethers/lib/ethers';
 import { GenericEventData } from '@polkadot/types/generic/Event';
+import { utils as ethersUtils } from 'ethers/lib/ethers';
 import format from 'pg-format';
 import {
-  BacktrackingEvmEvent, BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData, EvmLog, VerifiedContract,
+  BacktrackingEvmEvent, BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData, VerifiedContract,
 } from '../crawler/types';
-import { insert, insertV2, query, queryv2 } from '../utils/connector';
+import {
+  insert, query, queryv2,
+} from '../utils/connector';
 import { toChecksumAddress } from '../utils/utils';
-import logger from '../utils/logger';
 
 const contractToValues = ({
   address,
@@ -162,30 +163,31 @@ interface InsertEvmLog extends CompleteEvmData {
 export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {
   if (logs.length > 0) {
     await queryv2(
-      format(`
+      format(
+        `
         INSERT INTO evm_event
           (event_id, contract_address, data_raw, data_parsed, method, topic_0, topic_1, topic_2, topic_3, block_id, extrinsic_index, event_index, status, type)
         VALUES 
           %L;
       `,
-      logs.map((log) => [
-        log.eventId,
-        log.raw.address,
-        JSON.stringify(log.raw),
-        JSON.stringify(log.parsed) || null,
-        log.method,
-        log.raw.topics[0] || null,
-        log.raw.topics[1] || null,
-        log.raw.topics[2] || null,
-        log.raw.topics[3] || null,
-        log.blockId,
-        log.extrinsicIndex,
-        log.eventIndex,
-        log.status,
-        log.type,
-      ])
-      )
-    )
+        logs.map((log) => [
+          log.eventId,
+          log.raw.address,
+          JSON.stringify(log.raw),
+          JSON.stringify(log.parsed) || null,
+          log.method,
+          log.raw.topics[0] || null,
+          log.raw.topics[1] || null,
+          log.raw.topics[2] || null,
+          log.raw.topics[3] || null,
+          log.blockId,
+          log.extrinsicIndex,
+          log.eventIndex,
+          log.status,
+          log.type,
+        ]),
+      ),
+    );
   }
 };
 

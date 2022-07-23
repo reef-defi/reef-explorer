@@ -1,5 +1,5 @@
-import AccountManager from "../../managers/AccountManager";
-import DefaultEvent from "./DefaultEvent";
+import AccountManager from '../../managers/AccountManager';
+import DefaultEvent from './DefaultEvent';
 
 class KillAccountEvent extends DefaultEvent {
   async process(accountsManager: AccountManager): Promise<void> {

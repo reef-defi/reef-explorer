@@ -1,16 +1,17 @@
-import { insertV2, nodeProvider } from "../../../utils/connector";
-import logger from "../../../utils/logger";
-import AccountManager from "../../managers/AccountManager";
-import { ExtrinsicData } from "../../types";
-import DefaultEvent from "./DefaultEvent";
+import { insertV2, nodeProvider } from '../../../utils/connector';
+import logger from '../../../utils/logger';
+import AccountManager from '../../managers/AccountManager';
+import { ExtrinsicData } from '../../types';
+import DefaultEvent from './DefaultEvent';
 
 class StakingEvent extends DefaultEvent {
-  signer: string = "";
-  amount: string = "0";
+  signer: string = '';
+
+  amount: string = '0';
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
-    
+
     this.signer = this.head.event.event.data[0].toString();
     this.amount = this.head.event.event.data[1].toString();
 

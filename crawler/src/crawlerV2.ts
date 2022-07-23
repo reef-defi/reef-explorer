@@ -27,28 +27,25 @@ Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
-
-const MAX_LEN = 128;
-
 const crawler = async () => {
   let currentBlockIndex = await lastBlockInDatabase();
   currentBlockIndex++;
-  let queue = new Queue<Promise<void>>(MAX_LEN);
-  let per = new Performance(MAX_LEN);
+  const queue = new Queue<Promise<void>>(config.maxBlocksPerStep);
+  const per = new Performance(config.maxBlocksPerStep);
 
-  while(true) {
+  while (true) {
     // Starting to process some amount of blocks
-    while(currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {
+    while (currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {
       queue.push(processBlock(currentBlockIndex));
       currentBlockIndex++;
     }
 
-    // If queue is empty crawler has nothing to do 
+    // If queue is empty crawler has nothing to do
     if (queue.isEmpty()) {
       await wait(config.pollInterval);
-      continue 
+      continue;
     }
-    
+
     // Waiting for the first block to finish and measuring performance
     const start = Date.now();
     await queue.pop();

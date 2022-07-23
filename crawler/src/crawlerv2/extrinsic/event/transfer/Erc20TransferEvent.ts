@@ -1,21 +1,21 @@
-import { TokenHolder } from "../../../../crawler/types";
-import { balanceOf } from "../../../../crawler/utils";
-import { insertAccountTokenHolders } from "../../../../queries/tokenHoldes";
-import logger from "../../../../utils/logger";
-import AccountManager from "../../../managers/AccountManager";
-import { ExtrinsicData } from "../../../types";
-import DefaultErcTransferEvent from "./DefaultErcTransferEvent";
+import { TokenHolder } from '../../../../crawler/types';
+import { balanceOf } from '../../../../crawler/utils';
+import { insertAccountTokenHolders } from '../../../../queries/tokenHoldes';
+import logger from '../../../../utils/logger';
+import AccountManager from '../../../managers/AccountManager';
+import { ExtrinsicData } from '../../../types';
+import DefaultErcTransferEvent from './DefaultErcTransferEvent';
 
 class Erc20TransferEvent extends DefaultErcTransferEvent {
   accountTokenHolders: TokenHolder[] = [];
-  contractTokenHolders: TokenHolder[] = [];
 
+  contractTokenHolders: TokenHolder[] = [];
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
-    logger.info("Processing Erc20 transfer event");
+    logger.info('Processing Erc20 transfer event');
 
-    const [from, to, amount] = this.data?.parsed.args;
+    const [from, to, amount] = this.data!.parsed.args;
     const toEvmAddress = to.toString();
     const fromEvmAddress = from.toString();
     const tokenAddress = this.contract.address;
@@ -26,7 +26,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     const fromAddress = await accountsManager.useEvm(from);
 
     this.transfers.push({
-      type: "ERC20",
+      type: 'ERC20',
       toEvmAddress,
       tokenAddress,
       fromEvmAddress,
@@ -37,13 +37,13 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       toAddress: toAddress === '' ? 'null' : toAddress,
       fromAddress: fromAddress === '' ? 'null' : fromAddress,
     });
-    
+
     if (toAddress !== '0x') {
       const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
-        toAddress, 
-        toEvmAddress, 
-        toBalance
+        toAddress,
+        toEvmAddress,
+        toBalance,
       );
     }
 
@@ -52,7 +52,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       this.addTokenHolder(
         fromAddress,
         fromEvmAddress,
-        fromBalance
+        fromBalance,
       );
     }
   }
@@ -65,7 +65,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       logger.info(
         `Updating account token holders for (tokenAddress, signer): \n\t- ${this.accountTokenHolders
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
-          .join(",\n\t- ")}`
+          .join(',\n\t- ')}`,
       );
       await insertAccountTokenHolders(this.accountTokenHolders);
     }
@@ -75,7 +75,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       logger.info(
         `Updating contract token holders for (tokenAddress, contract): \n\t- ${this.contractTokenHolders
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
-          .join(",\n\t- ")}`
+          .join(',\n\t- ')}`,
       );
       await insertAccountTokenHolders(this.contractTokenHolders);
     }
