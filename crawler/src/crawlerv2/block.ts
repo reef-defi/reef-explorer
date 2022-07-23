@@ -1,5 +1,4 @@
-import { extrinsicStatus } from '../crawler/extrinsic';
-import { Block, BlockHash, Event } from '../crawler/types';
+import { Block } from '../crawler/types';
 import { insertBlock, updateBlockFinalized } from '../queries/block';
 import { nodeProvider, queryv2 } from '../utils/connector';
 import logger from '../utils/logger';
@@ -8,9 +7,10 @@ import DefaultEvent from './extrinsic/event/DefaultEvent';
 import Extrinsic from './extrinsic/Extrinsic';
 import AccountManager from './managers/AccountManager';
 
+import type { BlockHash } from '@polkadot/types/interfaces/chain';
 type EventMap = {[extrinsicId: number]: DefaultEvent[]};
 
-const blockBody = async ({ id, hash }: BlockHash): Promise<Block> => {
+const blockBody = async (id: number, hash: BlockHash): Promise<Block> => {
   const provider = nodeProvider.getProvider();
   const [signedBlock, extendedHeader, events] = await Promise.all([
     provider.api.rpc.chain.getBlock(hash),
@@ -57,7 +57,7 @@ const reduceExtrinsicEvents = (acc: EventMap, event: DefaultEvent): EventMap => 
   return acc;
 };
 
-const blockBodyToInsert = ({
+const formateBlockBody = ({
   id,
   hash,
   extendedHeader,
@@ -74,6 +74,29 @@ const blockBodyToInsert = ({
   extrinsicRoot: signedBlock.block.header.extrinsicsRoot.toString(),
 });
 
+
+const formatUnfinalizedBlock = (id: number, hash: BlockHash) => ({
+  id,
+  finalized: false,
+  hash: hash.toString(),
+  timestamp: `${new Date().toUTCString()}`,
+  author: '',
+  parentHash: '',
+  stateRoot: '',
+  extrinsicRoot: '',
+});
+
+export const processUnfinalizedBlock = async (
+  id: number
+) => {
+  logger.info(`New unfinalized head detected ${id}`);
+  const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
+
+  // Insert blocks
+  logger.info('Inserting unfinalized block');
+  await insertBlock(formatUnfinalizedBlock(id, hash));
+};
+
 const processBlock = async (blockId: number): Promise<void> => {
   logger.info('--------------------------------');
   // Load block hash
@@ -82,11 +105,11 @@ const processBlock = async (blockId: number): Promise<void> => {
 
   // Load block
   logger.info(`Loading block for: ${blockId}`);
-  const block = await blockBody({ id: blockId, hash });
+  const block = await blockBody(blockId, hash);
 
   // Inserting initial block and marking it as unfinalized
   logger.info(`Inserting unfinalized block: ${blockId}`);
-  await insertBlock(blockBodyToInsert(block));
+  await insertBlock(formateBlockBody(block));
 
   // Storing events for each extrinsic
   logger.info('Resolving events & mapping them to extrinsic');

@@ -1,7 +1,7 @@
 import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import config from './config';
-import processBlock from './crawlerv2/block';
+import processBlock, { processUnfinalizedBlock } from './crawlerv2/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
 import logger from './utils/logger';
@@ -32,6 +32,11 @@ const crawler = async () => {
   currentBlockIndex++;
   const queue = new Queue<Promise<void>>(config.maxBlocksPerStep);
   const per = new Performance(config.maxBlocksPerStep);
+
+  nodeProvider.getProvider().api.rpc.chain.subscribeNewHeads(async (header) => {
+    await processUnfinalizedBlock(header.number.toNumber());
+  });
+
 
   while (true) {
     // Starting to process some amount of blocks
