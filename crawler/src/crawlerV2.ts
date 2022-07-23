@@ -37,7 +37,6 @@ const crawler = async () => {
     await processUnfinalizedBlock(header.number.toNumber());
   });
 
-
   while (true) {
     // Starting to process some amount of blocks
     while (currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {

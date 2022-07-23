@@ -1,3 +1,4 @@
+import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import { Block } from '../crawler/types';
 import { insertBlock, updateBlockFinalized } from '../queries/block';
 import { nodeProvider, queryv2 } from '../utils/connector';
@@ -7,7 +8,6 @@ import DefaultEvent from './extrinsic/event/DefaultEvent';
 import Extrinsic from './extrinsic/Extrinsic';
 import AccountManager from './managers/AccountManager';
 
-import type { BlockHash } from '@polkadot/types/interfaces/chain';
 type EventMap = {[extrinsicId: number]: DefaultEvent[]};
 
 const blockBody = async (id: number, hash: BlockHash): Promise<Block> => {
@@ -74,7 +74,6 @@ const formateBlockBody = ({
   extrinsicRoot: signedBlock.block.header.extrinsicsRoot.toString(),
 });
 
-
 const formatUnfinalizedBlock = (id: number, hash: BlockHash) => ({
   id,
   finalized: false,
@@ -87,7 +86,7 @@ const formatUnfinalizedBlock = (id: number, hash: BlockHash) => ({
 });
 
 export const processUnfinalizedBlock = async (
-  id: number
+  id: number,
 ) => {
   logger.info(`New unfinalized head detected ${id}`);
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
