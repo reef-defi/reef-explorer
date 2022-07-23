@@ -53,6 +53,13 @@ services:
     networks:
       - reefscan
 
+  rabbit:
+    image: rabbitmq
+    ports:
+      - 5672:5672
+    networks:
+      - reefscan
+
   crawler:
     image: reef-explorer-crawler-dev
     build:
@@ -82,10 +89,37 @@ services:
       - VERIFIED_CONTRACT_SYNC=${VERIFIED_CONTRACT_SYNC}
       - VERIFIED_CONTRACT_SYNC_INTERVAL=${VERIFIED_CONTRACT_SYNC_INTERVAL}
     depends_on:
+      - 'rabbit'
+      - 'postgres'
+      - 'substrate-node'
+      - 'crawler-worker'
+    networks:
+      - reefscan
+
+  crawler-worker:
+    image: reef-explorer-crawler-dev
+    command: /wait-for http://graphql:8080/healthz -t 0 -- yarn dev-worker
+    volumes:
+      - crawler-worker-modules:/usr/app/node_modules
+      - ./crawler:/usr/app/
+    restart: always
+    environment:
+      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - SENTRY_DNS=${SENTRY_DNS}
+      - POSTGRES_PORT=${DB_PORT} #5432
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_USER=${DB_USER} #reefexplorer
+      - POSTGRES_DATABASE=${DB_NAME} #reefexplorer
+      - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
+      - ENVIRONMENT=${ENVIRONMENT}
+      - NETWORK=${NETWORK}
+    depends_on:
+      - 'rabbit'
       - 'postgres'
       - 'substrate-node'
     networks:
       - reefscan
+
 
   backtracking:
     image: reef-explorer-crawler-dev
@@ -185,11 +219,13 @@ services:
 volumes:
   db-data: {}
   substrate-data: {}
-  crawler-modules: {}
-  backtracking-modules: {}
-  pool-modules: {}
   api-modules: {}
+  pool-modules: {}
+  rabbit-modules: {}
+  crawler-modules: {}
   frontend-modules: {}
+  backtracking-modules: {}
+  crawler-worker-modules: {}
 
 networks:
   reefscan:
