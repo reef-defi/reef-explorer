@@ -1,10 +1,7 @@
-import AccountManager from "../../managers/AccountManager";
-import DefaultEvent from "./DefaultEvent";
+import UnverifiedEvmLog from "./UnverifiedEvmLog";
 
-class UnverifiedExecutedFailedEvent extends DefaultEvent {
-  async process(accountsManager: AccountManager): Promise<void> {
-    throw new Error('Unverified executed failed: ' + this.head.event.event.data.toJSON());
-  }
+class UnverifiedExecutedFailedEvent extends UnverifiedEvmLog {
+  method: "Log" | "ExecutedFailed" = 'ExecutedFailed';
 }
 
 export default UnverifiedExecutedFailedEvent;

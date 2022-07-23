@@ -52,7 +52,7 @@ const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => 
   }
 }
 
-const selectExecutionFailedEvent = async (head: EventData): Promise<UnverifiedExecutedFailedEvent> => {
+const selectExecutionFailedEvent = async (head: EventData): Promise<DefaultEvent> => {
   const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
 
   // Retrieving contract data from db
@@ -63,7 +63,7 @@ const selectExecutionFailedEvent = async (head: EventData): Promise<UnverifiedEx
   if (contract.length === 0)
     return new UnverifiedExecutedFailedEvent(head);
    
-  return new ExecutedFailedEvent(head);
+  return new ExecutedFailedEvent(head, contract[0]);
 }
 
 const resolveEvent = async (

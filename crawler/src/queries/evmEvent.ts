@@ -154,7 +154,9 @@ interface InsertEvmLog extends CompleteEvmData {
   blockId: number;
   eventIndex: number;
   extrinsicIndex: number;
-  method: 'Log' | 'ExecutedFailed'
+  method: 'Log' | 'ExecutedFailed',
+  status: 'Success' | 'Error';
+  type: 'Verified' | 'Unverified';
 }
 
 export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {

@@ -1,4 +1,4 @@
-import { ExtrinsicStatus, SignedExtrinsicData } from "../crawler/types";
+import { ExtrinsicStatus, RawEventData, SignedExtrinsicData } from "../crawler/types";
 
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import type { AnyTuple } from '@polkadot/types/types';
@@ -22,6 +22,11 @@ export interface EventData {
   index: number;
   blockId: number;
   timestamp: string;
+}
+
+export interface CompleteEvmData {
+  raw: RawEventData;
+  parsed?: any;
 }
 
 export type TransferType = 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';

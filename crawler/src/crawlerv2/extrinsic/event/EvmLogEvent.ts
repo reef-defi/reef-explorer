@@ -8,6 +8,7 @@ import UnverifiedEvmLog from "./UnverifiedEvmLog";
 
 class EvmLogEvent extends UnverifiedEvmLog {
   contract: VerifiedContract;
+
   constructor(head: EventData, contract: VerifiedContract) {
     super(head);
     this.contract = contract;
@@ -22,13 +23,13 @@ class EvmLogEvent extends UnverifiedEvmLog {
     address = toChecksumAddress(address);
 
     this.data = {
-      raw: { address, topics, data }, parsed: null, status: 'Success', type: 'Unverified',
+      raw: { address, topics, data }, parsed: null,
     };
     const {compiled_data, name} = this.contract;
     try {
       const iface = new utils.Interface(compiled_data[name]);
       this.data.parsed = iface.parseLog({ topics, data });
-      this.data.type = 'Verified';
+      this.type = 'Verified';
     } catch(e) {}
   }
 

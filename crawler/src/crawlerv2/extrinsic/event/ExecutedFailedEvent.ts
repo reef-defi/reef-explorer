@@ -1,10 +1,7 @@
-import AccountManager from "../../managers/AccountManager";
-import DefaultEvent from "./DefaultEvent";
+import EvmLogEvent from "./EvmLogEvent";
 
-class ExecutedFailedEvent extends DefaultEvent {
-  async process(accountsManager: AccountManager): Promise<void> {
-    throw new Error('Unverified ')
-  }
+class ExecutedFailedEvent extends EvmLogEvent {
+  method: "Log" | "ExecutedFailed" = 'ExecutedFailed';
 }
 
 export default ExecutedFailedEvent
