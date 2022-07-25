@@ -1,10 +1,12 @@
-import { utils as ethersUtils } from 'ethers/lib/ethers';
 import { GenericEventData } from '@polkadot/types/generic/Event';
+import { utils as ethersUtils } from 'ethers/lib/ethers';
 import format from 'pg-format';
 import {
   BacktrackingEvmEvent, BytecodeLog, CompleteEvmData, Contract, DecodedEvmError, ERC20Token, EventBody, EVMEventData, VerifiedContract,
 } from '../crawler/types';
-import { insert, query, queryv2 } from '../utils/connector';
+import {
+  insert, query, queryv2,
+} from '../utils/connector';
 import { toChecksumAddress } from '../utils/utils';
 
 const contractToValues = ({
@@ -127,6 +129,7 @@ const evmEventDataToInsertValue = async ({
   return `(${id}, '${parsedEvmData.raw.address}', '${JSON.stringify(parsedEvmData.raw)}', '${parsedEvmString}', '${method}', '${topics[0]}', '${topics[1]}', '${topics[2]}', '${topics[3]}', ${blockId}, ${extrinsicIndex}, ${eventIndex}, '${parsedEvmData.status}', '${parsedEvmData.type}')`;
 };
 
+// TODO deprecating
 export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => {
   if (evmEvents.length < 1) {
     return;
@@ -144,6 +147,47 @@ export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => 
       VALUES
       ${evmEventInputValues.join(',\n')};
     `);
+  }
+};
+
+interface InsertEvmLog extends CompleteEvmData {
+  eventId: number;
+  blockId: number;
+  eventIndex: number;
+  extrinsicIndex: number;
+  method: 'Log' | 'ExecutedFailed',
+  status: 'Success' | 'Error';
+  type: 'Verified' | 'Unverified';
+}
+
+export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {
+  if (logs.length > 0) {
+    await queryv2(
+      format(
+        `
+        INSERT INTO evm_event
+          (event_id, contract_address, data_raw, data_parsed, method, topic_0, topic_1, topic_2, topic_3, block_id, extrinsic_index, event_index, status, type)
+        VALUES 
+          %L;
+      `,
+        logs.map((log) => [
+          log.eventId,
+          log.raw.address,
+          JSON.stringify(log.raw),
+          JSON.stringify(log.parsed) || null,
+          log.method,
+          log.raw.topics[0] || null,
+          log.raw.topics[1] || null,
+          log.raw.topics[2] || null,
+          log.raw.topics[3] || null,
+          log.blockId,
+          log.extrinsicIndex,
+          log.eventIndex,
+          log.status,
+          log.type,
+        ]),
+      ),
+    );
   }
 };
 

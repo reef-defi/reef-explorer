@@ -1,40 +1,40 @@
 table:
-  name: transfer
   schema: public
+  name: transfer
 object_relationships:
-- name: block
-  using:
-    foreign_key_constraint_on: block_id
-- name: extrinsic
-  using:
-    foreign_key_constraint_on: extrinsic_id
-- name: from_account
-  using:
-    foreign_key_constraint_on: from_address
-- name: to_account
-  using:
-    foreign_key_constraint_on: to_address
-- name: token
-  using:
-    foreign_key_constraint_on: token_address
+  - name: block
+    using:
+      foreign_key_constraint_on: block_id
+  - name: extrinsic
+    using:
+      foreign_key_constraint_on: extrinsic_id
+  - name: from_account
+    using:
+      foreign_key_constraint_on: from_address
+  - name: to_account
+    using:
+      foreign_key_constraint_on: to_address
+  - name: token
+    using:
+      foreign_key_constraint_on: token_address
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - block_id
-    - extrinsic_id
-    - id
-    - success
-    - to_address
-    - from_address
-    - to_evm_address
-    - from_evm_address
-    - amount
-    - fee_amount
-    - denom
-    - token_address
-    - error_message
-    - timestamp
-    - nft_id
-    filter: {}
-  role: public
+  - role: public
+    permission:
+      columns:
+        - block_id
+        - extrinsic_id
+        - id
+        - success
+        - to_address
+        - from_address
+        - to_evm_address
+        - from_evm_address
+        - amount
+        - fee_amount
+        - denom
+        - token_address
+        - error_message
+        - timestamp
+        - nft_id
+      filter: {}
+      allow_aggregations: true

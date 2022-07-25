@@ -1,13 +1,14 @@
 import { nodeProvider } from '../utils/connector';
-import { insertMultipleBlocks, updateBlockFinalized } from '../queries/block';
+import { insertMultipleBlocks, updateBlocksFinalized } from '../queries/block';
 import {
   extrinsicStatus,
   resolveSigner,
 } from './extrinsic';
 import {
   AccountHead,
-  BlockBody,
+  Block,
   BlockHash,
+  Event,
   EventBody,
   EventHead,
   ExtrinsicBody,
@@ -53,7 +54,7 @@ const blockHash = async (id: number): Promise<BlockHash> => {
   return { id, hash };
 };
 
-const blockBody = async ({ id, hash }: BlockHash): Promise<BlockBody> => {
+const blockBody = async ({ id, hash }: BlockHash): Promise<Block> => {
   const provider = nodeProvider.getProvider();
   const [signedBlock, extendedHeader, events] = await Promise.all([
     provider.api.rpc.chain.getBlock(hash),
@@ -93,10 +94,10 @@ const blockBodyToInsert = ({
   extendedHeader,
   signedBlock,
   timestamp,
-}: BlockBody) => ({
+}: Block) => ({
   id,
   timestamp,
-  finalized: true,
+  finalized: false,
   hash: hash.toString(),
   author: extendedHeader?.author?.toString() || '',
   parentHash: signedBlock.block.header.parentHash.toString(),
@@ -109,7 +110,7 @@ const blockToExtrinsicsHeader = ({
   signedBlock,
   events,
   timestamp,
-}: BlockBody): ExtrinsicHead[] => signedBlock.block.extrinsics.map((extrinsic, index) => ({
+}: Block): ExtrinsicHead[] => signedBlock.block.extrinsics.map((extrinsic, index) => ({
   index,
   extrinsic,
   timestamp,
@@ -367,7 +368,7 @@ export default async (fromId: number, toId: number, save = true): Promise<number
     await insertTokenHolders(tokenHolders);
 
     logger.info('Finalizing blocks');
-    await updateBlockFinalized(fromId, toId);
+    await updateBlocksFinalized(fromId, toId);
   }
 
   logger.info('Complete!');

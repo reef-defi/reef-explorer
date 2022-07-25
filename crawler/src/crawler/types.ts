@@ -22,7 +22,7 @@ export interface BlockHash {
 export type Extrinsic = GenericExtrinsic<AnyTuple>;
 export type Event = FrameSystemEventRecord;
 
-export interface BlockBody extends BlockHash {
+export interface Block extends BlockHash {
   signedBlock: SignedBlock;
   extendedHeader?: HeaderExtended;
   events: Vec<Event>;

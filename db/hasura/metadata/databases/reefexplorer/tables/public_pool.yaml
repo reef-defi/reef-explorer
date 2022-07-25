@@ -1,73 +1,73 @@
 table:
-  name: pool
   schema: public
+  name: pool
 object_relationships:
-- name: evm_event
-  using:
-    foreign_key_constraint_on: evm_event_id
-- name: token_contract_1
-  using:
-    foreign_key_constraint_on: token_1
-- name: token_contract_2
-  using:
-    foreign_key_constraint_on: token_2
+  - name: evm_event
+    using:
+      foreign_key_constraint_on: evm_event_id
+  - name: token_contract_1
+    using:
+      foreign_key_constraint_on: token_1
+  - name: token_contract_2
+    using:
+      foreign_key_constraint_on: token_2
 array_relationships:
-- name: candlestick
-  using:
-    manual_configuration:
-      column_mapping:
-        id: pool_id
-      insertion_order: null
-      remote_table:
-        name: pool_hour_candlestick
-        schema: public
-- name: fee
-  using:
-    manual_configuration:
-      column_mapping:
-        id: pool_id
-      insertion_order: null
-      remote_table:
-        name: pool_hour_fee
-        schema: public
-- name: supply
-  using:
-    manual_configuration:
-      column_mapping:
-        id: pool_id
-      insertion_order: null
-      remote_table:
-        name: pool_hour_supply
-        schema: public
-- name: volume
-  using:
-    manual_configuration:
-      column_mapping:
-        id: pool_id
-      insertion_order: null
-      remote_table:
-        name: pool_hour_volume
-        schema: public
-- name: pool_event
-  using:
-    manual_configuration:
-      column_mapping:
-        id: pool_id
-      insertion_order: null
-      remote_table:
-        name: pool_event
-        schema: public
+  - name: candlestick
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool_hour_candlestick
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: fee
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool_hour_fee
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: pool_event
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool_event
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: supply
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool_hour_supply
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: volume
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool_hour_volume
+        insertion_order: null
+        column_mapping:
+          id: pool_id
 select_permissions:
-- permission:
-    allow_aggregations: true
-    columns:
-    - id
-    - evm_event_id
-    - address
-    - token_1
-    - token_2
-    - pool_decimal
-    - decimal_1
-    - decimal_2
-    filter: {}
-  role: public
+  - role: public
+    permission:
+      columns:
+        - id
+        - evm_event_id
+        - address
+        - token_1
+        - token_2
+        - pool_decimal
+        - decimal_1
+        - decimal_2
+      filter: {}
+      allow_aggregations: true
