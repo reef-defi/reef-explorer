@@ -26,16 +26,16 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
       // Adding transe
       this.transfers.push({
         blockId: this.head.blockId,
-        fromAddress,
         fromEvmAddress,
         timestamp: this.head.timestamp,
-        toAddress,
         toEvmAddress,
         tokenAddress,
         type: 'ERC1155',
         denom: this.contract.contract_data?.symbol,
         nftId: nftIds[index].toString(),
         amount: amounts[index].toString(),
+        toAddress: toAddress === '0x' ? 'null' : toAddress,
+        fromAddress: fromAddress === '0x' ? 'null' : fromAddress,
       });
 
       this.addTokenHolder(

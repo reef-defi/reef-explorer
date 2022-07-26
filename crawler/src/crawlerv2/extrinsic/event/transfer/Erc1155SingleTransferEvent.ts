@@ -16,8 +16,8 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
     this.transfers.push({
       blockId: this.head.blockId,
       timestamp: this.head.timestamp,
-      fromAddress,
-      toAddress,
+      toAddress: toAddress === '0x' ? 'null' : toAddress,
+      fromAddress: fromAddress === '0x' ? 'null' : fromAddress,
       fromEvmAddress,
       toEvmAddress,
       tokenAddress,

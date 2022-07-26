@@ -34,8 +34,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       timestamp: this.head.timestamp,
       amount: amount.toString(),
       denom: this.contract.contract_data?.symbol,
-      toAddress: toAddress === '' ? 'null' : toAddress,
-      fromAddress: fromAddress === '' ? 'null' : fromAddress,
+      toAddress: toAddress === '0x' ? 'null' : toAddress,
+      fromAddress: fromAddress === '0x' ? 'null' : fromAddress,
     });
 
     if (toAddress !== '0x') {

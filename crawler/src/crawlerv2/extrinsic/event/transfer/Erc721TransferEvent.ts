@@ -23,8 +23,8 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
     this.transfers.push({
       amount: '1',
       blockId: this.head.blockId,
-      fromAddress,
-      toAddress,
+      toAddress: toAddress === '0x' ? 'null' : toAddress,
+      fromAddress: fromAddress === '0x' ? 'null' : fromAddress,
       fromEvmAddress,
       timestamp: this.head.timestamp,
       toEvmAddress,
