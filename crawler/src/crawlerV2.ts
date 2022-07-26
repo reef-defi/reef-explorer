@@ -29,9 +29,9 @@ Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
-const client = createClient('amqp://', 'amqp://');
+const client = createClient('amqp://rabbit:5672', 'amqp://rabbit:5672');
 
-const processBlockTask = client.createTask('query.block');
+const processBlockTask = client.createTask('process.block');
 
 const MAX_LEN = 1;
 
@@ -48,6 +48,7 @@ const crawler = async () => {
   while (true) {
     // Starting to process some amount of blocks
     while(currentBlockIndex <= nodeProvider.lastFinalizedBlockId() && !queue.isFull()) {
+      logger.info(`Processing ${currentBlockIndex} block`);
       queue.push(processBlockTask.applyAsync([currentBlockIndex]));
       currentBlockIndex++;
     }
