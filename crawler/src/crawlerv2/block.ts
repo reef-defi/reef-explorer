@@ -90,7 +90,7 @@ const waitForBlockToFinish = async (id: number): Promise<void> => {
   while (res.length === 0) {
     res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [id]);
   }
-}
+};
 
 export const processUnfinalizedBlock = async (
   id: number,
@@ -141,8 +141,8 @@ const processBlock = async (blockId: number): Promise<void> => {
   await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.process(accountManager)));
 
   logger.info('Waiting for the previous block to finish');
-  await waitForBlockToFinish(blockId-1);
-  
+  await waitForBlockToFinish(blockId - 1);
+
   // First saving all used accounts
   await accountManager.save();
 

@@ -116,17 +116,18 @@ class Extrinsic {
     }
 
     logger.info(`Insertin ${this.id} extrinsic`);
-    await queryv2(`
+    await queryv2(
+      `
       INSERT INTO extrinsic 
         (id, block_id, index, hash, args, docs, method, section, signer, status, error_message, type, signed_data, timestamp)
       VALUES
         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
       [
-        this.id, 
-        this.blockId, 
-        this.index, 
-        this.extrinsic.hash.toString(), 
-        JSON.stringify(this.extrinsic.args), 
+        this.id,
+        this.blockId,
+        this.index,
+        this.extrinsic.hash.toString(),
+        JSON.stringify(this.extrinsic.args),
         this.extrinsic.meta.docs.toLocaleString(),
         this.extrinsic.method.method.toString(),
         this.extrinsic.method.section.toString(),
@@ -135,9 +136,9 @@ class Extrinsic {
         this.status.type === 'error' ? this.status.message : '',
         this.extrinsic.signer ? 'signed' : 'unsigned',
         this.signedData ? JSON.stringify(this.signedData) : null,
-        this.timestamp
-      ]
-    )
+        this.timestamp,
+      ],
+    );
 
     const extrinsicData: ExtrinsicData = {
       id: this.id,

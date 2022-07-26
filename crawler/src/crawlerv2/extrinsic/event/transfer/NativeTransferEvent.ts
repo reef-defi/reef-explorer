@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import { insertTransfers } from '../../../../queries/extrinsic';
 import { nodeProvider } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
@@ -5,7 +6,6 @@ import { REEF_CONTRACT_ADDRESS } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
 import { ExtrinsicData } from '../../../types';
 import DefaultEvent from '../DefaultEvent';
-import { BigNumber } from "ethers";
 
 class NativeTransferEvent extends DefaultEvent {
   to: string = '';
@@ -15,7 +15,6 @@ class NativeTransferEvent extends DefaultEvent {
   toEvm: string = '';
 
   fromEvm: string = '';
-
 
   amount: string = '';
 

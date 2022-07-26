@@ -43,8 +43,8 @@ class AccountManager {
       await this.use(address);
       return address;
     }
-    
-    return '0x'
+
+    return '0x';
   }
 
   async save(): Promise<void> {
