@@ -56,7 +56,7 @@ services:
   rabbit:
     image: rabbitmq
     ports:
-      - ${RABBIT_PORT}:${EXPOSE_RABBIT_PORT}
+      - ${EXPOSE_RABBIT_PORT}:${RABBIT_PORT}
     networks:
       - reefscan
 
