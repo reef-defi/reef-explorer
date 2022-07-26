@@ -23,8 +23,8 @@ Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
-const worker = createWorker('amqp://rabbit:5672', 'amqp://rabbit:5672');
-worker.conf.CELERY_BACKEND_OPTIONS
+const brokerUrl = `amqp://rabbit:${config.rabbitPort}`;
+const worker = createWorker(brokerUrl, brokerUrl);
 
 worker.register('process.block', processBlock);
 

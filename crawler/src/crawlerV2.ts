@@ -29,11 +29,11 @@ Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
-const client = createClient('amqp://rabbit:5672', 'amqp://rabbit:5672');
+
+const brokerUrl = `amqp://rabbit:${config.rabbitPort}`;
+const client = createClient(brokerUrl, brokerUrl);
 
 const processBlockTask = client.createTask('process.block');
-
-const MAX_LEN = 1;
 
 const crawler = async () => {
   let currentBlockIndex = await lastBlockInDatabase();
