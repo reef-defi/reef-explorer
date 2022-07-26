@@ -5,6 +5,7 @@ import { REEF_CONTRACT_ADDRESS } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
 import { ExtrinsicData } from '../../../types';
 import DefaultEvent from '../DefaultEvent';
+import { BigNumber } from "ethers";
 
 class NativeTransferEvent extends DefaultEvent {
   to: string = '';
@@ -56,7 +57,7 @@ class NativeTransferEvent extends DefaultEvent {
       extrinsicId: extrinsicData.id,
       tokenAddress: REEF_CONTRACT_ADDRESS,
       success: extrinsicData.status.type === 'success',
-      feeAmount: extrinsicData.signedData!.fee.toString(),
+      feeAmount: BigNumber.from(extrinsicData.signedData!.fee.partialFee).toString(),
       errorMessage: extrinsicData.status.type === 'error' ? extrinsicData.status.message : '',
     }]);
   }
