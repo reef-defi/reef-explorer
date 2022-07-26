@@ -15,7 +15,6 @@ class NativeTransferEvent extends DefaultEvent {
 
   fromEvm: string = '';
 
-  fee: string = '';
 
   amount: string = '';
 
@@ -27,7 +26,6 @@ class NativeTransferEvent extends DefaultEvent {
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress)),
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress)),
     ]);
-    this.fee = ''; // TODO BigNumber.from(this.head.signedData!.fee.partialFee).toString();
 
     this.amount = amount.toString();
 
@@ -49,7 +47,6 @@ class NativeTransferEvent extends DefaultEvent {
       denom: 'REEF',
       type: 'Native',
       amount: this.amount,
-      feeAmount: this.fee,
       toAddress: this.to,
       fromAddress: this.from,
       toEvmAddress: this.toEvm,
@@ -59,6 +56,7 @@ class NativeTransferEvent extends DefaultEvent {
       extrinsicId: extrinsicData.id,
       tokenAddress: REEF_CONTRACT_ADDRESS,
       success: extrinsicData.status.type === 'success',
+      feeAmount: extrinsicData.signedData!.fee.toString(),
       errorMessage: extrinsicData.status.type === 'error' ? extrinsicData.status.message : '',
     }]);
   }
