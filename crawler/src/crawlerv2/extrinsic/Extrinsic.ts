@@ -75,20 +75,26 @@ class Extrinsic {
     };
   }
 
-  private async getId(): Promise<number> {
-    let result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
-    let id = parseInt(result[0].nextval, 10);
-    let exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
-    while (exist.length > 0) {
-      result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
-      id = parseInt(result[0].nextval, 10);
-      exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
+  private static async nextId(): Promise<number> {
+    const result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
+    return parseInt(result[0].nextval, 10);
+  }
+
+  private static async idExists(id: number): Promise<boolean> {
+    const exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [id]);
+    return exist.length > 0;
+  }
+
+  private static async getId(): Promise<number> {
+    let id = await Extrinsic.nextId();
+    while (await Extrinsic.idExists(id)) {
+      id = await Extrinsic.nextId();
     }
     return id;
   }
 
   async process(accountsManager: AccountManager): Promise<void> {
-    this.id = await this.getId();
+    this.id = await Extrinsic.getId();
 
     // Extracting signed data
     this.signedData = this.extrinsic.isSigned
