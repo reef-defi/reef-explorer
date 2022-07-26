@@ -1,5 +1,5 @@
 
-VOLUMES = db-data crawler-modules backtracking-modules api-modules frontend-modules
+VOLUMES = db-data crawler-modules crawler-worker-modules rabbit-modules backtracking-modules api-modules frontend-modules
 services ?=
 
 ifeq ($(net), dev)
