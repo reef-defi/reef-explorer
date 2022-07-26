@@ -56,7 +56,7 @@ services:
   rabbit:
     image: rabbitmq
     ports:
-      - 5672:5672
+      - ${RABBIT_PORT}:${EXPOSE_RABBIT_PORT}
     networks:
       - reefscan
 
@@ -71,12 +71,13 @@ services:
       - ./crawler:/usr/app/
     restart: always
     environment:
-      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - NODE_PROVIDER_URL="ws://${NODE_HOST}:${NODE_PORT}"
       - START_BLOCK_STEP=32
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
       - MAX_BLOCKS_PER_STEP=1000
       - SENTRY_DNS=${SENTRY_DNS}
+      - RABBIT_PORT=${RABBIT_PORT}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
       - POSTGRES_USER=${DB_USER} #reefexplorer
@@ -103,9 +104,10 @@ services:
       - ./crawler:/usr/app/
     restart: always
     deploy:
-      replicas: 1
+      replicas: ${CPU_CRAWLER_WORKERS}
     environment:
-      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - NODE_PROVIDER_URL="ws://${NODE_HOST}:${NODE_PORT}"
+      - RABBIT_PORT=${RABBIT_PORT}
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
@@ -131,7 +133,7 @@ services:
       - ./crawler:/usr/app/
     restart: always
     environment:
-      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - NODE_PROVIDER_URL="ws://${NODE_HOST}:${NODE_PORT}"
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
@@ -155,7 +157,7 @@ services:
     restart: always
     environment:
       - FACTORY_ADDRESS=${FACTORY_ADDRESS}
-      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - NODE_PROVIDER_URL="ws://${NODE_HOST}:${NODE_PORT}"
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
