@@ -10,7 +10,7 @@ const defaultNodeUrls = [
 ];
 
 export default {
-  nodeUrls: process.env.NODE_PROVIDER_URLS ? JSON.parse(process.env.NODE_PROVIDER_URLS) as string[] : defaultNodeUrls,
+  nodeUrls: process.env.NODE_PROVIDER_URL ? [process.env.NODE_PROVIDER_URL] : defaultNodeUrls,
   startBlockSize: toNumber(32, process.env.START_BLOCK_SIZE),
   maxBlocksPerStep: toNumber(256, process.env.MAX_BLOCKS_PER_STEP),
   chunkSize: toNumber(1024, process.env.CHUNK_SIZE),

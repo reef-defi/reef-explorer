@@ -53,6 +53,13 @@ services:
     networks:
       - reefscan
 
+  rabbit:
+    image: rabbitmq
+    ports:
+      - ${RABBIT_PORT}:${EXPOSE_RABBIT_PORT}
+    networks:
+      - reefscan
+      
   crawler:
     image: taulepton/reef-crawler:${VERSION}
     build:
@@ -62,7 +69,7 @@ services:
         COMPONENT: crawler
     restart: always
     environment:
-      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - NODE_PROVIDER_URL=ws://${NODE_HOST}:${NODE_WS}
       - START_BLOCK_STEP=32
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
@@ -90,7 +97,7 @@ services:
     command: /wait-for http://graphql:8080/healthz -t 0 -- yarn start-backtracking
     restart: always
     environment:
-      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - NODE_PROVIDER_URL=ws://${NODE_HOST}:${NODE_WS}
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
@@ -111,7 +118,7 @@ services:
     restart: always
     environment:
       - FACTORY_ADDRESS=${FACTORY_ADDRESS}
-      - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
+      - NODE_PROVIDER_URL=ws://${NODE_HOST}:${NODE_WS}
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
