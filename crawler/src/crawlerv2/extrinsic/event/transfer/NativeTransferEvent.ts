@@ -36,6 +36,7 @@ class NativeTransferEvent extends DefaultEvent {
     this.toEvm = toEvmAddress.toString();
     this.fromEvm = fromEvmAddress.toString();
 
+    logger.info(`Processing native transfer from ${fromAddress} to ${toAddress} -> ${this.amount} REEF`);
     await accountsManager.use(this.to);
     await accountsManager.use(this.from);
   }
