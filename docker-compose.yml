@@ -75,7 +75,7 @@ services:
       - START_BLOCK_STEP=32
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
-      - MAX_BLOCKS_PER_STEP=32
+      - MAX_BLOCKS_PER_STEP=1000
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
@@ -92,7 +92,6 @@ services:
       - 'rabbit'
       - 'postgres'
       - 'substrate-node'
-      - 'crawler-worker'
     networks:
       - reefscan
 
@@ -103,6 +102,8 @@ services:
       - crawler-worker-modules:/usr/app/node_modules
       - ./crawler:/usr/app/
     restart: always
+    deploy:
+      replicas: 1
     environment:
       - NODE_PROVIDER_URLS=["ws://substrate-node:9944"] #TODO extract this list
       - SENTRY_DNS=${SENTRY_DNS}
@@ -114,6 +115,7 @@ services:
       - ENVIRONMENT=${ENVIRONMENT}
       - NETWORK=${NETWORK}
     depends_on:
+      - 'crawler'
       - 'rabbit'
       - 'postgres'
       - 'substrate-node'
