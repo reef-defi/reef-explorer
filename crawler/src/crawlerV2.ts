@@ -76,12 +76,12 @@ Promise.resolve()
   })
   .catch(async (error) => {
     logger.error(error);
-    // Sentry.captureException(error);
+    Sentry.captureException(error);
 
     try {
       await promiseWithTimeout(nodeProvider.closeProviders(), 200, Error('Failed to close proivders!'));
     } catch (err) {
-      // Sentry.captureException(err);
+      Sentry.captureException(err);
     }
 
     logger.error('Finished');

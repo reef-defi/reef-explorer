@@ -22,9 +22,10 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     const abi = this.contract.compiled_data[this.contract.name];
 
     // Resolving accounts
-    const toAddress = await accountsManager.useEvm(to);
-    const fromAddress = await accountsManager.useEvm(from);
+    const toAddress = await accountsManager.useEvm(toEvmAddress);
+    const fromAddress = await accountsManager.useEvm(fromEvmAddress);
 
+    logger.info(`Processing ERC20: ${this.contract.address} transfer from ${fromAddress} to ${toAddress} -> ${amount.toString()}`);
     this.transfers.push({
       type: 'ERC20',
       toEvmAddress,
@@ -34,8 +35,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       timestamp: this.head.timestamp,
       amount: amount.toString(),
       denom: this.contract.contract_data?.symbol,
-      toAddress: toAddress === '' ? 'null' : toAddress,
-      fromAddress: fromAddress === '' ? 'null' : fromAddress,
+      toAddress,
+      fromAddress,
     });
 
     if (toAddress !== '0x') {

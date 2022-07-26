@@ -41,9 +41,10 @@ class AccountManager {
     // We are only processing accounts in accounts manager!
     if (address !== '') {
       await this.use(address);
+      return address;
     }
 
-    return address;
+    return '0x';
   }
 
   async save(): Promise<void> {

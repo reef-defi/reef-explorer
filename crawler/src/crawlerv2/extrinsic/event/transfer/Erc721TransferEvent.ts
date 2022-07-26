@@ -20,11 +20,12 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
     const toAddress = await accountsManager.useEvm(toEvmAddress);
     const fromAddress = await accountsManager.useEvm(fromEvmAddress);
 
+    logger.info(`Processing ERC721: ${this.contract.address} transfer from ${fromAddress} to ${toAddress}`);
     this.transfers.push({
       amount: '1',
       blockId: this.head.blockId,
-      fromAddress,
       toAddress,
+      fromAddress,
       fromEvmAddress,
       timestamp: this.head.timestamp,
       toEvmAddress,

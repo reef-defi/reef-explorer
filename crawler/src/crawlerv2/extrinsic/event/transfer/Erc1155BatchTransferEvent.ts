@@ -22,20 +22,21 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
     const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
     const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
 
+    logger.info(`Processing ERC1155: ${this.contract.address} batch transfer from ${fromAddress} to ${toAddress} -> \n\tIds: ${nftIds}\n]\tAmounts: ${amounts}`);
     for (let index = 0; index < nftIds.length; index++) {
       // Adding transe
       this.transfers.push({
         blockId: this.head.blockId,
-        fromAddress,
         fromEvmAddress,
         timestamp: this.head.timestamp,
-        toAddress,
         toEvmAddress,
         tokenAddress,
         type: 'ERC1155',
         denom: this.contract.contract_data?.symbol,
         nftId: nftIds[index].toString(),
         amount: amounts[index].toString(),
+        toAddress,
+        fromAddress,
       });
 
       this.addTokenHolder(

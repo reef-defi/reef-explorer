@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import { insertTransfers } from '../../../../queries/extrinsic';
 import { nodeProvider } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
@@ -15,8 +16,6 @@ class NativeTransferEvent extends DefaultEvent {
 
   fromEvm: string = '';
 
-  fee: string = '';
-
   amount: string = '';
 
   async process(accountsManager: AccountManager): Promise<void> {
@@ -27,7 +26,6 @@ class NativeTransferEvent extends DefaultEvent {
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(toAddress)),
       nodeProvider.query((provider) => provider.api.query.evmAccounts.evmAddresses(fromAddress)),
     ]);
-    this.fee = ''; // TODO BigNumber.from(this.head.signedData!.fee.partialFee).toString();
 
     this.amount = amount.toString();
 
@@ -36,6 +34,7 @@ class NativeTransferEvent extends DefaultEvent {
     this.toEvm = toEvmAddress.toString();
     this.fromEvm = fromEvmAddress.toString();
 
+    logger.info(`Processing native transfer from ${fromAddress} to ${toAddress} -> ${this.amount} REEF`);
     await accountsManager.use(this.to);
     await accountsManager.use(this.from);
   }
@@ -48,7 +47,6 @@ class NativeTransferEvent extends DefaultEvent {
       denom: 'REEF',
       type: 'Native',
       amount: this.amount,
-      feeAmount: this.fee,
       toAddress: this.to,
       fromAddress: this.from,
       toEvmAddress: this.toEvm,
@@ -58,6 +56,7 @@ class NativeTransferEvent extends DefaultEvent {
       extrinsicId: extrinsicData.id,
       tokenAddress: REEF_CONTRACT_ADDRESS,
       success: extrinsicData.status.type === 'success',
+      feeAmount: BigNumber.from(extrinsicData.signedData!.fee.partialFee).toString(),
       errorMessage: extrinsicData.status.type === 'error' ? extrinsicData.status.message : '',
     }]);
   }

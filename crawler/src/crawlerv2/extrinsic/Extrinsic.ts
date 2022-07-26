@@ -2,7 +2,6 @@ import { GenericExtrinsic } from '@polkadot/types/extrinsic';
 import { SpRuntimeDispatchError } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { ExtrinsicStatus, SignedExtrinsicData } from '../../crawler/types';
-import { insertExtrinsic } from '../../queries/extrinsic';
 import { nodeProvider, queryv2 } from '../../utils/connector';
 import logger from '../../utils/logger';
 import AccountManager from '../managers/AccountManager';
@@ -76,20 +75,26 @@ class Extrinsic {
     };
   }
 
-  private async getId(): Promise<number> {
-    let result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
-    let id = parseInt(result[0].nextval, 10);
-    let exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
-    while (exist.length > 0) {
-      result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
-      id = parseInt(result[0].nextval, 10);
-      exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [this.id]);
+  private static async nextId(): Promise<number> {
+    const result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
+    return parseInt(result[0].nextval, 10);
+  }
+
+  private static async idExists(id: number): Promise<boolean> {
+    const exist = await queryv2<{id: string}>('SELECT id FROM extrinsic WHERE id = $1', [id]);
+    return exist.length > 0;
+  }
+
+  private static async getId(): Promise<number> {
+    let id = await Extrinsic.nextId();
+    while (await Extrinsic.idExists(id)) {
+      id = await Extrinsic.nextId();
     }
     return id;
   }
 
   async process(accountsManager: AccountManager): Promise<void> {
-    this.id = await this.getId();
+    this.id = await Extrinsic.getId();
 
     // Extracting signed data
     this.signedData = this.extrinsic.isSigned
@@ -111,21 +116,29 @@ class Extrinsic {
     }
 
     logger.info(`Insertin ${this.id} extrinsic`);
-    await insertExtrinsic({
-      id: this.id,
-      index: this.index,
-      blockId: this.blockId,
-      signedData: this.signedData,
-      timestamp: this.timestamp,
-      status: this.status.type,
-      hash: this.extrinsic.hash.toString(),
-      method: this.extrinsic.method.method,
-      section: this.extrinsic.method.section,
-      args: JSON.stringify(this.extrinsic.args),
-      docs: this.extrinsic.meta.docs.toLocaleString(),
-      signed: this.extrinsic.signer?.toString() || 'deleted',
-      errorMessage: this.status.type === 'error' ? this.status.message : '',
-    });
+    await queryv2(
+      `
+      INSERT INTO extrinsic 
+        (id, block_id, index, hash, args, docs, method, section, signer, status, error_message, type, signed_data, timestamp)
+      VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+      [
+        this.id,
+        this.blockId,
+        this.index,
+        this.extrinsic.hash.toString(),
+        JSON.stringify(this.extrinsic.args),
+        this.extrinsic.meta.docs.toLocaleString(),
+        this.extrinsic.method.method.toString(),
+        this.extrinsic.method.section.toString(),
+        this.extrinsic.signer?.toString() || '0x',
+        this.status.type,
+        this.status.type === 'error' ? this.status.message : '',
+        this.extrinsic.signer ? 'signed' : 'unsigned',
+        this.signedData ? JSON.stringify(this.signedData) : null,
+        this.timestamp,
+      ],
+    );
 
     const extrinsicData: ExtrinsicData = {
       id: this.id,

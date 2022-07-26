@@ -13,11 +13,12 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
     const toAddress = await accountsManager.useEvm(toEvmAddress);
     const fromAddress = await accountsManager.useEvm(fromEvmAddress);
 
+    logger.info(`Processing ERC1155: ${this.contract.address} single transfer from ${fromAddress} to ${toAddress} -> Id: ${nftId.toString()} Amount: ${amount.toString()}`);
     this.transfers.push({
       blockId: this.head.blockId,
       timestamp: this.head.timestamp,
-      fromAddress,
       toAddress,
+      fromAddress,
       fromEvmAddress,
       toEvmAddress,
       tokenAddress,
