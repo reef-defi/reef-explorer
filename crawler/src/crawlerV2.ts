@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/node';
 import { createClient } from 'celery-node';
 import { AsyncResult } from 'celery-node/dist/app/result';
 import config from './config';
-import processBlock, { processUnfinalizedBlock } from './crawlerv2/block';
+import { processUnfinalizedBlock } from './crawlerv2/block';
 import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
 import { nodeProvider } from './utils/connector';
 import logger from './utils/logger';
@@ -30,15 +30,15 @@ Sentry.setTag('network', config.network);
 console.warn = () => {};
 
 
-const brokerUrl = `amqp://rabbit:${config.rabbitPort}`;
-const client = createClient(brokerUrl, brokerUrl);
+const backendUrl = `amqp://rabbit:${config.rabbitPort}`;
+const client = createClient(backendUrl, backendUrl);
 
 const processBlockTask = client.createTask('process.block');
 
 const crawler = async () => {
   let currentBlockIndex = await lastBlockInDatabase();
   currentBlockIndex++;
-  const queue = new Queue<AsyncResult>(config.maxBlocksPerStep);
+  const queue = new Queue<AsyncResult>(32);
   const per = new Performance(config.maxBlocksPerStep);
 
   nodeProvider.getProvider().api.rpc.chain.subscribeNewHeads(async (header) => {
@@ -61,7 +61,7 @@ const crawler = async () => {
 
     // Waiting for the first block to finish and measuring performance
     const start = Date.now();
-    await queue.pop().get();
+    await queue.pop().get(0, 1);
     const diff = Date.now() - start;
     per.push(diff);
     per.log();

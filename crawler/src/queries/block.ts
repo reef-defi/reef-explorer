@@ -72,7 +72,3 @@ export const retrieveBlockHash = async (id: number): Promise<BlockHashDB|undefin
   const result = await queryv2<BlockHashDB>('SELECT hash FROM block WHERE id = $1;', [id]);
   return result.length > 0 ? result[0] : undefined;
 };
-
-export const removeBlockWithId = async (id: number): Promise<void> => {
-  await queryv2('DELETE FROM block WHERE id = $1;', [id]);
-};

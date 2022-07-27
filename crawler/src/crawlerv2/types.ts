@@ -47,3 +47,18 @@ export interface Transfer {
 
   timestamp: string;
 }
+
+export interface Account {
+  address: string;
+  active: boolean;
+  identity: string;
+  evmAddress: string;
+  freeBalance: string;
+  lockedBalance: string;
+  availableBalance: string;
+  vestedBalance: string;
+  votingBalance: string;
+  reservedBalance: string;
+  nonce: string;
+  evmNonce: string | null;
+}

@@ -18,13 +18,13 @@ Sentry.init({
   ],
   environment: config.environment,
 });
-Sentry.setTag('component', 'crawler');
+Sentry.setTag('component', 'cpu-worker');
 Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
-const brokerUrl = `amqp://rabbit:${config.rabbitPort}`;
-const worker = createWorker(brokerUrl, brokerUrl);
+const backendUrl = `amqp://rabbit:${config.rabbitPort}`;
+const worker = createWorker(backendUrl, backendUrl);
 
 worker.register('process.block', processBlock);
 

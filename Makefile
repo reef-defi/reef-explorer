@@ -2,9 +2,9 @@
 VOLUMES = db-data crawler-modules crawler-worker-modules rabbit-modules backtracking-modules api-modules frontend-modules
 services ?=
 
-ifeq ($(net), dev)
-	VOLUMES += substrate-data
-endif
+# ifeq ($(net), dev)
+# 	VOLUMES += substrate-data
+# endif
 
 ifeq ($(env), prod)
 	COMPOSE-MANIFEST=docker-compose-prod.yml

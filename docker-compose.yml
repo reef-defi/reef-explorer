@@ -71,11 +71,11 @@ services:
       - ./crawler:/usr/app/
     restart: always
     environment:
-      - NODE_PROVIDER_URL="ws://${NODE_HOST}:${NODE_PORT}"
+      - NODE_PROVIDER_URL=ws://${NODE_HOST}:${NODE_WS}
       - START_BLOCK_STEP=32
       # with 8 nodes you can process up to 4096 blocks at once but rather keep it at 1024 if server doesn't have a lot of RAM.
       # Currently we support node with 16Gb of RAM. To change the capacity go in `./crawler/package.json` and change --max-old-space-size=16384 to desired size
-      - MAX_BLOCKS_PER_STEP=1000
+      - MAX_BLOCKS_PER_STEP=128
       - SENTRY_DNS=${SENTRY_DNS}
       - RABBIT_PORT=${RABBIT_PORT}
       - POSTGRES_PORT=${DB_PORT} #5432
@@ -106,7 +106,7 @@ services:
     deploy:
       replicas: ${CPU_CRAWLER_WORKERS}
     environment:
-      - NODE_PROVIDER_URL="ws://${NODE_HOST}:${NODE_PORT}"
+      - NODE_PROVIDER_URL=ws://${NODE_HOST}:${NODE_WS}
       - RABBIT_PORT=${RABBIT_PORT}
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
@@ -133,7 +133,7 @@ services:
       - ./crawler:/usr/app/
     restart: always
     environment:
-      - NODE_PROVIDER_URL="ws://${NODE_HOST}:${NODE_PORT}"
+      - NODE_PROVIDER_URL=ws://${NODE_HOST}:${NODE_WS}
       - SENTRY_DNS=${SENTRY_DNS}
       - POSTGRES_PORT=${DB_PORT} #5432
       - POSTGRES_HOST=${DB_HOST}
