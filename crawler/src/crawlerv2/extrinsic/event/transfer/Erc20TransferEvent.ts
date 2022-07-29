@@ -65,7 +65,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     if (this.accountTokenHolders.length > 0) {
       logger.info(
         `Updating account token holders for (tokenAddress, signer): \n\t- ${this.accountTokenHolders
-          .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
+          .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
       await insertAccountTokenHolders(this.accountTokenHolders);
