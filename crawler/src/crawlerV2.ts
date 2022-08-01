@@ -67,15 +67,15 @@ const crawler = async () => {
      * - crawler is in "listening" mode
      * - on every nth interval
      */
-     updateVerifiedContracts += 1;
-     if (
-       config.verifiedContractSync
+    updateVerifiedContracts += 1;
+    if (
+      config.verifiedContractSync
        && (finalizedHead - currentBlockIndex) <= 3
        && updateVerifiedContracts > config.verifiedContractSyncInterval
-     ) {
-       await syncVerifiedContracts();
-       updateVerifiedContracts = 0;
-     }
+    ) {
+      await syncVerifiedContracts();
+      updateVerifiedContracts = 0;
+    }
   }
 };
 
