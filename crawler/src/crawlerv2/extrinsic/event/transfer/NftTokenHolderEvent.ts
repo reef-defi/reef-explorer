@@ -13,7 +13,7 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
     if (this.accountTokenHolders.length > 0) {
       logger.info(
         `Updating account ${this.name} holders for (tokenAddress, signer): \n\t- ${this.accountTokenHolders
-          .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
+          .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
       await insertAccountNftHolders(this.accountTokenHolders);

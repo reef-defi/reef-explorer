@@ -156,7 +156,7 @@ export interface ERC20Data extends ERC721Data {
 
 export type TokenType = 'ERC20' | 'ERC721' | 'ERC1155';
 type VerifiedContractType = 'other' | TokenType;
-type VerifiedContractData = null | ERC20Data | ERC721Data;
+type VerifiedContractData = null | ERC20Data | ERC721Data; // TODO change null to empty object
 
 export interface VerifiedContract {
   name: string;
@@ -241,7 +241,7 @@ export interface BacktrackingEvmEvent extends EvmEvent {
 }
 
 type TokenHolderType = 'Contract' | 'Account';
-type TokenHolderInfo = null | ERC20Data | ERC721Data;
+type TokenHolderInfo = null | ERC20Data | ERC721Data; // TODO change null to empty object
 type TokenHolderNftId = null | string;
 
 export interface NativeTokenHolderHead {
