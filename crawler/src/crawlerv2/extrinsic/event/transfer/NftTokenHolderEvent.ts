@@ -1,6 +1,7 @@
 import { TokenType } from '../../../../crawler/types';
 import { insertAccountNftHolders, insertContractNftHolders } from '../../../../queries/tokenHoldes';
 import logger from '../../../../utils/logger';
+import { dropDuplicatesMultiKey } from '../../../../utils/utils';
 import { ExtrinsicData } from '../../../types';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
 
@@ -10,23 +11,25 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
     // Saving account nft holders and displaying updated holders and signers
-    if (this.accountTokenHolders.length > 0) {
+    const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['signerAddress', 'tokenAddress', 'nftId']);
+    const contracts = dropDuplicatesMultiKey(this.contractTokenHolders, ['evmAddress', 'tokenAddress', 'nftId']);
+    if (accounts.length > 0) {
       logger.info(
-        `Updating account ${this.name} holders for (tokenAddress, signer): \n\t- ${this.accountTokenHolders
+        `Updating account ${this.name} holders for (tokenAddress, signer): \n\t- ${accounts
           .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertAccountNftHolders(this.accountTokenHolders);
+      await insertAccountNftHolders(accounts);
     }
 
     // Saving account nft holders and displaying updated holders and signers
-    if (this.contractTokenHolders.length > 0) {
+    if (contracts.length > 0) {
       logger.info(
-        `Updating contract ${this.name} holders for (tokenAddress, contract): \n\t- ${this.contractTokenHolders
+        `Updating contract ${this.name} holders for (tokenAddress, contract): \n\t- ${contracts
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertContractNftHolders(this.contractTokenHolders);
+      await insertContractNftHolders(contracts);
     }
   }
 }

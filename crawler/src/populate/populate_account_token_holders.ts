@@ -74,8 +74,8 @@ const main = async () => {
   logger.info('Insert account nft holders');
   await insertAccountNftHolders(nftHolders);
 
-  logger.info('Deleting wrong token holders')
-  await queryv2(`DELETE FROM token_holder WHERE signer IS NOT NULL AND evm_address IS NOT NULL;`);
+  logger.info('Deleting wrong token holders');
+  await queryv2('DELETE FROM token_holder WHERE signer IS NOT NULL AND evm_address IS NOT NULL;');
 
   logger.info('Account token & nft holders repaired');
 };

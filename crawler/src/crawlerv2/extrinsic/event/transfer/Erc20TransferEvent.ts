@@ -2,6 +2,7 @@ import { TokenHolder } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
 import { insertAccountTokenHolders } from '../../../../queries/tokenHoldes';
 import logger from '../../../../utils/logger';
+import { dropDuplicatesMultiKey } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
 import { ExtrinsicData } from '../../../types';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
@@ -60,25 +61,26 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
-
+    const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'signerAddress']);
+    const contracts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'evmAddress']);
     // Saving account token holders and displaying updated holders and signers
-    if (this.accountTokenHolders.length > 0) {
+    if (accounts.length > 0) {
       logger.info(
-        `Updating account token holders for (tokenAddress, signer): \n\t- ${this.accountTokenHolders
+        `Updating account token holders for (tokenAddress, signer): \n\t- ${accounts
           .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertAccountTokenHolders(this.accountTokenHolders);
+      await insertAccountTokenHolders(accounts);
     }
 
     // Saving account token holders and displaying updated holders and signers
-    if (this.contractTokenHolders.length > 0) {
+    if (contracts.length > 0) {
       logger.info(
-        `Updating contract token holders for (tokenAddress, contract): \n\t- ${this.contractTokenHolders
+        `Updating contract token holders for (tokenAddress, contract): \n\t- ${contracts
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertAccountTokenHolders(this.contractTokenHolders);
+      await insertAccountTokenHolders(contracts);
     }
   }
 }
