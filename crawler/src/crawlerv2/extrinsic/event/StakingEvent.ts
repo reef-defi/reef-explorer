@@ -1,4 +1,4 @@
-import { insertV2, nodeProvider } from '../../../utils/connector';
+import { nodeProvider, queryv2 } from '../../../utils/connector';
 import logger from '../../../utils/logger';
 import AccountManager from '../../managers/AccountManager';
 import { ExtrinsicData } from '../../types';
@@ -43,12 +43,12 @@ class StakingEvent extends DefaultEvent {
 
     // Saving processed staking
     logger.info('Inserting staking event');
-    await insertV2(
+    await queryv2(
       `INSERT INTO staking
         (event_id, signer, amount, type, timestamp)
       VALUES
-        %L;`,
-      [(this.id, this.signer, this.amount, 'Reward', this.head.timestamp)],
+        ($1, $2, $3, $4, $5)`,
+      [this.id, this.signer, this.amount, 'Reward', this.head.timestamp],
     );
   }
 }
