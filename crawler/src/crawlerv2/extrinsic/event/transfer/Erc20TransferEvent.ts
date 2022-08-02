@@ -61,8 +61,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
-    const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ["tokenAddress", 'signerAddress'])
-    const contracts = dropDuplicatesMultiKey(this.accountTokenHolders, ["tokenAddress", 'evmAddress'])
+    const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'signerAddress']);
+    const contracts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'evmAddress']);
     // Saving account token holders and displaying updated holders and signers
     if (accounts.length > 0) {
       logger.info(
