@@ -22,8 +22,8 @@ jobs:
       - run: make net=mainnet env=prod cmd=push services=${{ github.event.inputs.services }} execute
       - if: github.ref == 'refs/heads/develop'
         run: |
-          git config --global user.name 'frisitano'
-          git config --global user.email 'francesco.risitano95@gmail.com'
+          git config --global user.name 'Frenkiee'
+          git config --global user.email 'franko.ziga@gmail.com'
           git tag ${VERSION}
           git add -u
           git commit -m "New release ${VERSION}"
