@@ -15,10 +15,10 @@ class ExecutedFailedEvent extends DefaultEvent {
     const eventData = (this.head.event.event.data.toJSON() as any);
     const address = toChecksumAddress(eventData[0]);
 
-    const message = utils.toUtf8String(`0x${eventData[2].substr(138)}`.replace(/0+$/, ''))
+    const message = utils.toUtf8String(`0x${eventData[2].substr(138)}`.replace(/0+$/, ''));
 
     this.data = {
-      raw: { address, topics: [], data: eventData[2] }, parsed: { message},
+      raw: { address, topics: [], data: eventData[2] }, parsed: { message },
     };
   }
 

@@ -8,6 +8,7 @@ import DefaultEvent from './DefaultEvent';
 
 class UnverifiedEvmLog extends DefaultEvent {
   type: 'Unverified' | 'Verified' = 'Unverified';
+
   data: CompleteEvmData | undefined;
 
   async process(accountsManager: AccountManager): Promise<void> {

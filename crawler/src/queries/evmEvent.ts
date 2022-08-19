@@ -202,7 +202,8 @@ export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {
 export const insertEvmEventFailure = async (events: InsertEvmEventFailure[]): Promise<void> => {
   if (events.length > 0) {
     await queryv2(
-      format(`
+      format(
+        `
         INSERT INTO evm_event
           (block_id, extrinsic_index, event_index, event_id, contract_address, data_raw, data_parsed, method, status, type)
         VALUES
@@ -219,9 +220,9 @@ export const insertEvmEventFailure = async (events: InsertEvmEventFailure[]): Pr
           event.method,
           event.status,
           event.type,
-        ])
-      )
-    )
+        ]),
+      ),
+    );
   }
 };
 
