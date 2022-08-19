@@ -8,7 +8,6 @@ import ContractCreateEvent from './CreateContractEvent';
 import DefaultEvent from './DefaultEvent';
 import EndowedEvent from './EndowedEvent';
 import EvmLogEvent from './EvmLogEvent';
-import ExecutedFailedEvent from './ExecutedFailedEvent';
 import KillAccountEvent from './KillAccountEvent';
 import ReservedEvent from './ReservedEvent';
 import StakingEvent from './StakingEvent';
@@ -18,7 +17,7 @@ import Erc20TransferEvent from './transfer/Erc20TransferEvent';
 import Erc721TransferEvent from './transfer/Erc721TransferEvent';
 import NativeTransferEvent from './transfer/NativeTransferEvent';
 import UnverifiedEvmLog from './UnverifiedEvmLog';
-import UnverifiedExecutedFailedEvent from './UnverifiedExecutedFailedEvent';
+import ExecutedFailedEvent from './ExecutedFailedEvent';
 
 const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => {
   const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
@@ -50,18 +49,6 @@ const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => 
   }
 };
 
-const selectExecutionFailedEvent = async (head: EventData): Promise<DefaultEvent> => {
-  const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
-
-  // Retrieving contract data from db
-  const contract = await getContractDB(toChecksumAddress(contractData.address));
-
-  // If contract does not exist we can not verified evm execution failed content
-  if (contract.length === 0) return new UnverifiedExecutedFailedEvent(head);
-
-  return new ExecutedFailedEvent(head, contract[0]);
-};
-
 const resolveEvent = async (
   head: EventData,
 ): Promise<DefaultEvent> => {
@@ -71,8 +58,8 @@ const resolveEvent = async (
   // Decoding native events
   switch (eventCompression) {
     case 'evm.Log': return selectEvmLogEvent(head);
-    case 'evm.ExecutedFailed': return selectExecutionFailedEvent(head);
     case 'evm.Created': return new ContractCreateEvent(head);
+    case 'evm.ExecutedFailed': return new ExecutedFailedEvent(head);
 
     case 'evmAccounts.ClaimAccount': return new ClaimEvmAccountEvent(head);
 
