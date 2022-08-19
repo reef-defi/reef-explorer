@@ -7,10 +7,7 @@ import { CompleteEvmData, ExtrinsicData } from '../../types';
 import DefaultEvent from './DefaultEvent';
 
 class UnverifiedEvmLog extends DefaultEvent {
-  method: 'Log' | 'ExecutedFailed' = 'Log';
-
   type: 'Unverified' | 'Verified' = 'Unverified';
-
   data: CompleteEvmData | undefined;
 
   async process(accountsManager: AccountManager): Promise<void> {
@@ -38,13 +35,13 @@ class UnverifiedEvmLog extends DefaultEvent {
     logger.info('Inserting evm log');
     await insertEvmLog([{
       ...this.data,
-      blockId: this.head.blockId,
+      method: 'Log',
+      type: this.type,
       eventId: this.id,
+      status: 'Success',
+      blockId: this.head.blockId,
       eventIndex: this.head.index,
       extrinsicIndex: extrinsicData.index,
-      status: extrinsicData.status.type === 'success' ? 'Success' : 'Error',
-      type: this.type,
-      method: this.method,
     }]);
   }
 }
