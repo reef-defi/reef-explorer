@@ -150,14 +150,22 @@ export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => 
   }
 };
 
-interface InsertEvmLog extends CompleteEvmData {
+interface EvmBase {
   eventId: number;
   blockId: number;
   eventIndex: number;
   extrinsicIndex: number;
-  method: 'Log' | 'ExecutedFailed',
-  status: 'Success' | 'Error';
+}
+
+interface InsertEvmLog extends CompleteEvmData, EvmBase {
+  method: 'Log',
+  status: 'Success';
   type: 'Verified' | 'Unverified';
+}
+
+interface InsertEvmEventFailure extends CompleteEvmData, EvmBase {
+  method: 'ExecutedFailed';
+  status: 'Error';
 }
 
 export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {
@@ -188,6 +196,32 @@ export const insertEvmLog = async (logs: InsertEvmLog[]): Promise<void> => {
         ]),
       ),
     );
+  }
+};
+
+export const insertEvmEventFailure = async (events: InsertEvmEventFailure[]): Promise<void> => {
+  if (events.length > 0) {
+    await queryv2(
+      format(`
+        INSERT INTO evm_event
+          (block_id, extrinsic_index, event_index, event_id, contract_address, data_raw, data_parsed, method, status, type)
+        VALUES
+          %L;
+      `,
+        events.map((event) => [
+          event.blockId,
+          event.extrinsicIndex,
+          event.eventIndex,
+          event.eventId,
+          event.raw.address,
+          JSON.stringify(event.raw),
+          JSON.stringify(event.parsed),
+          event.method,
+          event.status,
+          event.type,
+        ])
+      )
+    )
   }
 };
 
