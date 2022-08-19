@@ -12,10 +12,13 @@ class ExecutedFailedEvent extends DefaultEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
 
-    const eventData = (this.head.event.event.data.toJSON() as any);
-    const address = toChecksumAddress(eventData[0]);
+    const eventData = (this.head.event.event.data.toJSON() as any[]);
 
-    const message = utils.toUtf8String(`0x${eventData[2].substr(138)}`.replace(/0+$/, ''));
+    const address = toChecksumAddress(
+      eventData.length > 3 ? eventData[1] : eventData[0].address
+    );
+
+    const message = utils.toUtf8String(`0x${eventData[eventData.length-2].substr(138)}`.replace(/0+$/, ''));
 
     this.data = {
       raw: { address, topics: [], data: eventData[2] }, parsed: { message },
