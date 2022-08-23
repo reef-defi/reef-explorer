@@ -140,8 +140,8 @@ const processBlock = async (blockId: number): Promise<void> => {
   logger.info('Processing extrinsics & events');
   await Promise.all(extrinsics.map(async (extrinisc) => extrinisc.process(accountManager)));
 
-  logger.info('Waiting for the previous block to finish');
-  await waitForBlockToFinish(blockId - 1);
+  // logger.info('Waiting for the previous block to finish');
+  // await waitForBlockToFinish(blockId - 1);
 
   // First saving all used accounts
   await accountManager.save();
