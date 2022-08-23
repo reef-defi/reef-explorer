@@ -33,9 +33,15 @@ interface ID {
 
 const findPoolEvent = async (evmEventId: string): Promise<ID[]> => queryv2<ID>('SELECT id FROM pool_event WHERE evm_event_id = $1;', [evmEventId]);
 
-const getCurrentPoolPointer = async (): Promise<string> => (await getFirstQueryValue<{currval: string}>('SELECT last_value as currval FROM pool_event_sequence')).currval;
+const getCurrentPoolPointer = async (): Promise<string> => getFirstQueryValue<{currval: string}>(
+  'SELECT last_value as currval FROM pool_event_sequence'
+  )
+  .then((res) => res.currval);
 
-const getNextPoolPointer = async (): Promise<string> => (await getFirstQueryValue<{nextval: string}>('SELECT nextval(\'pool_event_sequence\');')).nextval;
+const getNextPoolPointer = async (): Promise<string> => await getFirstQueryValue<{nextval: string}>(
+    'SELECT nextval(\'pool_event_sequence\');'
+  )
+  .then((res) => res.nextval);
 
 const checkIfEventExists = async (id: string): Promise<boolean> => {
   const event = await queryv2<unknown>('SELECT id FROM evm_event WHERE id = $1;', [id]);
@@ -82,6 +88,51 @@ const poolEvents = async () => {
     }
   }
 };
+
+
+const removeAllPoolEventsAboveBlock = async (blockId: string) => {
+  // Removing all pool data above current block
+  await queryv2(`DELETE FROM candlestic WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM reserved WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM price WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM pool_token WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM volume WHERE block_id >= $1;`, [blockId]);
+
+  // Remove pool events
+  await queryv2(
+    `DELETE event
+    FROM pool_event as event
+    JOIN evm_event as ev ON event.evm_event_id = ev.id
+    WHERE ev.block_id >= $1;`,
+    [blockId]
+  );
+
+  // Remove pools
+  await queryv2(
+    `DELETE pool
+    FROM pool
+    JOIN evm_event as ev ON pool.evm_event_id = ev.id
+    WHERE ev.block_id >= $1;`,
+    [blockId]
+  );
+};
+
+const poolProcess = async () => {
+  // Find the last processed block 
+  const currentBlock = await getCurrentPoolPointer();
+
+  // Remove all pool rows that are greater then current pool pointer  
+  await removeAllPoolEventsAboveBlock(currentBlock)
+
+
+  // Insert select previous values from candlestic, reserved, token price, pool token data and volume
+
+  // Check if block has pool evm event in it, if yes process it
+
+  // Calculate new token prices if block has pool evm event
+
+
+}
 
 Promise.resolve()
   .then(async () => {
