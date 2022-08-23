@@ -15,10 +15,11 @@ class ExecutedFailedEvent extends DefaultEvent {
     const eventData = (this.head.event.event.data.toJSON() as any[]);
 
     const address = toChecksumAddress(
-      eventData.length > 3 ? eventData[1] : eventData[0].address,
+      eventData.length > 3 ? eventData[1] : eventData[0],
     );
-
-    const message = utils.toUtf8String(`0x${eventData[eventData.length - 2].substr(138)}`.replace(/0+$/, ''));
+    
+    let message = eventData.length > 3 ? eventData[4] : eventData[2];
+    message = utils.toUtf8String(`0x${message.substr(138)}`.replace(/0+$/, ''));
 
     this.data = {
       raw: { address, topics: [], data: eventData[2] }, parsed: { message },
