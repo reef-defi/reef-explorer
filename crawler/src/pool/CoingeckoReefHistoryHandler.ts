@@ -41,13 +41,16 @@ const getReefPriceHistory = async (date: Date): Promise<number> => coingeckoApi
   });
 
 
+/**
+ * Usage:
+ * const price = await CoingeckoReefHistoryHandler.getPrice(new Date());
+ */
 class CoingeckoReefHistoryHandler {
   private static history: HistoryData = {};
 
   static async getPrice(date: Date): Promise<number> {
     // Check if date is less then one minute old, if so return latest price
     if (date > new Date(Date.now() - 1000 * 60)) {
-
       // TODO maybe clean history?
       return await getReefCurrentPrice();
     }
