@@ -2,8 +2,7 @@ import axios, {AxiosResponse} from "axios";
 
 const coingeckoApi = axios.create({baseURL: "https://api.coingecko.com/api/v3/"});
 
-type HistoryData = { [date: string]: number };
-
+// Coingecko response types
 type PriceHistory = {
   market_data: {
     current_price: {
@@ -35,17 +34,18 @@ const getReefPriceHistory = async (date: Date): Promise<number> => coingeckoApi
   .get<void, AxiosResponse<PriceHistory>>(
     `/coins/reef/history?date=${date2String(date)}`
   )
-  .then((res) => res.data.market_data.current_price.reef)
+  .then((res) => res.data.market_data.current_price.usd)
   .catch((err) => {
     throw new Error('Error getting history price from coingecko: ' + err.message);
   });
 
+type HistoryData = { [date: string]: number };
 
 /**
  * Usage:
- * const price = await CoingeckoReefHistoryHandler.getPrice(new Date());
+ * const price = await ReefPriceScrapper.getPrice(new Date());
  */
-class CoingeckoReefHistoryHandler {
+class ReefPriceScrapper {
   private static history: HistoryData = {};
 
   static async getPrice(date: Date): Promise<number> {
@@ -69,4 +69,4 @@ class CoingeckoReefHistoryHandler {
   }
 }
 
-export default CoingeckoReefHistoryHandler;
+export default ReefPriceScrapper;
