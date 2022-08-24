@@ -1,6 +1,7 @@
 import { TokenHolder } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
 import { insertAccountTokenHolders } from '../../../../queries/tokenHoldes';
+import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import { dropDuplicatesMultiKey } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
@@ -57,6 +58,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
         fromBalance,
       );
     }
+
+    await awaitForContract(tokenAddress);
   }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {

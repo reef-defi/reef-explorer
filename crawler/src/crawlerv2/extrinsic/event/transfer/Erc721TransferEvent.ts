@@ -1,5 +1,6 @@
 import { TokenType } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
+import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import NftTokenHolderEvent from './NftTokenHolderEvent';
@@ -53,6 +54,7 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
         nftId,
       );
     }
+    await awaitForContract(tokenAddress);
   }
 }
 

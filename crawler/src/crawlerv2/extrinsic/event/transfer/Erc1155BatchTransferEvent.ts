@@ -1,5 +1,6 @@
 import { Contract } from 'ethers';
 import { nodeProvider } from '../../../../utils/connector';
+import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
@@ -51,6 +52,7 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
         fromBalances[index],
         nftIds[index].toString(),
       );
+      await awaitForContract(tokenAddress);
     }
   }
 }

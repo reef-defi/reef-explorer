@@ -1,4 +1,5 @@
 import { balanceOfErc1155 } from '../../../../crawler/utils';
+import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
@@ -48,6 +49,8 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
         nftId.toString(),
       );
     }
+
+    await awaitForContract(tokenAddress);
   }
 }
 
