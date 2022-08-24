@@ -3,20 +3,7 @@ import { RawEventData } from "../../crawler/types";
 import { queryv2 } from "../../utils/connector";
 
 type PariEventType = 'Swap' | 'Burn' | 'Mint' | 'Sync' | 'Transfer';
-interface DefaultPairEvent {
-  poolId: string;
-  address: string;
-  eventId: string;
-  timestamp: string;
-}
 
-interface InitialPairEvent extends DefaultPairEvent {
-  rawData: RawEventData;
-}
-
-export interface ProcessPairEvent extends DefaultPairEvent {
-  data: utils.LogDescription;
-}
 
 class DefaultPoolEvent {
   // Needed
@@ -46,7 +33,7 @@ class DefaultPoolEvent {
   }
 
   // Available for child classes before saving
-  async process(event: ProcessPairEvent): Promise<void> { }
+  async process(event: utils.LogDescription): Promise<void> { }
 
   // Saving pool event to database
   async save(): Promise<void> {

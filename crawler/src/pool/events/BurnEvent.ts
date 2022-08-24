@@ -1,16 +1,17 @@
-import DefaultPoolEvent, { ProcessPairEvent } from "./DefaultPoolEvent";
+import DefaultPoolEvent from "./DefaultPoolEvent";
+import { utils } from "ethers";
 
 class BurnEvent extends DefaultPoolEvent {
   constructor(poolId: string, eventId: string, timestamp: string) {
     super(poolId, eventId, timestamp, 'Burn');
   }
 
-  async process(event: ProcessPairEvent): Promise<void> {
+  async process(event: utils.LogDescription): Promise<void> {
     await super.process(event);
-    this.sender_address = event.data.args[0];
-    this.amount_1 = event.data.args[1].toString();
-    this.amount_2 = event.data.args[2].toString();
-    this.to_address = event.data.args[3];
+    this.sender_address = event.args[0];
+    this.amount_1 = event.args[1].toString();
+    this.amount_2 = event.args[2].toString();
+    this.to_address = event.args[3];
   }
 }
 

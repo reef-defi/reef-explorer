@@ -1,18 +1,17 @@
-import DefaultPoolEvent, { ProcessPairEvent } from "./DefaultPoolEvent";
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { queryv2 } from "../../utils/connector";
+import DefaultPoolEvent from "./DefaultPoolEvent";
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-
 
 class TransferEvent extends DefaultPoolEvent {
   constructor(poolId: string, eventId: string, timestamp: string) {
     super(poolId, eventId, timestamp, 'Transfer');
   }
 
-  async process(event: ProcessPairEvent): Promise<void> {
+  async process(event: utils.LogDescription): Promise<void> {
     await super.process(event);
-    const [addr1, addr2, amount] = event.data.args;
+    const [addr1, addr2, amount] = event.args;
 
     // TODO check why are this conditions needed and explain it
     // Probably because when mint is called first address is zero and 
@@ -27,7 +26,7 @@ class TransferEvent extends DefaultPoolEvent {
       ORDER BY timestamp desc
       LIMIT 1;
       `,
-      [event.poolId],
+      [this.poolId],
     );
 
     this.supply = (prevSupply && prevSupply.length > 0 ? prevSupply[0].total_supply : 0).toString();
