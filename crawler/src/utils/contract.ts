@@ -10,4 +10,6 @@ export const awaitForContract = async (address: string): Promise<void> => new Pr
     await wait(100);
     contracts = await queryv2('SELECT id FROM contract WHERE address = $1', [address]);
   };
+  
+  resolve();
 });
