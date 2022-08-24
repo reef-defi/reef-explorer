@@ -217,6 +217,38 @@ const findPoolID = async (address: string): Promise<string|undefined> => {
   return ids.length > 0 ? ids[0].id : undefined;
 };
 
+const getEvmEvents = async (blockId: string): Promise<PartialEvmEvent[]> => queryv2<PartialEvmEvent>(
+  `SELECT
+    ee.id, ee.data_raw as rawdata, ee.contract_address as contractaddress, b.timestamp
+  FROM evm_event as ee
+  JOIN block as b
+    ON ee.block_id = b.id
+  WHERE ee.block_id = $1;`,
+  [blockId],
+);
+
+const processBlock = async (blockId: string): Promise<void> => {
+  const evmEvents = await getEvmEvents(blockId);
+
+  for (const event of evmEvents) {
+    if (event.contractaddress.toLowerCase() === config.reefswapFactoryAddress.toLowerCase()) {
+      await processFactoryEvent(event.id, event.rawdata);
+      continue;
+    }
+    
+    const poolId = await findPoolID(event.contractaddress);
+    if (poolId) {
+      await processPairEvent({ 
+        poolId,
+        eventId: event.id,
+        rawData: event.rawdata,
+        timestamp: event.timestamp,
+        address: event.contractaddress,
+       });
+    }
+  }
+};
+
 export default async (eventId: string): Promise<void> => {
   // logger.info(`Processing event: ${eventId}`);
   const event = await findEvmEvent(eventId);
