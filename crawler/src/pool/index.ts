@@ -1,14 +1,12 @@
-import { utils, Contract, BigNumber } from 'ethers';
-import { RawEventData } from '../crawler/types';
-import { nodeProvider, queryv2 } from '../utils/connector';
-import logger from '../utils/logger';
-import config from '../config';
+import { utils } from 'ethers';
 import ReefswapPair from '../assets/ReefswapPair';
-import ReefswapFactory from '../assets/ReefswapFactoryAbi';
-import erc20Abi from '../assets/erc20Abi';
-import DefaultPoolEvent from './events/DefaultPoolEvent';
-import MintEvent from './events/MintEvent';
+import { RawEventData } from '../crawler/types';
+import { queryv2 } from '../utils/connector';
+import logger from '../utils/logger';
 import BurnEvent from './events/BurnEvent';
+import FactoryEvent from './events/FactoryEvent';
+import MintEvent from './events/MintEvent';
+import PoolEvent from './events/PoolEvent';
 import SwapEvent from './events/SwapEvent';
 import SyncEvent from './events/SyncEvent';
 import TransferEvent from './events/TransferEvent';
@@ -36,7 +34,7 @@ interface PartialEvmEvent {
 }
 
 
-const selectPoolEvent = (pairEvent: InitialPairEvent, data: utils.LogDescription): DefaultPoolEvent => {
+const selectPoolEvent = (pairEvent: InitialPairEvent, data: utils.LogDescription): PoolEvent => {
   switch (data.name) {
     case 'Mint': return new MintEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
     case 'Burn': return new BurnEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
@@ -53,8 +51,7 @@ const processPairEvent = async (pairEvent: InitialPairEvent): Promise<void> => {
   const data = contractInterface.parseLog(pairEvent.rawData);
 
   const event = selectPoolEvent(pairEvent, data);
-  await event.process(data);
-  await event.save();
+  await event.combine(data);
 };
 
 const findEvmEvent = async (eventId: string): Promise<PartialEvmEvent> => {
@@ -117,8 +114,9 @@ export default async (eventId: string): Promise<void> => {
   const event = await findEvmEvent(eventId);
 
   // Check if event is Reefswap factory create pool event. If so add new pool in DB
-  if (event.contractaddress.toLowerCase() === config.reefswapFactoryAddress.toLowerCase()) {
-    await processFactoryEvent(eventId, event.rawdata);
+  if (FactoryEvent.isFactoryCreateEvent(event.rawdata.address)) {
+    const factoryEvent = new FactoryEvent(eventId);
+    await factoryEvent.combine(event.rawdata);
     return;
   }
 

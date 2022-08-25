@@ -3,20 +3,20 @@ import { RawEventData } from "../../crawler/types";
 import { queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
 import ReefswapFactory from "../../assets/ReefswapFactoryAbi";
+import config from "../../config";
+import PoolEventBase from "./PoolEventBase";
 
-class FactoryEvent {
-  evmEventId: string;
-
+class FactoryEvent extends PoolEventBase<RawEventData> {
   poolAddress?: string;
   tokenAddress1?: string;
   tokenAddress2?: string;
 
   constructor(evmEventId: string) {
-    this.evmEventId = evmEventId;
+    super(evmEventId);
   }
 
   async process(rawData: RawEventData): Promise<void> {
-    if (!FactoryEvent.isFactoryEvent(rawData)) {
+    if (!FactoryEvent.isFactoryCreateEvent(rawData.address)) {
       throw new Error("Not a PairCreated ReefswapFactory event");
     }
 
@@ -50,10 +50,8 @@ class FactoryEvent {
     );
   }
 
-  static isFactoryEvent(rawData: RawEventData): boolean {
-    const contractInterface = new utils.Interface(ReefswapFactory);
-    const data = contractInterface.parseLog(rawData);
-    return data.name === 'PairCreated';
+  static isFactoryCreateEvent(address: string): boolean {
+    return address.toLowerCase() === config.reefswapFactoryAddress.toLowerCase();
   }
 }
 
