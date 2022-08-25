@@ -1,7 +1,7 @@
-import DefaultPoolEvent from "./DefaultPoolEvent";
+import PoolEvent from "./PoolEvent";
 import { utils } from "ethers";
 
-class BurnEvent extends DefaultPoolEvent {
+class BurnEvent extends PoolEvent {
   constructor(poolId: string, eventId: string, timestamp: string) {
     super(poolId, eventId, timestamp, 'Burn');
   }

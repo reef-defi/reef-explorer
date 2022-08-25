@@ -1,10 +1,10 @@
 import { BigNumber, utils } from "ethers";
 import { queryv2 } from "../../utils/connector";
-import DefaultPoolEvent from "./DefaultPoolEvent";
+import PoolEvent from "./PoolEvent";
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
-class TransferEvent extends DefaultPoolEvent {
+class TransferEvent extends PoolEvent {
   constructor(poolId: string, eventId: string, timestamp: string) {
     super(poolId, eventId, timestamp, 'Transfer');
   }

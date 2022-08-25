@@ -1,14 +1,14 @@
 import { utils } from "ethers";
 import { RawEventData } from "../../crawler/types";
 import { queryv2 } from "../../utils/connector";
+import PoolEventBase from "./PoolEventBase";
 
 type PariEventType = 'Swap' | 'Burn' | 'Mint' | 'Sync' | 'Transfer';
 
 
-class DefaultPoolEvent {
+class PoolEvent extends PoolEventBase<utils.LogDescription> {
   // Needed
   poolId: string;
-  eventId: string;
   timestamp: string;
   type: PariEventType;
 
@@ -26,9 +26,9 @@ class DefaultPoolEvent {
   total_supply?: string;
 
   constructor(poolId: string, eventId: string, timestamp: string, type: PariEventType) {
+    super(eventId);
     this.type = type;
     this.poolId = poolId;
-    this.eventId = eventId;
     this.timestamp = timestamp;
   }
 
@@ -44,7 +44,7 @@ class DefaultPoolEvent {
         ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);`,
       [
         this.poolId, 
-        this.eventId, 
+        this.evmEventId, 
         this.timestamp, 
         this.type, 
         this.to_address || null, 
@@ -61,6 +61,10 @@ class DefaultPoolEvent {
     )
   }
 
+  async combine(event: utils.LogDescription): Promise<void> {
+    await this.process(event);
+    await this.save();
+  }
 };
 
-export default DefaultPoolEvent;
+export default PoolEvent;
