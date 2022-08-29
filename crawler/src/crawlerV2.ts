@@ -34,7 +34,7 @@ const crawler = async () => {
   currentBlockIndex++;
   const queue = new Queue<Promise<void>>(config.maxBlocksPerStep);
   const per = new Performance(config.maxBlocksPerStep);
-
+  // throw new Error('Break');
   nodeProvider.getProvider().api.rpc.chain.subscribeNewHeads(async (header) => {
     await processUnfinalizedBlock(header.number.toNumber());
   });

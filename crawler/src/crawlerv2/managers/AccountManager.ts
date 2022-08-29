@@ -1,10 +1,42 @@
 import { AccountBody, TokenHolder } from '../../crawler/types';
 import { findNativeAddress } from '../../crawler/utils';
-import { insertAccounts } from '../../queries/event';
-import { nodeProvider } from '../../utils/connector';
+import { insertAccountTokenHolders } from '../../queries/tokenHoldes';
+import { nodeProvider, queryv2 } from '../../utils/connector';
 import logger from '../../utils/logger';
 import { REEF_CONTRACT_ADDRESS, REEF_DEFAULT_DATA, toChecksumAddress } from '../../utils/utils';
-import { insertAccountTokenHolders } from '../../queries/tokenHoldes';
+
+// accounts statement first locks the accounts table and then inserts or updates used accounts
+// latest timestamp is used to update the accounts table
+// ** using <VALUES> syntax to inject values into the query because of integer overflow
+const INSERT_ACCOUTNS_STATEMENT = `
+BEGIN;
+
+SELECT * FROM account FOR UPDATE;
+
+INSERT INTO account
+  (address, evm_address, block_id, active, free_balance, locked_balance, available_balance, reserved_balance, voting_balance, vested_balance, identity, nonce, evm_nonce, timestamp)
+VALUES
+  <VALUES>
+ON CONFLICT (address) DO UPDATE SET
+  active = EXCLUDED.active,
+  block_id = EXCLUDED.block_id,
+  evm_address = EXCLUDED.evm_address,
+  free_balance = EXCLUDED.free_balance,
+  locked_balance = EXCLUDED.locked_balance,
+  vested_balance = EXCLUDED.vested_balance,
+  voting_balance = EXCLUDED.voting_balance,
+  reserved_balance = EXCLUDED.reserved_balance,
+  available_balance = EXCLUDED.available_balance,
+  timestamp = EXCLUDED.timestamp,
+  nonce = EXCLUDED.nonce,
+  evm_nonce = EXCLUDED.evm_nonce,
+  identity = EXCLUDED.identity;
+
+COMMIT;
+`;
+
+const account2Insert = (account: AccountBody): string => 
+`('${account.address}', '${account.evmAddress}', ${account.blockId}, ${account.active}, ${account.freeBalance}, ${account.lockedBalance}, ${account.availableBalance}, ${account.reservedBalance}, ${account.votingBalance}, ${account.vestedBalance}, '${account.identity}', ${account.nonce}, ${account.evmNonce}, '${account.timestamp}')`;
 
 // Account manager stores used accounts and allows to trigger account save
 class AccountManager {
@@ -57,7 +89,10 @@ class AccountManager {
 
     // Saving used accounts
     logger.info(`Updating accounts: \n\t- ${accounts.join(', \n\t- ')}`);
-    await insertAccounts(usedAccounts);
+    const acc = usedAccounts.map(account2Insert).join(',\n\t');
+    const statement = INSERT_ACCOUTNS_STATEMENT.replace('<VALUES>', acc);
+    await queryv2(statement);
+    // await insertAccounts(usedAccounts);
 
     // Converting accounts into token holders
     const tokenHolders: TokenHolder[] = usedAccounts
