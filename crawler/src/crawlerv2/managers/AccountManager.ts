@@ -92,7 +92,6 @@ class AccountManager {
     const acc = usedAccounts.map(account2Insert).join(',\n\t');
     const statement = INSERT_ACCOUTNS_STATEMENT.replace('<VALUES>', acc);
     await queryv2(statement);
-    // await insertAccounts(usedAccounts);
 
     // Converting accounts into token holders
     const tokenHolders: TokenHolder[] = usedAccounts
