@@ -117,19 +117,93 @@ const removeAllPoolEventsAboveBlock = async (blockId: string) => {
   );
 };
 
+const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
+  logger.info('Inserting previous candlestic values');
+  await queryv2(`
+    INSERT INTO candlestic 
+      (block_id, pool_id, evm_event_id, open, high, low, close, timestamp)
+      SELECT b.id, c.pool_id, c.evm_event_id, c.close, c.close, c.close, c.close, b.timestamp
+      FROM candlestic as c
+      JOIN block as b ON c.block_id + 1 = b.id
+      WHERE b.id = $1;`,
+    [currentBlockId]
+  );
+
+  logger.info('Inserting previous reserved values');
+  await queryv2(`
+    INSERT INTO reserves
+      (block_id, pool_id, evm_event_id, reserved_1, reserved_2, timestamp)
+      SELECT b.id, r.pool_id, r.evm_event_id, r.reserved_1, r.reserved_2, b.timestamp
+      FROM reserves as r
+      JOIN block as b ON r.block_id + 1 = b.id
+      WHERE b.id = $1;`,
+    [currentBlockId]
+  );
+
+  logger.info('Inserting previous price values');
+  await queryv2(`
+    INSERT INTO price
+      (block_id, token_address, price, timestamp)
+      SELECT b.id, p.token_address, p.price, b.timestamp
+      FROM price as p
+      JOIN block as b ON p.block_id + 1 = b.id
+      WHERE b.id = $1;`,
+    [currentBlockId]
+  );
+
+  logger.info('Inserting previous volume values');
+  await queryv2(`
+    INSERT INTO volume
+      (block_id, pool_id, evm_event_id, volume_1, volume_2, timestamp)
+      SELECT b.id, v.pool_id, v.evm_event_id, 0, 0, b.timestamp
+      FROM volume as v
+      JOIN block as b ON v.block_id + 1 = b.id
+      WHERE b.id = $1;`,
+    [currentBlockId]
+  );
+
+  logger.info('Inserting previous pool token values');
+  await queryv2(`
+    INSERT INTO pool_token
+      (block_id, pool_id, evm_event_id, supply, type, timestamp)
+      SELECT b.id, pt.pool_id, pt.evm_event_id, pt.supply, pt.type, b.timestamp
+      FROM pool_token as pt
+      JOIN block as b ON pt.block_id + 1 = b.id
+      WHERE b.id = $1;`,
+    [currentBlockId]
+  );
+}
+
+const awaitBlock = async (blockId: string): Promise<void> => {
+  while (true) {
+    const result = await queryv2<ID>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId]);
+    if (result.length > 0) {
+      return;
+    }
+    await wait(100);
+  }
+};
+
 const poolProcess = async () => {
   // Find the last processed block 
-  const currentBlock = await getCurrentPoolPointer();
+  let currentBlock = await getCurrentPoolPointer();
 
   // Remove all pool rows that are greater then current pool pointer  
   await removeAllPoolEventsAboveBlock(currentBlock)
 
+  while (true) {
+    // Awaiting block is finalized
+    await awaitBlock(currentBlock);
 
-  // Insert select previous values from candlestic, reserved, token price, pool token data and volume
+    // Insert select previous values from candlestic, reserved, token price, pool token data and volume
+    await insertPreviousValues(currentBlock);
+  
+    // Check if block has pool evm event in it, if yes process them
+  
+    // Calculate new token prices if block has pool evm event
 
-  // Check if block has pool evm event in it, if yes process it
-
-  // Calculate new token prices if block has pool evm event
+    currentBlock = await getNextPoolPointer();
+  }
 
 
 }

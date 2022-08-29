@@ -87,27 +87,29 @@ const getEvmEvents = async (blockId: string): Promise<PartialEvmEvent[]> => quer
   [blockId],
 );
 
-// const processBlock = async (blockId: string): Promise<void> => {
-//   const evmEvents = await getEvmEvents(blockId);
+const processBlock = async (blockId: string): Promise<void> => {
+  const evmEvents = await getEvmEvents(blockId);
 
-//   for (const event of evmEvents) {
-//     if (event.contractaddress.toLowerCase() === config.reefswapFactoryAddress.toLowerCase()) {
-//       await processFactoryEvent(event.id, event.rawdata);
-//       continue;
-//     }
+  for (const event of evmEvents) {
+    // Check if event is Reefswap factory create pool event. If so add new pool in DB
+    if (FactoryEvent.isFactoryCreateEvent(event.rawdata.address)) {
+      const factoryEvent = new FactoryEvent(event.id);
+      await factoryEvent.combine(event.rawdata);
+      return;
+    }
     
-//     const poolId = await findPoolID(event.contractaddress);
-//     if (poolId) {
-//       await processPairEvent({ 
-//         poolId,
-//         eventId: event.id,
-//         rawData: event.rawdata,
-//         timestamp: event.timestamp,
-//         address: event.contractaddress,
-//        });
-//     }
-//   }
-// };
+    const poolId = await findPoolID(event.contractaddress);
+    if (poolId) {
+      await processPairEvent({ 
+        poolId,
+        eventId: event.id,
+        rawData: event.rawdata,
+        timestamp: event.timestamp,
+        address: event.contractaddress,
+       });
+    }
+  }
+};
 
 export default async (eventId: string): Promise<void> => {
   // logger.info(`Processing event: ${eventId}`);
