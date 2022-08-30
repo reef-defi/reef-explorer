@@ -186,6 +186,7 @@ CREATE FUNCTION volume_prepare_raw (duration: string)
     volume_2,
     date_trunc(duration, timestamp)
   FROM volume
+  ORDER BY timestamp
   END;
 $$ LANGUAGE SQL;
 
@@ -213,81 +214,154 @@ CREATE VIEW volume_raw_hour AS SELECT * FROM volume_window_raw('hour');
 CREATE VIEW volume_raw_day AS SELECT * FROM volume_window_raw('day');
 CREATE VIEW volume_raw_week AS SELECT * FROM volume_window_raw('week');
 
+-- Function applies date trunc over timestamp, which we can use in window functions
+CREATE FUNCTION reserve_prepare_raw (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    locked_1 NUMERIC,
+    locked_2 NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+  SELECT 
+    pool_id,
+    locked_1,
+    locked_2,
+    date_trunc(duration, timestamp)
+  FROM locked
+  ORDER BY timestamp
+  END;
+$$ LANGUAGE SQL;
+
+-- Applying window function over reserve_prepare_raw function
+-- last locked values are used as reserve
+CREATE FUNCTION reserve_window_raw (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    locked_1 NUMERIC,
+    locked_2 NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+   SELECT
+      l.pool_id,
+      LAST(l.locked_1) OVER w,
+      LAST(l.locked_2) OVER w,
+      l.timeframe
+    FROM reserve_prepare_raw(duration) AS l
+    WINDOW w AS (PARTITION BY l.pool_id, l.timeframe ORDER BY l.timeframe, l.pool_id);
+  END;
+$$ LANGUAGE SQL;
+
+CREATE VIEW reserve_raw_min AS SELECT * FROM reserve_window_raw('minute');
+CREATE VIEW reserve_raw_hour AS SELECT * FROM reserve_window_raw('hour');
+CREATE VIEW reserve_raw_day AS SELECT * FROM reserve_window_raw('day');
+CREATE VIEW reserve_raw_week AS SELECT * FROM reserve_window_raw('week');
+
+-- Function applies date trunc over timestamp, which we can use in window functions
+CREATE FUNCTION token_price_prepare (duration: string)
+  RETURNS TABLE (
+    token_address INT,
+    price NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+  SELECT 
+    pool_id,
+    price,
+    date_trunc(duration, timestamp)
+  FROM pool_token
+  ORDER BY timestamp
+  END;
+$$ LANGUAGE SQL;
+
+-- Applying window function over price_prepare function
+-- Price is calculated as last price in pool
+CREATE FUNCTION token_price_window (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    price NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+   SELECT
+      p.pool_id,
+      LAST(p.price) OVER w,
+      p.timeframe
+    FROM token_price_prepare(duration) AS p
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+  END;
+$$ LANGUAGE SQL;
+
+CREATE VIEW token_price_min AS SELECT * FROM token_price_window('minute');
+CREATE VIEW token_price_hour AS SELECT * FROM token_price_window('hour');
+CREATE VIEW token_price_day AS SELECT * FROM token_price_window('day');
+CREATE VIEW token_price_week AS SELECT * FROM token_price_window('week');
+
+-- Calling volume window raw and multiplying volumes by 0.3% to get a fee
+CREATE FUNCTION fee_window_raw (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    fee_1 NUMERIC,
+    fee_2 NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+   SELECT
+      f.pool_id,
+      volume_1 * 0.0003,
+      volume_2 * 0.0003,
+      f.timeframe
+    FROM volume_window_raw(duration)
+  END;
+$$ LANGUAGE SQL;
+
+CREATE VIEW fee_raw_min AS SELECT * FROM fee_window_raw('minute');
+CREATE VIEW fee_raw_hour AS SELECT * FROM fee_window_raw('hour');
+CREATE VIEW fee_raw_day AS SELECT * FROM fee_window_raw('day');
+CREATE VIEW fee_raw_week AS SELECT * FROM fee_window_raw('week');
 
 
+-- Function applies date trunc over timestamp, which we can use in window functions
+CREATE FUNCTION candlestick_prepare (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    open NUMERIC,
+    high NUMERIC,
+    low NUMERIC,
+    close NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+  SELECT 
+    pool_id,
+    open,
+    high,
+    low,
+    close,
+    date_trunc(duration, timestamp)
+  FROM pool_token
+  ORDER BY timestamp
+  END;
+$$ LANGUAGE SQL;
 
+-- Applying window function over candlestick_prepare function extracting open, high, low, close
+CREATE FUNCTION candlestick_window (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    open NUMERIC,
+    high NUMERIC,
+    low NUMERIC,
+    close NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+   SELECT
+      c.pool_id,
+      FIRST(c.open) OVER w,
+      MAX(c.high) OVER w,
+      MIN(c.low) OVER w,
+      LAST(c.close) OVER w,
+      c.timeframe
+    FROM candlestick_prepare(duration) AS c
+    WINDOW w AS (PARTITION BY c.pool_id, c.timeframe ORDER BY c.timeframe, c.pool_id);
+  END;
+$$ LANGUAGE SQL;
 
-
-
-
-
-
-
-
-
-
-
-/* Populating tables */
--- INSERT INTO block (timestamp) VALUES (NOW()), (NOW()), (NOW()), (NOW()), (NOW());
--- INSERT INTO pool (timestamp) VALUES (NOW()), (NOW()), (NOW());
--- INSERT INTO evm_event (timestamp) VALUES (NOW()), (NOW()), (NOW());
-
--- INSERT INTO verified_contract 
---   (address)
--- VALUES
---   ('token1'),
---   ('token2'),
---   ('token3'),
---   ('token4');
-  
--- INSERT INTO price
---   (block_id, token_address, price, timestamp)
--- VALUES
---   (1, 'token1', 11.5, NOW()),
---   (2, 'token1', 12.5, NOW()),
---   (3, 'token1', 13.5, NOW()),
---   (4, 'token1', 14.5, NOW()),
---   (5, 'token1', 15.5, NOW()),
---   (1, 'token2', 6.1, NOW()),
---   (2, 'token2', 5.1, NOW()),
---   (2, 'token2', 23.1, NOW()),
---   (3, 'token3', 13.1, NOW()),
---   (3, 'token4', 3.1, NOW());
-  
--- -- Cascade test
--- -- DELETE FROM block WHERE id = 3;
--- -- SELECT * FROM price;
-
--- INSERT INTO candlestick
---   (block_id, pool_id, evm_event_id, token_address, open, high, low, close, timestamp)
--- VALUES
---   (1, 1, null, 'token1', 1, 3, 2, 2.5, NOW()),
---   (2, 1, null, 'token1', 1, 3, 2, 2.5, NOW()),
---   (3, 2, 1, 'token3', 1, 3, 2, 2.5, NOW()),
---   (3, 2, 2, 'token2', 1, 3, 2, 2.5, NOW());
-
--- -- Cascade test for verified contract
--- --DELETE FROM verified_contract WHERE address = 'token1';
--- -- SELECT * FROM candlestick;
-
--- INSERT INTO locked
---   (block_id, pool_id, evm_event_id, locked_1, locked_2, timestamp)
--- VALUES
---   (1, 1, null, 1, 2, NOW()),
---   (2, 1, null, 1, 2, NOW()),
---   (3, 2, 1, 1, 2, NOW());
-
--- INSERT INTO volume
---   (block_id, pool_id, evm_event_id, volume_1, volume_2, timestamp)
--- VALUES
---   (1, 1, null, 1, 2, NOW()),
---   (2, 1, null, 1, 2, NOW()),
---   (3, 2, 1, 1, 2, NOW());
-
--- INSERT INTO pool_token
---   (block_id, pool_id, evm_event_id, supply, type, timestamp)
--- VALUES
---   (1, 1, null, 1, 'Account', NOW()),
---   (2, 1, null, 1, 'Account', NOW()),
---   (3, 2, 1, 1, 'Contract', NOW());
-  
+CREATE VIEW candlestick_min AS SELECT * FROM candlestick_window('minute');
+CREATE VIEW candlestick_hour AS SELECT * FROM candlestick_window('hour');
+CREATE VIEW candlestick_day AS SELECT * FROM candlestick_window('day');
+CREATE VIEW candlestick_week AS SELECT * FROM candlestick_window('week');
