@@ -1,6 +1,6 @@
 import { TokenHolder } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
-import { insertAccountTokenHolders } from '../../../../queries/tokenHoldes';
+import { insertAccountTokenHolders, insertContractTokenHolders } from '../../../../queries/tokenHoldes';
 import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import { dropDuplicatesMultiKey } from '../../../../utils/utils';
@@ -64,8 +64,15 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
-    const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'signerAddress']);
-    const contracts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'evmAddress']);
+
+    const accounts = dropDuplicatesMultiKey(
+      this.accountTokenHolders.filter(({ type }) => type === "Account"),
+      ["tokenAddress", "signerAddress"]
+    );
+    const contracts = dropDuplicatesMultiKey(
+      this.accountTokenHolders.filter(({ type }) => type === "Contract"),
+      ["tokenAddress", "evmAddress"]
+    );
     // Saving account token holders and displaying updated holders and signers
     if (accounts.length > 0) {
       logger.info(
@@ -83,7 +90,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertAccountTokenHolders(contracts);
+      await insertContractTokenHolders(contracts);
     }
   }
 }
