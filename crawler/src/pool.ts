@@ -4,7 +4,9 @@ import { nodeProvider, queryv2 } from './utils/connector';
 import logger from './utils/logger';
 import config from './config';
 import { wait } from './utils/utils';
-import processPoolEvent from './pool/';
+import processPoolEvent, {processPoolBlock} from './pool/';
+
+
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
   dsn: config.sentryBacktrackingDns,
@@ -197,15 +199,13 @@ const poolProcess = async () => {
 
     // Insert select previous values from candlestic, reserved, token price, pool token data and volume
     await insertPreviousValues(currentBlock);
-  
-    // Check if block has pool evm event in it, if yes process them
-  
-    // Calculate new token prices if block has pool evm event
-
+    
+    // Process block events
+    await processPoolBlock(currentBlock);
+   
+    // Get next block
     currentBlock = await getNextPoolPointer();
   }
-
-
 }
 
 Promise.resolve()

@@ -87,7 +87,7 @@ const getEvmEvents = async (blockId: string): Promise<PartialEvmEvent[]> => quer
   [blockId],
 );
 
-const processBlock = async (blockId: string): Promise<void> => {
+export const processPoolBlock = async (blockId: string): Promise<void> => {
   const evmEvents = await getEvmEvents(blockId);
 
   for (const event of evmEvents) {
