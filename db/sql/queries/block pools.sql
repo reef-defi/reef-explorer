@@ -60,8 +60,8 @@ DROP FUNCTION pool_prepare_supply_data;
 
 
 -- New tables
-CREATE TABLE price(
-  ID SERIAL PRIMARY KEY,
+CREATE TABLE token_price(
+  id SERIAL PRIMARY KEY,
   block_id INT NOT NULL,
   token_address CHAR(42) NOT NULL,
   price numeric NOT NULL,
@@ -71,9 +71,9 @@ CREATE TABLE price(
   FOREIGN KEY (token_address) REFERENCES verified_contract(address) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS price_block_id_idx ON price(block_id);
-CREATE INDEX IF NOT EXISTS price_token_address_idx ON price(token_address);
-CREATE INDEX IF NOT EXISTS price_timestamp_idx ON price(timestamp);
+CREATE INDEX IF NOT EXISTS token_price_block_id_idx ON token_price(block_id);
+CREATE INDEX IF NOT EXISTS token_price_token_address_idx ON token_price(token_address);
+CREATE INDEX IF NOT EXISTS token_price_timestamp_idx ON token_price(timestamp);
 
 CREATE TABLE candlestick(
   id Serial PRIMARY KEY,
@@ -361,7 +361,116 @@ CREATE FUNCTION candlestick_window (duration: string)
   END;
 $$ LANGUAGE SQL;
 
-CREATE VIEW candlestick_min AS SELECT * FROM candlestick_window('minute');
-CREATE VIEW candlestick_hour AS SELECT * FROM candlestick_window('hour');
-CREATE VIEW candlestick_day AS SELECT * FROM candlestick_window('day');
-CREATE VIEW candlestick_week AS SELECT * FROM candlestick_window('week');
+CREATE VIEW candlestick_min AS 
+  SELECT * FROM candlestick_window('minute');
+CREATE VIEW candlestick_hour AS 
+  SELECT * FROM candlestick_window('hour');
+CREATE VIEW candlestick_day AS 
+  SELECT * FROM candlestick_window('day');
+CREATE VIEW candlestick_week AS 
+  SELECT * FROM candlestick_window('week');
+
+-- Pool volume combined with price for each pool and block
+CREATE VIEW pool_volume AS
+  SELECT 
+    vl.block_id,
+    vl.pool_id,
+    vl.timestamp,
+    vl.volume_1 * tp1.price + vl.volume_2 * tp2.price AS volume,
+  FROM volume_raw AS vr
+  JOIN pool AS p ON 
+    vl.pool_id = p.id
+  JOIN token_price as tp1 ON 
+    p.token_1 = tp1.token_address AND
+    vl.block_id = tp1.block_id
+  JOIN token_price as tp2 ON
+    p.token_2 = tp2.token_address AND
+    vl.block_id = tp2.block_id;
+
+-- Preparing pool volume for window aggregation through date trunc
+CREATE FUNCTION pool_volume_prepare (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    volume NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+  SELECT 
+    pool_id,
+    volume,
+    date_trunc(duration, timestamp)
+  FROM pool_volume;
+  END;
+$$ LANGUAGE SQL;
+
+-- Applying window function over pool_volume_prepare function and summing volume
+CREATE FUNCTION pool_volume_window (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    volume NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+   SELECT
+      p.pool_id,
+      SUM(p.volume) OVER w,
+      p.timeframe
+    FROM pool_volume_prepare(duration) AS p
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+  END;
+$$ LANGUAGE SQL;
+
+-- Pool volume combined with price for minute, hour, day, week
+CREATE VIEW pool_volume_min AS SELECT * FROM pool_volume_window('minute');
+CREATE VIEW pool_volume_hour AS SELECT * FROM pool_volume_window('hour');
+CREATE VIEW pool_volume_day AS SELECT * FROM pool_volume_window('day');
+CREATE VIEW pool_volume_week AS SELECT * FROM pool_volume_window('week');
+
+CREATE VIEW pool_locked AS
+  SELECT 
+    l.block_id,
+    l.pool_id,
+    l.timestamp,
+    l.locked_1 * tp1.price + l.locked_2 * tp2.price AS locked,
+  FROM locked as l
+  JOIN pool as p ON
+    l.pool_id = p.id
+  JOIN token_price as tp1 ON
+    p.token_1 = tp1.token_address AND
+    l.block_id = tp1.block_id
+  JOIN token_price as tp2 ON
+    p.token_2 = tp2.token_address AND
+    l.block_id = tp2.block_id;
+
+CREATE FUNCTION pool_locked_prepare (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    locked NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+  SELECT 
+    pool_id,
+    locked,
+    date_trunc(duration, timestamp)
+  FROM pool_locked
+  ORDER BY timestamp;
+  END;
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION pool_locked_window (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    locked NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+   SELECT
+      p.pool_id,
+      LAST(p.locked) OVER w,
+      p.timeframe
+    FROM pool_locked_prepare(duration) AS p
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+  END;
+$$ LANGUAGE SQL;
+
+CREATE VIEW pool_locked_min AS SELECT * FROM pool_locked_window('minute');
+CREATE VIEW pool_locked_hour AS SELECT * FROM pool_locked_window('hour');
+CREATE VIEW pool_locked_day AS SELECT * FROM pool_locked_window('day');
+CREATE VIEW pool_locked_week AS SELECT * FROM pool_locked_window('week');
