@@ -538,3 +538,60 @@ CREATE VIEW fee_min AS SELECT * FROM fee_window('minute');
 CREATE VIEW fee_hour AS SELECT * FROM fee_window('hour');
 CREATE VIEW fee_day AS SELECT * FROM fee_window('day');
 CREATE VIEW fee_week AS SELECT * FROM fee_window('week');
+
+-- Calculating change between current and previou value
+CREATE FUNCTION change (currentAmount: NUMERIC, previousAmount: NUMERIC)
+  RETURNS NUMERIC AS $$
+    CASE
+      WHEN (previousAmount = 0 OR previousAmount IS NULL) AND currentAmount = 0 
+        THEN 0
+      WHEN (previousAmount = 0 OR previousAmount IS NULL)
+        THEN 100
+      ELSE (currentAmount - previousAmount) / previousAmount
+    END;
+  END;
+$$ LANGUAGE SQL;
+
+-- Volume change for each pool and block
+CREATE VIEW volume_change AS
+  SELECT
+    curr.block_id,
+    curr.pool_id,
+    curr.timestamp,
+    change(curr.volume, prev.volume) AS change
+  FROM volume AS curr
+  INNER JOIN volume AS prev ON
+    curr.pool_id = prev.pool_id AND
+    curr.block_id = prev.block_id + 1;
+
+-- Minute volume change for each pool and timestamp
+CREATE VIEW volume_change_min AS 
+  SELECT
+    pool_id,
+    timestamp,
+    change(volume, LAG(volume) OVER (ORDER BY id)) AS change
+  FROM volume_min;
+
+-- Hour volume change for each pool and timestamp
+CREATE VIEW volume_change_hour AS 
+  SELECT
+    pool_id,
+    timestamp,
+    change(volume, LAG(volume) OVER (ORDER BY id)) AS change
+  FROM volume_hour;
+
+-- Day volume change for each pool and timestamp
+CREATE VIEW volume_change_day AS 
+  SELECT
+    pool_id,
+    timestamp,
+    change(volume, LAG(volume) OVER (ORDER BY id)) AS change
+  FROM volume_day;
+
+-- Week volume change for each pool and timestamp
+CREATE VIEW volume_change_week AS 
+  SELECT
+    pool_id,
+    timestamp,
+    change(volume, LAG(volume) OVER (ORDER BY id)) AS change
+  FROM volume_week;
