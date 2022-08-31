@@ -12,48 +12,12 @@ object_relationships:
     using:
       foreign_key_constraint_on: token_2
 array_relationships:
-  - name: candlestick
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: pool_hour_candlestick
-        insertion_order: null
-        column_mapping:
-          id: pool_id
-  - name: fee
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: pool_hour_fee
-        insertion_order: null
-        column_mapping:
-          id: pool_id
   - name: pool_event
     using:
       manual_configuration:
         remote_table:
           schema: public
           name: pool_event
-        insertion_order: null
-        column_mapping:
-          id: pool_id
-  - name: supply
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: pool_hour_supply
-        insertion_order: null
-        column_mapping:
-          id: pool_id
-  - name: volume
-    using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: pool_hour_volume
         insertion_order: null
         column_mapping:
           id: pool_id
