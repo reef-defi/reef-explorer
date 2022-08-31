@@ -123,7 +123,7 @@ CREATE INDEX IF NOT EXISTS locked_evm_event_id_idx ON locked(evm_event_id);
 CREATE INDEX IF NOT EXISTS locked_timestamp_idx ON locked(timestamp);
 
 
-CREATE TABLE volume(
+CREATE TABLE volume_raw(
   id Serial PRIMARY KEY,
   
   block_id INT NOT NULL,
@@ -139,16 +139,11 @@ CREATE TABLE volume(
   FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS volume_block_id_idx ON volume(block_id);
-CREATE INDEX IF NOT EXISTS volume_pool_id_idx ON volume(pool_id);
-CREATE INDEX IF NOT EXISTS volume_evm_event_id_idx ON volume(evm_event_id);
-CREATE INDEX IF NOT EXISTS volume_timestamp_idx ON volume(timestamp);
+CREATE INDEX IF NOT EXISTS volume_raw_block_id_idx ON volume(block_id);
+CREATE INDEX IF NOT EXISTS volume_raw_pool_id_idx ON volume(pool_id);
+CREATE INDEX IF NOT EXISTS volume_raw_evm_event_id_idx ON volume(evm_event_id);
+CREATE INDEX IF NOT EXISTS volume_raw_timestamp_idx ON volume(timestamp);
 
-
-CREATE TYPE tokenholdertype AS ENUM (
-    'Account',
-    'Contract'
-);
 CREATE TABLE pool_token(
   id Serial PRIMARY KEY,
 
@@ -295,6 +290,32 @@ CREATE VIEW token_price_day AS SELECT * FROM token_price_window('day');
 CREATE VIEW token_price_week AS SELECT * FROM token_price_window('week');
 
 -- Calling volume window raw and multiplying volumes by 0.3% to get a fee
+CREATE VIEW fee_raw AS 
+  SELECT
+    pool_id,
+    block_id,
+    volume_1 * 0.0003 AS fee_1,
+    volume_2 * 0.0003 AS fee_2,
+    timestamp
+  FROM volume_raw;
+
+CREATE FUNCTION fee_prepare_raw (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    fee_1 NUMERIC,
+    fee_2 NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+  SELECT 
+    pool_id,
+    fee_1,
+    fee_2,
+    date_trunc(duration, timestamp)
+  FROM fee_raw
+  ORDER BY timestamp
+  END;
+$$ LANGUAGE SQL;
+
 CREATE FUNCTION fee_window_raw (duration: string)
   RETURNS TABLE (
     pool_id INT,
@@ -304,10 +325,11 @@ CREATE FUNCTION fee_window_raw (duration: string)
   ) AS $$
    SELECT
       f.pool_id,
-      volume_1 * 0.0003,
-      volume_2 * 0.0003,
+      SUM(f.fee_1) OVER w,
+      SUM(f.fee_2) OVER w,
       f.timeframe
-    FROM volume_window_raw(duration)
+    FROM fee_prepare_raw(duration) AS f
+    WINDOW w AS (PARTITION BY f.pool_id, f.timeframe ORDER BY f.timeframe, f.pool_id);
   END;
 $$ LANGUAGE SQL;
 
@@ -478,3 +500,41 @@ CREATE VIEW locked_min AS SELECT * FROM locked_window('minute');
 CREATE VIEW locked_hour AS SELECT * FROM locked_window('hour');
 CREATE VIEW locked_day AS SELECT * FROM locked_window('day');
 CREATE VIEW locked_week AS SELECT * FROM locked_window('week');
+
+-- Pool fees combined with price for each pool and block
+CREATE FUNCTION fee_prepare (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    fee NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+  SELECT 
+    pool_id,
+    fee,
+    date_trunc(duration, timestamp)
+  FROM fee
+  ORDER BY timestamp;
+  END;
+$$ LANGUAGE SQL;
+
+-- Applying window function over pool_fee_prepare function and summing fee
+CREATE FUNCTION fee_window (duration: string)
+  RETURNS TABLE (
+    pool_id INT,
+    fee NUMERIC,
+    timestamp TIMESTAMPTZ
+  ) AS $$
+   SELECT
+      p.pool_id,
+      SUM(p.fee) OVER w,
+      p.timeframe
+    FROM fee_prepare(duration) AS p
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+  END;
+$$ LANGUAGE SQL;
+
+-- Pool fees combined with price for minute, hour, day, week
+CREATE VIEW fee_min AS SELECT * FROM fee_window('minute');
+CREATE VIEW fee_hour AS SELECT * FROM fee_window('hour');
+CREATE VIEW fee_day AS SELECT * FROM fee_window('day');
+CREATE VIEW fee_week AS SELECT * FROM fee_window('week');
