@@ -1,9 +1,9 @@
 import { utils } from "ethers";
-import PoolEvent from "./PoolEvent";
+import PoolEvent, { PoolEventData } from "./PoolEvent";
 
 class SwapEvent extends PoolEvent {
-  constructor(poolId: string, eventId: string, timestamp: string) {
-    super(poolId, eventId, timestamp, 'Swap');
+  constructor(poolEvent: PoolEventData) {
+    super(poolEvent, 'Swap');
   }
 
   async process(event: utils.LogDescription): Promise<void> {

@@ -1,9 +1,9 @@
-import PoolEvent from "./PoolEvent";
+import PoolEvent, { PoolEventData } from "./PoolEvent";
 import { utils } from "ethers";
 
 class BurnEvent extends PoolEvent {
-  constructor(poolId: string, eventId: string, timestamp: string) {
-    super(poolId, eventId, timestamp, 'Burn');
+  constructor(poolEvent: PoolEventData) {
+    super(poolEvent, 'Burn');
   }
 
   async process(event: utils.LogDescription): Promise<void> {

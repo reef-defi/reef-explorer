@@ -3,12 +3,26 @@ import { RawEventData } from "../../crawler/types";
 import { queryv2 } from "../../utils/connector";
 import PoolEventBase from "./PoolEventBase";
 
+export interface PoolEventData {
+  poolId: string;
+  blockId: string;
+  eventId: string;
+  timestamp: string;
+}
+
+
+export interface PairEvent extends PoolEventData {
+  address: string;
+  rawData: RawEventData;
+}
+
 type PariEventType = 'Swap' | 'Burn' | 'Mint' | 'Sync' | 'Transfer';
 
 
 class PoolEvent extends PoolEventBase<utils.LogDescription> {
   // Needed
   poolId: string;
+  blockId: string;
   timestamp: string;
   type: PariEventType;
 
@@ -25,11 +39,12 @@ class PoolEvent extends PoolEventBase<utils.LogDescription> {
   supply?: string;
   total_supply?: string;
 
-  constructor(poolId: string, eventId: string, timestamp: string, type: PariEventType) {
-    super(eventId);
+  constructor(pairData: PoolEventData, type: PariEventType) {
+    super(pairData.eventId);
     this.type = type;
-    this.poolId = poolId;
-    this.timestamp = timestamp;
+    this.poolId = pairData.poolId;
+    this.blockId = pairData.blockId;
+    this.timestamp = pairData.timestamp;
   }
 
   // Available for child classes before saving

@@ -7,21 +7,12 @@ import BurnEvent from './events/BurnEvent';
 import EmptyEvent from './events/EmptyEvent';
 import FactoryEvent from './events/FactoryEvent';
 import MintEvent from './events/MintEvent';
+import { PairEvent } from './events/PoolEvent';
 import PoolEventBase from './events/PoolEventBase';
 import SwapEvent from './events/SwapEvent';
 import SyncEvent from './events/SyncEvent';
 import TransferEvent from './events/TransferEvent';
 
-interface DefaultPairEvent {
-  poolId: string;
-  address: string;
-  eventId: string;
-  timestamp: string;
-}
-
-interface InitialPairEvent extends DefaultPairEvent {
-  rawData: RawEventData;
-}
 
 interface ID {
   id: string;
@@ -29,24 +20,25 @@ interface ID {
 
 interface PartialEvmEvent {
   id: string;
+  block_id: string;
   timestamp: string;
   rawdata: RawEventData;
   contractaddress: string;
 }
 
 
-const selectPoolEvent = (pairEvent: InitialPairEvent, data: utils.LogDescription): PoolEventBase<utils.LogDescription> => {
+const selectPoolEvent = (pairEvent: PairEvent, data: utils.LogDescription): PoolEventBase<utils.LogDescription> => {
   switch (data.name) {
-    case 'Mint': return new MintEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
-    case 'Burn': return new BurnEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
-    case 'Swap': return new SwapEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
-    case 'Sync': return new SyncEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
-    case 'Transfer': return new TransferEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
+    case 'Mint': return new MintEvent(pairEvent);
+    case 'Burn': return new BurnEvent(pairEvent);
+    case 'Swap': return new SwapEvent(pairEvent);
+    case 'Sync': return new SyncEvent(pairEvent);
+    case 'Transfer': return new TransferEvent(pairEvent);
     default: return new EmptyEvent(pairEvent.eventId);
   }
 }
 
-const processPairEvent = async (pairEvent: InitialPairEvent): Promise<void> => {
+const processPairEvent = async (pairEvent: PairEvent): Promise<void> => {
   logger.info('Reefswap Pair event detected!');
   const contractInterface = new utils.Interface(ReefswapPair);
   const data = contractInterface.parseLog(pairEvent.rawData);
@@ -80,7 +72,7 @@ const findPoolID = async (address: string): Promise<string|undefined> => {
 
 const getEvmEvents = async (blockId: string): Promise<PartialEvmEvent[]> => queryv2<PartialEvmEvent>(
   `SELECT
-    ee.id, ee.data_raw as rawdata, ee.contract_address as contractaddress, b.timestamp
+    ee.block_id, ee.id, ee.data_raw as rawdata, ee.contract_address as contractaddress, b.timestamp
   FROM evm_event as ee
   JOIN block as b
     ON ee.block_id = b.id
@@ -105,6 +97,7 @@ export const processPoolBlock = async (blockId: string): Promise<void> => {
         poolId,
         eventId: event.id,
         rawData: event.rawdata,
+        blockId: event.block_id,
         timestamp: event.timestamp,
         address: event.contractaddress,
        });
@@ -131,6 +124,7 @@ export default async (eventId: string): Promise<void> => {
       eventId,
       poolId,
       rawData: event.rawdata,
+      blockId: event.block_id,
       timestamp: event.timestamp,
       address: event.contractaddress,
     });
