@@ -94,77 +94,75 @@ const poolEvents = async () => {
 
 const removeAllPoolEventsAboveBlock = async (blockId: string) => {
   // Removing all pool data above current block
-  await queryv2(`DELETE FROM candlestic WHERE block_id >= $1;`, [blockId]);
-  await queryv2(`DELETE FROM reserved WHERE block_id >= $1;`, [blockId]);
-  await queryv2(`DELETE FROM price WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM candlestick WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM reserved_raw WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM token_price WHERE block_id >= $1;`, [blockId]);
   await queryv2(`DELETE FROM pool_token WHERE block_id >= $1;`, [blockId]);
-  await queryv2(`DELETE FROM volume WHERE block_id >= $1;`, [blockId]);
+  await queryv2(`DELETE FROM volume_raw WHERE block_id >= $1;`, [blockId]);
 
   // Remove pool events
   await queryv2(
-    `DELETE event
-    FROM pool_event as event
-    JOIN evm_event as ev ON event.evm_event_id = ev.id
-    WHERE ev.block_id >= $1;`,
+    `DELETE FROM pool_event as e
+    USING evm_event as evm
+    WHERE evm.block_id >= $1 AND e.evm_event_id = evm.id;`,
     [blockId]
   );
 
   // Remove pools
   await queryv2(
-    `DELETE pool
-    FROM pool
-    JOIN evm_event as ev ON pool.evm_event_id = ev.id
-    WHERE ev.block_id >= $1;`,
+    `DELETE FROM pool
+    USING evm_event as evm
+    WHERE evm.block_id >= $1 AND pool.evm_event_id = evm.id;`,
     [blockId]
   );
 };
 
 const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
-  logger.info('Inserting previous candlestic values');
+  logger.info(`Inserting previous values in tables: candlestick, reserved_raw, token_price, volume_raw, pool_token for block ${currentBlockId}`);
   await queryv2(`
-    INSERT INTO candlestic 
+    INSERT INTO candlestick
       (block_id, pool_id, evm_event_id, open, high, low, close, timestamp)
       SELECT b.id, c.pool_id, c.evm_event_id, c.close, c.close, c.close, c.close, b.timestamp
-      FROM candlestic as c
+      FROM candlestick as c
       JOIN block as b ON c.block_id + 1 = b.id
       WHERE b.id = $1;`,
     [currentBlockId]
   );
 
-  logger.info('Inserting previous reserved values');
+  // logger.info(`Inserting previous reserved raw values for block ${currentBlockId}`);
   await queryv2(`
-    INSERT INTO reserves
+    INSERT INTO reserved_raw
       (block_id, pool_id, evm_event_id, reserved_1, reserved_2, timestamp)
       SELECT b.id, r.pool_id, r.evm_event_id, r.reserved_1, r.reserved_2, b.timestamp
-      FROM reserves as r
+      FROM reserved_raw as r
       JOIN block as b ON r.block_id + 1 = b.id
       WHERE b.id = $1;`,
     [currentBlockId]
   );
 
-  logger.info('Inserting previous price values');
+  // logger.info(`Inserting previous token price values for block ${currentBlockId}`);
   await queryv2(`
-    INSERT INTO price
+    INSERT INTO token_price
       (block_id, token_address, price, timestamp)
       SELECT b.id, p.token_address, p.price, b.timestamp
-      FROM price as p
+      FROM token_price as p
       JOIN block as b ON p.block_id + 1 = b.id
       WHERE b.id = $1;`,
     [currentBlockId]
   );
 
-  logger.info('Inserting previous volume values');
+  // logger.info(`Inserting previous volume raw values for block ${currentBlockId}`);
   await queryv2(`
-    INSERT INTO volume
+    INSERT INTO volume_raw
       (block_id, pool_id, evm_event_id, volume_1, volume_2, timestamp)
       SELECT b.id, v.pool_id, v.evm_event_id, 0, 0, b.timestamp
-      FROM volume as v
+      FROM volume_raw as v
       JOIN block as b ON v.block_id + 1 = b.id
       WHERE b.id = $1;`,
     [currentBlockId]
   );
 
-  logger.info('Inserting previous pool token values');
+  // logger.info(`Inserting previous pool token values for block ${currentBlockId}`);
   await queryv2(`
     INSERT INTO pool_token
       (block_id, pool_id, evm_event_id, supply, type, timestamp)
@@ -197,7 +195,7 @@ const poolProcess = async () => {
     // Awaiting block is finalized
     await awaitBlock(currentBlock);
 
-    // Insert select previous values from candlestic, reserved, token price, pool token data and volume
+    // Insert select previous values from candlestick, reserved, token price, pool token data and volume
     await insertPreviousValues(currentBlock);
     
     // Process block events
@@ -213,7 +211,7 @@ Promise.resolve()
     await nodeProvider.initializeProviders();
     logger.info(`Factory address used: ${config.reefswapFactoryAddress}`);
   })
-  .then(poolEvents)
+  .then(poolProcess)
   .then(async () => {
     await nodeProvider.closeProviders();
     logger.info('Finished');
