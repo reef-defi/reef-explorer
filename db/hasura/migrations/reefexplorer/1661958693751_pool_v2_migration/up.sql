@@ -29,6 +29,11 @@ DROP FUNCTION IF EXISTS pool_prepare_supply_data;
 -- Restarting pool sequence
 ALTER SEQUENCE pool_event_sequence RESTART WITH 1;
 
+-- Dropping pool columns: pool_decimal, decimal_1, decimal_2
+ALTER TABLE pool DROP COLUMN IF EXISTS pool_decimal CASCADE;
+ALTER TABLE pool DROP COLUMN IF EXISTS decimal_1 CASCADE;
+ALTER TABLE pool DROP COLUMN IF EXISTS decimal_2 CASCADE;
+
 -- New tables
 CREATE TABLE IF NOT EXISTS token_price(
   id SERIAL PRIMARY KEY,
