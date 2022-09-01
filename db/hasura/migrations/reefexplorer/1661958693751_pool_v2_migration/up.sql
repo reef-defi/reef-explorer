@@ -547,7 +547,7 @@ CREATE OR REPLACE FUNCTION change (currentAmount NUMERIC, previousAmount NUMERIC
         THEN 0
       WHEN (previousAmount = 0 OR previousAmount IS NULL)
         THEN 100
-      ELSE (currentAmount - previousAmount) / previousAmount
+      ELSE (currentAmount - previousAmount) / previousAmount * 100
     END;
   END; $$ 
 LANGUAGE plpgsql;
