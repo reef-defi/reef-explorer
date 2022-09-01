@@ -4,9 +4,10 @@ import { RawEventData } from '../crawler/types';
 import { queryv2 } from '../utils/connector';
 import logger from '../utils/logger';
 import BurnEvent from './events/BurnEvent';
+import EmptyEvent from './events/EmptyEvent';
 import FactoryEvent from './events/FactoryEvent';
 import MintEvent from './events/MintEvent';
-import PoolEvent from './events/PoolEvent';
+import PoolEventBase from './events/PoolEventBase';
 import SwapEvent from './events/SwapEvent';
 import SyncEvent from './events/SyncEvent';
 import TransferEvent from './events/TransferEvent';
@@ -34,14 +35,14 @@ interface PartialEvmEvent {
 }
 
 
-const selectPoolEvent = (pairEvent: InitialPairEvent, data: utils.LogDescription): PoolEvent => {
+const selectPoolEvent = (pairEvent: InitialPairEvent, data: utils.LogDescription): PoolEventBase<utils.LogDescription> => {
   switch (data.name) {
     case 'Mint': return new MintEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
     case 'Burn': return new BurnEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
     case 'Swap': return new SwapEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
     case 'Sync': return new SyncEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
     case 'Transfer': return new TransferEvent(pairEvent.poolId, pairEvent.eventId, pairEvent.timestamp);
-    default: throw new Error(`Unknown event type: ${data.name}`);
+    default: return new EmptyEvent(pairEvent.eventId);
   }
 }
 

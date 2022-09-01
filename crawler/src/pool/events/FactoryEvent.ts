@@ -40,12 +40,12 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
       `INSERT INTO pool 
         (evm_event_id, address, token_1, token_2)
       VALUES
-        ($1, $2, $3, $4, $5, $6, $7);`,
+        ($1, $2, $3, $4);`,
       [
         this.evmEventId, 
         this.poolAddress, 
         this.tokenAddress1, 
-        this.tokenAddress2, 
+        this.tokenAddress2,
       ]
     );
   }

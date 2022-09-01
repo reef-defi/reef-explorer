@@ -28,8 +28,7 @@ class TransferEvent extends PoolEvent {
       `,
       [this.poolId],
     );
-
-    this.supply = (prevSupply && prevSupply.length > 0 ? prevSupply[0].total_supply : 0).toString();
+    this.supply = (prevSupply.length > 0 && prevSupply[0].total_supply !== null ? prevSupply[0].total_supply : 0).toString();
     const isMint = addr1 === ZERO_ADDRESS;
     const prev = BigNumber.from(this.supply);
   
