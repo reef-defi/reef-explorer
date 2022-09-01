@@ -1,9 +1,9 @@
 import { utils } from "ethers";
+import ReefswapFactory from "../../assets/ReefswapFactoryAbi";
+import config from "../../config";
 import { RawEventData } from "../../crawler/types";
 import { queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
-import ReefswapFactory from "../../assets/ReefswapFactoryAbi";
-import config from "../../config";
 import PoolEventBase from "./PoolEventBase";
 
 class FactoryEvent extends PoolEventBase<RawEventData> {

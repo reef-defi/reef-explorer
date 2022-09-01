@@ -4,6 +4,8 @@ import logger from '../utils/logger';
 import { dropDuplicatesMultiKey } from '../utils/utils';
 
 const TOKEN_HOLDER_INSERT_STATEMENT = `
+BEGIN;
+SELECT * FROM account FOR UPDATE;
 INSERT INTO token_holder
   (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
 VALUES
@@ -11,7 +13,8 @@ VALUES
 
 const DO_UPDATE = ` balance = EXCLUDED.balance,
   timestamp = EXCLUDED.timestamp,
-  info = EXCLUDED.info;`;
+  info = EXCLUDED.info;
+COMMIT;`;
 
 const toTokenHolder = ({
   signerAddress,
