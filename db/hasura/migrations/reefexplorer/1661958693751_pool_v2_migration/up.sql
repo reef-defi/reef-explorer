@@ -355,6 +355,7 @@ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION candlestick_window (duration text)
   RETURNS TABLE (
     pool_id INT,
+    token_address CHAR(42), 
     open NUMERIC,
     high NUMERIC,
     low NUMERIC,
@@ -364,13 +365,14 @@ CREATE OR REPLACE FUNCTION candlestick_window (duration text)
   BEGIN RETURN QUERY
     SELECT
       c.pool_id,
+      c.token_address,
       FIRST(c.open) OVER w,
       MAX(c.high) OVER w,
       MIN(c.low) OVER w,
       LAST(c.close) OVER w,
       c.timeframe
     FROM candlestick_prepare(duration) AS c
-    WINDOW w AS (PARTITION BY c.pool_id, c.timeframe ORDER BY c.timeframe, c.pool_id);
+    WINDOW w AS (PARTITION BY c.pool_id, c.token_address, c.timeframe ORDER BY c.pool_id, c.token_address, c.timeframe);
   END; $$ 
 LANGUAGE plpgsql;
 
