@@ -6,8 +6,18 @@ import AccountManager from '../../managers/AccountManager';
 import { CompleteEvmData, ExtrinsicData } from '../../types';
 import DefaultEvent from './DefaultEvent';
 
+
 class ExecutedFailedEvent extends DefaultEvent {
   data: CompleteEvmData | undefined;
+
+  static hexToAscii(str1: string): string {
+    var hex  = str1.toString();
+    var str = '';
+    for (var n = 0; n < hex.length; n += 2) {
+      str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+    }
+    return str;
+  }
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
@@ -18,7 +28,7 @@ class ExecutedFailedEvent extends DefaultEvent {
       eventData.length > 3 ? eventData[1] : eventData[0].address,
     );
 
-    const message = utils.toUtf8String(`0x${eventData[eventData.length - 2].substr(138)}`.replace(/0+$/, ''));
+    let message: string = ExecutedFailedEvent.hexToAscii(eventData[eventData.length - 2].substr(138));
 
     this.data = {
       raw: { address, topics: [], data: eventData[2] }, parsed: { message },
