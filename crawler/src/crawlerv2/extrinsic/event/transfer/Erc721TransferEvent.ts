@@ -1,9 +1,9 @@
+import { utils } from 'ethers';
 import { TokenType } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import NftTokenHolderEvent from './NftTokenHolderEvent';
-import { utils } from 'ethers';
 
 class Erc721TransferEvent extends NftTokenHolderEvent {
   name: TokenType = 'ERC721';

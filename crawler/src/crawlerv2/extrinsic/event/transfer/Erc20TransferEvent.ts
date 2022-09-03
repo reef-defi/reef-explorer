@@ -1,3 +1,4 @@
+import { utils } from 'ethers';
 import { TokenHolder } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
 import { insertAccountTokenHolders } from '../../../../queries/tokenHoldes';
@@ -6,7 +7,6 @@ import { dropDuplicatesMultiKey } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
 import { ExtrinsicData } from '../../../types';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
-import { utils } from 'ethers';
 
 class Erc20TransferEvent extends DefaultErcTransferEvent {
   accountTokenHolders: TokenHolder[] = [];

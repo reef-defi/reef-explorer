@@ -1,9 +1,8 @@
-import { Contract } from 'ethers';
+import { Contract, utils } from 'ethers';
 import { nodeProvider } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
-import { utils } from 'ethers';
 
 class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
   private async balanceOfBatch(address: string, tokenAddress: string, ids: string[]): Promise<string[]> {
@@ -25,7 +24,7 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
     if (!utils.isAddress(toAddress) || !utils.isAddress(fromAddress)) {
       return;
     }
-    
+
     const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
     const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
 

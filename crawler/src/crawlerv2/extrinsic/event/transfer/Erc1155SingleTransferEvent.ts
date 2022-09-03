@@ -1,8 +1,8 @@
+import { utils } from 'ethers';
 import { balanceOfErc1155 } from '../../../../crawler/utils';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
-import { utils } from 'ethers';
 
 class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
   async process(accountsManager: AccountManager): Promise<void> {
