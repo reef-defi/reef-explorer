@@ -1,10 +1,15 @@
+import {
+  hexToU8a, isHex,
+} from '@polkadot/util';
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { utils } from 'ethers';
 import { AccountBody, TokenHolder } from '../../crawler/types';
 import { findNativeAddress } from '../../crawler/utils';
 import { insertAccounts } from '../../queries/event';
+import { insertAccountTokenHolders } from '../../queries/tokenHoldes';
 import { nodeProvider } from '../../utils/connector';
 import logger from '../../utils/logger';
 import { REEF_CONTRACT_ADDRESS, REEF_DEFAULT_DATA, toChecksumAddress } from '../../utils/utils';
-import { insertAccountTokenHolders } from '../../queries/tokenHoldes';
 
 // Account manager stores used accounts and allows to trigger account save
 class AccountManager {
@@ -20,7 +25,23 @@ class AccountManager {
     this.blockTimestamp = timestamp;
   }
 
+  static isSubstrateAddress(address: string): boolean {
+    if (!address) {
+      return false;
+    }
+    try {
+      encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address));
+    } catch (error) {
+      return false;
+    }
+    return true;
+  }
+
   async use(address: string, active = true) {
+    // If for some reason address is not valid, return address: 0x
+    if (!AccountManager.isSubstrateAddress(address)) {
+      return '0x';
+    }
     // If account does not exist, we extract his info and store it
     if (!this.accounts[address]) {
       this.accounts[address] = await this.accountInfo(address);
@@ -31,6 +52,11 @@ class AccountManager {
   }
 
   async useEvm(evmAddress: string): Promise<string> {
+    // If for some reason evmAddress is not valid, return address: 0x
+    if (!utils.isAddress(evmAddress)) {
+      return '0x';
+    }
+
     // Node/Empty/Root address is presented as 0x
     if (evmAddress === '0x0000000000000000000000000000000000000000') {
       return '0x';
