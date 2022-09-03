@@ -1,3 +1,4 @@
+import { utils } from 'ethers';
 import { balanceOfErc1155 } from '../../../../crawler/utils';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
@@ -28,7 +29,7 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
       amount: amount.toString(),
     });
 
-    if (toAddress !== '0x') {
+    if (utils.isAddress(toAddress)) {
       const toBalance = await balanceOfErc1155(toEvmAddress, tokenAddress, nftId, abi);
 
       this.addTokenHolder(
@@ -38,7 +39,7 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
         nftId.toString(),
       );
     }
-    if (fromAddress !== '0x') {
+    if (utils.isAddress(fromAddress)) {
       const fromBalance = await balanceOfErc1155(fromEvmAddress, tokenAddress, nftId, abi);
 
       this.addTokenHolder(

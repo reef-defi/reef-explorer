@@ -1,3 +1,4 @@
+import { utils } from 'ethers';
 import { TokenType } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
 import logger from '../../../../utils/logger';
@@ -35,7 +36,7 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
       nftId,
     });
 
-    if (toAddress !== '0x') {
+    if (utils.isAddress(toAddress)) {
       const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         toAddress,
@@ -44,7 +45,7 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
         nftId,
       );
     }
-    if (fromAddress !== '0x') {
+    if (utils.isAddress(fromAddress)) {
       const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         fromAddress,

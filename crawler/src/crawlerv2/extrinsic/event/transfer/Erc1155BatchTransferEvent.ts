@@ -1,4 +1,4 @@
-import { Contract } from 'ethers';
+import { Contract, utils } from 'ethers';
 import { nodeProvider } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
@@ -19,6 +19,12 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
     const tokenAddress = this.contract.address;
     const toAddress = await accountsManager.useEvm(toEvmAddress);
     const fromAddress = await accountsManager.useEvm(fromEvmAddress);
+
+    // if for some reasone addresses are not valid, we skip the event
+    if (!utils.isAddress(toAddress) || !utils.isAddress(fromAddress)) {
+      return;
+    }
+
     const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
     const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
 
