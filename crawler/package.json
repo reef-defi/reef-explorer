@@ -43,6 +43,7 @@
     "@sentry/integrations": "^6.16.1",
     "@sentry/node": "^6.16.1",
     "@sentry/tracing": "^6.16.1",
+    "axios": "^0.21.1",
     "cross-fetch": "^3.1.5",
     "graphql": "^16.3.0",
     "pg": "^8.7.1",
