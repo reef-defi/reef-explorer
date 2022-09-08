@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS token_price(
   timestamp TIMESTAMPTZ NOT NULL,
   
   FOREIGN KEY (block_id) REFERENCES block(id) ON DELETE CASCADE,
-  FOREIGN KEY (token_address) REFERENCES verified_contract(address) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS token_price_block_id_idx ON token_price(block_id);
@@ -67,7 +66,6 @@ CREATE TABLE IF NOT EXISTS candlestick(
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
   FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
-  FOREIGN key (token_address) REFERENCES verified_contract(address) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS candlestick_block_id_idx ON candlestick(block_id);
