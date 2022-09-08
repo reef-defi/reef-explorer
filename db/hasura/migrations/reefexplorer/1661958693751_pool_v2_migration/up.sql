@@ -31,8 +31,6 @@ ALTER SEQUENCE pool_event_sequence RESTART WITH 1;
 
 -- Dropping pool columns: pool_decimal, decimal_1, decimal_2
 ALTER TABLE pool DROP COLUMN IF EXISTS pool_decimal CASCADE;
-ALTER TABLE pool DROP COLUMN IF EXISTS decimal_1 CASCADE;
-ALTER TABLE pool DROP COLUMN IF EXISTS decimal_2 CASCADE;
 
 -- New tables
 CREATE TABLE IF NOT EXISTS token_price(
@@ -43,6 +41,7 @@ CREATE TABLE IF NOT EXISTS token_price(
   timestamp TIMESTAMPTZ NOT NULL,
   
   FOREIGN KEY (block_id) REFERENCES block(id) ON DELETE CASCADE,
+  CONSTRAINT token_price_unique UNIQUE (block_id, token_address)
 );
 
 CREATE INDEX IF NOT EXISTS token_price_block_id_idx ON token_price(block_id);
@@ -66,6 +65,8 @@ CREATE TABLE IF NOT EXISTS candlestick(
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
   FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
+
+  CONSTRAINT pool_block_token_candlestick UNIQUE (block_id, pool_id, token_address)
 );
 
 CREATE INDEX IF NOT EXISTS candlestick_block_id_idx ON candlestick(block_id);
@@ -87,7 +88,9 @@ CREATE TABLE IF NOT EXISTS reserved_raw(
   
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
-  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE
+  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
+
+  CONSTRAINT pool_block_reserves UNIQUE (block_id, pool_id)
 );
 
 CREATE INDEX IF NOT EXISTS reserved_block_id_idx ON reserved_raw(block_id);
@@ -109,7 +112,9 @@ CREATE TABLE IF NOT EXISTS volume_raw(
   
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
-  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE
+  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
+
+  CONSTRAINT pool_block_volume UNIQUE (block_id, pool_id)
 );
 
 CREATE INDEX IF NOT EXISTS volume_raw_block_id_idx ON volume_raw(block_id);
@@ -135,6 +140,8 @@ CREATE TABLE IF NOT EXISTS pool_token(
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
   FOREIGN key (signer_address) REFERENCES account(address) ON DELETE CASCADE
+
+  CONSTRAINT pool_block_signer_type_token UNIQUE (block_id, pool_id, signer_address, type)
 );
 
 CREATE INDEX IF NOT EXISTS pool_token_type_idx ON pool_token(type); 
