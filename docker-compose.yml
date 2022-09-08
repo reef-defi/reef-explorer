@@ -16,6 +16,7 @@ services:
 
   postgres:
     image: postgres:13
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all
     restart: always
     shm_size: 1gb
     volumes:
