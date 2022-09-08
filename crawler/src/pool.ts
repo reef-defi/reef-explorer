@@ -5,6 +5,7 @@ import logger from './utils/logger';
 import config from './config';
 import { wait } from './utils/utils';
 import processPoolEvent, {processPoolBlock} from './pool/';
+import TokenPrices from './pool/TokenPrices';
 
 
 /* eslint "no-underscore-dangle": "off" */
@@ -118,7 +119,7 @@ const removeAllPoolEventsAboveBlock = async (blockId: string) => {
 };
 
 const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
-  logger.info(`Inserting previous values in tables: candlestick, reserved_raw, token_price, volume_raw, pool_token for block ${currentBlockId}`);
+  // logger.info(`Inserting previous values in tables: candlestick, reserved_raw, token_price, volume_raw, pool_token for block ${currentBlockId}`);
   await queryv2(`
     INSERT INTO candlestick
       (block_id, pool_id, evm_event_id, open, high, low, close, timestamp)
@@ -136,17 +137,6 @@ const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
       SELECT b.id, r.pool_id, r.evm_event_id, r.reserved_1, r.reserved_2, b.timestamp + interval '10' second
       FROM reserved_raw as r
       JOIN block as b ON r.block_id + 1 = b.id
-      WHERE b.id = $1;`,
-    [currentBlockId]
-  );
-
-  // logger.info(`Inserting previous token price values for block ${currentBlockId}`);
-  await queryv2(`
-    INSERT INTO token_price
-      (block_id, token_address, price, timestamp)
-      SELECT b.id, p.token_address, p.price, b.timestamp + interval '10' second
-      FROM token_price as p
-      JOIN block as b ON p.block_id + 1 = b.id
       WHERE b.id = $1;`,
     [currentBlockId]
   );
@@ -174,11 +164,11 @@ const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
   );
 }
 
-const awaitBlock = async (blockId: string): Promise<void> => {
+const awaitBlock = async (blockId: string): Promise<string> => {
   while (true) {
-    const result = await queryv2<ID>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [blockId]);
+    const result = await queryv2<{timestamp: string}>('SELECT timestamp FROM block WHERE id = $1 AND finalized = true;', [blockId]);
     if (result.length > 0) {
-      return;
+      return result[0].timestamp;
     }
     await wait(100);
   }
@@ -191,15 +181,21 @@ const poolProcess = async () => {
   // Remove all pool rows that are greater then current pool pointer  
   await removeAllPoolEventsAboveBlock(currentBlock)
 
+  // Initialize token prices on previous block
+  await TokenPrices.init((parseInt(currentBlock, 10)-1).toString());
+
   while (true) {
     // Awaiting block is finalized
-    await awaitBlock(currentBlock);
+    const blockTimestamp = await awaitBlock(currentBlock);
 
     // Insert select previous values from candlestick, reserved, token price, pool token data and volume
     await insertPreviousValues(currentBlock);
     
     // Process block events
     await processPoolBlock(currentBlock);
+    
+    // Update token prices and insert new values
+    await TokenPrices.estimateAndInsertPrices(currentBlock, blockTimestamp);
    
     // Get next block
     currentBlock = await getNextPoolPointer();
