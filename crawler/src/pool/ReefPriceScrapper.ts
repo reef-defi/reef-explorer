@@ -1,4 +1,6 @@
 import axios, {AxiosResponse} from "axios";
+import logger from "../utils/logger";
+import { wait } from "../utils/utils";
 
 const coingeckoApi = axios.create({baseURL: "https://api.coingecko.com/api/v3/"});
 
@@ -17,7 +19,12 @@ type CurrentPrice = {
   };
 };
 
-const date2String = (date: Date): string => `${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
+const date2String = (date: Date): string => date
+  .toISOString()
+  .split("T")[0]
+  .split("-")
+  .reverse()
+  .join("-");
 
 // Retrieving current reef price from coingecko
 const getReefCurrentPrice = async (): Promise<number> => coingeckoApi
@@ -54,18 +61,19 @@ class ReefPriceScrapper {
       // TODO maybe clean history?
       return await getReefCurrentPrice();
     }
-    
-    // Else return price from history
-    const dt = date2String(date);
-    
+   
+    const stringDate = date2String(date);
+   
     // Check if date is in history return price
-    if (this.history[dt]) {
-      return this.history[dt];
+    if (this.history[stringDate]) {
+      return this.history[stringDate];
     };
 
     // Else get price from coingecko, add to history and return price
-    this.history[dt] = await getReefPriceHistory(date);
-    return this.history[dt];
+    logger.info(`Extracting reef price for date: ${stringDate}`);
+    this.history[stringDate] = await getReefPriceHistory(date);
+    logger.info(`Price: ${this.history[stringDate]}`);
+    return this.history[stringDate];
   }
 }
 
