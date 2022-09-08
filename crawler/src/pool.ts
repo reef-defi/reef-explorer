@@ -123,18 +123,28 @@ const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
   await queryv2(`
     INSERT INTO candlestick
       (block_id, pool_id, evm_event_id, open, high, low, close, timestamp)
-      SELECT b.id, c.pool_id, c.evm_event_id, c.close, c.close, c.close, c.close, b.timestamp + interval '10' second
+      SELECT b.id, c.pool_id, null, c.close, c.close, c.close, c.close, b.timestamp + interval '10' second
       FROM candlestick as c
       JOIN block as b ON c.block_id + 1 = b.id
       WHERE b.id = $1;`,
     [currentBlockId]
   );
 
+  // await queryv2(`
+  //   INSERT INTO token_price
+  //     (block_id, token_address, price, timestamp)
+  //     SELECT b.id, tp.token_address, tp.price, b.timestamp + interval '10' second
+  //     FROM token_price as tp
+  //     JOIN block as b ON tp.block_id + 1 = b.id
+  //     WHERE b.id = $1;`,
+  //   [currentBlockId]
+  // );
+
   // logger.info(`Inserting previous reserved raw values for block ${currentBlockId}`);
   await queryv2(`
     INSERT INTO reserved_raw
       (block_id, pool_id, evm_event_id, reserved_1, reserved_2, timestamp)
-      SELECT b.id, r.pool_id, r.evm_event_id, r.reserved_1, r.reserved_2, b.timestamp + interval '10' second
+      SELECT b.id, r.pool_id, null, r.reserved_1, r.reserved_2, b.timestamp + interval '10' second
       FROM reserved_raw as r
       JOIN block as b ON r.block_id + 1 = b.id
       WHERE b.id = $1;`,
@@ -145,7 +155,7 @@ const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
   await queryv2(`
     INSERT INTO volume_raw
       (block_id, pool_id, evm_event_id, volume_1, volume_2, timestamp)
-      SELECT b.id, v.pool_id, v.evm_event_id, 0, 0, b.timestamp + interval '10' second
+      SELECT b.id, v.pool_id, null, 0, 0, b.timestamp + interval '10' second
       FROM volume_raw as v
       JOIN block as b ON v.block_id + 1 = b.id
       WHERE b.id = $1;`,
@@ -156,7 +166,7 @@ const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
   await queryv2(`
     INSERT INTO pool_token
       (block_id, pool_id, evm_event_id, supply, type, timestamp)
-      SELECT b.id, pt.pool_id, pt.evm_event_id, pt.supply, pt.type, b.timestamp + interval '10' second
+      SELECT b.id, pt.pool_id, null, pt.supply, pt.type, b.timestamp + interval '10' second
       FROM pool_token as pt
       JOIN block as b ON pt.block_id + 1 = b.id
       WHERE b.id = $1;`,

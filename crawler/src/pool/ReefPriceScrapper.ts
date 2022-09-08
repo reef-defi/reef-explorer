@@ -68,7 +68,7 @@ class ReefPriceScrapper {
     if (this.history[stringDate]) {
       return this.history[stringDate];
     };
-
+  
     // Else get price from coingecko, add to history and return price
     logger.info(`Extracting reef price for date: ${stringDate}`);
     this.history[stringDate] = await getReefPriceHistory(date);

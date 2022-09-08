@@ -82,7 +82,6 @@ const getEvmEvents = async (blockId: string): Promise<PartialEvmEvent[]> => quer
 
 export const processPoolBlock = async (blockId: string): Promise<void> => {
   const evmEvents = await getEvmEvents(blockId);
-  const timestamp = (await queryv2<{timestamp: number}>('SELECT timestamp FROM block WHERE id = $1', [blockId]))[0].timestamp;
 
   for (const event of evmEvents) {
     // Check if event is Reefswap factory create pool event. If so add new pool in DB
