@@ -1,7 +1,7 @@
 import BigNumber from "bn.js";
 import { insertV2, queryv2 } from "../utils/connector";
 import { REEF_CONTRACT_ADDRESS } from "../utils/utils";
-import { estimateTokenPriceBasedOnReefPrice } from "./pricingAlgorithm";
+import { estimateTokenPriceBasedOnReefPrice } from "./pricing";
 import ReefPriceScrapper from "./ReefPriceScrapper";
 
 interface InitPrice {
@@ -11,21 +11,21 @@ interface InitPrice {
 
 const queryPriceData = async (blockId: string): Promise<InitPrice[]> =>
   queryv2<InitPrice>(
-    "SELECT token_address, price FROM tokenPrice WHERE block_id = $1",
+    "SELECT token_address, price FROM token_price WHERE block_id = $1",
     [blockId]
   );
 
 interface InitReserve {
   token_1: string;
   token_2: string;
-  reserved_1: number;
-  reserved_2: number;
+  reserved_1: string;
+  reserved_2: string;
 }
 
 const queryReservedData = async (blockId: string): Promise<InitReserve[]> =>
   queryv2<InitReserve>(`
     SELECT p.token_1, p.token_2, r.reserved_1, r.reserved_2 
-    FROM reservedRaw as r
+    FROM reserved_raw as r
     JOIN pool as p ON r.pool_id = p.id
     WHERE r.block_id = $1`,
     [blockId]
@@ -76,7 +76,7 @@ class TokenPrices {
     this.addToken(token2);
   }
 
-  static updateReserves(token1: string, token2: string, reserve1: number, reserve2: number): void {
+  static updateReserves(token1: string, token2: string, reserve1: string, reserve2: string): void {
     // Find the index of the tokens in the list
     const i = this.tokens.indexOf(token1);
     const j = this.tokens.indexOf(token2);
@@ -93,10 +93,35 @@ class TokenPrices {
     this.reserveMatrix[i][j] = r1.div(r2).toNumber();
     this.reserveMatrix[j][i] = r2.div(r1).toNumber();
 
-    this.skip = false;
+    // Update the price vector only when reef token is present in pool
+    // This is because we are approximating the price of the token based on the reef price
+    // Once we onboard stable coins and estimate price through them, we can remove this condition
+    if (token1 === REEF_CONTRACT_ADDRESS || token2 === REEF_CONTRACT_ADDRESS) {
+      this.skip = false;
+    }
   }
   
-  static async estimatePrice(timestamp: string): Promise<void> {
+  static async estimateAndInsertPrices(blockId: string, timestamp: string): Promise<void> {
+    await this.estimatePrice(timestamp);
+    await this.insertPrices(blockId, timestamp);
+  }
+  
+  // Private methods
+  private static addToken(token: string, price=0): void {
+    const index = this.tokens.indexOf(token);
+    if (index === -1) {
+      const oldLength = this.tokens.length;
+      // Add token to the listi
+      this.tokens.push(token);
+      // Add token to the price vector
+      this.priceVector.push(price);
+      // Add token to the reserve matrix
+      this.reserveMatrix.push(new Array(oldLength).fill(0));
+      this.reserveMatrix.forEach((row) => row.push(0));
+    }
+  }
+
+  private static async estimatePrice(timestamp: string): Promise<void> {
     const reefIndex = this.tokens.indexOf(REEF_CONTRACT_ADDRESS);
     const currentReefPrice = this.priceVector[reefIndex];
 
@@ -119,10 +144,10 @@ class TokenPrices {
     this.skip = true;
   }
 
-  static async insertPrices(blockId: string, timestamp: string): Promise<void> {
+  private static async insertPrices(blockId: string, timestamp: string): Promise<void> {
     // Insert the price vector into the database
     await insertV2(
-      "INSERT INTO tokenPrice (block_id, timestamp, token_address, price) VALUES %L;",
+      "INSERT INTO token_price (block_id, timestamp, token_address, price) VALUES %L;",
       this.priceVector.map((price, i) => [
         blockId,
         timestamp,
@@ -132,20 +157,6 @@ class TokenPrices {
     );
   }
 
-  // Private methods
-  private static addToken(token: string, price=0): void {
-    const index = this.tokens.indexOf(token);
-    if (index === -1) {
-      const oldLength = this.tokens.length;
-      // Add token to the listi
-      this.tokens.push(token);
-      // Add token to the price vector
-      this.priceVector.push(price);
-      // Add token to the reserve matrix
-      this.reserveMatrix.push(new Array(oldLength).fill(0));
-      this.reserveMatrix.forEach((row) => row.push(0));
-    }
-  }
 }
 
 export default TokenPrices;
