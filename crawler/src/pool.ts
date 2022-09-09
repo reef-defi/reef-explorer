@@ -1,11 +1,11 @@
-import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
+import * as Sentry from '@sentry/node';
+import config from './config';
+import processPoolEvent, { processPoolBlock } from './pool/';
+import MarketHistory from './pool/historyModules';
 import { nodeProvider, queryv2 } from './utils/connector';
 import logger from './utils/logger';
-import config from './config';
 import { wait } from './utils/utils';
-import processPoolEvent, {processPoolBlock} from './pool/';
-import TokenPrices from './pool/TokenPrices';
 
 
 /* eslint "no-underscore-dangle": "off" */
@@ -75,22 +75,22 @@ const isCurrentPointerInGap = async (id: string): Promise<boolean> => {
   return events.length > 0;
 };
 
-const poolEvents = async () => {
-  let currentEvmEventPointer = await findInitialIndex();
+// const poolEvents = async () => {
+//   let currentEvmEventPointer = await findInitialIndex();
 
-  while (true) {
-    // If evm event does not exist wait for one second and retry
-    if (await checkIfEventExists(currentEvmEventPointer)) {
-      // process evm evnt pointer
-      await processPoolEvent(currentEvmEventPointer);
-      currentEvmEventPointer = await getNextPoolPointer();
-    } else if (await isCurrentPointerInGap(currentEvmEventPointer)) {
-      currentEvmEventPointer = await getNextPoolPointer();
-    } else {
-      await wait(1000);
-    }
-  }
-};
+//   while (true) {
+//     // If evm event does not exist wait for one second and retry
+//     if (await checkIfEventExists(currentEvmEventPointer)) {
+//       // process evm evnt pointer
+//       await processPoolEvent(currentEvmEventPointer);
+//       currentEvmEventPointer = await getNextPoolPointer();
+//     } else if (await isCurrentPointerInGap(currentEvmEventPointer)) {
+//       currentEvmEventPointer = await getNextPoolPointer();
+//     } else {
+//       await wait(1000);
+//     }
+//   }
+// };
 
 
 const removeAllPoolEventsAboveBlock = async (blockId: string) => {
@@ -120,15 +120,15 @@ const removeAllPoolEventsAboveBlock = async (blockId: string) => {
 
 const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
   // logger.info(`Inserting previous values in tables: candlestick, reserved_raw, token_price, volume_raw, pool_token for block ${currentBlockId}`);
-  await queryv2(`
-    INSERT INTO candlestick
-      (block_id, pool_id, evm_event_id, open, high, low, close, timestamp)
-      SELECT b.id, c.pool_id, null, c.close, c.close, c.close, c.close, b.timestamp + interval '10' second
-      FROM candlestick as c
-      JOIN block as b ON c.block_id + 1 = b.id
-      WHERE b.id = $1;`,
-    [currentBlockId]
-  );
+  // await queryv2(`
+  //   INSERT INTO candlestick
+  //     (block_id, pool_id, evm_event_id, open, high, low, close, timestamp)
+  //     SELECT b.id, c.pool_id, null, c.close, c.close, c.close, c.close, b.timestamp + interval '10' second
+  //     FROM candlestick as c
+  //     JOIN block as b ON c.block_id + 1 = b.id
+  //     WHERE b.id = $1;`,
+  //   [currentBlockId]
+  // );
 
   // await queryv2(`
   //   INSERT INTO token_price
@@ -141,37 +141,37 @@ const insertPreviousValues = async (currentBlockId: string): Promise<void> => {
   // );
 
   // logger.info(`Inserting previous reserved raw values for block ${currentBlockId}`);
-  await queryv2(`
-    INSERT INTO reserved_raw
-      (block_id, pool_id, evm_event_id, reserved_1, reserved_2, timestamp)
-      SELECT b.id, r.pool_id, null, r.reserved_1, r.reserved_2, b.timestamp + interval '10' second
-      FROM reserved_raw as r
-      JOIN block as b ON r.block_id + 1 = b.id
-      WHERE b.id = $1;`,
-    [currentBlockId]
-  );
+  // await queryv2(`
+  //   INSERT INTO reserved_raw
+  //     (block_id, pool_id, evm_event_id, reserved_1, reserved_2, timestamp)
+  //     SELECT b.id, r.pool_id, null, r.reserved_1, r.reserved_2, b.timestamp + interval '10' second
+  //     FROM reserved_raw as r
+  //     JOIN block as b ON r.block_id + 1 = b.id
+  //     WHERE b.id = $1;`,
+  //   [currentBlockId]
+  // );
 
   // logger.info(`Inserting previous volume raw values for block ${currentBlockId}`);
-  await queryv2(`
-    INSERT INTO volume_raw
-      (block_id, pool_id, evm_event_id, volume_1, volume_2, timestamp)
-      SELECT b.id, v.pool_id, null, 0, 0, b.timestamp + interval '10' second
-      FROM volume_raw as v
-      JOIN block as b ON v.block_id + 1 = b.id
-      WHERE b.id = $1;`,
-    [currentBlockId]
-  );
+  // await queryv2(`
+  //   INSERT INTO volume_raw
+  //     (block_id, pool_id, evm_event_id, volume_1, volume_2, timestamp)
+  //     SELECT b.id, v.pool_id, null, 0, 0, b.timestamp + interval '10' second
+  //     FROM volume_raw as v
+  //     JOIN block as b ON v.block_id + 1 = b.id
+  //     WHERE b.id = $1;`,
+  //   [currentBlockId]
+  // );
 
   // logger.info(`Inserting previous pool token values for block ${currentBlockId}`);
-  await queryv2(`
-    INSERT INTO pool_token
-      (block_id, pool_id, evm_event_id, supply, type, timestamp)
-      SELECT b.id, pt.pool_id, null, pt.supply, pt.type, b.timestamp + interval '10' second
-      FROM pool_token as pt
-      JOIN block as b ON pt.block_id + 1 = b.id
-      WHERE b.id = $1;`,
-    [currentBlockId]
-  );
+  // await queryv2(`
+  //   INSERT INTO pool_token
+  //     (block_id, pool_id, evm_event_id, supply, type, timestamp)
+  //     SELECT b.id, pt.pool_id, null, pt.supply, pt.type, b.timestamp + interval '10' second
+  //     FROM pool_token as pt
+  //     JOIN block as b ON pt.block_id + 1 = b.id
+  //     WHERE b.id = $1;`,
+  //   [currentBlockId]
+  // );
 }
 
 const awaitBlock = async (blockId: string): Promise<string> => {
@@ -192,7 +192,8 @@ const poolProcess = async () => {
   await removeAllPoolEventsAboveBlock(currentBlock)
 
   // Initialize token prices on previous block
-  await TokenPrices.init((parseInt(currentBlock, 10)-1).toString());
+  const previousBlock = (parseInt(currentBlock, 10)-1).toString() 
+  await MarketHistory.init(previousBlock);
 
   while (true) {
     // Awaiting block is finalized
@@ -205,7 +206,7 @@ const poolProcess = async () => {
     await processPoolBlock(currentBlock);
     
     // Update token prices and insert new values
-    await TokenPrices.estimateAndInsertPrices(currentBlock, blockTimestamp);
+    await MarketHistory.save(currentBlock, blockTimestamp);
    
     // Get next block
     currentBlock = await getNextPoolPointer();

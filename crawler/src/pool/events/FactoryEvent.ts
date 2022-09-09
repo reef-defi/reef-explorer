@@ -5,7 +5,7 @@ import config from "../../config";
 import { RawEventData } from "../../crawler/types";
 import { nodeProvider, queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
-import TokenPrices from "../TokenPrices";
+import TokenPrices from "./../historyModules/TokenPrices";
 import PoolEventBase from "./PoolEventBase";
 
 class FactoryEvent extends PoolEventBase<RawEventData> {

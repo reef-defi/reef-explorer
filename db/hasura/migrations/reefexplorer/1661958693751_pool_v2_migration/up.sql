@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS pool_token(
   FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
-  FOREIGN key (signer_address) REFERENCES account(address) ON DELETE CASCADE
+  FOREIGN key (signer_address) REFERENCES account(address) ON DELETE CASCADE,
 
   CONSTRAINT pool_block_signer_type_token UNIQUE (block_id, pool_id, signer_address, type)
 );
