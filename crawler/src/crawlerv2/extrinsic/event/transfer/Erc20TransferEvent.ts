@@ -41,7 +41,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       fromAddress,
     });
 
-    if (utils.isAddress(toAddress)) {
+    if (utils.isAddress(toEvmAddress) && toEvmAddress !== '0x0000000000000000000000000000000000000000') {
       const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         toAddress,
@@ -50,7 +50,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       );
     }
 
-    if (utils.isAddress(fromAddress)) {
+    if (utils.isAddress(fromEvmAddress) && fromEvmAddress !== '0x0000000000000000000000000000000000000000') {
       const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         fromAddress,
