@@ -330,6 +330,13 @@ export default {
       ],
       compilerVersions: [
         { text: 'Please select', value: null },
+        { text: "v0.8.17+commit.8df45f5f", value: "v0.8.17+commit.8df45f5f"},
+        { text: "v0.8.16+commit.07a7930e", value: "v0.8.16+commit.07a7930e" },
+        { text: "v0.8.15+commit.e14f2714", value: "v0.8.15+commit.e14f2714" },
+        { text: "v0.8.14+commit.80d49f37", value: "v0.8.14+commit.80d49f37" },
+        { text: "v0.8.13+commit.abaa5c0e", value: "v0.8.13+commit.abaa5c0e" },
+        { text: "v0.8.12+commit.f00d7308", value: "v0.8.12+commit.f00d7308" },
+        { text: "v0.8.11+commit.d7f03943", value: "v0.8.11+commit.d7f03943" },
         { text: 'v0.8.10+commit.fc410830', value: 'v0.8.10+commit.fc410830' },
         { text: 'v0.8.9+commit.e5eed63a', value: 'v0.8.9+commit.e5eed63a' },
         { text: 'v0.8.8+commit.dddeac2f', value: 'v0.8.8+commit.dddeac2f' },
