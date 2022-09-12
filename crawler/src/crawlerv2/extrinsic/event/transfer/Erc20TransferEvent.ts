@@ -7,6 +7,7 @@ import { dropDuplicatesMultiKey } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
 import { ExtrinsicData } from '../../../types';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
+import { ZERO_ADDRESS } from './utils';
 
 class Erc20TransferEvent extends DefaultErcTransferEvent {
   accountTokenHolders: TokenHolder[] = [];
@@ -41,7 +42,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       fromAddress,
     });
 
-    if (utils.isAddress(toAddress)) {
+    if (utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS) {
       const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         toAddress,
@@ -50,7 +51,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       );
     }
 
-    if (utils.isAddress(fromAddress)) {
+    if (utils.isAddress(fromEvmAddress) && fromEvmAddress !== ZERO_ADDRESS) {
       const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         fromAddress,

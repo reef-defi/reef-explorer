@@ -4,6 +4,7 @@ import { insertTransfers } from '../../../../queries/extrinsic';
 import logger from '../../../../utils/logger';
 import { ExtrinsicData, Transfer } from '../../../types';
 import EvmLogEvent from '../EvmLogEvent';
+import { ZERO_ADDRESS } from './utils';
 
 class DefaultErcTransferEvent extends EvmLogEvent {
   transfers: Transfer[] = [];
@@ -18,7 +19,7 @@ class DefaultErcTransferEvent extends EvmLogEvent {
     balance: string,
     nftId:string|null = null,
   ) {
-    if (address === '0x') { return; }
+    if (address === '0x' || address === ZERO_ADDRESS) { return; }
 
     // Creating new token holder
     const tokenHolder: TokenHolder = {

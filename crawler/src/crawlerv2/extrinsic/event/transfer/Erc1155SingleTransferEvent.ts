@@ -3,6 +3,7 @@ import { balanceOfErc1155 } from '../../../../crawler/utils';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
+import { ZERO_ADDRESS } from './utils';
 
 class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
   async process(accountsManager: AccountManager): Promise<void> {
@@ -29,7 +30,7 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
       amount: amount.toString(),
     });
 
-    if (utils.isAddress(toAddress)) {
+    if (utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS) {
       const toBalance = await balanceOfErc1155(toEvmAddress, tokenAddress, nftId, abi);
 
       this.addTokenHolder(
@@ -39,7 +40,7 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
         nftId.toString(),
       );
     }
-    if (utils.isAddress(fromAddress)) {
+    if (utils.isAddress(fromEvmAddress) && fromEvmAddress !== ZERO_ADDRESS) {
       const fromBalance = await balanceOfErc1155(fromEvmAddress, tokenAddress, nftId, abi);
 
       this.addTokenHolder(

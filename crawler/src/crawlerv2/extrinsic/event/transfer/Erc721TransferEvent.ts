@@ -4,6 +4,7 @@ import { balanceOf } from '../../../../crawler/utils';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import NftTokenHolderEvent from './NftTokenHolderEvent';
+import { ZERO_ADDRESS } from './utils';
 
 class Erc721TransferEvent extends NftTokenHolderEvent {
   name: TokenType = 'ERC721';
@@ -36,7 +37,7 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
       nftId,
     });
 
-    if (utils.isAddress(toAddress)) {
+    if (utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS) {
       const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         toAddress,
@@ -45,7 +46,7 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
         nftId,
       );
     }
-    if (utils.isAddress(fromAddress)) {
+    if (utils.isAddress(fromEvmAddress) && fromEvmAddress !== ZERO_ADDRESS) {
       const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         fromAddress,
