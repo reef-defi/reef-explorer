@@ -2,9 +2,9 @@ import { Contract, utils } from 'ethers';
 import { nodeProvider } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
-import DefaultErcTransferEvent from './DefaultErcTransferEvent';
+import NftTokenHolderEvent from './NftTokenHolderEvent';
 
-class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
+class Erc1155BatchTransferEvent extends NftTokenHolderEvent {
   private async balanceOfBatch(address: string, tokenAddress: string, ids: string[]): Promise<string[]> {
     const contract = new Contract(tokenAddress, this.contract.compiled_data[this.contract.name], nodeProvider.getProvider());
     const result = await contract.balanceOfBatch(Array(ids.length).fill(address), ids);

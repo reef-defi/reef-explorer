@@ -1,19 +1,19 @@
 import { utils } from 'ethers';
 import { TokenHolder } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
-import { insertAccountTokenHolders } from '../../../../queries/tokenHoldes';
+import { queryv2 } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
-import { dropDuplicatesMultiKey } from '../../../../utils/utils';
+import { dropDuplicatesMultiKey, REEF_CONTRACT_ADDRESS } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
 import { ExtrinsicData } from '../../../types';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
-import { ZERO_ADDRESS } from './utils';
+import { toTokenHolder, ZERO_ADDRESS } from './utils';
+
+import format from 'pg-format';
+
 
 class Erc20TransferEvent extends DefaultErcTransferEvent {
-  accountTokenHolders: TokenHolder[] = [];
-
-  contractTokenHolders: TokenHolder[] = [];
-
+  
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
     logger.info('Processing Erc20 transfer event');
@@ -22,11 +22,16 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     const toEvmAddress = to.toString();
     const fromEvmAddress = from.toString();
     const tokenAddress = this.contract.address;
+
     const abi = this.contract.compiled_data[this.contract.name];
 
     // Resolving accounts
     const toAddress = await accountsManager.useEvm(toEvmAddress);
     const fromAddress = await accountsManager.useEvm(fromEvmAddress);
+
+    if (tokenAddress === REEF_CONTRACT_ADDRESS) {
+      return;
+    }
 
     logger.info(`Processing ERC20: ${this.contract.address} transfer from ${fromAddress} to ${toAddress} -> ${amount.toString()}`);
     this.transfers.push({
@@ -63,6 +68,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
+
     const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'signerAddress']);
     const contracts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'evmAddress']);
     // Saving account token holders and displaying updated holders and signers
@@ -72,7 +78,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertAccountTokenHolders(accounts);
+      await this.insertAccountTokenHolders(accounts);
     }
 
     // Saving account token holders and displaying updated holders and signers
@@ -82,8 +88,38 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertAccountTokenHolders(contracts);
+      await this.insertContractTokenHolders(contracts);
     }
+  }
+
+  private async insertAccountTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
+    const statement = format(`
+    INSERT INTO token_holder
+      (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
+    VALUES
+      %L
+    ON CONFLICT (signer, token_address) WHERE evm_address IS NULL AND nft_id IS NULL DO UPDATE SET
+      balance = EXCLUDED.balance,
+      timestamp = EXCLUDED.timestamp,
+      info = EXCLUDED.info;`,
+      tokenHolders.map(toTokenHolder)
+    );
+    await queryv2(statement); 
+  }
+
+  private async insertContractTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
+    const statement = format(`
+      INSERT INTO token_holder
+        (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
+      VALUES
+        %L
+      ON CONFLICT (evm_address, token_address) WHERE signer IS NULL AND nft_id IS NULL DO UPDATE SET
+        balance = EXCLUDED.balance,
+        timestamp = EXCLUDED.timestamp,
+        info = EXCLUDED.info;`,
+      tokenHolders.map(toTokenHolder)
+    );
+    await queryv2(statement);
   }
 }
 

@@ -2,10 +2,10 @@ import { utils } from 'ethers';
 import { balanceOfErc1155 } from '../../../../crawler/utils';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
-import DefaultErcTransferEvent from './DefaultErcTransferEvent';
+import NftTokenHolderEvent from './NftTokenHolderEvent';
 import { ZERO_ADDRESS } from './utils';
 
-class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
+class Erc1155SingleTransferEvent extends NftTokenHolderEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
     logger.info('Processing Erc1155 single transfer event');
