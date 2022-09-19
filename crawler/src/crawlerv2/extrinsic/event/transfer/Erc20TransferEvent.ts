@@ -13,7 +13,7 @@ import format from 'pg-format';
 
 
 class Erc20TransferEvent extends DefaultErcTransferEvent {
-  
+
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
     logger.info('Processing Erc20 transfer event');
@@ -70,7 +70,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     await super.save(extrinsicData);
 
     const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'signerAddress']);
-    const contracts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'evmAddress']);
+    const contracts = dropDuplicatesMultiKey(this.contractTokenHolders, ['tokenAddress', 'evmAddress']);
+    
     // Saving account token holders and displaying updated holders and signers
     if (accounts.length > 0) {
       logger.info(

@@ -46,6 +46,7 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
     // Saving account nft holders and displaying updated holders and signers
     const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['signerAddress', 'tokenAddress', 'nftId']);
     const contracts = dropDuplicatesMultiKey(this.contractTokenHolders, ['evmAddress', 'tokenAddress', 'nftId']);
+    
     if (accounts.length > 0) {
       logger.info(
         `Updating account ${this.name} holders for (tokenAddress, signer): \n\t- ${accounts
