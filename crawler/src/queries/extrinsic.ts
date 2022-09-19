@@ -69,6 +69,7 @@ const transferToValue = ({
   nftId,
   amount,
   blockId,
+  eventId,
   success,
   timestamp,
   toAddress,
@@ -79,7 +80,7 @@ const transferToValue = ({
   errorMessage,
   toEvmAddress,
   fromEvmAddress,
-}: Transfer): any[] => [blockId, extrinsicId, denom || null, nftId || null, toAddress === 'null' ? null : toAddress, fromAddress === 'null' ? null : fromAddress, toEvmAddress, fromEvmAddress, tokenAddress, amount === '' ? '0' : amount, feeAmount === '' ? '0' : feeAmount, success, errorMessage, type, timestamp];
+}: Transfer): any[] => [blockId, extrinsicId, eventId, denom || null, nftId || null, toAddress === 'null' ? null : toAddress, fromAddress === 'null' ? null : fromAddress, toEvmAddress, fromEvmAddress, tokenAddress, amount === '' ? '0' : amount, feeAmount === '' ? '0' : feeAmount, success, errorMessage, type, timestamp];
 
 export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   if (transfers.length === 0) {
@@ -87,7 +88,7 @@ export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   }
   await insertV2(`
     INSERT INTO transfer
-      (block_id, extrinsic_id, denom, nft_id, to_address, from_address, to_evm_address, from_evm_address, token_address, amount, fee_amount, success, error_message, type, timestamp)
+      (block_id, extrinsic_id, event_id, denom, nft_id, to_address, from_address, to_evm_address, from_evm_address, token_address, amount, fee_amount, success, error_message, type, timestamp)
     VALUES
       %L;
   `, transfers.map(transferToValue));
