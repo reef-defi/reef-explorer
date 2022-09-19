@@ -1,4 +1,4 @@
-import { TokenHolder } from "../../../../crawler/types";
+import { TokenHolder } from '../../../../crawler/types';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const CHAIN_ADDRESS = '0x';
@@ -24,8 +24,8 @@ export const toTokenHolder = ({
   timestamp,
   nftId,
 }: TokenHolder): TokenHolderType => [
-  signerAddress === "" ? null : signerAddress,
-  evmAddress === "" ? null : evmAddress,
+  signerAddress === '' ? null : signerAddress,
+  evmAddress === '' ? null : evmAddress,
   type,
   tokenAddress,
   nftId,

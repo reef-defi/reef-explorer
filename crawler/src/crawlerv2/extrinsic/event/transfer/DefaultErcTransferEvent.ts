@@ -7,7 +7,9 @@ import EvmLogEvent from '../EvmLogEvent';
 
 class DefaultErcTransferEvent extends EvmLogEvent {
   transfers: Transfer[] = [];
+
   accountTokenHolders: TokenHolder[] = [];
+
   contractTokenHolders: TokenHolder[] = [];
 
   addTokenHolder(

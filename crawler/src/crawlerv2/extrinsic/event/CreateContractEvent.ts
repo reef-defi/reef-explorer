@@ -60,7 +60,8 @@ class ContractCreateEvent extends DefaultEvent {
     const storageLimit = extrinsicData.args[3].toString();
     logger.info('Inserting contract');
 
-    await insertV2(`
+    await insertV2(
+      `
     INSERT INTO contract
       (address, extrinsic_id, signer, bytecode, bytecode_context, bytecode_arguments, gas_limit, storage_limit, timestamp)
     VALUES

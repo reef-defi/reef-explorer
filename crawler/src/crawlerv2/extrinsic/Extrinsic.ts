@@ -116,7 +116,8 @@ class Extrinsic {
     }
 
     logger.info(`Insertin ${this.id} extrinsic`);
-    await queryv2(`
+    await queryv2(
+      `
       INSERT INTO extrinsic 
         (id, block_id, index, hash, args, docs, method, section, signer, status, error_message, type, signed_data, timestamp)
       VALUES

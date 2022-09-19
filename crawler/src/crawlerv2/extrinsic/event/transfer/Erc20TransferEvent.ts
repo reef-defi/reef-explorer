@@ -1,4 +1,5 @@
 import { utils } from 'ethers';
+import format from 'pg-format';
 import { TokenHolder } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
 import { queryv2 } from '../../../../utils/connector';
@@ -9,11 +10,7 @@ import { ExtrinsicData } from '../../../types';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
 import { toTokenHolder, ZERO_ADDRESS } from './utils';
 
-import format from 'pg-format';
-
-
 class Erc20TransferEvent extends DefaultErcTransferEvent {
-
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
     if (!this.id) {
@@ -49,7 +46,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       denom: this.contract.contract_data?.symbol,
       toAddress,
       fromAddress,
-      eventId: this.id
+      eventId: this.id,
     });
 
     if (utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS) {
@@ -84,7 +81,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
-      await this.insertAccountTokenHolders(accounts);
+      await Erc20TransferEvent.insertAccountTokenHolders(accounts);
     }
 
     // Saving account token holders and displaying updated holders and signers
@@ -94,12 +91,13 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(',\n\t- ')}`,
       );
-      await this.insertContractTokenHolders(contracts);
+      await Erc20TransferEvent.insertContractTokenHolders(contracts);
     }
   }
 
-  private async insertAccountTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
-    const statement = format(`
+  private static async insertAccountTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
+    const statement = format(
+      `
     INSERT INTO token_holder
       (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
     VALUES
@@ -108,13 +106,14 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       balance = EXCLUDED.balance,
       timestamp = EXCLUDED.timestamp,
       info = EXCLUDED.info;`,
-      tokenHolders.map(toTokenHolder)
+      tokenHolders.map(toTokenHolder),
     );
-    await queryv2(statement); 
+    await queryv2(statement);
   }
 
-  private async insertContractTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
-    const statement = format(`
+  private static async insertContractTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
+    const statement = format(
+      `
       INSERT INTO token_holder
         (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
       VALUES
@@ -123,7 +122,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
         balance = EXCLUDED.balance,
         timestamp = EXCLUDED.timestamp,
         info = EXCLUDED.info;`,
-      tokenHolders.map(toTokenHolder)
+      tokenHolders.map(toTokenHolder),
     );
     await queryv2(statement);
   }

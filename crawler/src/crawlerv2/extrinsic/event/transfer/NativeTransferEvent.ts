@@ -45,7 +45,7 @@ class NativeTransferEvent extends DefaultEvent {
     if (!this.id) {
       throw new Error('Event id is not set');
     }
-    
+
     logger.info('Inserting transfer');
     await insertTransfers([{
       eventId: this.id,

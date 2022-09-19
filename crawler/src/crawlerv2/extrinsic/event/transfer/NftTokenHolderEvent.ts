@@ -11,8 +11,9 @@ import { toTokenHolder } from './utils';
 class NftTokenHolderEvent extends DefaultErcTransferEvent {
   name: TokenType = 'ERC1155';
 
-  private async insertAccountNftHolders(tokenHolders: TokenHolder[]) {
-    const statement = format(`
+  private static async insertAccountNftHolders(tokenHolders: TokenHolder[]) {
+    const statement = format(
+      `
       INSERT INTO token_holder
         (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
       VALUES
@@ -21,13 +22,14 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
         balance = EXCLUDED.balance,
         timestamp = EXCLUDED.timestamp,
         info = EXCLUDED.info;`,
-      tokenHolders.map(toTokenHolder)
+      tokenHolders.map(toTokenHolder),
     );
-    await queryv2(statement); 
+    await queryv2(statement);
   }
 
-  private async insertContractNftHolders(tokenHolders: TokenHolder[]) {
-    const statement = format(`
+  private static async insertContractNftHolders(tokenHolders: TokenHolder[]) {
+    const statement = format(
+      `
       INSERT INTO token_holder
         (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
       VALUES
@@ -36,9 +38,9 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
         balance = EXCLUDED.balance,
         timestamp = EXCLUDED.timestamp,
         info = EXCLUDED.info;`,
-      tokenHolders.map(toTokenHolder)
+      tokenHolders.map(toTokenHolder),
     );
-    await queryv2(statement); 
+    await queryv2(statement);
   }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
@@ -46,14 +48,14 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
     // Saving account nft holders and displaying updated holders and signers
     const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['signerAddress', 'tokenAddress', 'nftId']);
     const contracts = dropDuplicatesMultiKey(this.contractTokenHolders, ['evmAddress', 'tokenAddress', 'nftId']);
-    
+
     if (accounts.length > 0) {
       logger.info(
         `Updating account ${this.name} holders for (tokenAddress, signer): \n\t- ${accounts
           .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
-      await this.insertAccountNftHolders(accounts);
+      await NftTokenHolderEvent.insertAccountNftHolders(accounts);
     }
 
     // Saving account nft holders and displaying updated holders and signers
@@ -63,7 +65,7 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(',\n\t- ')}`,
       );
-      await this.insertContractNftHolders(contracts);
+      await NftTokenHolderEvent.insertContractNftHolders(contracts);
     }
   }
 }
