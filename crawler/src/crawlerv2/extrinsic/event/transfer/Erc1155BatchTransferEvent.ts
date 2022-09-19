@@ -13,6 +13,9 @@ class Erc1155BatchTransferEvent extends NftTokenHolderEvent {
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
+    if (!this.id) {
+      throw new Error('Event id is not collected');
+    }
 
     logger.info('Processing Erc1155 batch transfer event');
     const [, fromEvmAddress, toEvmAddress, nftIds, amounts] = this.data!.parsed.args;
@@ -32,6 +35,7 @@ class Erc1155BatchTransferEvent extends NftTokenHolderEvent {
     for (let index = 0; index < nftIds.length; index++) {
       // Adding transe
       this.transfers.push({
+        eventId: this.id,
         blockId: this.head.blockId,
         fromEvmAddress,
         timestamp: this.head.timestamp,

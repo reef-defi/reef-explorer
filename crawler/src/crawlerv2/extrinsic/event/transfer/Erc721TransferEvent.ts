@@ -11,6 +11,9 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
+    if (!this.id) {
+      throw new Error('Event id is not collected');
+    }
 
     logger.info('Processing Erc721 transfer event');
     const tokenAddress = this.contract.address;
@@ -25,6 +28,7 @@ class Erc721TransferEvent extends NftTokenHolderEvent {
     logger.info(`Processing ERC721: ${this.contract.address} transfer from ${fromAddress} to ${toAddress}`);
     this.transfers.push({
       amount: '1',
+      eventId: this.id,
       blockId: this.head.blockId,
       toAddress,
       fromAddress,

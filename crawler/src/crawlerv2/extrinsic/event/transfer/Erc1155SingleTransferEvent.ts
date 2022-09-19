@@ -8,6 +8,11 @@ import { ZERO_ADDRESS } from './utils';
 class Erc1155SingleTransferEvent extends NftTokenHolderEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
+
+    if (!this.id) {
+      throw new Error('Event id is not collected');
+    }
+
     logger.info('Processing Erc1155 single transfer event');
     const [, fromEvmAddress, toEvmAddress, nftId, amount] = this.data!.parsed.args;
     const abi = this.contract.compiled_data[this.contract.name];
@@ -17,6 +22,7 @@ class Erc1155SingleTransferEvent extends NftTokenHolderEvent {
 
     logger.info(`Processing ERC1155: ${this.contract.address} single transfer from ${fromAddress} to ${toAddress} -> Id: ${nftId.toString()} Amount: ${amount.toString()}`);
     this.transfers.push({
+      eventId: this.id,
       blockId: this.head.blockId,
       timestamp: this.head.timestamp,
       toAddress,

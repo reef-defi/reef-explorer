@@ -42,8 +42,13 @@ class NativeTransferEvent extends DefaultEvent {
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
 
+    if (!this.id) {
+      throw new Error('Event id is not set');
+    }
+    
     logger.info('Inserting transfer');
     await insertTransfers([{
+      eventId: this.id,
       denom: 'REEF',
       type: 'Native',
       amount: this.amount,

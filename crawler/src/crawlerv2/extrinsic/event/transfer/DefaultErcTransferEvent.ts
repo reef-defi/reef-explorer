@@ -27,7 +27,7 @@ class DefaultErcTransferEvent extends EvmLogEvent {
       type: address === '0x' ? 'Contract' : 'Account',
       signerAddress: address === '0x' ? '' : address,
     };
-    
+
     // Based on reciever type (contract/account) we extend holder accordingly
     if (tokenHolder.type === 'Account') {
       this.accountTokenHolders.push(tokenHolder);

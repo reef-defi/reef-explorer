@@ -16,6 +16,10 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
+    if (!this.id) {
+      throw new Error('Event id is not collected');
+    }
+
     logger.info('Processing Erc20 transfer event');
 
     const [from, to, amount] = this.data!.parsed.args;
@@ -45,6 +49,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       denom: this.contract.contract_data?.symbol,
       toAddress,
       fromAddress,
+      eventId: this.id
     });
 
     if (utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS) {
@@ -71,7 +76,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
 
     const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'signerAddress']);
     const contracts = dropDuplicatesMultiKey(this.contractTokenHolders, ['tokenAddress', 'evmAddress']);
-    
+
     // Saving account token holders and displaying updated holders and signers
     if (accounts.length > 0) {
       logger.info(

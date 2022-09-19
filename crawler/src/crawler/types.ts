@@ -105,6 +105,7 @@ export interface AccountBody extends AccountHead {
 export interface Transfer {
   blockId: number;
   extrinsicId: number;
+  eventId: number;
 
   denom?: string;
   nftId?: string;
