@@ -10,6 +10,7 @@ import { insertAccountTokenHolders } from '../../queries/tokenHoldes';
 import { nodeProvider } from '../../utils/connector';
 import logger from '../../utils/logger';
 import { REEF_CONTRACT_ADDRESS, REEF_DEFAULT_DATA, toChecksumAddress } from '../../utils/utils';
+import { ZERO_ADDRESS } from '../extrinsic/event/transfer/utils';
 
 // Account manager stores used accounts and allows to trigger account save
 class AccountManager {
@@ -58,7 +59,7 @@ class AccountManager {
     }
 
     // Node/Empty/Root address is presented as 0x
-    if (evmAddress === '0x0000000000000000000000000000000000000000') {
+    if (evmAddress === ZERO_ADDRESS) {
       return '0x';
     }
     const address = await findNativeAddress(evmAddress);
