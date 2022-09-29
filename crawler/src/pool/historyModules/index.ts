@@ -1,3 +1,4 @@
+import logger from "../../utils/logger";
 import MarketHistoryModule from "./MarketHistoryModule";
 import Reserves from "./Reserves";
 import TokenPrices from "./TokenPrices";
@@ -9,6 +10,7 @@ const modules = [
 
 class MarketHistory extends MarketHistoryModule {
   static async init(blockId: string): Promise<void> {
+    logger.info(`Initializing market history for block ${blockId}`);
     for (const module of modules) {
       await module.init(blockId);
     }

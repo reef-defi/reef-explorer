@@ -25,13 +25,11 @@ class Reserves implements MarketHistoryModule {
         new BigNumber(reserved_2)
       );
     }
-    console.log(this.pools);
-    console.log(this.reserves);
   }
 
   static updateReserve(poolId: string, evmEventId: string|null, reserve1: BigNumber, reserve2: BigNumber): void {
     const index = this.pools.indexOf(poolId);
-    if (index !== -1) {
+    if (index === -1) {
       logger.info(`Reserves detected new pool: ${poolId}`)
       this.pools.push(poolId);
       this.reserves.push([reserve1, reserve2, evmEventId]);

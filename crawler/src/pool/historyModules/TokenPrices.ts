@@ -134,7 +134,7 @@ class TokenPrices implements MarketHistoryModule {
   private static async insertPrices(blockId: string, timestamp: string): Promise<void> {
     // Insert the price vector into the database
     await insertV2(
-      "INSERT INTO token_price (block_id, timestamp, token_address, price) VALUES %L;",
+      "INSERT INTO token_price (block_id, timestamp, token_address, price) VALUES %L ON CONFLICT (block_id, token_address) DO NOTHING;",
       this.priceVector.map((price, i) => [
         blockId,
         timestamp,
