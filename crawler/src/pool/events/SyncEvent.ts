@@ -46,21 +46,6 @@ class SyncEvent extends PoolEvent {
       new BigNumber(this.reserved_2)
     );
   }
-
-  async save(): Promise<void> {
-    await super.save();
-
-    await queryv2(
-      `INSERT INTO reserved_raw
-        (block_id, pool_id, evm_event_id, reserved_1, reserved_2, timestamp)
-      VALUES
-        ($1, $2, $3, $4, $5, $6)
-      ON CONFLICT (block_id, pool_id) DO UPDATE SET
-        reserved_1 = EXCLUDED.reserved_1,
-        reserved_2 = EXCLUDED.reserved_2;`,
-        [this.blockId, this.poolId, this.evmEventId, this.reserved_1, this.reserved_2, this.timestamp]
-    )
-  }
 }
 
 export default SyncEvent;
