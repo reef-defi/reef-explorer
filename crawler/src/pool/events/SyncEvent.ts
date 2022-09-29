@@ -4,6 +4,7 @@ import TokenPrices from "../historyModules/TokenPrices";
 import { queryv2 } from "../../utils/connector";
 import PoolEvent, { PoolEventData } from "./PoolEvent";
 import Reserves from "../historyModules/Reserves";
+import Candlestick from "../historyModules/Candlestick";
 
 interface PoolInfo {
   token_1: string;
@@ -33,18 +34,18 @@ class SyncEvent extends PoolEvent {
     }
 
     // Update reserves for tokens in TokenPrices
-    TokenPrices.updateReserves(
-      token_1,
-      token_2,
-      new BigNumber(this.reserved_1).div(new BigNumber(10).pow(decimal_1)),
-      new BigNumber(this.reserved_2).div(new BigNumber(10).pow(decimal_2))
-    );
-    Reserves.updateReserve(
-      this.poolId,
-      this.evmEventId,
-      new BigNumber(this.reserved_1),
-      new BigNumber(this.reserved_2)
-    );
+    const reservedRaw1 = new BigNumber(this.reserved_1);
+    const reservedRaw2 = new BigNumber(this.reserved_2);
+    const reserve1 = reservedRaw1.dividedBy(10 ** decimal_1);
+    const reserve2 = reservedRaw2.dividedBy(10 ** decimal_2);
+    const price1 = reserve2.dividedBy(reserve1);
+    const price2 = reserve1.dividedBy(reserve2);
+
+    // Updating history modules
+    TokenPrices.updateReserves(token_1, token_2, reserve1, reserve2);
+    Reserves.updateReserve(this.poolId, this.evmEventId, reservedRaw1, reservedRaw2);
+    Candlestick.updateCandlestick(this.poolId, token_1, price1);
+    Candlestick.updateCandlestick(this.poolId, token_2, price2);
   }
 }
 
