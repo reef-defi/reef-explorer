@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS candlestick(
   block_id INT NOT NULL,
   pool_id INT NOT NULL,
   token_address CHAR(42) NOT NULL,
-  evm_event_id INT, -- Optional link to evm event
   
   open NUMERIC NOT NULL,
   high NUMERIC NOT NULL,
