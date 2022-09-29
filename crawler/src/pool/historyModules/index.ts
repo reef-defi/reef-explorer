@@ -2,8 +2,10 @@ import logger from "../../utils/logger";
 import MarketHistoryModule from "./MarketHistoryModule";
 import Reserves from "./Reserves";
 import TokenPrices from "./TokenPrices";
+import Volume from "./Volume";
 
 const modules = [
+  Volume,
   Reserves,
   TokenPrices,
 ];

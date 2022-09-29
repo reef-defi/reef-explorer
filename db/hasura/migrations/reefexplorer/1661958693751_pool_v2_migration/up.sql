@@ -104,7 +104,6 @@ CREATE TABLE IF NOT EXISTS volume_raw(
   
   block_id INT NOT NULL,
   pool_id INT NOT NULL,
-  evm_event_id INT, -- Optional link to evm event
   
   volume_1 NUMERIC NOT NULL,
   volume_2 NUMERIC NOT NULL,
