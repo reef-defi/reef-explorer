@@ -1,5 +1,5 @@
 import { utils } from 'ethers';
-import { BytecodeLog } from '../../../crawler/types';
+import { BytecodeLog, VerifiedContract } from '../../../crawler/types';
 import { getContractDB } from '../../../queries/evmEvent';
 import { toChecksumAddress } from '../../../utils/utils';
 import { EventData } from '../../types';
@@ -18,6 +18,30 @@ import Erc721TransferEvent from './transfer/Erc721TransferEvent';
 import NativeTransferEvent from './transfer/NativeTransferEvent';
 import UnverifiedEvmLog from './UnverifiedEvmLog';
 import ExecutedFailedEvent from './ExecutedFailedEvent';
+import logger from '../../../utils/logger';
+
+const resolveEvmEvent = async (head: EventData, contract: VerifiedContract): Promise<EvmLogEvent> => {
+  // Decoding contract event
+  const { type, compiled_data, name } = contract;
+  const abi = new utils.Interface(compiled_data[name]);
+  const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
+  const decodedEvent = abi.parseLog(contractData);
+  const eventName = `${decodedEvent.name}.${type}`;
+
+  // Handling transfer events
+  switch (eventName) {
+    case 'Transfer.ERC20':
+      return new Erc20TransferEvent(head, contract);
+    case 'Transfer.ERC721':
+      return new Erc721TransferEvent(head, contract);
+    case 'TransferSingle.ERC1155':
+      return new Erc1155SingleTransferEvent(head, contract);
+    case 'TransferBatch.ERC1155':
+      return new Erc1155BatchTransferEvent(head, contract);
+    default:
+      return new EvmLogEvent(head, contract);
+  }
+};
 
 const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => {
   const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
@@ -28,25 +52,13 @@ const selectEvmLogEvent = async (head: EventData): Promise<UnverifiedEvmLog> => 
   // therefore log is marked as unverified
   if (contract.length === 0) return new UnverifiedEvmLog(head);
 
-  // Decoding contract event
-  const { type, compiled_data, name } = contract[0];
-  const abi = new utils.Interface(compiled_data[name]);
-  const decodedEvent = abi.parseLog(contractData);
-  const eventName = `${decodedEvent.name}.${type}`;
-
-  // Handling transfer events
-  switch (eventName) {
-    case 'Transfer.ERC20':
-      return new Erc20TransferEvent(head, contract[0]);
-    case 'Transfer.ERC721':
-      return new Erc721TransferEvent(head, contract[0]);
-    case 'TransferSingle.ERC1155':
-      return new Erc1155SingleTransferEvent(head, contract[0]);
-    case 'TransferBatch.ERC1155':
-      return new Erc1155BatchTransferEvent(head, contract[0]);
-    default:
-      return new EvmLogEvent(head, contract[0]);
-  }
+  // If contract exists we can resolve the event and if for some reasone event cant be processed
+  // return Unverified evm log
+  return resolveEvmEvent(head, contract[0])
+    .catch((err) => {
+      logger.warn(`Error while resolving verified evm event: ${err}`);
+      return new UnverifiedEvmLog(head);
+    });
 };
 
 const resolveEvent = async (
