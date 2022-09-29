@@ -20,6 +20,23 @@ class Volume implements MarketHistoryModule {
     logger.info(`Volume for pools: [${this.pools.join(', ')}] initialized`);
   }
 
+  static updateVolume(poolId: string, volume1: BigNumber, volume2: BigNumber): void {
+    const index = this.pools.indexOf(poolId);
+    if (index === -1) {
+      logger.info(`Volume detected new pool: ${poolId}`)
+      this.pools.push(poolId);
+    } 
+
+    if (this.blockVolume[poolId] === undefined) {
+      logger.info(`Volume initialized for pool: ${poolId} with \n\tVolume1 = ${volume1.toString()}\n\tVolume2 = ${volume2.toString()}`)
+      this.blockVolume[poolId] = [volume1, volume2];
+    } else {
+      this.blockVolume[poolId][0] = this.blockVolume[poolId][0].plus(volume1);
+      this.blockVolume[poolId][1] = this.blockVolume[poolId][1].plus(volume2);
+      logger.info(`Volume updated for pool: ${poolId} with \n\tVolume1 = ${this.blockVolume[poolId][0].toString()}\n\tVolume2 = ${this.blockVolume[poolId][1].toString()}`)
+    }
+  }
+
   static async save(blockId: string, timestamp: string): Promise<void> {
     await queryv2(
       `INSERT INTO volume_raw
@@ -29,11 +46,12 @@ class Volume implements MarketHistoryModule {
       this.pools.map((poolId) => [
         blockId,
         poolId,
-        this.blockVolume[poolId][0].toString(),
-        this.blockVolume[poolId][1].toString(),
+        this.blockVolume[poolId] ? this.blockVolume[poolId][0].toString() : '0',
+        this.blockVolume[poolId] ? this.blockVolume[poolId][1].toString() : '0',
         timestamp,
       ])
     );
+    this.blockVolume = {};
   }
 }
 
