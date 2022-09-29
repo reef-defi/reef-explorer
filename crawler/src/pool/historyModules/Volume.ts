@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { queryv2 } from "../../utils/connector";
+import { insertV2, queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
 import MarketHistoryModule from "./MarketHistoryModule";
 
@@ -15,12 +15,12 @@ class Volume implements MarketHistoryModule {
 
   static async init(blockId: string): Promise<void> {
     logger.info("Initializing Volume holder on block: " + blockId);
-    this.pools = await queryv2<{address: string}>('SELECT address FROM pool')
-      .then((res) => res.map((r) => r.address));
+    this.pools = await queryv2<{id: string}>('SELECT id FROM pool')
+      .then((res) => res.map((r) => r.id));
     logger.info(`Volume for pools: [${this.pools.join(', ')}] initialized`);
   }
 
-  static updateVolume(poolId: string, volume1: BigNumber, volume2: BigNumber): void {
+  static updateVolume(poolId: string, volume1: string, volume2: string): void {
     const index = this.pools.indexOf(poolId);
     if (index === -1) {
       logger.info(`Volume detected new pool: ${poolId}`)
@@ -29,7 +29,7 @@ class Volume implements MarketHistoryModule {
 
     if (this.blockVolume[poolId] === undefined) {
       logger.info(`Volume initialized for pool: ${poolId} with \n\tVolume1 = ${volume1.toString()}\n\tVolume2 = ${volume2.toString()}`)
-      this.blockVolume[poolId] = [volume1, volume2];
+      this.blockVolume[poolId] = [new BigNumber(volume1), new BigNumber(volume2)];
     } else {
       this.blockVolume[poolId][0] = this.blockVolume[poolId][0].plus(volume1);
       this.blockVolume[poolId][1] = this.blockVolume[poolId][1].plus(volume2);
@@ -38,7 +38,7 @@ class Volume implements MarketHistoryModule {
   }
 
   static async save(blockId: string, timestamp: string): Promise<void> {
-    await queryv2(
+    await insertV2(
       `INSERT INTO volume_raw
         (block_id, pool_id, volume_1, volume_2, timestamp)
       VALUES
