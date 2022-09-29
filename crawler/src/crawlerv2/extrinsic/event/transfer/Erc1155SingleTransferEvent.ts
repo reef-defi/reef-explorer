@@ -1,12 +1,19 @@
+import { utils } from 'ethers';
 import { balanceOfErc1155 } from '../../../../crawler/utils';
 import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
-import DefaultErcTransferEvent from './DefaultErcTransferEvent';
+import NftTokenHolderEvent from './NftTokenHolderEvent';
+import { ZERO_ADDRESS } from './utils';
 
-class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
+class Erc1155SingleTransferEvent extends NftTokenHolderEvent {
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
+
+    if (!this.id) {
+      throw new Error('Event id is not collected');
+    }
+
     logger.info('Processing Erc1155 single transfer event');
     const [, fromEvmAddress, toEvmAddress, nftId, amount] = this.data!.parsed.args;
     const abi = this.contract.compiled_data[this.contract.name];
@@ -16,6 +23,7 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
 
     logger.info(`Processing ERC1155: ${this.contract.address} single transfer from ${fromAddress} to ${toAddress} -> Id: ${nftId.toString()} Amount: ${amount.toString()}`);
     this.transfers.push({
+      eventId: this.id,
       blockId: this.head.blockId,
       timestamp: this.head.timestamp,
       toAddress,
@@ -29,7 +37,7 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
       amount: amount.toString(),
     });
 
-    if (toAddress !== '0x') {
+    if (utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS) {
       const toBalance = await balanceOfErc1155(toEvmAddress, tokenAddress, nftId, abi);
 
       this.addTokenHolder(
@@ -39,7 +47,7 @@ class Erc1155SingleTransferEvent extends DefaultErcTransferEvent {
         nftId.toString(),
       );
     }
-    if (fromAddress !== '0x') {
+    if (utils.isAddress(fromEvmAddress) && fromEvmAddress !== ZERO_ADDRESS) {
       const fromBalance = await balanceOfErc1155(fromEvmAddress, tokenAddress, nftId, abi);
 
       this.addTokenHolder(

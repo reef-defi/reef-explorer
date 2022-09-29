@@ -1,11 +1,11 @@
-import { Contract } from 'ethers';
+import { Contract, utils } from 'ethers';
 import { nodeProvider } from '../../../../utils/connector';
 import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
-import DefaultErcTransferEvent from './DefaultErcTransferEvent';
+import NftTokenHolderEvent from './NftTokenHolderEvent';
 
-class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
+class Erc1155BatchTransferEvent extends NftTokenHolderEvent {
   private async balanceOfBatch(address: string, tokenAddress: string, ids: string[]): Promise<string[]> {
     const contract = new Contract(tokenAddress, this.contract.compiled_data[this.contract.name], nodeProvider.getProvider());
     const result = await contract.balanceOfBatch(Array(ids.length).fill(address), ids);
@@ -14,12 +14,21 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
 
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
+    if (!this.id) {
+      throw new Error('Event id is not collected');
+    }
 
     logger.info('Processing Erc1155 batch transfer event');
     const [, fromEvmAddress, toEvmAddress, nftIds, amounts] = this.data!.parsed.args;
     const tokenAddress = this.contract.address;
     const toAddress = await accountsManager.useEvm(toEvmAddress);
     const fromAddress = await accountsManager.useEvm(fromEvmAddress);
+
+    // if for some reasone addresses are not valid, we skip the event
+    if (!utils.isAddress(toAddress) || !utils.isAddress(fromAddress)) {
+      return;
+    }
+
     const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
     const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
 
@@ -27,6 +36,7 @@ class Erc1155BatchTransferEvent extends DefaultErcTransferEvent {
     for (let index = 0; index < nftIds.length; index++) {
       // Adding transe
       this.transfers.push({
+        eventId: this.id,
         blockId: this.head.blockId,
         fromEvmAddress,
         timestamp: this.head.timestamp,

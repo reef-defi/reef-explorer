@@ -32,6 +32,7 @@ export type TransferType = 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
 
 export interface Transfer {
   blockId: number;
+  eventId: number;
 
   denom?: string;
   nftId?: string;

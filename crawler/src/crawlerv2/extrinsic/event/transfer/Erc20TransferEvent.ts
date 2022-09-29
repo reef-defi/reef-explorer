@@ -1,31 +1,38 @@
+import { utils } from 'ethers';
+import format from 'pg-format';
 import { TokenHolder } from '../../../../crawler/types';
 import { balanceOf } from '../../../../crawler/utils';
-import { insertAccountTokenHolders, insertContractTokenHolders } from '../../../../queries/tokenHoldes';
-import { awaitForContract } from '../../../../utils/contract';
+import { queryv2 } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
-import { dropDuplicatesMultiKey } from '../../../../utils/utils';
+import { dropDuplicatesMultiKey, REEF_CONTRACT_ADDRESS } from '../../../../utils/utils';
 import AccountManager from '../../../managers/AccountManager';
 import { ExtrinsicData } from '../../../types';
 import DefaultErcTransferEvent from './DefaultErcTransferEvent';
+import { toTokenHolder, ZERO_ADDRESS } from './utils';
 
 class Erc20TransferEvent extends DefaultErcTransferEvent {
-  accountTokenHolders: TokenHolder[] = [];
-
-  contractTokenHolders: TokenHolder[] = [];
-
   async process(accountsManager: AccountManager): Promise<void> {
     await super.process(accountsManager);
+    if (!this.id) {
+      throw new Error('Event id is not collected');
+    }
+
     logger.info('Processing Erc20 transfer event');
 
     const [from, to, amount] = this.data!.parsed.args;
     const toEvmAddress = to.toString();
     const fromEvmAddress = from.toString();
     const tokenAddress = this.contract.address;
+
     const abi = this.contract.compiled_data[this.contract.name];
 
     // Resolving accounts
     const toAddress = await accountsManager.useEvm(toEvmAddress);
     const fromAddress = await accountsManager.useEvm(fromEvmAddress);
+
+    if (tokenAddress === REEF_CONTRACT_ADDRESS) {
+      return;
+    }
 
     logger.info(`Processing ERC20: ${this.contract.address} transfer from ${fromAddress} to ${toAddress} -> ${amount.toString()}`);
     this.transfers.push({
@@ -39,9 +46,10 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       denom: this.contract.contract_data?.symbol,
       toAddress,
       fromAddress,
+      eventId: this.id,
     });
 
-    if (toAddress !== '0x') {
+    if (utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS) {
       const toBalance = await balanceOf(toEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         toAddress,
@@ -50,7 +58,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       );
     }
 
-    if (fromAddress !== '0x') {
+    if (utils.isAddress(fromEvmAddress) && fromEvmAddress !== ZERO_ADDRESS) {
       const fromBalance = await balanceOf(fromEvmAddress, tokenAddress, abi);
       this.addTokenHolder(
         fromAddress,
@@ -58,21 +66,14 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
         fromBalance,
       );
     }
-
-    await awaitForContract(tokenAddress);
   }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {
     await super.save(extrinsicData);
 
-    const accounts = dropDuplicatesMultiKey(
-      this.accountTokenHolders.filter(({ type }) => type === "Account"),
-      ["tokenAddress", "signerAddress"]
-    );
-    const contracts = dropDuplicatesMultiKey(
-      this.accountTokenHolders.filter(({ type }) => type === "Contract"),
-      ["tokenAddress", "evmAddress"]
-    );
+    const accounts = dropDuplicatesMultiKey(this.accountTokenHolders, ['tokenAddress', 'signerAddress']);
+    const contracts = dropDuplicatesMultiKey(this.contractTokenHolders, ['tokenAddress', 'evmAddress']);
+
     // Saving account token holders and displaying updated holders and signers
     if (accounts.length > 0) {
       logger.info(
@@ -80,7 +81,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ signerAddress, tokenAddress }) => `(${tokenAddress}, ${signerAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertAccountTokenHolders(accounts);
+      await Erc20TransferEvent.insertAccountTokenHolders(accounts);
     }
 
     // Saving account token holders and displaying updated holders and signers
@@ -90,8 +91,40 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
           .map(({ evmAddress, tokenAddress }) => `(${tokenAddress}, ${evmAddress})`)
           .join(',\n\t- ')}`,
       );
-      await insertContractTokenHolders(contracts);
+      await Erc20TransferEvent.insertContractTokenHolders(contracts);
     }
+  }
+
+  private static async insertAccountTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
+    const statement = format(
+      `
+    INSERT INTO token_holder
+      (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
+    VALUES
+      %L
+    ON CONFLICT (signer, token_address) WHERE evm_address IS NULL AND nft_id IS NULL DO UPDATE SET
+      balance = EXCLUDED.balance,
+      timestamp = EXCLUDED.timestamp,
+      info = EXCLUDED.info;`,
+      tokenHolders.map(toTokenHolder),
+    );
+    await queryv2(statement);
+  }
+
+  private static async insertContractTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
+    const statement = format(
+      `
+      INSERT INTO token_holder
+        (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
+      VALUES
+        %L
+      ON CONFLICT (evm_address, token_address) WHERE signer IS NULL AND nft_id IS NULL DO UPDATE SET
+        balance = EXCLUDED.balance,
+        timestamp = EXCLUDED.timestamp,
+        info = EXCLUDED.info;`,
+      tokenHolders.map(toTokenHolder),
+    );
+    await queryv2(statement);
   }
 }
 

@@ -21,6 +21,7 @@ const evmLogToTransfer = async ({
     blockId,
     timestamp,
     extrinsicId,
+    eventId: 0,
     toEvmAddress,
     success: true,
     fromEvmAddress,
@@ -131,6 +132,7 @@ export const processTransferEvent = async ({
   const feeAmount = BigNumber.from(signedData!.fee.partialFee).toString();
   return {
     amount: amount.toString(),
+    eventId: 0,
     blockId,
     feeAmount,
     timestamp,
