@@ -5,10 +5,13 @@ import config from "../../config";
 import { RawEventData } from "../../crawler/types";
 import { nodeProvider, queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
+import { verifyPool } from "./poolVerification";
 import TokenPrices from "./../historyModules/TokenPrices";
 import PoolEventBase from "./PoolEventBase";
 
 class FactoryEvent extends PoolEventBase<RawEventData> {
+  static verify = false;
+
   poolAddress?: string;
   tokenAddress1?: string;
   tokenAddress2?: string;
@@ -64,6 +67,10 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
         this.decimal2,
       ]
     );
+
+    if (FactoryEvent.verify) {
+      await verifyPool(this.poolAddress);
+    }
   }
 
   static isFactoryCreateEvent(address: string): boolean {

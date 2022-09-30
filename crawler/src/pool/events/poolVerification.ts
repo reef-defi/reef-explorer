@@ -1,8 +1,9 @@
-import { queryv2 } from "../utils/connector";
+import { queryv2 } from "../../utils/connector";
 
-import ReefswapPairAbi from "../assets/ReefswapPairAbi";
-import ReefswapV2PairSource from "../assets/ReefswapV2PairSource";
+import ReefswapPairAbi from "../../assets/ReefswapPairAbi";
+import ReefswapV2PairSource from "../../assets/ReefswapV2PairSource";
 
+console.log(ReefswapPairAbi);
 const findPoolsToVerify = async (): Promise<string[]> => 
   queryv2<{address: string}>('SELECT address FROM pool;')
     .then((res) => res.map((r) => r.address));
@@ -21,7 +22,7 @@ export const verifyPool = async (address: string) => {
       ReefswapV2PairSource,
       true,
       "v0.5.16+commit.9c3226ce",
-      JSON.stringify(ReefswapPairAbi),
+      JSON.stringify({ "ReefswapV2Pair": ReefswapPairAbi }),
       [],
       999999,
       "london",

@@ -2,7 +2,9 @@ import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import config from './config';
 import { processPoolBlock } from './pool/';
+import FactoryEvent from './pool/events/FactoryEvent';
 import MarketHistory from './pool/historyModules';
+import { verifyPools } from './pool/events/poolVerification';
 import { nodeProvider, queryv2 } from './utils/connector';
 import logger from './utils/logger';
 import { wait } from './utils/utils';
@@ -75,13 +77,6 @@ const awaitBlock = async (blockId: string): Promise<string> => {
   }
 };
 
-const validatePools = async () => {
-  const addresses = await queryv2<{address: string}>('SELECT address FROM pool;')
-  .then((res) => res.map((r) => r.address));
-
-  
-}
-
 const poolProcess = async () => {
   // Find the last processed block 
   let currentBlock = await getCurrentPoolPointer();
@@ -96,6 +91,14 @@ const poolProcess = async () => {
   while (true) {
     // Awaiting block is finalized
     const blockTimestamp = await awaitBlock(currentBlock);
+
+    // Starting to verify pools after certain block
+    if (currentBlock === `${config.poolVerificationAfterBlock}`) {
+      // Trigger pool verification for all existing pools
+      await verifyPools();
+      // Allowing facotry events to verify new pools
+      FactoryEvent.verify = true;
+    }
 
     // Process block events
     await processPoolBlock(currentBlock);
@@ -112,6 +115,7 @@ Promise.resolve()
   .then(async () => {
     await nodeProvider.initializeProviders();
     logger.info(`Factory address used: ${config.reefswapFactoryAddress}`);
+    logger.info(`Pool verification after block: ${config.poolVerificationAfterBlock}`);
   })
   .then(poolProcess)
   .then(async () => {
