@@ -61,7 +61,9 @@ class Candlestick implements MarketHistoryModule {
           key
         ][1].toString()}\n\tLow = ${this.candlesticks[
           key
-        ][2].toString()}\n\tClose = ${this.candlesticks[key][3].toString()}`
+        ][2].toString()}\n\tClose = ${this.candlesticks[
+          key
+        ][3].toString()}`
       );
     }
   }

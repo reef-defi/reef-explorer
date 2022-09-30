@@ -58,8 +58,7 @@ class ReefPriceScrapper {
   static async getPrice(date: Date): Promise<number> {
     // Check if date is less then one minute old, if so return latest price
     if (date > new Date(Date.now() - 1000 * 60)) {
-      // TODO maybe clean history?
-      return await getReefCurrentPrice();
+      return await getReefCurrentPrice()
     }
    
     const stringDate = date2String(date);

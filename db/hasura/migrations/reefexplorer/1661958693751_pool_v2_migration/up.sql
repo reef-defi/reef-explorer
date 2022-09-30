@@ -1,20 +1,3 @@
--- Dropping old views-- Dropping pool views
-DROP VIEW IF EXISTS pool_day_fee;
-DROP VIEW IF EXISTS pool_hour_fee;
-DROP VIEW IF EXISTS pool_minute_fee;
-
-DROP VIEW IF EXISTS pool_day_supply;
-DROP VIEW IF EXISTS pool_hour_supply;
-DROP VIEW IF EXISTS pool_minute_supply;
-
-DROP VIEW IF EXISTS pool_day_volume;
-DROP VIEW IF EXISTS pool_hour_volume;
-DROP VIEW IF EXISTS pool_minute_volume;
-
-DROP VIEW IF EXISTS pool_day_candlestick;
-DROP VIEW IF EXISTS pool_hour_candlestick;
-DROP VIEW IF EXISTS pool_minute_candlestick;
-
 -- Dropping pool functions
 DROP FUNCTION IF EXISTS pool_fee;
 DROP FUNCTION IF EXISTS pool_supply;
@@ -52,7 +35,7 @@ CREATE TABLE IF NOT EXISTS candlestick(
   id Serial PRIMARY KEY,
   
   block_id INT NOT NULL,
-  pool_id INT NOT NULL,
+  pool_id BIGINT NOT NULL,
   token_address CHAR(42) NOT NULL,
   
   open NUMERIC NOT NULL,
@@ -78,7 +61,7 @@ CREATE TABLE IF NOT EXISTS reserved_raw(
   id Serial PRIMARY KEY,
   
   block_id INT NOT NULL,
-  pool_id INT NOT NULL,
+  pool_id BIGINT NOT NULL,
   evm_event_id INT, -- Optional link to evm event
   
   reserved_1 NUMERIC NOT NULL,
@@ -102,7 +85,7 @@ CREATE TABLE IF NOT EXISTS volume_raw(
   id Serial PRIMARY KEY,
   
   block_id INT NOT NULL,
-  pool_id INT NOT NULL,
+  pool_id BIGINT NOT NULL,
   
   volume_1 NUMERIC NOT NULL,
   volume_2 NUMERIC NOT NULL,
@@ -121,40 +104,11 @@ CREATE INDEX IF NOT EXISTS volume_raw_evm_event_id_idx ON volume_raw(evm_event_i
 CREATE INDEX IF NOT EXISTS volume_raw_timestamp_idx ON volume_raw(timestamp);
 
 
-CREATE TABLE IF NOT EXISTS pool_token(
-  id Serial PRIMARY KEY,
-
-  block_id INT NOT NULL,  
-  pool_id INT NOT NULL,
-  evm_event_id INT, -- Optional link to evm event
-
-
-  signer_address CHAR(42), -- Optional link to signer address if type is 'User'
-  supply NUMERIC NOT NULL,
-  type tokenholdertype NOT NULL,
-  timestamp TIMESTAMPTZ NOT NULL,
-
-  FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
-  FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
-  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
-  FOREIGN key (signer_address) REFERENCES account(address) ON DELETE CASCADE,
-
-  CONSTRAINT pool_block_signer_type_token UNIQUE (block_id, pool_id, signer_address, type)
-);
-
-CREATE INDEX IF NOT EXISTS pool_token_type_idx ON pool_token(type); 
-CREATE INDEX IF NOT EXISTS pool_token_pool_id_idx ON pool_token(pool_id);
-CREATE INDEX IF NOT EXISTS pool_token_block_id_idx ON pool_token(block_id);
-CREATE INDEX IF NOT EXISTS pool_token_timestamp_idx ON pool_token(timestamp);
-CREATE INDEX IF NOT EXISTS pool_token_evm_event_id_idx ON pool_token(evm_event_id);
-CREATE INDEX IF NOT EXISTS pool_token_signer_address_idx ON pool_token(signer_address);
-
-
 -- New views
 -- Function applies date trunc over timestamp, which we can use in window functions
 CREATE OR REPLACE FUNCTION volume_prepare_raw (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     volume_1 NUMERIC,
     volume_2 NUMERIC,
     timeframe TIMESTAMPTZ
@@ -174,7 +128,7 @@ LANGUAGE plpgsql;
 -- Volume is calculated as sum of volume_1 and volume_2
 CREATE OR REPLACE FUNCTION volume_window_raw (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     volume_1 NUMERIC,
     volume_2 NUMERIC,
     timeframe TIMESTAMPTZ
@@ -198,7 +152,7 @@ CREATE OR REPLACE VIEW volume_raw_week AS SELECT * FROM volume_window_raw('week'
 -- Function applies date trunc over timestamp, which we can use in window functions
 CREATE OR REPLACE FUNCTION reserved_prepare_raw (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     reserved_1 NUMERIC,
     reserved_2 NUMERIC,
     timeframe TIMESTAMPTZ
@@ -218,7 +172,7 @@ LANGUAGE plpgsql;
 -- last reserved values are used as reserve
 CREATE OR REPLACE FUNCTION reserved_window_raw (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     reserved_1 NUMERIC,
     reserved_2 NUMERIC,
     timeframe TIMESTAMPTZ
@@ -260,7 +214,7 @@ LANGUAGE plpgsql;
 -- Price is calculated as last price in pool
 CREATE OR REPLACE FUNCTION token_price_window (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     price NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
@@ -291,7 +245,7 @@ CREATE OR REPLACE VIEW fee_raw AS
 
 CREATE OR REPLACE FUNCTION fee_prepare_raw (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     fee_1 NUMERIC,
     fee_2 NUMERIC,
     timeframe TIMESTAMPTZ
@@ -309,7 +263,7 @@ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fee_window_raw (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     fee_1 NUMERIC,
     fee_2 NUMERIC,
     timeframe TIMESTAMPTZ
@@ -334,7 +288,7 @@ CREATE OR REPLACE VIEW fee_raw_week AS SELECT * FROM fee_window_raw('week');
 -- Function applies date trunc over timestamp, which we can use in window functions
 CREATE OR REPLACE FUNCTION candlestick_prepare (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     open NUMERIC,
     high NUMERIC,
     low NUMERIC,
@@ -357,7 +311,7 @@ LANGUAGE plpgsql;
 -- Applying window function over candlestick_prepare function extracting open, high, low, close
 CREATE OR REPLACE FUNCTION candlestick_window (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     token_address CHAR(42), 
     open NUMERIC,
     high NUMERIC,
@@ -408,7 +362,7 @@ CREATE OR REPLACE VIEW volume AS
 -- Preparing pool volume for window aggregation through date trunc
 CREATE OR REPLACE FUNCTION volume_prepare (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     volume NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
@@ -424,7 +378,7 @@ LANGUAGE plpgsql;
 -- Applying window function over pool_volume_prepare function and summing volume
 CREATE OR REPLACE FUNCTION volume_window (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     volume NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
@@ -464,7 +418,7 @@ CREATE OR REPLACE VIEW reserved AS
 -- Preparing pool reserved supply for window aggregation through date trunc
 CREATE OR REPLACE FUNCTION reserved_prepare (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     reserved NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
@@ -481,7 +435,7 @@ LANGUAGE plpgsql;
 -- Applying window function over pool_reserved_prepare function and summing reserved
 CREATE OR REPLACE FUNCTION reserved_window (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     reserved NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
@@ -504,7 +458,7 @@ CREATE OR REPLACE VIEW reserved_week AS SELECT * FROM reserved_window('week');
 -- Pool fees combined with price for each pool and block
 CREATE OR REPLACE FUNCTION fee_prepare (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     fee NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
@@ -521,7 +475,7 @@ LANGUAGE plpgsql;
 -- Applying window function over pool_fee_prepare function and summing fee
 CREATE OR REPLACE FUNCTION fee_window (duration text)
   RETURNS TABLE (
-    pool_id INT,
+    pool_id BIGINT,
     fee NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
@@ -599,19 +553,3 @@ CREATE OR REPLACE VIEW volume_change_week AS
     change(volume, LAG(volume) OVER (ORDER BY timeframe)) AS change
   FROM volume_week;
 
-
--- User pool share
-CREATE OR REPLACE VIEW user_pool_share AS
-  SELECT
-    upt.pool_id,
-    upt.block_id,
-    upt.timestamp,
-    CASE 
-      WHEN upt.supply <= 0 THEN 0
-      ELSE upt.supply / pt.supply
-    END AS share
-  FROM pool_token AS upt
-  INNER JOIN pool_token AS pt ON
-    upt.pool_id = pt.pool_id AND
-    upt.block_id = pt.block_id
-  WHERE upt.type = 'Account' AND pt.type = 'Contract';
