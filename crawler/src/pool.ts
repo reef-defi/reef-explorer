@@ -98,7 +98,6 @@ const removeAllPoolEventsAboveBlock = async (blockId: string) => {
   await queryv2(`DELETE FROM candlestick WHERE block_id >= $1;`, [blockId]);
   await queryv2(`DELETE FROM reserved_raw WHERE block_id >= $1;`, [blockId]);
   await queryv2(`DELETE FROM token_price WHERE block_id >= $1;`, [blockId]);
-  await queryv2(`DELETE FROM pool_token WHERE block_id >= $1;`, [blockId]);
   await queryv2(`DELETE FROM volume_raw WHERE block_id >= $1;`, [blockId]);
 
   // Remove pool events

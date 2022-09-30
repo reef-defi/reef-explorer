@@ -1,14 +1,3 @@
--- Dropping pool functions
-DROP FUNCTION IF EXISTS pool_fee;
-DROP FUNCTION IF EXISTS pool_supply;
-DROP FUNCTION IF EXISTS pool_volume;
-DROP FUNCTION IF EXISTS pool_candlestick;
-
-DROP FUNCTION IF EXISTS pool_ratio;
-DROP FUNCTION IF EXISTS pool_prepare_fee_data;
-DROP FUNCTION IF EXISTS pool_prepare_volume_data;
-DROP FUNCTION IF EXISTS pool_prepare_supply_data;
-
 -- Restarting pool sequence
 ALTER SEQUENCE pool_event_sequence RESTART WITH 1;
 
@@ -46,7 +35,6 @@ CREATE TABLE IF NOT EXISTS candlestick(
   
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
-  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
 
   CONSTRAINT pool_block_token_candlestick UNIQUE (block_id, pool_id, token_address)
 );
@@ -55,7 +43,6 @@ CREATE INDEX IF NOT EXISTS candlestick_block_id_idx ON candlestick(block_id);
 CREATE INDEX IF NOT EXISTS candlestick_pool_id_idx ON candlestick(pool_id);
 CREATE INDEX IF NOT EXISTS candlestick_token_address_idx ON candlestick(token_address);
 CREATE INDEX IF NOT EXISTS candlestick_timestamp_idx ON candlestick(timestamp);
-CREATE INDEX IF NOT EXISTS candlestick_evm_event_id_idx ON candlestick(evm_event_id);
 
 CREATE TABLE IF NOT EXISTS reserved_raw(
   id Serial PRIMARY KEY,
@@ -93,14 +80,12 @@ CREATE TABLE IF NOT EXISTS volume_raw(
   
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
   FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
-  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
 
   CONSTRAINT pool_block_volume UNIQUE (block_id, pool_id)
 );
 
 CREATE INDEX IF NOT EXISTS volume_raw_block_id_idx ON volume_raw(block_id);
 CREATE INDEX IF NOT EXISTS volume_raw_pool_id_idx ON volume_raw(pool_id);
-CREATE INDEX IF NOT EXISTS volume_raw_evm_event_id_idx ON volume_raw(evm_event_id);
 CREATE INDEX IF NOT EXISTS volume_raw_timestamp_idx ON volume_raw(timestamp);
 
 
@@ -115,11 +100,11 @@ CREATE OR REPLACE FUNCTION volume_prepare_raw (duration text)
   ) AS $$
   BEGIN RETURN QUERY
       SELECT 
-        pool_id,
-        volume_1,
-        volume_2,
-        date_trunc(duration, timestamp)
-      FROM volume_raw
+        v.pool_id,
+        v.volume_1,
+        v.volume_2,
+        date_trunc(duration, v.timestamp)
+      FROM volume_raw AS v
       ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -159,11 +144,11 @@ CREATE OR REPLACE FUNCTION reserved_prepare_raw (duration text)
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      pool_id,
-      reserved_1,
-      reserved_2,
-      date_trunc(duration, timestamp)
-    FROM reserved_raw
+      r.pool_id,
+      r.reserved_1,
+      r.reserved_2,
+      date_trunc(duration, r.timestamp)
+    FROM reserved_raw AS r
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -202,10 +187,10 @@ CREATE OR REPLACE FUNCTION token_price_prepare (duration text)
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      pool_id,
-      price,
-      date_trunc(duration, timestamp)
-    FROM pool_token
+      p.pool_id,
+      p.price,
+      date_trunc(duration, p.timestamp)
+    FROM pool_token AS p
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -252,11 +237,11 @@ CREATE OR REPLACE FUNCTION fee_prepare_raw (duration text)
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      pool_id,
-      fee_1,
-      fee_2,
-      date_trunc(duration, timestamp)
-    FROM fee_raw
+      f.pool_id,
+      f.fee_1,
+      f.fee_2,
+      date_trunc(duration, f.timestamp)
+    FROM fee_raw as f
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -297,13 +282,13 @@ CREATE OR REPLACE FUNCTION candlestick_prepare (duration text)
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      pool_id,
-      open,
-      high,
-      low,
-      close,
-      date_trunc(duration, timestamp)
-    FROM pool_token
+      p.pool_id,
+      p.open,
+      p.high,
+      p.low,
+      p.close,
+      date_trunc(duration, p.timestamp)
+    FROM pool_token AS p
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -368,10 +353,10 @@ CREATE OR REPLACE FUNCTION volume_prepare (duration text)
   ) AS $$
   BEGIN RETURN QUERY
   SELECT 
-    pool_id,
-    volume,
-    date_trunc(duration, timestamp)
-  FROM volume;
+    v.pool_id,
+    v.volume,
+    date_trunc(duration, v.timestamp)
+  FROM volume AS v;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -424,10 +409,10 @@ CREATE OR REPLACE FUNCTION reserved_prepare (duration text)
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      pool_id,
-      reserved,
-      date_trunc(duration, timestamp)
-    FROM reserved
+      r.pool_id,
+      r.reserved,
+      date_trunc(duration, r.timestamp)
+    FROM reserved AS r
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -456,6 +441,23 @@ CREATE OR REPLACE VIEW reserved_day AS SELECT * FROM reserved_window('day');
 CREATE OR REPLACE VIEW reserved_week AS SELECT * FROM reserved_window('week');
 
 -- Pool fees combined with price for each pool and block
+CREATE OR REPLACE VIEW fee AS
+  SELECT 
+    f.block_id,
+    f.pool_id,
+    f.timestamp,
+    f.fee_1 * tp1.price + f.fee_2 * tp2.price AS fee
+  FROM fee_raw as f
+  JOIN pool as p ON
+    f.pool_id = p.id
+  JOIN token_price as tp1 ON
+    p.token_1 = tp1.token_address AND
+    f.block_id = tp1.block_id
+  JOIN token_price as tp2 ON
+    p.token_2 = tp2.token_address AND
+    f.block_id = tp2.block_id;
+
+-- Preparing pool fees for window aggregation through date trunc
 CREATE OR REPLACE FUNCTION fee_prepare (duration text)
   RETURNS TABLE (
     pool_id BIGINT,
@@ -464,10 +466,10 @@ CREATE OR REPLACE FUNCTION fee_prepare (duration text)
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      pool_id,
-      fee,
-      date_trunc(duration, timestamp)
-    FROM fee
+      f.pool_id,
+      f.fee,
+      date_trunc(duration, f.timestamp)
+    FROM fee AS f
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;

@@ -27,7 +27,7 @@ const resolveEvmEvent = async (head: EventData, contract: VerifiedContract): Pro
   const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
   const decodedEvent = abi.parseLog(contractData);
   const eventName = `${decodedEvent.name}.${type}`;
-
+  logger.info(`Decoded evm event: ${eventName}`);
   // Handling transfer events
   switch (eventName) {
     case 'Transfer.ERC20':
