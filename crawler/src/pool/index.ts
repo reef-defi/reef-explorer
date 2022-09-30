@@ -1,5 +1,5 @@
 import { utils } from 'ethers';
-import ReefswapPair from '../assets/ReefswapPair';
+import ReefswapPair from '../assets/ReefswapPairAbi';
 import { RawEventData } from '../crawler/types';
 import { queryv2 } from '../utils/connector';
 import logger from '../utils/logger';

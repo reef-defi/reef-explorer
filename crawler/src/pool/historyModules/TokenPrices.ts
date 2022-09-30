@@ -2,9 +2,8 @@ import BigNumber from "bignumber.js";
 import { insertV2, queryv2 } from "../../utils/connector";
 import logger from "../../utils/logger";
 import { REEF_CONTRACT_ADDRESS } from "../../utils/utils";
-import { estimateTokenPriceBasedOnReefPrice } from "../pricing";
-import ReefPriceScrapper from "../ReefPriceScrapper";
 import MarketHistoryModule from "./MarketHistoryModule";
+import ReefPriceScrapper from "./ReefPriceScrapper";
 import { queryReservedData } from "./utils";
 
 interface InitPrice {
@@ -17,6 +16,28 @@ const queryPriceData = async (blockId: string): Promise<InitPrice[]> =>
     "SELECT token_address, price FROM token_price WHERE block_id = $1",
     [blockId]
   );
+
+  const dot = (matrix: number[][], vector: number[]): number[] =>
+  matrix.map((row) =>
+    row.reduce((acc, current, index) => acc + current * vector[index], 0)
+  );
+
+const estimateTokenPriceBasedOnReefPrice = (
+  reserves: number[][],
+  reefPrice: number,
+  reefIndex: number
+): number[] => {
+  // Create new vector with reef price
+  const prices = new Array(reserves.length)
+    .fill(0)
+    .map((_, i) => (i === reefIndex ? reefPrice : 0));
+
+  // Solve the system of equations
+  const newPrices = dot(reserves, prices);  
+
+  // Inject reef price into the price vector
+  return newPrices.map((price, index) => (index === reefIndex ? reefPrice : price));
+};
 
 
 class TokenPrices implements MarketHistoryModule {

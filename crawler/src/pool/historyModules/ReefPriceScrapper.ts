@@ -1,6 +1,6 @@
 import axios, {AxiosResponse} from "axios";
-import logger from "../utils/logger";
-import { wait } from "../utils/utils";
+import logger from "../../utils/logger";
+import { wait } from "../../utils/utils";
 
 const coingeckoApi = axios.create({baseURL: "https://api.coingecko.com/api/v3/"});
 
