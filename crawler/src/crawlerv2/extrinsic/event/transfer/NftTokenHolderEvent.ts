@@ -14,6 +14,8 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
   private static async insertAccountNftHolders(tokenHolders: TokenHolder[]) {
     const statement = format(
       `
+      BEGIN;
+      SELECT * FROM account FOR UPDATE;
       INSERT INTO token_holder
         (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
       VALUES
@@ -21,7 +23,8 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
       ON CONFLICT (signer, token_address, nft_id) WHERE evm_address IS NULL AND nft_id IS NOT NULL DO UPDATE SET
         balance = EXCLUDED.balance,
         timestamp = EXCLUDED.timestamp,
-        info = EXCLUDED.info;`,
+        info = EXCLUDED.info;
+      COMMIT;`,
       tokenHolders.map(toTokenHolder),
     );
     await queryv2(statement);
@@ -30,6 +33,8 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
   private static async insertContractNftHolders(tokenHolders: TokenHolder[]) {
     const statement = format(
       `
+      BEGIN;
+      SELECT * FROM account FOR UPDATE;
       INSERT INTO token_holder
         (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
       VALUES
@@ -37,7 +42,8 @@ class NftTokenHolderEvent extends DefaultErcTransferEvent {
       ON CONFLICT (evm_address, token_address, nft_id) WHERE signer IS NULL AND nft_id IS NOT NULL DO UPDATE SET
         balance = EXCLUDED.balance,
         timestamp = EXCLUDED.timestamp,
-        info = EXCLUDED.info;`,
+        info = EXCLUDED.info;
+      COMMIT;`,
       tokenHolders.map(toTokenHolder),
     );
     await queryv2(statement);

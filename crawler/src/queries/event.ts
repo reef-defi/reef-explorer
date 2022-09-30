@@ -49,6 +49,8 @@ export const insertAccounts = async (
 ): Promise<void> => {
   if (accounts.length > 0) {
     await insert(`
+BEGIN;
+SELECT * FROM account FOR UPDATE;
 INSERT INTO account
   (address, evm_address, block_id, active, free_balance, locked_balance, available_balance, reserved_balance, voting_balance, vested_balance, identity, nonce, evm_nonce, timestamp)
 VALUES
@@ -67,6 +69,7 @@ ON CONFLICT (address) DO UPDATE SET
   nonce = EXCLUDED.nonce,
   evm_nonce = EXCLUDED.evm_nonce,
   identity = EXCLUDED.identity;
+COMMIT;
 `);
   }
 };
