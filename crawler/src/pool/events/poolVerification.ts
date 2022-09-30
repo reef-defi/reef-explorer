@@ -26,8 +26,12 @@ export const verifyPool = async (address: string) => {
       [],
       999999,
       "london",
-      "other",
-      {},
+      "ERC20",
+      {
+        name: "Reefswap V2",
+        symbol: "REEF-V2",
+        decimals: 18,
+      },
     ]
   )
 };
