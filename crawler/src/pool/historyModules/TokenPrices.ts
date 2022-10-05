@@ -94,7 +94,7 @@ class TokenPrices implements MarketHistoryModule {
       throw new Error("Token not found");
     }
 
-    logger.info(`Updating reserves for ${token1} and ${token2}`);
+    logger.info(`Updating token price reserve ratios for ${token1} and ${token2}`);
 
     // Update the reserve matrix
     this.reserveMatrix[i][j] = reserve1.div(reserve2).toNumber();

@@ -42,9 +42,6 @@ class Candlestick implements MarketHistoryModule {
   static updateCandlestick(poolId: string, tokenAddress: string, price: BigNumber): void {
     const key = `${poolId}:${tokenAddress}`;
     if (!this.candlesticks[key]) {
-      logger.info(
-        `Candlestick initialized for pool: ${poolId} and token: ${tokenAddress} with \n\tOpen = ${price.toString()}\n\tHigh = ${price.toString()}\n\tLow = ${price.toString()}\n\tClose = ${price.toString()}`
-      );
       this.candlesticks[key] = [price, price, price, price];
     } else {
       const [open, high, low] = this.candlesticks[key];
@@ -54,18 +51,18 @@ class Candlestick implements MarketHistoryModule {
         low.lt(price) ? low : price,
         price,
       ];
-      logger.info(
-        `Candlestick updated for pool: ${poolId} and token: ${tokenAddress} with \n\tOpen = ${this.candlesticks[
-          key
-        ][0].toString()}\n\tHigh = ${this.candlesticks[
-          key
-        ][1].toString()}\n\tLow = ${this.candlesticks[
-          key
-        ][2].toString()}\n\tClose = ${this.candlesticks[
-          key
-        ][3].toString()}`
-      );
     }
+    logger.info(
+      `Candlestick updated for pool: ${poolId} and token: ${tokenAddress} with \n\tOpen = ${this.candlesticks[
+        key
+      ][0].toString()}\n\tHigh = ${this.candlesticks[
+        key
+      ][1].toString()}\n\tLow = ${this.candlesticks[
+        key
+      ][2].toString()}\n\tClose = ${this.candlesticks[
+        key
+      ][3].toString()}`
+    );
   }
 
   private static prepareCandlestickForNextBlock() {

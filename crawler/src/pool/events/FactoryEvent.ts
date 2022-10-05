@@ -23,6 +23,7 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
   }
 
   async process(rawData: RawEventData): Promise<void> {
+    await   super.process(rawData);
     if (!FactoryEvent.isFactoryCreateEvent(rawData.address)) {
       throw new Error("Not a PairCreated ReefswapFactory event");
     }
@@ -49,6 +50,7 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
   }
 
   async save(): Promise<void> {
+    await super.save();
     if (!this.poolAddress || !this.tokenAddress1 || !this.tokenAddress2 || !this.decimal1 || !this.decimal2) {
       throw new Error("Not all required fields are set! Call process() first");
     }
