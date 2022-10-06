@@ -1,4 +1,5 @@
 import logger from "../../utils/logger";
+import Candlestick from "./Candlestick";
 import MarketHistoryModule from "./MarketHistoryModule";
 import Reserves from "./Reserves";
 import TokenPrices from "./TokenPrices";
@@ -8,6 +9,7 @@ const modules = [
   Volume,
   Reserves,
   TokenPrices,
+  Candlestick,
 ];
 
 class MarketHistory extends MarketHistoryModule {

@@ -181,16 +181,16 @@ CREATE OR REPLACE VIEW reserved_raw_week AS SELECT * FROM reserved_window_raw('w
 -- Function applies date trunc over timestamp, which we can use in window functions
 CREATE OR REPLACE FUNCTION token_price_prepare (duration text)
   RETURNS TABLE (
-    token_address INT,
+    token_address CHAR(42),
     price NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      p.pool_id,
+      p.token_address,
       p.price,
       date_trunc(duration, p.timestamp)
-    FROM pool_token AS p
+    FROM token_price AS p
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -199,14 +199,14 @@ LANGUAGE plpgsql;
 -- Price is calculated as last price in pool
 CREATE OR REPLACE FUNCTION token_price_window (duration text)
   RETURNS TABLE (
-    pool_id BIGINT,
+    token_address CHAR(42),
     price NUMERIC,
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
     SELECT
-      p.pool_id,
-      LAST(p.price) OVER w,
+      p.token_address,
+      LAST_VALUE(p.price) OVER w,
       p.timeframe
     FROM token_price_prepare(duration) AS p
     WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
@@ -274,6 +274,7 @@ CREATE OR REPLACE VIEW fee_raw_week AS SELECT * FROM fee_window_raw('week');
 CREATE OR REPLACE FUNCTION candlestick_prepare (duration text)
   RETURNS TABLE (
     pool_id BIGINT,
+    token_address CHAR(42),
     open NUMERIC,
     high NUMERIC,
     low NUMERIC,
@@ -282,13 +283,14 @@ CREATE OR REPLACE FUNCTION candlestick_prepare (duration text)
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
-      p.pool_id,
-      p.open,
-      p.high,
-      p.low,
-      p.close,
-      date_trunc(duration, p.timestamp)
-    FROM pool_token AS p
+      c.pool_id,
+      c.token_address,
+      c.open,
+      c.high,
+      c.low,
+      c.close,
+      date_trunc(duration, c.timestamp)
+    FROM candlestick AS c
     ORDER BY timestamp;
   END; $$ 
 LANGUAGE plpgsql;
@@ -308,10 +310,10 @@ CREATE OR REPLACE FUNCTION candlestick_window (duration text)
     SELECT
       c.pool_id,
       c.token_address,
-      FIRST(c.open) OVER w,
+      FIRST_VALUE(c.open) OVER w,
       MAX(c.high) OVER w,
       MIN(c.low) OVER w,
-      LAST(c.close) OVER w,
+      LAST_VALUE(c.close) OVER w,
       c.timeframe
     FROM candlestick_prepare(duration) AS c
     WINDOW w AS (PARTITION BY c.pool_id, c.token_address, c.timeframe ORDER BY c.pool_id, c.token_address, c.timeframe);
@@ -427,7 +429,7 @@ CREATE OR REPLACE FUNCTION reserved_window (duration text)
   BEGIN RETURN QUERY
     SELECT
       p.pool_id,
-      LAST(p.reserved) OVER w,
+      LAST_VALUE(p.reserved) OVER w,
       p.timeframe
     FROM reserved_prepare(duration) AS p
     WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
