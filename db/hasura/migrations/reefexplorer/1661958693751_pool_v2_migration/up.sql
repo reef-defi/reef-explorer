@@ -557,3 +557,38 @@ CREATE OR REPLACE VIEW volume_change_week AS
     change(volume, LAG(volume) OVER (ORDER BY timeframe)) AS change
   FROM volume_week;
 
+
+CREATE OR REPLACE VIEW pool_info AS 
+  SELECT
+    p.id,
+    p.evm_event_id,
+    p.address,
+    p.token_1,
+    p.token_2,
+    p.decimal_1,
+    p.decimal_2,
+    (SELECT vd.volume FROM volume_day AS vd WHERE p.id = vd.pool_id ORDER BY timeframe DESC LIMIT 1),
+    (SELECT fd.fee FROM fee_day AS fd WHERE p.id = fd.pool_id ORDER BY timeframe DESC LIMIT 1),
+    (SELECT rd.reserved FROM reserved_day AS rd WHERE p.id = rd.pool_id ORDER BY timeframe DESC LIMIT 1)
+  FROM pool AS p;
+
+CREATE OR REPLACE VIEW verified_pool AS
+	SELECT 
+		p.*, 
+		v1.contract_data->>'name' as name_1, 
+    v1.contract_data->>'symbol' as symbol_1,
+		v2.contract_data->>'name' as name_2,
+    v2.contract_data->>'symbol' as symbol_2
+	FROM pool_info AS p
+	RIGHT JOIN verified_contract AS v1 ON p.token_1 = v1.address
+	RIGHT JOIN verified_contract AS v2 ON p.token_2 = v2.address
+	WHERE p IS NOT NULL;
+
+CREATE OR REPLACE VIEW verified_pool_event AS
+	SELECT 
+		pe.*
+	FROM pool_event AS pe
+  JOIN pool_info AS p ON p.id = pe.pool_id
+	RIGHT JOIN verified_contract AS v1 ON p.token_1 = v1.address
+	RIGHT JOIN verified_contract AS v2 ON p.token_2 = v2.address
+	WHERE p IS NOT NULL;
