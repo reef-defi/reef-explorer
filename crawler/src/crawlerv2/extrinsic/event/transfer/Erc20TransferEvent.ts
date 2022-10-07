@@ -96,6 +96,7 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
   }
 
   private static async insertAccountTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
+    // TODO looks ON CONFLICT is not executed (maybe WHERE is blocking it) for old transactions
     const statement = format(
       `
     INSERT INTO token_holder
