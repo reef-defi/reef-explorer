@@ -96,16 +96,17 @@ CREATE OR REPLACE FUNCTION volume_prepare_raw (duration text)
     pool_id BIGINT,
     volume_1 NUMERIC,
     volume_2 NUMERIC,
-    timeframe TIMESTAMPTZ
+    timeframe TIMESTAMPTZ,
+    timeframe_org TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
       SELECT 
         v.pool_id,
         v.volume_1,
         v.volume_2,
-        date_trunc(duration, v.timestamp)
-      FROM volume_raw AS v
-      ORDER BY timestamp;
+        date_trunc(duration, v.timestamp),
+        v.timestamp
+      FROM volume_raw AS v;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -119,13 +120,13 @@ CREATE OR REPLACE FUNCTION volume_window_raw (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-   SELECT
+   SELECT DISTINCT ON (v.pool_id, v.timeframe)
       v.pool_id,
       SUM(v.volume_1) OVER w,
       SUM(v.volume_2) OVER w,
       v.timeframe
     FROM volume_prepare_raw(duration) AS v
-    WINDOW w AS (PARTITION BY v.pool_id, v.timeframe ORDER BY v.timeframe, v.pool_id);
+    WINDOW w AS (PARTITION BY v.pool_id, v.timeframe);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -140,16 +141,17 @@ CREATE OR REPLACE FUNCTION reserved_prepare_raw (duration text)
     pool_id BIGINT,
     reserved_1 NUMERIC,
     reserved_2 NUMERIC,
-    timeframe TIMESTAMPTZ
+    timeframe TIMESTAMPTZ,
+    timeframe_org TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
       r.pool_id,
       r.reserved_1,
       r.reserved_2,
-      date_trunc(duration, r.timestamp)
-    FROM reserved_raw AS r
-    ORDER BY timestamp;
+      date_trunc(duration, r.timestamp),
+      r.timestamp
+    FROM reserved_raw AS r;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -163,13 +165,13 @@ CREATE OR REPLACE FUNCTION reserved_window_raw (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-   SELECT
-      l.pool_id,
-      LAST(l.reserved_1) OVER w,
-      LAST(l.reserved_2) OVER w,
-      l.timeframe
-    FROM reserved_prepare_raw(duration) AS l
-    WINDOW w AS (PARTITION BY l.pool_id, l.timeframe ORDER BY l.timeframe, l.pool_id);
+   SELECT DISTINCT ON (r.pool_id, r.timeframe)
+      r.pool_id,
+      LAST_VALUE(r.reserved_1) OVER w,
+      LAST_VALUE(r.reserved_2) OVER w,
+      r.timeframe
+    FROM reserved_prepare_raw(duration) AS r
+    WINDOW w AS (PARTITION BY r.pool_id, r.timeframe ORDER BY r.timeframe_org);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -183,15 +185,16 @@ CREATE OR REPLACE FUNCTION token_price_prepare (duration text)
   RETURNS TABLE (
     token_address CHAR(42),
     price NUMERIC,
-    timeframe TIMESTAMPTZ
+    timeframe TIMESTAMPTZ,
+    timeframe_org TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
       p.token_address,
       p.price,
-      date_trunc(duration, p.timestamp)
-    FROM token_price AS p
-    ORDER BY timestamp;
+      date_trunc(duration, p.timestamp),
+      p.timestamp
+    FROM token_price AS p;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -204,12 +207,12 @@ CREATE OR REPLACE FUNCTION token_price_window (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-    SELECT
+    SELECT DISTINCT ON (p.token_address, p.timeframe)
       p.token_address,
       LAST_VALUE(p.price) OVER w,
       p.timeframe
     FROM token_price_prepare(duration) AS p
-    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+    WINDOW w AS (PARTITION BY p.token_address, p.timeframe ORDER BY p.timeframe_org);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -241,8 +244,7 @@ CREATE OR REPLACE FUNCTION fee_prepare_raw (duration text)
       f.fee_1,
       f.fee_2,
       date_trunc(duration, f.timestamp)
-    FROM fee_raw as f
-    ORDER BY timestamp;
+    FROM fee_raw as f;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -254,13 +256,13 @@ CREATE OR REPLACE FUNCTION fee_window_raw (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-    SELECT
+    SELECT DISTINCT ON (f.pool_id, f.timeframe)
       f.pool_id,
       SUM(f.fee_1) OVER w,
       SUM(f.fee_2) OVER w,
       f.timeframe
     FROM fee_prepare_raw(duration) AS f
-    WINDOW w AS (PARTITION BY f.pool_id, f.timeframe ORDER BY f.timeframe, f.pool_id);
+    WINDOW w AS (PARTITION BY f.pool_id, f.timeframe);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -279,7 +281,8 @@ CREATE OR REPLACE FUNCTION candlestick_prepare (duration text)
     high NUMERIC,
     low NUMERIC,
     close NUMERIC,
-    timeframe TIMESTAMPTZ
+    timeframe TIMESTAMPTZ,
+    timeframe_org TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
@@ -289,9 +292,9 @@ CREATE OR REPLACE FUNCTION candlestick_prepare (duration text)
       c.high,
       c.low,
       c.close,
-      date_trunc(duration, c.timestamp)
-    FROM candlestick AS c
-    ORDER BY timestamp;
+      date_trunc(duration, c.timestamp),
+      c.timestamp
+    FROM candlestick AS c;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -307,7 +310,7 @@ CREATE OR REPLACE FUNCTION candlestick_window (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-    SELECT
+    SELECT DISTINCT ON (c.pool_id, c.token_address, c.timeframe)
       c.pool_id,
       c.token_address,
       FIRST_VALUE(c.open) OVER w,
@@ -316,7 +319,7 @@ CREATE OR REPLACE FUNCTION candlestick_window (duration text)
       LAST_VALUE(c.close) OVER w,
       c.timeframe
     FROM candlestick_prepare(duration) AS c
-    WINDOW w AS (PARTITION BY c.pool_id, c.token_address, c.timeframe ORDER BY c.pool_id, c.token_address, c.timeframe);
+    WINDOW w AS (PARTITION BY c.pool_id, c.token_address, c.timeframe ORDER BY c.timeframe_org);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -375,7 +378,7 @@ CREATE OR REPLACE FUNCTION volume_window (duration text)
       SUM(p.volume) OVER w,
       p.timeframe
     FROM volume_prepare(duration) AS p
-    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -407,13 +410,15 @@ CREATE OR REPLACE FUNCTION reserved_prepare (duration text)
   RETURNS TABLE (
     pool_id BIGINT,
     reserved NUMERIC,
-    timeframe TIMESTAMPTZ
+    timeframe TIMESTAMPTZ,
+    timeframe_org TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
     SELECT 
       r.pool_id,
       r.reserved,
-      date_trunc(duration, r.timestamp)
+      date_trunc(duration, r.timestamp),
+      r.timestamp
     FROM reserved AS r
     ORDER BY timestamp;
   END; $$ 
@@ -432,7 +437,7 @@ CREATE OR REPLACE FUNCTION reserved_window (duration text)
       LAST_VALUE(p.reserved) OVER w,
       p.timeframe
     FROM reserved_prepare(duration) AS p
-    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe_org);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -489,7 +494,7 @@ CREATE OR REPLACE FUNCTION fee_window (duration text)
       SUM(p.fee) OVER w,
       p.timeframe
     FROM fee_prepare(duration) AS p
-    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe, p.pool_id);
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe);
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -527,34 +532,34 @@ CREATE OR REPLACE VIEW volume_change AS
 
 -- Minute volume change for each pool and timestamp
 CREATE OR REPLACE VIEW volume_change_min AS 
-  SELECT
+  SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
   FROM volume_min;
 
 -- Hour volume change for each pool and timestamp
 CREATE OR REPLACE VIEW volume_change_hour AS 
-  SELECT
+  SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
   FROM volume_hour;
 
 -- Day volume change for each pool and timestamp
 CREATE OR REPLACE VIEW volume_change_day AS 
-  SELECT
+  SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
   FROM volume_day;
 
 -- Week volume change for each pool and timestamp
 CREATE OR REPLACE VIEW volume_change_week AS 
-  SELECT
+  SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
   FROM volume_week;
 
 

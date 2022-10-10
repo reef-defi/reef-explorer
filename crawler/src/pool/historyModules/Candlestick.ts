@@ -42,14 +42,19 @@ class Candlestick implements MarketHistoryModule {
   static updateCandlestick(poolId: string, tokenAddress: string, price: BigNumber): void {
     const key = `${poolId}:${tokenAddress}`;
     if (!this.candlesticks[key]) {
-      this.candlesticks[key] = [price, price, price, price];
+      this.candlesticks[key] = [
+        new BigNumber(price), 
+        new BigNumber(price), 
+        new BigNumber(price), 
+        new BigNumber(price), 
+      ];
     } else {
       const [open, high, low] = this.candlesticks[key];
       this.candlesticks[key] = [
-        open,
-        high.gt(price) ? high : price,
-        low.lt(price) ? low : price,
-        price,
+        new BigNumber(open),
+        new BigNumber(high.gt(price) ? high : price),
+        new BigNumber(low.lt(price) ? low : price),
+        new BigNumber(price),
       ];
     }
     logger.info(
@@ -69,7 +74,12 @@ class Candlestick implements MarketHistoryModule {
     const keys = Object.keys(this.candlesticks);
     this.candlesticks = keys.reduce((acc, key) => {
         const [, , , close] = this.candlesticks[key];
-        acc[key] = [close, close, close, close];
+        acc[key] = [
+          new BigNumber(close),
+          new BigNumber(close),
+          new BigNumber(close),
+          new BigNumber(close),
+        ];
         return acc;
       },
       {} as CandlestickBlock

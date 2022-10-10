@@ -3,7 +3,6 @@ import { queryv2 } from "../../utils/connector";
 import ReefswapPairAbi from "../../assets/ReefswapPairAbi";
 import ReefswapV2PairSource from "../../assets/ReefswapV2PairSource";
 
-console.log(ReefswapPairAbi);
 const findPoolsToVerify = async (): Promise<string[]> => 
   queryv2<{address: string}>('SELECT address FROM pool;')
     .then((res) => res.map((r) => r.address));
