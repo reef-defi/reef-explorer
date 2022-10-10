@@ -540,7 +540,7 @@ CREATE OR REPLACE VIEW volume_change_min AS
   SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id ORDER BY timeframe)) AS change
   FROM volume_min;
 
 -- Hour volume change for each pool and timestamp
@@ -548,7 +548,7 @@ CREATE OR REPLACE VIEW volume_change_hour AS
   SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id ORDER BY timeframe)) AS change
   FROM volume_hour;
 
 -- Day volume change for each pool and timestamp
@@ -556,7 +556,7 @@ CREATE OR REPLACE VIEW volume_change_day AS
   SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id ORDER BY timeframe)) AS change
   FROM volume_day;
 
 -- Week volume change for each pool and timestamp
@@ -564,7 +564,7 @@ CREATE OR REPLACE VIEW volume_change_week AS
   SELECT DISTINCT ON (pool_id, timeframe)
     pool_id,
     timeframe,
-    change(volume, LAG(volume) OVER (PARTITION BY pool_id, timeframe ORDER BY timeframe)) AS change
+    change(volume, LAG(volume) OVER (PARTITION BY pool_id ORDER BY timeframe)) AS change
   FROM volume_week;
 
 
