@@ -126,7 +126,8 @@ CREATE OR REPLACE FUNCTION volume_window_raw (duration text)
       SUM(v.volume_2) OVER w,
       v.timeframe
     FROM volume_prepare_raw(duration) AS v
-    WINDOW w AS (PARTITION BY v.pool_id, v.timeframe);
+    WINDOW w AS (PARTITION BY v.pool_id, v.timeframe)
+    ORDER BY v.pool_id, v.timeframe, v.timeframe_org DESC;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -171,7 +172,8 @@ CREATE OR REPLACE FUNCTION reserved_window_raw (duration text)
       LAST_VALUE(r.reserved_2) OVER w,
       r.timeframe
     FROM reserved_prepare_raw(duration) AS r
-    WINDOW w AS (PARTITION BY r.pool_id, r.timeframe ORDER BY r.timeframe_org);
+    WINDOW w AS (PARTITION BY r.pool_id, r.timeframe ORDER BY r.timeframe_org)
+    ORDER BY r.pool_id, r.timeframe, r.timeframe_org DESC;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -212,7 +214,8 @@ CREATE OR REPLACE FUNCTION token_price_window (duration text)
       LAST_VALUE(p.price) OVER w,
       p.timeframe
     FROM token_price_prepare(duration) AS p
-    WINDOW w AS (PARTITION BY p.token_address, p.timeframe ORDER BY p.timeframe_org);
+    WINDOW w AS (PARTITION BY p.token_address, p.timeframe ORDER BY p.timeframe_org)
+    ORDER BY p.token_address, p.timeframe, p.timeframe_org DESC;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -439,7 +442,7 @@ CREATE OR REPLACE FUNCTION reserved_window (duration text)
       p.timeframe
     FROM reserved_prepare(duration) AS p
     WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe_org)
-    ORDER BY p.timeframe_org DESC;
+    ORDER BY p.pool_id, p.timeframe, p.timeframe_org DESC;
   END; $$ 
 LANGUAGE plpgsql;
 
