@@ -319,7 +319,8 @@ CREATE OR REPLACE FUNCTION candlestick_window (duration text)
       LAST_VALUE(c.close) OVER w,
       c.timeframe
     FROM candlestick_prepare(duration) AS c
-    WINDOW w AS (PARTITION BY c.pool_id, c.token_address, c.timeframe ORDER BY c.timeframe_org);
+    WINDOW w AS (PARTITION BY c.pool_id, c.token_address, c.timeframe ORDER BY c.timeframe_org)
+    ORDER BY c.pool_id, c.token_address, c.timeframe, c.timeframe_org DESC;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -373,7 +374,7 @@ CREATE OR REPLACE FUNCTION volume_window (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-    SELECT
+    SELECT DISTINCT ON (p.pool_id, p.timeframe)
       p.pool_id,
       SUM(p.volume) OVER w,
       p.timeframe
@@ -432,12 +433,13 @@ CREATE OR REPLACE FUNCTION reserved_window (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-    SELECT
+    SELECT DISTINCT ON (p.pool_id, p.timeframe)
       p.pool_id,
       LAST_VALUE(p.reserved) OVER w,
       p.timeframe
     FROM reserved_prepare(duration) AS p
-    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe_org);
+    WINDOW w AS (PARTITION BY p.pool_id, p.timeframe ORDER BY p.timeframe_org)
+    ORDER BY p.timeframe_org DESC;
   END; $$ 
 LANGUAGE plpgsql;
 
@@ -489,7 +491,7 @@ CREATE OR REPLACE FUNCTION fee_window (duration text)
     timeframe TIMESTAMPTZ
   ) AS $$
   BEGIN RETURN QUERY
-    SELECT
+    SELECT DISTINCT ON (p.pool_id, p.timeframe)
       p.pool_id,
       SUM(p.fee) OVER w,
       p.timeframe
