@@ -1,0 +1,20 @@
+table:
+  schema: public
+  name: reserved
+object_relationships:
+  - name: block
+  using:
+    foreign_key_constraint_on: block_id
+  - name: pool
+    using:
+      foreign_key_constraint_on: pool_id
+select_permissions:
+  - role: public
+  permission:
+    columns:
+      - block_id
+      - pool_id
+      - reserved
+      - timestamp
+    filter: {}
+    allow_aggregations: true
