@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS token_price(
   timestamp TIMESTAMPTZ NOT NULL,
   
   FOREIGN KEY (block_id) REFERENCES block(id) ON DELETE CASCADE,
+  FOREIGN KEY (token_address) REFERENCES contract(address) ON DELETE NO ACTION,
   CONSTRAINT token_price_unique UNIQUE (block_id, token_address)
 );
 

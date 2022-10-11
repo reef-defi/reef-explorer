@@ -1,0 +1,21 @@
+table:
+  schema: public
+  name: token_price
+object_relationships:
+  - name: block
+  using:
+    foreign_key_constraint_on: block_id
+  - name: contract
+    using:
+      foreign_key_constraint_on: token_address
+select_permissions:
+  - role: public
+  permission:
+    columns:
+      - id
+      - block_id
+      - token_address
+      - price
+      - timestamp
+    filter: {}
+    allow_aggregations: true

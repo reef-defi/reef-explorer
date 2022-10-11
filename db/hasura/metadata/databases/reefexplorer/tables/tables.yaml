@@ -29,3 +29,8 @@
 - "!include public_verified_contract.yaml"
 - "!include public_verified_pool.yaml"
 - "!include public_verified_pool_event.yaml"
+- "!include public_token_price.yaml"
+- "!include public_token_price_min.yaml"
+- "!include public_token_price_hour.yaml"
+- "!include public_token_price_day.yaml"
+- "!include public_token_price_week.yaml"

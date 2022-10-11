@@ -1,0 +1,16 @@
+table:
+  schema: public
+  name: token_price_day
+object_relationships:
+  - name: contract
+    using:
+      foreign_key_constraint_on: token_address
+select_permissions:
+  - role: public
+  permission:
+    columns:
+      - token_address
+      - price
+      - timestamp
+    filter: {}
+    allow_aggregations: true
