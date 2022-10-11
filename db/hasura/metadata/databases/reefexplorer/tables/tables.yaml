@@ -64,3 +64,8 @@
 - "!include public_reserved_hour.yaml"
 - "!include public_reserved_day.yaml"
 - "!include public_reserved_week.yaml"
+- "!include public_fee.yaml"
+- "!include public_fee_min.yaml"
+- "!include public_fee_hour.yaml"
+- "!include public_fee_day.yaml"
+- "!include public_fee_weekl.yaml"
