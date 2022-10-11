@@ -4,13 +4,19 @@ table:
 object_relationships:
   - name: pool
     using:
-      foreign_key_constraint_on: pool_id
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool
+        insertion_order: null
+        column_mapping:
+          pool_id: id
 select_permissions:
   - role: public
-  permission:
-    columns:
-      - pool_id
-      - fee
-      - timeframe
-    filter: {}
-    allow_aggregations: true
+    permission:
+      columns:
+        - pool_id
+        - fee
+        - timeframe
+      filter: {}
+      allow_aggregations: true

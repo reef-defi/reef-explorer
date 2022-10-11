@@ -3,20 +3,31 @@ table:
   name: fee_raw
 object_relationships:
   - name: block
-  using:
-    foreign_key_constraint_on: block_id
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: block
+        insertion_order: null
+        column_mapping:
+          block_id: id
   - name: pool
     using:
-      foreign_key_constraint_on: pool_id
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool
+        insertion_order: null
+        column_mapping:
+          pool_id: id
 select_permissions:
   - role: public
-  permission:
-    columns:
-      - id
-      - block_id
-      - pool_id
-      - fee_1
-      - fee_2
-      - timestamp
-    filter: {}
-    allow_aggregations: true
+    permission:
+      columns:
+        - block_id
+        - pool_id
+        - fee_1
+        - fee_2
+        - timestamp
+      filter: {}
+      allow_aggregations: true
