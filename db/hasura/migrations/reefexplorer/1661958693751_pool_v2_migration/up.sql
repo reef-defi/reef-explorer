@@ -579,12 +579,13 @@ CREATE OR REPLACE VIEW pool_info AS
     p.token_2,
     p.decimal_1,
     p.decimal_2,
-    (SELECT vd.volume FROM volume_day AS vd WHERE p.id = vd.pool_id ORDER BY timeframe DESC LIMIT 1),
-    (SELECT fd.fee FROM fee_day AS fd WHERE p.id = fd.pool_id ORDER BY timeframe DESC LIMIT 1),
-    (SELECT rd.reserved FROM reserved_day AS rd WHERE p.id = rd.pool_id ORDER BY timeframe DESC LIMIT 1)
+    (SELECT fd.fee FROM fee_day AS fd WHERE p.id = fd.pool_id ORDER BY timeframe DESC LIMIT 1) AS fee,
+    (SELECT vd.volume FROM volume_day AS vd WHERE p.id = vd.pool_id ORDER BY timeframe DESC LIMIT 1) AS volume,
+    (SELECT vd.reserved FROM reserved_day AS vd WHERE p.id = vd.pool_id ORDER BY timeframe DESC LIMIT 1) AS reserved,
+    (SELECT rd.change FROM volume_change_day AS rd WHERE p.id = rd.pool_id ORDER BY timeframe DESC LIMIT 1) as volume_change
   FROM pool AS p;
 
-CREATE OR REPLACE VIEW verified_pool AS
+CREATE OR REPLACE VIEW verified_pool_info AS
 	SELECT 
 		p.*, 
 		v1.contract_data->>'name' as name_1, 
@@ -592,15 +593,6 @@ CREATE OR REPLACE VIEW verified_pool AS
 		v2.contract_data->>'name' as name_2,
     v2.contract_data->>'symbol' as symbol_2
 	FROM pool_info AS p
-	RIGHT JOIN verified_contract AS v1 ON p.token_1 = v1.address
-	RIGHT JOIN verified_contract AS v2 ON p.token_2 = v2.address
-	WHERE p IS NOT NULL;
-
-CREATE OR REPLACE VIEW verified_pool_event AS
-	SELECT 
-		pe.*
-	FROM pool_event AS pe
-  JOIN pool_info AS p ON p.id = pe.pool_id
 	RIGHT JOIN verified_contract AS v1 ON p.token_1 = v1.address
 	RIGHT JOIN verified_contract AS v2 ON p.token_2 = v2.address
 	WHERE p IS NOT NULL;

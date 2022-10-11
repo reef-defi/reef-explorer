@@ -1,0 +1,76 @@
+table:
+  schema: public
+  name: pool
+object_relationships:
+  - name: evm_event
+    using:
+      foreign_key_constraint_on: evm_event_id
+  - name: token_contract_1
+    using:
+      foreign_key_constraint_on: token_1
+  - name: token_contract_2
+    using:
+      foreign_key_constraint_on: token_2
+array_relationships:
+  - name: pool_event
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool_event
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: fee_ref
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: fee_day
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: reserved_ref
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: reserved_day
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: volume_ref
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: volume_day
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+  - name: volume_change_ref
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: volume_change_day
+        insertion_order: null
+        column_mapping:
+          id: pool_id
+select_permissions:
+  - role: public
+    permission:
+      columns:
+        - id
+        - evm_event_id
+        - address
+        - token_1
+        - token_2
+        - decimal_1
+        - decimal_2
+        - fee
+        - volume
+        - reserved
+        - volume_change
+      filter: {}
+      allow_aggregations: true
