@@ -44,3 +44,8 @@
 - "!include public_reserved_raw_hour.yaml"
 - "!include public_reserved_raw_day.yaml"
 - "!include public_reserved_raw_week.yaml"
+- "!include public_volume_raw.yaml"
+- "!include public_volume_raw_min.yaml"
+- "!include public_volume_raw_hour.yaml"
+- "!include public_volume_raw_day.yaml"
+- "!include public_volume_raw_week.yaml"

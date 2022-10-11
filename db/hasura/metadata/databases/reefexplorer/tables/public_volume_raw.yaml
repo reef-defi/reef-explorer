@@ -1,0 +1,22 @@
+table:
+  schema: public
+  name: volume_raw
+object_relationships:
+  - name: block
+  using:
+    foreign_key_constraint_on: block_id
+  - name: pool
+    using:
+      foreign_key_constraint_on: pool_id
+select_permissions:
+  - role: public
+  permission:
+    columns:
+      - id
+      - block_id
+      - pool_id
+      - volume_1
+      - volume_2
+      - timestamp
+    filter: {}
+    allow_aggregations: true

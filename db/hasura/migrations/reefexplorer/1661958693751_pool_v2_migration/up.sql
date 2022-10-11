@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS volume_raw(
   timestamp TIMESTAMPTZ NOT NULL,
   
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
-  FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
+  FOREIGN key (block_id) REFERENCES block(id) ON DELETE NO ACTION,
 
   CONSTRAINT pool_block_volume UNIQUE (block_id, pool_id)
 );
