@@ -2,9 +2,6 @@ table:
   schema: public
   name: candlestick_min
 object_relationships:
-  - name: block
-  using:
-    foreign_key_constraint_on: block_id
   - name: contract
     using:
       foreign_key_constraint_on: token_address
