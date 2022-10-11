@@ -1,0 +1,26 @@
+table:
+  schema: public
+  name: reserved_raw
+object_relationships:
+  - name: block
+  using:
+    foreign_key_constraint_on: block_id
+  - name: pool
+    using:
+      foreign_key_constraint_on: pool_id
+  - name: evm_event
+    using:
+      foreign_key_constraint_on: evm_event_id
+select_permissions:
+  - role: public
+  permission:
+    columns:
+      - id
+      - block_id
+      - pool_id
+      - evm_event_id
+      - timestamp
+      - reserved_1
+      - reserved_2
+    filter: {}
+    allow_aggregations: true

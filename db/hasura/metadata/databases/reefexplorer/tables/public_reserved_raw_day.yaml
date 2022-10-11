@@ -1,0 +1,17 @@
+table:
+  schema: public
+  name: reserved_raw_day
+object_relationships:
+  - name: pool
+    using:
+      foreign_key_constraint_on: pool_id
+select_permissions:
+  - role: public
+  permission:
+    columns:
+      - pool_id
+      - timeframe
+      - reserved_1
+      - reserved_2
+    filter: {}
+    allow_aggregations: true

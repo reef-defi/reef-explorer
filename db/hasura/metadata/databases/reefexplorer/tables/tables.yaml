@@ -39,3 +39,8 @@
 - "!include public_candlestick_hour.yaml"
 - "!include public_candlestick_day.yaml"
 - "!include public_candlestick_week.yaml"
+- "!include public_reserved_raw.yaml"
+- "!include public_reserved_raw_min.yaml"
+- "!include public_reserved_raw_hour.yaml"
+- "!include public_reserved_raw_day.yaml"
+- "!include public_reserved_raw_week.yaml"

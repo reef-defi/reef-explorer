@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS reserved_raw(
   timestamp TIMESTAMPTZ NOT NULL,
   
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
-  FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
-  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE CASCADE,
+  FOREIGN key (block_id) REFERENCES block(id) ON DELETE NO ACTION,
+  FOREIGN key (evm_event_id) REFERENCES evm_event(id) ON DELETE NO ACTION,
 
   CONSTRAINT pool_block_reserves UNIQUE (block_id, pool_id)
 );
