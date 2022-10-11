@@ -1,0 +1,28 @@
+table:
+  schema: public
+  name: candlestick
+object_relationships:
+  - name: block
+  using:
+    foreign_key_constraint_on: block_id
+  - name: contract
+    using:
+      foreign_key_constraint_on: token_address
+  - name: pool
+    using:
+      foreign_key_constraint_on: pool_id
+select_permissions:
+  - role: public
+  permission:
+    columns:
+      - id
+      - block_id
+      - pool_id
+      - token_address
+      - open
+      - high
+      - low
+      - close
+      - timestamp
+    filter: {}
+    allow_aggregations: true

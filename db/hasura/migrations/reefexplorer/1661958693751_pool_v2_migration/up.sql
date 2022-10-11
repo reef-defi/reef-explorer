@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS candlestick(
   timestamp TIMESTAMPTZ NOT NULL,
   
   FOREIGN key (pool_id) REFERENCES pool(id) ON DELETE CASCADE,
-  FOREIGN key (block_id) REFERENCES block(id) ON DELETE CASCADE,
+  FOREIGN key (block_id) REFERENCES block(id) ON DELETE NO ACTION,
+  FOREIGN KEY (token_address) REFERENCES contract(address) ON DELETE NO ACTION,
 
   CONSTRAINT pool_block_token_candlestick UNIQUE (block_id, pool_id, token_address)
 );
