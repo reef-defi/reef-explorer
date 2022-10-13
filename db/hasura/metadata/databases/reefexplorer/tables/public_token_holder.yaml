@@ -19,5 +19,6 @@ select_permissions:
         - nft_id
         - type
         - evm_address
+        - timestamp
       filter: {}
       allow_aggregations: true
