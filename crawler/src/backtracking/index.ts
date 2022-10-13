@@ -33,13 +33,21 @@ export default async (contractAddress: string) => {
   } = contract[0];
   const contractInterface = new utils.Interface(compiledData[name]);
 
-  const processedLogs: BacktrackingEvmEvent[] = evmEvents
-    .filter(({ method }) => method === 'Log')
-    .map((evmEvent) => ({
-      ...evmEvent,
-      parseddata: contractInterface.parseLog(evmEvent.rawdata),
-      type: 'Verified',
-    }));
+  const processedLogs: BacktrackingEvmEvent[] = [];
+
+  for (let i = 0; i < evmEvents.length; i++) {
+    try {
+      const evmEvent = evmEvents[i];
+      const parsedLog = contractInterface.parseLog(evmEvent.rawdata);
+      processedLogs.push({
+        ...evmEvent,
+        parseddata: parsedLog,
+        type: 'Verified',
+      });
+    } catch (error) {
+      logger.warn('No matching logs ... Skipping');
+    }
+  }
 
   const evmLogs: EvmLogWithDecodedEvent[] = processedLogs
     .map(({
