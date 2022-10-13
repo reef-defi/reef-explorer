@@ -129,6 +129,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
       - ENVIRONMENT=${ENVIRONMENT}
       - NETWORK=${NETWORK}
+      - POOL_CONTRACT_VERIFICATION_AFTER_BLOCK=${POOL_CONTRACT_VERIFICATION_AFTER_BLOCK}
     depends_on:
       - 'postgres'
       - 'substrate-node'
