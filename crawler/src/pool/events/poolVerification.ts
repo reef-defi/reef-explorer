@@ -1,11 +1,10 @@
-import { queryv2 } from "../../utils/connector";
+import { queryv2 } from '../../utils/connector';
 
-import ReefswapPairAbi from "../../assets/ReefswapPairAbi";
-import ReefswapV2PairSource from "../../assets/ReefswapV2PairSource";
+import ReefswapPairAbi from '../../assets/ReefswapPairAbi';
+import ReefswapV2PairSource from '../../assets/ReefswapV2PairSource';
 
-const findPoolsToVerify = async (): Promise<string[]> => 
-  queryv2<{address: string}>('SELECT address FROM pool;')
-    .then((res) => res.map((r) => r.address));
+const findPoolsToVerify = async (): Promise<string[]> => queryv2<{address: string}>('SELECT address FROM pool;')
+  .then((res) => res.map((r) => r.address));
 
 export const verifyPool = async (address: string) => {
   await queryv2(
@@ -16,23 +15,23 @@ export const verifyPool = async (address: string) => {
     ON CONFLICT DO NOTHING;`,
     [
       address,
-      "ReefswapV2Pair",
-      "ReefswapV2Pair.sol",
+      'ReefswapV2Pair',
+      'ReefswapV2Pair.sol',
       ReefswapV2PairSource,
       true,
-      "v0.5.16+commit.9c3226ce",
-      JSON.stringify({ "ReefswapV2Pair": ReefswapPairAbi }),
+      'v0.5.16+commit.9c3226ce',
+      JSON.stringify({ ReefswapV2Pair: ReefswapPairAbi }),
       [],
       999999,
-      "london",
-      "ERC20",
+      'london',
+      'ERC20',
       {
-        name: "Reefswap V2",
-        symbol: "REEF-V2",
+        name: 'Reefswap V2',
+        symbol: 'REEF-V2',
         decimals: 18,
       },
-    ]
-  )
+    ],
+  );
 };
 
 export const verifyPools = async () => {

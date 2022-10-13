@@ -21,10 +21,10 @@ const main = async () => {
   await queryv2('DELETE FROM pool_event WHERE id >= 0;');
 
   logger.info('Removing pool data');
-  await queryv2('DELETE FROM pool WHERE id >= 0;');  
+  await queryv2('DELETE FROM pool WHERE id >= 0;');
 
   logger.info('Reseting pool sequencer');
-  await queryv2('ALTER SEQUENCE pool_event_sequence RESTART WITH 1;')
+  await queryv2('ALTER SEQUENCE pool_event_sequence RESTART WITH 1;');
 };
 
 main()

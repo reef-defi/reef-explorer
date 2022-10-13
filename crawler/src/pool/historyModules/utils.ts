@@ -1,4 +1,4 @@
-import { queryv2 } from "../../utils/connector";
+import { queryv2 } from '../../utils/connector';
 
 interface Reserve {
   id: number;
@@ -12,11 +12,11 @@ interface Reserve {
   reserved_2: string;
 }
 
-export const queryReservedData = async (blockId: string): Promise<Reserve[]> =>
-  queryv2<Reserve>(`
+export const queryReservedData = async (blockId: string): Promise<Reserve[]> => queryv2<Reserve>(
+  `
     SELECT p.id, p.address, r.evm_event_id, p.token_1, p.token_2, p.decimal_1, p.decimal_2, r.reserved_1, r.reserved_2 
     FROM reserved_raw as r
     JOIN pool as p ON r.pool_id = p.id
     WHERE r.block_id = $1`,
-    [blockId]
-  );
+  [blockId],
+);

@@ -1,5 +1,5 @@
-import { utils } from "ethers";
-import PoolEvent, { PoolEventData } from "./PoolEvent";
+import { utils } from 'ethers';
+import PoolEvent, { PoolEventData } from './PoolEvent';
 
 class MintEvent extends PoolEvent {
   constructor(poolEvent: PoolEventData) {
@@ -8,9 +8,10 @@ class MintEvent extends PoolEvent {
 
   async process(event: utils.LogDescription): Promise<void> {
     await super.process(event);
-    this.sender_address = event.args[0];
-    this.amount_1 = event.args[1].toString();
-    this.amount_2 = event.args[2].toString();
+    const [address, amount0, amount1] = event.args;
+    this.sender_address = address;
+    this.amount_1 = amount0.toString();
+    this.amount_2 = amount1.toString();
   }
 }
 

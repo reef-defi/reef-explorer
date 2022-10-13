@@ -22,11 +22,11 @@ export const lastBlockInDatabase = async (): Promise<number> => {
     FROM block as b
     LEFT JOIN block as b1 on b.id = b1.id - 1
     WHERE b.finalized = true AND b1.id IS NULL
-    ORDER by b.id ASC;`
+    ORDER by b.id ASC;`,
   );
-  
+
   if (gap.length > 0) {
-    const gapId = parseInt(gap[0].id, 10)-1;
+    const gapId = parseInt(gap[0].id, 10) - 1;
     logger.info(`Found block gap in database, starting from ${gapId}`);
     return gapId;
   }

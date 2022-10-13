@@ -1,9 +1,11 @@
-import logger from "../../utils/logger";
-import Candlestick from "./Candlestick";
-import MarketHistoryModule from "./MarketHistoryModule";
-import Reserves from "./Reserves";
-import TokenPrices from "./TokenPrices";
-import Volume from "./Volume";
+/* eslint-disable */
+import logger from '../../utils/logger';
+import Candlestick from './Candlestick';
+import MarketHistoryModule from './MarketHistoryModule';
+import Reserves from './Reserves';
+import TokenPrices from './TokenPrices';
+import Volume from './Volume';
+/* eslint-enable */
 
 const modules = [
   Volume,
@@ -15,6 +17,7 @@ const modules = [
 class MarketHistory extends MarketHistoryModule {
   static async init(blockId: string): Promise<void> {
     logger.info(`Initializing market history for block ${blockId}`);
+
     for (const module of modules) {
       await module.init(blockId);
     }

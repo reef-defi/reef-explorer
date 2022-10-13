@@ -106,14 +106,14 @@ export const processUnfinalizedBlock = async (
 const checkIfBlockIsFinalized = async (id: number): Promise<boolean> => {
   const res = await queryv2<{id: number}>('SELECT id FROM block WHERE id = $1 AND finalized = true;', [id]);
   return res.length > 0;
-}
+};
 
 const processBlock = async (blockId: number): Promise<void> => {
   // Skip if block is already finalized
   if (await checkIfBlockIsFinalized(blockId)) {
     return;
   }
-  
+
   logger.info('--------------------------------');
   // Load block hash
   logger.info(`Loading block hash for: ${blockId}`);

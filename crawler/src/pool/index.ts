@@ -13,7 +13,6 @@ import SwapEvent from './events/SwapEvent';
 import SyncEvent from './events/SyncEvent';
 import TransferEvent from './events/TransferEvent';
 
-
 interface ID {
   id: string;
 }
@@ -26,7 +25,6 @@ interface PartialEvmEvent {
   contractaddress: string;
 }
 
-
 const selectPoolEvent = (pairEvent: PairEvent, data: utils.LogDescription): PoolEventBase<utils.LogDescription> => {
   switch (data.name) {
     case 'Mint': return new MintEvent(pairEvent);
@@ -36,7 +34,7 @@ const selectPoolEvent = (pairEvent: PairEvent, data: utils.LogDescription): Pool
     case 'Transfer': return new TransferEvent(pairEvent);
     default: return new EmptyEvent(pairEvent.eventId);
   }
-}
+};
 
 const processPairEvent = async (pairEvent: PairEvent): Promise<void> => {
   logger.info('Reefswap Pair event detected!');
@@ -90,17 +88,17 @@ export const processPoolBlock = async (blockId: string): Promise<void> => {
       await factoryEvent.combine(event.rawdata);
       return;
     }
-    
+
     const poolId = await findPoolID(event.contractaddress);
     if (poolId) {
-      await processPairEvent({ 
+      await processPairEvent({
         poolId,
         eventId: event.id,
         rawData: event.rawdata,
         blockId: event.block_id,
         timestamp: event.timestamp,
         address: event.contractaddress,
-       });
+      });
     }
   }
 };

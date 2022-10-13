@@ -1,7 +1,7 @@
-import BigNumber from "bignumber.js";
-import { insertV2, queryv2 } from "../../utils/connector";
-import logger from "../../utils/logger";
-import MarketHistoryModule from "./MarketHistoryModule";
+import BigNumber from 'bignumber.js';
+import { insertV2, queryv2 } from '../../utils/connector';
+import logger from '../../utils/logger';
+import MarketHistoryModule from './MarketHistoryModule';
 
 type CandlestickPoolBlock = [
   BigNumber, // open
@@ -26,16 +26,17 @@ class Candlestick implements MarketHistoryModule {
 
   static async init(blockId: string): Promise<void> {
     const initialData = await queryv2<CandlestickData>(
-      `SELECT pool_id, token_address, close FROM candlestick WHERE block_id = $1;`,
-      [blockId]
+      'SELECT pool_id, token_address, close FROM candlestick WHERE block_id = $1;',
+      [blockId],
     );
 
-    this.candlesticks = initialData.reduce((acc, d) => {
+    this.candlesticks = initialData.reduce(
+      (acc, d) => {
         const close = new BigNumber(d.close);
         acc[`${d.pool_id}:${d.token_address}`] = [close, close, close, close];
         return acc;
       },
-      {} as CandlestickBlock
+      {} as CandlestickBlock,
     );
   }
 
@@ -43,10 +44,10 @@ class Candlestick implements MarketHistoryModule {
     const key = `${poolId}:${tokenAddress}`;
     if (!this.candlesticks[key]) {
       this.candlesticks[key] = [
-        new BigNumber(price), 
-        new BigNumber(price), 
-        new BigNumber(price), 
-        new BigNumber(price), 
+        new BigNumber(price),
+        new BigNumber(price),
+        new BigNumber(price),
+        new BigNumber(price),
       ];
     } else {
       const [open, high, low] = this.candlesticks[key];
@@ -66,13 +67,14 @@ class Candlestick implements MarketHistoryModule {
         key
       ][2].toString()}\n\tClose = ${this.candlesticks[
         key
-      ][3].toString()}`
+      ][3].toString()}`,
     );
   }
 
   private static prepareCandlestickForNextBlock() {
     const keys = Object.keys(this.candlesticks);
-    this.candlesticks = keys.reduce((acc, key) => {
+    this.candlesticks = keys.reduce(
+      (acc, key) => {
         const [, , , close] = this.candlesticks[key];
         acc[key] = [
           new BigNumber(close),
@@ -82,7 +84,7 @@ class Candlestick implements MarketHistoryModule {
         ];
         return acc;
       },
-      {} as CandlestickBlock
+      {} as CandlestickBlock,
     );
   }
 
@@ -97,10 +99,10 @@ class Candlestick implements MarketHistoryModule {
         const [open, high, low, close] = this.candlesticks[key];
         const [poolId, tokenAddress] = key.split(':');
         return [blockId, poolId, tokenAddress, open.toString(), high.toString(), low.toString(), close.toString(), timestamp];
-      }
-    ));
+      }),
+    );
     this.prepareCandlestickForNextBlock();
   }
-};
+}
 
 export default Candlestick;

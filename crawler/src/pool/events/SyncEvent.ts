@@ -1,10 +1,10 @@
-import { utils } from "ethers";
-import BigNumber from "bignumber.js";
-import TokenPrices from "../historyModules/TokenPrices";
-import { queryv2 } from "../../utils/connector";
-import PoolEvent, { PoolEventData } from "./PoolEvent";
-import Reserves from "../historyModules/Reserves";
-import Candlestick from "../historyModules/Candlestick";
+import { utils } from 'ethers';
+import BigNumber from 'bignumber.js';
+import TokenPrices from '../historyModules/TokenPrices';
+import { queryv2 } from '../../utils/connector';
+import PoolEvent, { PoolEventData } from './PoolEvent';
+import Reserves from '../historyModules/Reserves';
+import Candlestick from '../historyModules/Candlestick';
 
 interface PoolInfo {
   token_1: string;
@@ -12,9 +12,8 @@ interface PoolInfo {
   decimal_1: number;
   decimal_2: number;
 }
-const queryPool = async (poolId: string): Promise<PoolInfo> => 
-  queryv2<PoolInfo>("SELECT token_1, token_2, decimal_1, decimal_2 FROM pool WHERE id = $1", [poolId])
-    .then((res) => res[0]);
+const queryPool = async (poolId: string): Promise<PoolInfo> => queryv2<PoolInfo>('SELECT token_1, token_2, decimal_1, decimal_2 FROM pool WHERE id = $1', [poolId])
+  .then((res) => res[0]);
 
 class SyncEvent extends PoolEvent {
   constructor(poolEvent: PoolEventData) {
@@ -24,7 +23,9 @@ class SyncEvent extends PoolEvent {
   async process(event: utils.LogDescription): Promise<void> {
     await super.process(event);
 
-    const {token_1, token_2, decimal_1, decimal_2} = await queryPool(this.poolId);
+    const {
+      token_1, token_2, decimal_1, decimal_2,
+    } = await queryPool(this.poolId);
 
     this.reserved_1 = event.args[0].toString();
     this.reserved_2 = event.args[1].toString();

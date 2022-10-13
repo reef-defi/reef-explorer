@@ -1,31 +1,31 @@
-import { utils, Contract } from "ethers";
-import erc20Abi from "../../assets/erc20Abi";
-import ReefswapFactory from "../../assets/ReefswapFactoryAbi";
-import config from "../../config";
-import { RawEventData } from "../../crawler/types";
-import { nodeProvider, queryv2 } from "../../utils/connector";
-import logger from "../../utils/logger";
-import { verifyPool } from "./poolVerification";
-import TokenPrices from "./../historyModules/TokenPrices";
-import PoolEventBase from "./PoolEventBase";
+import { Contract, utils } from 'ethers';
+import erc20Abi from '../../assets/erc20Abi';
+import ReefswapFactory from '../../assets/ReefswapFactoryAbi';
+import config from '../../config';
+import { RawEventData } from '../../crawler/types';
+import { nodeProvider, queryv2 } from '../../utils/connector';
+import logger from '../../utils/logger';
+import TokenPrices from '../historyModules/TokenPrices';
+import PoolEventBase from './PoolEventBase';
+import { verifyPool } from './poolVerification';
 
 class FactoryEvent extends PoolEventBase<RawEventData> {
   static verify = false;
 
   poolAddress?: string;
+
   tokenAddress1?: string;
+
   tokenAddress2?: string;
+
   decimal1?: number;
+
   decimal2?: number;
 
-  constructor(evmEventId: string) {
-    super(evmEventId);
-  }
-
   async process(rawData: RawEventData): Promise<void> {
-    await   super.process(rawData);
+    await super.process(rawData);
     if (!FactoryEvent.isFactoryCreateEvent(rawData.address)) {
-      throw new Error("Not a PairCreated ReefswapFactory event");
+      throw new Error('Not a PairCreated ReefswapFactory event');
     }
 
     const contractInterface = new utils.Interface(ReefswapFactory);
@@ -34,9 +34,8 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
 
     const [tokenAddress1, tokenAddress2, poolAddress] = data.args as string[];
 
-    const tokenContract1 = new Contract(tokenAddress1, erc20Abi, nodeProvider.getProvider())
-    const tokenContract2 = new Contract(tokenAddress2, erc20Abi, nodeProvider.getProvider())
-
+    const tokenContract1 = new Contract(tokenAddress1, erc20Abi, nodeProvider.getProvider());
+    const tokenContract2 = new Contract(tokenAddress2, erc20Abi, nodeProvider.getProvider());
 
     this.poolAddress = poolAddress;
     this.tokenAddress1 = tokenAddress1;
@@ -52,7 +51,7 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
   async save(): Promise<void> {
     await super.save();
     if (!this.poolAddress || !this.tokenAddress1 || !this.tokenAddress2 || !this.decimal1 || !this.decimal2) {
-      throw new Error("Not all required fields are set! Call process() first");
+      throw new Error('Not all required fields are set! Call process() first');
     }
 
     await queryv2(
@@ -61,14 +60,14 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
       VALUES
         ($1, $2, $3, $4, $5, $6, $7);`,
       [
-        this.evmEventId, 
-        this.poolAddress, 
-        this.tokenAddress1, 
+        this.evmEventId,
+        this.poolAddress,
+        this.tokenAddress1,
         this.tokenAddress2,
         this.decimal1,
         this.decimal2,
-        18
-      ]
+        18,
+      ],
     );
 
     if (FactoryEvent.verify) {

@@ -1,5 +1,5 @@
 const source = {
-  "ReefswapV2Pair.sol": `
+  'ReefswapV2Pair.sol': `
   pragma solidity =0.5.16;
 
 import './interfaces/IReefswapV2Pair.sol';
@@ -201,7 +201,7 @@ contract ReefswapV2Pair is IReefswapV2Pair, ReefswapV2ERC20 {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
     }
 }`,
-"interfaces/IReefswapV2Pair.sol": `
+  'interfaces/IReefswapV2Pair.sol': `
 pragma solidity =0.5.16;
 
 import './interfaces/IReefswapV2Pair.sol';
@@ -403,7 +403,7 @@ contract ReefswapV2Pair is IReefswapV2Pair, ReefswapV2ERC20 {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
     }
 }`,
-"ReefswapV2ERC20.sol": `
+  'ReefswapV2ERC20.sol': `
 pragma solidity =0.5.16;
 
 import './interfaces/IReefswapV2ERC20.sol';
@@ -498,7 +498,7 @@ contract ReefswapV2ERC20 is IReefswapV2ERC20 {
         _approve(owner, spender, value);
     }
 }`,
-"interfaces/IReefswapV2ERC20.sol": `
+  'interfaces/IReefswapV2ERC20.sol': `
 pragma solidity >=0.5.0;
 
 interface IReefswapV2ERC20 {
@@ -522,7 +522,7 @@ interface IReefswapV2ERC20 {
 
     function permit(address owner, address spender, uint value, uint deadline, uint8 v, bytes32 r, bytes32 s) external;
 }`,
-"libraries/SafeMath.sol": `
+  'libraries/SafeMath.sol': `
 pragma solidity =0.5.16;
 
 // a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
@@ -541,7 +541,7 @@ library SafeMath {
     }
 }
 `,
-"libraries/Math.sol": `
+  'libraries/Math.sol': `
 pragma solidity =0.5.16;
 
 // a library for performing various math operations
@@ -565,7 +565,7 @@ library Math {
         }
     }
 }`,
-"libraries/UQ112x112.sol": `
+  'libraries/UQ112x112.sol': `
 pragma solidity =0.5.16;
 
 // a library for handling binary fixed point numbers (https://en.wikipedia.org/wiki/Q_(number_format))
@@ -586,7 +586,7 @@ library UQ112x112 {
         z = x / uint224(y);
     }
 }`,
-"interfaces/IERC20.sol": `
+  'interfaces/IERC20.sol': `
 pragma solidity >=0.5.0;
 
 interface IERC20 {
@@ -604,7 +604,7 @@ interface IERC20 {
     function transfer(address to, uint value) external returns (bool);
     function transferFrom(address from, address to, uint value) external returns (bool);
 }`,
-"interfaces/IReefswapV2Factory.sol": `
+  'interfaces/IReefswapV2Factory.sol': `
 pragma solidity >=0.5.0;
 
 interface IReefswapV2Factory {
@@ -622,13 +622,13 @@ interface IReefswapV2Factory {
     function setFeeTo(address) external;
     function setFeeToSetter(address) external;
 }`,
-"interfaces/IReefswapV2Callee.sol": `
+  'interfaces/IReefswapV2Callee.sol': `
 pragma solidity >=0.5.0;
 
 interface IReefswapV2Callee {
     function reefswapV2Call(address sender, uint amount0, uint amount1, bytes calldata data) external;
 }
 `,
-}
+};
 
 export default JSON.stringify(source);
