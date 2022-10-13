@@ -57,9 +57,9 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
 
     await queryv2(
       `INSERT INTO pool 
-        (evm_event_id, address, token_1, token_2, decimal_1, decimal_2)
+        (evm_event_id, address, token_1, token_2, decimal_1, decimal_2, pool_decimal)
       VALUES
-        ($1, $2, $3, $4, $5, $6);`,
+        ($1, $2, $3, $4, $5, $6, $7);`,
       [
         this.evmEventId, 
         this.poolAddress, 
@@ -67,6 +67,7 @@ class FactoryEvent extends PoolEventBase<RawEventData> {
         this.tokenAddress2,
         this.decimal1,
         this.decimal2,
+        18
       ]
     );
 
