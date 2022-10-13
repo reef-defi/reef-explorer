@@ -1,4 +1,5 @@
 import { utils } from 'ethers';
+import logger from '../../utils/logger';
 import PoolEvent, { PoolEventData } from './PoolEvent';
 
 class BurnEvent extends PoolEvent {
@@ -13,6 +14,7 @@ class BurnEvent extends PoolEvent {
     this.amount_1 = amount1.toString();
     this.amount_2 = amount2.toString();
     this.to_address = to;
+    logger.info(`Burn event processed! \n\tSender: ${this.sender_address} \n\tAmount1: ${this.amount_1} \n\tAmount2: ${this.amount_2} \n\tTo: ${this.to_address}`);
   }
 }
 

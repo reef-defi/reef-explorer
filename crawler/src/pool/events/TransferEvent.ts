@@ -1,5 +1,6 @@
 import { BigNumber, utils } from 'ethers';
 import { queryv2 } from '../../utils/connector';
+import logger from '../../utils/logger';
 import PoolEvent, { PoolEventData } from './PoolEvent';
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -33,6 +34,8 @@ class TransferEvent extends PoolEvent {
     const prev = BigNumber.from(this.supply);
 
     this.total_supply = (isMint ? prev.add(amount) : prev.sub(amount)).toString();
+
+    logger.info(`Transfer event processed! \n\tPool id:${this.poolId}\n\tSupply: ${this.supply}\n\tTotal supply: ${this.total_supply}`);
   }
 }
 

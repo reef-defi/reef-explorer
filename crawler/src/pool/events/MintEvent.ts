@@ -1,4 +1,5 @@
 import { utils } from 'ethers';
+import logger from '../../utils/logger';
 import PoolEvent, { PoolEventData } from './PoolEvent';
 
 class MintEvent extends PoolEvent {
@@ -12,6 +13,7 @@ class MintEvent extends PoolEvent {
     this.sender_address = address;
     this.amount_1 = amount0.toString();
     this.amount_2 = amount1.toString();
+    logger.info(`Mint event processed! \n\tSender: ${this.sender_address} \n\tAmount1: ${this.amount_1} \n\tAmount2: ${this.amount_2}`);
   }
 }
 

@@ -1,4 +1,5 @@
 import { utils } from 'ethers';
+import logger from '../../utils/logger';
 import Volume from '../historyModules/Volume';
 import PoolEvent, { PoolEventData } from './PoolEvent';
 
@@ -12,8 +13,8 @@ class SwapEvent extends PoolEvent {
 
     const [address, amoin1, amoin2, amo1, amo2, to] = event.args;
     this.sender_address = address;
-    this.amount_in_1 = amoin1;
-    this.amount_in_2 = amoin2;
+    this.amount_in_1 = amoin1.toString();
+    this.amount_in_2 = amoin2.toString();
     this.amount_1 = amo1.toString() as string;
     this.amount_2 = amo2.toString() as string;
     this.to_address = to;

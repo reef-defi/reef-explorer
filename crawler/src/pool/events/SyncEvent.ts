@@ -5,6 +5,7 @@ import { queryv2 } from '../../utils/connector';
 import PoolEvent, { PoolEventData } from './PoolEvent';
 import Reserves from '../historyModules/Reserves';
 import Candlestick from '../historyModules/Candlestick';
+import logger from '../../utils/logger';
 
 interface PoolInfo {
   token_1: string;
@@ -33,6 +34,7 @@ class SyncEvent extends PoolEvent {
     if (!this.reserved_1 || !this.reserved_2) {
       throw new Error(`Sync event on evm event: ${this.evmEventId} has no reserve`);
     }
+    logger.info(`Sync event processed! \n\tPool id:${this.poolId}\n\tReserved1: ${this.reserved_1} \n\tReserved2: ${this.reserved_2}`);
 
     // Update reserves for tokens in TokenPrices
     const reservedRaw1 = new BigNumber(this.reserved_1);

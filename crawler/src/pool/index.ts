@@ -37,9 +37,9 @@ const selectPoolEvent = (pairEvent: PairEvent, data: utils.LogDescription): Pool
 };
 
 const processPairEvent = async (pairEvent: PairEvent): Promise<void> => {
-  logger.info('Reefswap Pair event detected!');
   const contractInterface = new utils.Interface(ReefswapPair);
   const data = contractInterface.parseLog(pairEvent.rawData);
+  logger.info(`Reefswap Pair: ${data.name} event detected!`);
 
   const event = selectPoolEvent(pairEvent, data);
   await event.combine(data);
