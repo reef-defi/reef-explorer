@@ -3,7 +3,7 @@ import { queryv2 } from '../../utils/connector';
 import ReefswapPairAbi from '../../assets/ReefswapPairAbi';
 import ReefswapV2PairSource from '../../assets/ReefswapV2PairSource';
 
-const findPoolsToVerify = async (): Promise<string[]> => queryv2<{address: string}>('SELECT address FROM pool;')
+const findPoolsToVerify = async (): Promise<string[]> => queryv2<{address: string}>('SELECT p.address FROM pool AS p INNER JOIN contract AS c ON p.address = c.address;')
   .then((res) => res.map((r) => r.address));
 
 export const verifyPool = async (address: string) => {
