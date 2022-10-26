@@ -3,6 +3,7 @@ import { nodeProvider } from '../../../../utils/connector';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import NftTokenHolderEvent from './NftTokenHolderEvent';
+import { ZERO_ADDRESS } from './utils';
 
 class Erc1155BatchTransferEvent extends NftTokenHolderEvent {
   private async balanceOfBatch(address: string, tokenAddress: string, ids: string[]): Promise<string[]> {
@@ -23,13 +24,19 @@ class Erc1155BatchTransferEvent extends NftTokenHolderEvent {
     const toAddress = await accountsManager.useEvm(toEvmAddress);
     const fromAddress = await accountsManager.useEvm(fromEvmAddress);
 
-    // if for some reasone addresses are not valid, we skip the event
-    if (!utils.isAddress(toAddress) || !utils.isAddress(fromAddress)) {
-      return;
+    const toIsValidAddress = utils.isAddress(toEvmAddress) && toEvmAddress !== ZERO_ADDRESS;
+    const fromIsValidAddress = utils.isAddress(fromEvmAddress) && fromEvmAddress !== ZERO_ADDRESS;
+    
+    let toBalances: string[] = [];
+    let fromBalances: string[] = [];
+
+    if (toIsValidAddress) {
+      toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
     }
 
-    const toBalances = await this.balanceOfBatch(toEvmAddress, tokenAddress, nftIds);
-    const fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
+    if (fromIsValidAddress) {
+      fromBalances = await this.balanceOfBatch(fromEvmAddress, tokenAddress, nftIds);
+    }
 
     logger.info(`Processing ERC1155: ${this.contract.address} batch transfer from ${fromAddress} to ${toAddress} -> \n\tIds: ${nftIds}\n]\tAmounts: ${amounts}`);
     for (let index = 0; index < nftIds.length; index++) {
@@ -49,18 +56,23 @@ class Erc1155BatchTransferEvent extends NftTokenHolderEvent {
         fromAddress,
       });
 
-      this.addTokenHolder(
-        toAddress,
-        toEvmAddress,
-        toBalances[index],
-        nftIds[index].toString(),
-      );
-      this.addTokenHolder(
-        fromAddress,
-        fromEvmAddress,
-        fromBalances[index],
-        nftIds[index].toString(),
-      );
+      if (toIsValidAddress) {
+        this.addTokenHolder(
+          toAddress,
+          toEvmAddress,
+          toBalances[index],
+          nftIds[index].toString(),
+        );
+      }
+
+      if (fromIsValidAddress) {
+        this.addTokenHolder(
+          fromAddress,
+          fromEvmAddress,
+          fromBalances[index],
+          nftIds[index].toString(),
+        );
+      }
     }
   }
 }
