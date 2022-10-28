@@ -75,7 +75,6 @@ select_permissions:
         - address
         - token_1
         - token_2
-        - pool_decimal
         - decimal_1
         - decimal_2
         - name_1

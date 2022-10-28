@@ -1,0 +1,23 @@
+table:
+  schema: public
+  name: reserved_raw_hour
+object_relationships:
+  - name: pool
+    using:
+      manual_configuration:
+        remote_table:
+          schema: public
+          name: pool
+        insertion_order: null
+        column_mapping:
+          pool_id: id
+select_permissions:
+  - role: public
+    permission:
+      columns:
+        - pool_id
+        - timeframe
+        - reserved_1
+        - reserved_2
+      filter: {}
+      allow_aggregations: true

@@ -24,6 +24,7 @@ export default {
   verifiedContractSyncInterval: process.env.VERIFIED_CONTRACT_SYNC_INTERVAL || 100,
   liveGraphqlUrl: process.env.LIVE_GRAPHQL_URL || 'http://localhost:8080/v1/graphql',
   verifiedContractSync: process.env.VERIFIED_CONTRACT_SYNC ? process.env.VERIFIED_CONTRACT_SYNC === 'true' : false,
+  poolVerificationAfterBlock: toNumber(4000000, process.env.POOL_CONTRACT_VERIFICATION_AFTER_BLOCK),
 
   postgresConfig: {
     host: process.env.POSTGRES_HOST || '0.0.0.0',

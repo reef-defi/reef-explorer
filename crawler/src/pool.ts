@@ -1,10 +1,14 @@
-import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
+import * as Sentry from '@sentry/node';
+import config from './config';
+import { processPoolBlock } from './pool/';
+import FactoryEvent from './pool/events/FactoryEvent';
+import MarketHistory from './pool/historyModules';
+import { verifyPools } from './pool/events/poolVerification';
 import { nodeProvider, queryv2 } from './utils/connector';
 import logger from './utils/logger';
-import config from './config';
 import { wait } from './utils/utils';
-import processPoolEvent from './pool/';
+
 /* eslint "no-underscore-dangle": "off" */
 Sentry.init({
   dsn: config.sentryBacktrackingDns,
@@ -27,59 +31,81 @@ const getFirstQueryValue = async <T, >(statement: string, args = [] as any[]): P
   return res[0];
 };
 
-interface ID {
-  id: number
-}
+const getCurrentPoolPointer = async (): Promise<string> => getFirstQueryValue<{currval: string}>(
+  'SELECT last_value as currval FROM pool_event_sequence',
+)
+  .then((res) => res.currval);
 
-const findPoolEvent = async (evmEventId: string): Promise<ID[]> => queryv2<ID>('SELECT id FROM pool_event WHERE evm_event_id = $1;', [evmEventId]);
+const getNextPoolPointer = async (): Promise<string> => getFirstQueryValue<{nextval: string}>(
+  'SELECT nextval(\'pool_event_sequence\');',
+)
+  .then((res) => res.nextval);
 
-const getCurrentPoolPointer = async (): Promise<string> => (await getFirstQueryValue<{currval: string}>('SELECT last_value as currval FROM pool_event_sequence')).currval;
+const removeAllPoolEventsAboveBlock = async (blockId: string) => {
+  // Removing all pool data above current block
+  await queryv2('DELETE FROM candlestick WHERE block_id >= $1;', [blockId]);
+  await queryv2('DELETE FROM reserved_raw WHERE block_id >= $1;', [blockId]);
+  await queryv2('DELETE FROM token_price WHERE block_id >= $1;', [blockId]);
+  await queryv2('DELETE FROM volume_raw WHERE block_id >= $1;', [blockId]);
 
-const getNextPoolPointer = async (): Promise<string> => (await getFirstQueryValue<{nextval: string}>('SELECT nextval(\'pool_event_sequence\');')).nextval;
-
-const checkIfEventExists = async (id: string): Promise<boolean> => {
-  const event = await queryv2<unknown>('SELECT id FROM evm_event WHERE id = $1;', [id]);
-  return event.length > 0;
-};
-
-const checkIfPoolEventExists = async (id: string): Promise<boolean> => {
-  const events = await findPoolEvent(id);
-  return events.length > 0;
-};
-
-const findInitialIndex = async (): Promise<string> => {
-  let currentEvmEventPointer = await getCurrentPoolPointer();
-
-  // Initializion with current evm event pointer to make sure last pool event was written in DB
-  while (await checkIfPoolEventExists(currentEvmEventPointer)) {
-    currentEvmEventPointer = await getNextPoolPointer();
-  }
-
-  return currentEvmEventPointer;
-};
-
-const isCurrentPointerInGap = async (id: string): Promise<boolean> => {
-  const events = await queryv2<unknown>(
-    'SELECT id FROM evm_event WHERE id > $1 LIMIT 1;',
-    [id],
+  // Remove pool events
+  await queryv2(
+    `DELETE FROM pool_event as e
+    USING evm_event as evm
+    WHERE evm.block_id >= $1 AND e.evm_event_id = evm.id;`,
+    [blockId],
   );
-  return events.length > 0;
+
+  // Remove pools
+  await queryv2(
+    `DELETE FROM pool
+    USING evm_event as evm
+    WHERE evm.block_id >= $1 AND pool.evm_event_id = evm.id;`,
+    [blockId],
+  );
 };
 
-const poolEvents = async () => {
-  let currentEvmEventPointer = await findInitialIndex();
+const awaitBlock = async (blockId: string): Promise<string> => {
+  while (true) {
+    const result = await queryv2<{timestamp: string}>('SELECT timestamp FROM block WHERE id = $1 AND finalized = true;', [blockId]);
+    if (result.length > 0) {
+      return result[0].timestamp;
+    }
+    await wait(100);
+  }
+};
+
+const poolProcess = async () => {
+  // Find the last processed block
+  let currentBlock = await getCurrentPoolPointer();
+
+  // Remove all pool rows that are greater then current pool pointer
+  await removeAllPoolEventsAboveBlock(currentBlock);
+
+  // Initialize token prices on previous block
+  const previousBlock = (parseInt(currentBlock, 10) - 1).toString();
+  await MarketHistory.init(previousBlock);
 
   while (true) {
-    // If evm event does not exist wait for one second and retry
-    if (await checkIfEventExists(currentEvmEventPointer)) {
-      // process evm evnt pointer
-      await processPoolEvent(currentEvmEventPointer);
-      currentEvmEventPointer = await getNextPoolPointer();
-    } else if (await isCurrentPointerInGap(currentEvmEventPointer)) {
-      currentEvmEventPointer = await getNextPoolPointer();
-    } else {
-      await wait(1000);
+    // Awaiting block is finalized
+    const blockTimestamp = await awaitBlock(currentBlock);
+
+    // Starting to verify pools after certain block
+    if (currentBlock === `${config.poolVerificationAfterBlock}`) {
+      // Trigger pool verification for all existing pools
+      await verifyPools();
+      // Allowing facotry events to verify new pools
+      FactoryEvent.verify = true;
     }
+
+    // Process block events
+    await processPoolBlock(currentBlock);
+
+    // Update token prices and insert new values
+    await MarketHistory.save(currentBlock, blockTimestamp);
+
+    // Get next block
+    currentBlock = await getNextPoolPointer();
   }
 };
 
@@ -87,8 +113,9 @@ Promise.resolve()
   .then(async () => {
     await nodeProvider.initializeProviders();
     logger.info(`Factory address used: ${config.reefswapFactoryAddress}`);
+    logger.info(`Pool verification after block: ${config.poolVerificationAfterBlock}`);
   })
-  .then(poolEvents)
+  .then(poolProcess)
   .then(async () => {
     await nodeProvider.closeProviders();
     logger.info('Finished');

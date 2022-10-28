@@ -98,6 +98,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
   private static async insertAccountTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
     const statement = format(
       `
+    BEGIN;
+      SELECT * FROM account FOR UPDATE;
     INSERT INTO token_holder
       (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
     VALUES
@@ -105,7 +107,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
     ON CONFLICT (signer, token_address) WHERE evm_address IS NULL AND nft_id IS NULL DO UPDATE SET
       balance = EXCLUDED.balance,
       timestamp = EXCLUDED.timestamp,
-      info = EXCLUDED.info;`,
+      info = EXCLUDED.info;
+    COMMIT;`,
       tokenHolders.map(toTokenHolder),
     );
     await queryv2(statement);
@@ -114,6 +117,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
   private static async insertContractTokenHolders(tokenHolders: TokenHolder[]): Promise<void> {
     const statement = format(
       `
+      BEGIN;
+      SELECT * FROM account FOR UPDATE;
       INSERT INTO token_holder
         (signer, evm_address, type, token_address, nft_id, balance, info, timestamp)
       VALUES
@@ -121,7 +126,8 @@ class Erc20TransferEvent extends DefaultErcTransferEvent {
       ON CONFLICT (evm_address, token_address) WHERE signer IS NULL AND nft_id IS NULL DO UPDATE SET
         balance = EXCLUDED.balance,
         timestamp = EXCLUDED.timestamp,
-        info = EXCLUDED.info;`,
+        info = EXCLUDED.info;
+      COMMIT;`,
       tokenHolders.map(toTokenHolder),
     );
     await queryv2(statement);
