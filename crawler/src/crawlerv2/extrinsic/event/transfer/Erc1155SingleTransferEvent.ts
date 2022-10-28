@@ -1,5 +1,6 @@
 import { utils } from 'ethers';
 import { balanceOfErc1155 } from '../../../../crawler/utils';
+import { awaitForContract } from '../../../../utils/contract';
 import logger from '../../../../utils/logger';
 import AccountManager from '../../../managers/AccountManager';
 import NftTokenHolderEvent from './NftTokenHolderEvent';
@@ -56,6 +57,8 @@ class Erc1155SingleTransferEvent extends NftTokenHolderEvent {
         nftId.toString(),
       );
     }
+
+    await awaitForContract(tokenAddress);
   }
 }
 

@@ -1,4 +1,5 @@
 import { insertV2, query, queryv2 } from '../utils/connector';
+import logger from '../utils/logger';
 
 interface BlockID {
   id: string;
@@ -15,6 +16,21 @@ interface InsertInitialBlock {
 }
 
 export const lastBlockInDatabase = async (): Promise<number> => {
+  // Checking for the first gap that appears in the database
+  const gap = await queryv2<BlockID>(
+    `SELECT b.id
+    FROM block as b
+    LEFT JOIN block as b1 on b.id = b1.id - 1
+    WHERE b.finalized = true AND b1.id IS NULL
+    ORDER by b.id ASC;`,
+  );
+
+  if (gap.length > 0) {
+    const gapId = parseInt(gap[0].id, 10) - 1;
+    logger.info(`Found block gap in database, starting from ${gapId}`);
+    return gapId;
+  }
+  // If there is no gap, return the last finalized block in the database
   const result = await query<BlockID>(
     'SELECT ID FROM block WHERE finalized = true ORDER By id DESC LIMIT 1',
   );

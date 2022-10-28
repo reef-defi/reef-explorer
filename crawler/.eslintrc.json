@@ -23,9 +23,10 @@
       }
     ],
     "import/prefer-default-export": "off",
-    "camelcase": "warn",
+    "camelcase": "off",
     "no-unused-vars": "warn",
     "max-len": "off",
+    "no-restricted-syntax": "off",
     "no-continue": "off",
     "no-plusplus": "off",
     "import/no-extraneous-dependencies": "off",

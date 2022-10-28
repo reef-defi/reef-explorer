@@ -16,6 +16,7 @@ services:
 
   postgres:
     image: postgres:13
+    command: postgres -c shared_preload_libraries=pg_stat_statements -c pg_stat_statements.track=all
     restart: always
     shm_size: 1gb
     volumes:
@@ -128,6 +129,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PW} #reefexplorer
       - ENVIRONMENT=${ENVIRONMENT}
       - NETWORK=${NETWORK}
+      - POOL_CONTRACT_VERIFICATION_AFTER_BLOCK=${POOL_CONTRACT_VERIFICATION_AFTER_BLOCK}
     depends_on:
       - 'postgres'
       - 'substrate-node'

@@ -25,7 +25,6 @@ const resolveEvmEvent = async (head: EventData, contract: VerifiedContract): Pro
   const { type, compiled_data, name } = contract;
   const abi = new utils.Interface(compiled_data[name]);
   const contractData: BytecodeLog = (head.event.event.data.toJSON() as any)[0];
-
   let eventName = "";
   try {
     const decodedEvent = abi.parseLog(contractData);
@@ -33,7 +32,6 @@ const resolveEvmEvent = async (head: EventData, contract: VerifiedContract): Pro
   } catch (error) {
     logger.warn("Decoded event not found in abi")
   }
-  
   // Handling transfer events
   switch (eventName) {
     case 'Transfer.ERC20':

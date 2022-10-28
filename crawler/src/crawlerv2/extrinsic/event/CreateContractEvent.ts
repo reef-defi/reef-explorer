@@ -43,6 +43,11 @@ class ContractCreateEvent extends DefaultEvent {
     logger.info(`New contract created: \n\t -${this.address}`);
 
     const contractData: any = (await nodeProvider.query((provider) => provider.api.query.evm.accounts(this.address))).toJSON();
+    if (contractData === null) {
+      logger.info(`Contract ${this.address} not found in evm`);
+      this.skip = true;
+      return;
+    }
     this.maintainer = await accountsManager.useEvm(contractData.contractInfo.maintainer);
   }
 
