@@ -750,11 +750,11 @@ BEGIN
   -- Only updating pool_last_info when pool_pointer is aligned with last finalized block id
   IF block_id = pool_pointer THEN
     -- Selecting last pool reserved
-    SELECT reserved INTO current_reserved 
+    SELECT reserved 
     FROM reserved 
     WHERE pool_id = NEW.pool_id
     ORDER BY timeframe DESC 
-    LIMIT 1;
+    LIMIT 1 INTO current_reserved;
     -- Updating reserved
     UPDATE pool_last_info
     SET reserved = current_reserved
