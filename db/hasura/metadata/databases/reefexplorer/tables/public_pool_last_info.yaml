@@ -1,0 +1,18 @@
+table:
+  schema: public
+  name: pool_last_info
+object_relationships:
+  - name: pool
+    using:
+      foreign_key_constraint_on: pool_id
+select_permissions:
+  - role: public
+    permission:
+      columns:
+        - pool_id
+        - volume
+        - volume_change
+        - fee
+        - reserved
+      filter: {}
+      allow_aggregations: true

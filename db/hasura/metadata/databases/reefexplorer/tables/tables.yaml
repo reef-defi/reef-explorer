@@ -74,3 +74,4 @@
 - "!include public_volume_change_hour.yaml"
 - "!include public_volume_change_day.yaml"
 - "!include public_volume_change_week.yaml"
+- "!include public_pool_last_info.yaml"
