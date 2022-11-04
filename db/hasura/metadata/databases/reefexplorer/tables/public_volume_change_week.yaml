@@ -16,7 +16,7 @@ select_permissions:
     permission:
       columns:
         - pool_id
-        - change
+        - volume_change
         - timeframe
       filter: {}
       allow_aggregations: true
