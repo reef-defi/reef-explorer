@@ -27,6 +27,6 @@ select_permissions:
         - block_id
         - pool_id
         - fee
-        - timestamp
+        - timeframe
       filter: {}
       allow_aggregations: true

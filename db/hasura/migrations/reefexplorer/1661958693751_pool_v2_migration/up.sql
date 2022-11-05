@@ -1,9 +1,9 @@
 -- Restarting pool sequence
-ALTER SEQUENCE pool_event_sequence RESTART WITH 1;
+-- ALTER SEQUENCE pool_event_sequence RESTART WITH 1;
 
 -- Reseting pool and pool event table
-DELETE FROM pool_event WHERE id >= 0;
-DELETE FROM pool WHERE id >= 0;
+-- DELETE FROM pool_event WHERE id >= 0;
+-- DELETE FROM pool WHERE id >= 0;
 
 -- New tables
 CREATE TABLE IF NOT EXISTS token_price(

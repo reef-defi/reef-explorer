@@ -1,22 +1,18 @@
 table:
   schema: public
-  name: volume_change_hour
+  name: pool_last_info
 object_relationships:
   - name: pool
     using:
-      manual_configuration:
-        remote_table:
-          schema: public
-          name: pool
-        insertion_order: null
-        column_mapping:
-          pool_id: id
+      foreign_key_constraint_on: pool_id
 select_permissions:
   - role: public
     permission:
       columns:
         - pool_id
+        - volume
         - volume_change
-        - timeframe
+        - fee
+        - reserved
       filter: {}
       allow_aggregations: true

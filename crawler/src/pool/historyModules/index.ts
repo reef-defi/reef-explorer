@@ -8,9 +8,9 @@ import Volume from './Volume';
 /* eslint-enable */
 
 const modules = [
-  Volume,
-  Reserves,
   TokenPrices,
+  Reserves,
+  Volume,
   Candlestick,
 ];
 
