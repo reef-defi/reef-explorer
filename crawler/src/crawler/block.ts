@@ -49,6 +49,7 @@ import {
   processNativeTokenHolders,
 } from './tokenHolder';
 
+/*
 const blockHash = async (id: number): Promise<BlockHash> => {
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(id));
   return { id, hash };
@@ -133,6 +134,7 @@ const getSignedExtrinsicData = async (
   };
 };
 
+
 const extrinsicBody = (nextFreeId: number) => async (
   extrinsicHead: ExtrinsicHead,
   index: number,
@@ -212,9 +214,9 @@ export const processInitialBlocks = async (
   logger.info('Inserting unfinished blocks in DB');
   await insertMultipleBlocks(hashes.map(initialBlockToInsert));
   return transactions;
-};
+};*/
 
-export default async (fromId: number, toId: number, save = true): Promise<number> => {
+/*export default async (fromId: number, toId: number, save = true): Promise<number> => {
   let transactions = 0;
   const blockIds = range(fromId, toId);
   nodeProvider.setDbBlockId(toId - 1);
@@ -373,4 +375,4 @@ export default async (fromId: number, toId: number, save = true): Promise<number
 
   logger.info('Complete!');
   return transactions;
-};
+};*/

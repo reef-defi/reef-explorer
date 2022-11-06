@@ -1,13 +1,13 @@
 import * as Sentry from '@sentry/node';
 import { RewriteFrames } from '@sentry/integrations';
 import config from './config';
-import processBlocks, { processInitialBlocks } from './crawler/block';
-import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
-import { nodeProvider } from './utils/connector';
-import { min, promiseWithTimeout, wait } from './utils/utils';
-import logger from './utils/logger';
-import parseAndInsertSubContracts from './crawler/contracts';
-import syncVerifiedContracts from './crawler/syncVerifiedContracts';
+// import processBlocks, { processInitialBlocks } from './crawler/block';
+// import { deleteUnfinishedBlocks, lastBlockInDatabase } from './queries/block';
+// import { nodeProvider } from './utils/connector';
+// import { min, promiseWithTimeout, wait } from './utils/utils';
+// import logger from './utils/logger';
+// import parseAndInsertSubContracts from './crawler/contracts';
+// import syncVerifiedContracts from './crawler/syncVerifiedContracts';
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // import * as Tracing from "@sentry/tracing";
 
@@ -27,7 +27,7 @@ Sentry.setTag('network', config.network);
 
 console.warn = () => {};
 
-const processNextBlock = async () => {
+/*const processNextBlock = async () => {
   let BLOCKS_PER_STEP = config.startBlockSize;
   let currentBlockIndex = await lastBlockInDatabase();
   let updateSubContractsCounter = 0;
@@ -78,12 +78,12 @@ const processNextBlock = async () => {
       updateSubContractsCounter = 0;
     }
 
-    /**
+    /!**
      * Verification contract sync will only be triggered when:
      * - sync is enabled
      * - crawler is in "listening" mode
      * - on every nth interval
-     */
+     *!/
     updateVerifiedContracts += 1;
     if (
       config.verifiedContractSync
@@ -96,10 +96,11 @@ const processNextBlock = async () => {
 
     await wait(config.pollInterval);
   }
-};
-
-Promise.resolve()
+};*/
+throw new Error('DEPRECATED crawler v1');
+/*Promise.resolve()
   .then(async () => {
+    throw new Error('DEPRECATED crawler v1');
     await nodeProvider.initializeProviders();
   })
   .then(async () => {
@@ -130,4 +131,4 @@ Promise.resolve()
     Sentry.close(2000).then(() => {
       process.exit(-1);
     });
-  });
+  });*/

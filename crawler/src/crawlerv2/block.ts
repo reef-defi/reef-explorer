@@ -1,6 +1,6 @@
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import { Block } from '../crawler/types';
-import { insertBlock, updateBlockFinalized } from '../queries/block';
+import {insertBlock, retrieveBlockHash, updateBlockFinalized} from '../queries/block';
 import { nodeProvider, queryv2 } from '../utils/connector';
 import logger from '../utils/logger';
 import resolveEvent from './extrinsic/event';
@@ -117,6 +117,7 @@ const processBlock = async (blockId: number): Promise<void> => {
   logger.info('--------------------------------');
   // Load block hash
   logger.info(`Loading block hash for: ${blockId}`);
+  // TODO will this have many empty queries retrieveBlockHash(blockId)
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(blockId));
 
   // Load block

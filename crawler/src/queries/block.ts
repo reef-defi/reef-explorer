@@ -26,7 +26,8 @@ export const lastBlockInDatabase = async (): Promise<number> => {
   );
 
   if (gap.length > 0) {
-    const gapId = parseInt(gap[0].id, 10) - 1;
+    // const gapId = parseInt(gap[0].id, 10) - 1;
+    const gapId = parseInt(gap[0].id, 10);
     logger.info(`Found block gap in database, starting from ${gapId}`);
     return gapId;
   }
@@ -86,7 +87,7 @@ interface BlockHashDB {
 }
 export const retrieveBlockHash = async (id: number): Promise<BlockHashDB|undefined> => {
   const result = await queryv2<BlockHashDB>('SELECT hash FROM block WHERE id = $1;', [id]);
-  return result.length > 0 ? result[0] : undefined;
+  return result[0]; // result.length > 0 ? result[0] : undefined;
 };
 
 export const removeBlockWithId = async (id: number): Promise<void> => {

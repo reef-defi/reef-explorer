@@ -33,30 +33,32 @@ const crawler = async () => {
   let currentBlockIndex = await lastBlockInDatabase();
   currentBlockIndex++;
   const queue = new Queue<Promise<void>>(config.maxBlocksPerStep);
-  logger.info('maxPER STEP=' + config.maxBlocksPerStep);
+  logger.info('maxPER STEP=' + config.maxBlocksPerStep+' lastInDB='+currentBlockIndex);
   const per = new Performance(config.maxBlocksPerStep * 10);
   // throw new Error('Break');
-  /*TODO uncomment nodeProvider.getProvider().api.rpc.chain.subscribeNewHeads(async (header) => {
+     nodeProvider.getProvider().api.rpc.chain.subscribeNewHeads(async (header) => {
     await processUnfinalizedBlock(header.number.toNumber());
-  });*/
+  });
 
   while (true) {
     const finalizedHead = nodeProvider.lastFinalizedBlockId();
-
+logger.info('lastFinal='+finalizedHead+' currBIndx='+currentBlockIndex+' qLen='+queue.len())
     // Starting to process some amount of blocks
-    while (currentBlockIndex <= finalizedHead && !queue.isFull()) {
+    while (finalizedHead!=null && currentBlockIndex <= finalizedHead && !queue.isFull()) {
       queue.push(processBlock(currentBlockIndex));
       currentBlockIndex++;
     }
 
     // If queue is empty crawler has nothing to do
     if (queue.isEmpty()) {
+      logger.info('Waiting for next block')
       await wait(config.pollInterval);
       continue;
     }
 
     // Waiting for the first block to finish and measuring performance
     const start = Date.now();
+    logger.info('POP block#################################')
     await queue.pop();
     const diff = Date.now() - start;
     per.push(diff);
@@ -70,7 +72,7 @@ const crawler = async () => {
      */
     updateVerifiedContracts += 1;
     if (
-      config.verifiedContractSync
+      config.verifiedContractSync && finalizedHead!=null
        && (finalizedHead - currentBlockIndex) <= 3
        && updateVerifiedContracts > config.verifiedContractSyncInterval
     ) {

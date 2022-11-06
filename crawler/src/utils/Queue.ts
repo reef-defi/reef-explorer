@@ -1,3 +1,5 @@
+import logger from "./logger";
+
 class Queue<T> {
   maxLength?: number;
 
@@ -13,6 +15,7 @@ class Queue<T> {
 
   pop(): T {
     if (this.values.length === 0) {
+      logger.error('Queue is empty!')
       throw new Error('Queue is empty');
     }
     return this.values.splice(0, 1)[0];

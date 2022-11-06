@@ -28,8 +28,8 @@ export default class NodeProvider {
     return max(...this.lastBlockIds);
   }
 
-  lastFinalizedBlockId() {
-    return max(...this.lastFinalizedBlockIds);
+  lastFinalizedBlockId(): number | undefined {
+    return this.lastFinalizedBlockIds.length? max(...this.lastFinalizedBlockIds):undefined;
   }
 
   getProvider() {

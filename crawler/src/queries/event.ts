@@ -11,7 +11,7 @@ const toEventValue = async ({
     phase,
   },
   timestamp,
-}: EventBody): Promise<string> => `('${id}', ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
+}: EventBody): Promise<string> => `('${id}', ${blockId}, '${extrinsicId}', ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {

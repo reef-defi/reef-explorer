@@ -1,5 +1,6 @@
 import { SignedExtrinsicData, Transfer } from '../crawler/types';
 import { insert, insertV2, query } from '../utils/connector';
+import logger from "../utils/logger";
 
 export interface InsertExtrinsic {
   blockId: number;
@@ -97,6 +98,7 @@ export const insertTransfers = async (transfers: Transfer[]): Promise<void> => {
   `, transfers.map(transferToValue));
 };
 
+/*
 interface ID {
   id: string;
 }
@@ -108,8 +110,10 @@ const nextFreeTableId = async (table: string): Promise<number> => {
 
 export const freeEventId = async () => nextFreeTableId('event');
 export const freeExtrinsicId = async () => nextFreeTableId('extrinsic');
+*/
 
 type EventId = string;
 type ExtrinsicId = string;
 
-export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => Promise.all([freeEventId(), freeExtrinsicId()]);
+// export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => Promise.all([freeEventId(), freeExtrinsicId()]);
+export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => Promise.all(['','']);
