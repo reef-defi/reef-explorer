@@ -17,6 +17,7 @@ const blockBody = async (id: number, hash: BlockHash): Promise<Block> => {
     provider.api.derive.chain.getHeader(hash),
     provider.api.query.system.events.at(hash),
   ]);
+  logger.info('##################GOT BLOCK DATA '+id)
 
   // Parse the timestamp from the `timestamp.set` extrinsic
   const firstExtrinsic = signedBlock.block.extrinsics[0];
@@ -114,14 +115,14 @@ const processBlock = async (blockId: number): Promise<void> => {
     return;
   }
 
-  logger.info('--------------------------------');
+  logger.info('PROCESS --------------------------------'+blockId);
   // Load block hash
   logger.info(`Loading block hash for: ${blockId}`);
   // TODO will this have many empty queries retrieveBlockHash(blockId)
   const hash = await nodeProvider.query((provider) => provider.api.rpc.chain.getBlockHash(blockId));
 
   // Load block
-  logger.info(`Loading block for: ${blockId}`);
+  logger.info(`################## LOADING BLOCK= ${blockId}`);
   const block = await blockBody(blockId, hash);
 
   // Inserting initial block and marking it as unfinalized

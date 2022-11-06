@@ -14,11 +14,11 @@ class Queue<T> {
   }
 
   pop(): T {
-    if (this.values.length === 0) {
-      logger.error('Queue is empty!')
-      throw new Error('Queue is empty');
+    if (this.values.length > 0) {
+      return this.values.shift()!;
     }
-    return this.values.splice(0, 1)[0];
+    logger.error('Queue is empty!')
+    throw new Error('Queue is empty');
   }
 
   len(): number {

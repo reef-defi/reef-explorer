@@ -42,7 +42,6 @@ const crawler = async () => {
 
   while (true) {
     const finalizedHead = nodeProvider.lastFinalizedBlockId();
-logger.info('lastFinal='+finalizedHead+' currBIndx='+currentBlockIndex+' qLen='+queue.len())
     // Starting to process some amount of blocks
     while (finalizedHead!=null && currentBlockIndex <= finalizedHead && !queue.isFull()) {
       queue.push(processBlock(currentBlockIndex));
@@ -58,7 +57,6 @@ logger.info('lastFinal='+finalizedHead+' currBIndx='+currentBlockIndex+' qLen='+
 
     // Waiting for the first block to finish and measuring performance
     const start = Date.now();
-    logger.info('POP block#################################')
     await queue.pop();
     const diff = Date.now() - start;
     per.push(diff);

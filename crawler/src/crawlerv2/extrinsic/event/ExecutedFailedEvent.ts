@@ -24,10 +24,15 @@ class ExecutedFailedEvent extends DefaultEvent {
     const eventData = (this.head.event.event.data.toJSON() as any[]);
 
     const address = toChecksumAddress(
-      eventData.length > 3 ? eventData[1] : eventData[0].address,
+        // TODO check if eventData[0].address exists in ANY block otherwise remove
+      eventData.length > 3 ? eventData[1] : eventData[0].address || eventData[0],
     );
-
-    const message: string = ExecutedFailedEvent.hexToAscii(eventData[eventData.length - 2].substr(138));
+    // TODO check if eventData[eventData.length - 2] is string in ANY block otherwise remove and use just ...-1
+    let eventDataHex = eventData[eventData.length - 2];
+    if(!(typeof eventDataHex === 'string')){
+      eventDataHex =  eventData[eventData.length - 1]
+    }
+    const message: string = ExecutedFailedEvent.hexToAscii(eventDataHex.substr(138));
 
     this.data = {
       raw: { address, topics: [], data: eventData[2] }, parsed: { message },
