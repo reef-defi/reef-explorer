@@ -9,7 +9,7 @@ import { ExtrinsicStatus, RawEventData, SignedExtrinsicData } from '../crawler/t
 export type Event = FrameSystemEventRecord;
 
 export interface ExtrinsicData {
-  id: number;
+  id: string;
   index: number;
   status: ExtrinsicStatus;
   signedData?: SignedExtrinsicData;
@@ -32,7 +32,7 @@ export type TransferType = 'Native' | 'ERC20' | 'ERC721' | 'ERC1155';
 
 export interface Transfer {
   blockId: number;
-  eventId: number;
+  eventId: string;
 
   denom?: string;
   nftId?: string;

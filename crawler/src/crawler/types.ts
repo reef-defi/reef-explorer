@@ -9,7 +9,7 @@ import { Vec } from '@polkadot/types';
 import { utils } from 'ethers';
 
 export type Address = string;
-export type EventId = number;
+export type EventId = string;
 export type Signer = string;
 export type Amount = string;
 export type Timestamp = string;
@@ -73,14 +73,14 @@ export interface EventHead {
   event: Event;
   blockId: number;
   timestamp: string;
-  extrinsicId: number;
+  extrinsicId: string;
   index: number;
   extrinsicIndex: number;
   status: ExtrinsicStatus;
   signedData?: SignedExtrinsicData;
 }
 export interface EventBody extends EventHead {
-  id: number;
+  id: string;
 }
 
 export interface AccountHead {
@@ -104,8 +104,8 @@ export interface AccountBody extends AccountHead {
 
 export interface Transfer {
   blockId: number;
-  extrinsicId: number;
-  eventId: number;
+  extrinsicId: string;
+  eventId: string;
 
   denom?: string;
   nftId?: string;
@@ -128,7 +128,7 @@ export interface Transfer {
 
 export interface Contract {
   address: string;
-  extrinsicId: number;
+  extrinsicId: string;
   signer: string;
 
   bytecode: string;
@@ -191,7 +191,7 @@ export interface BytecodeLog {
 export interface BytecodeLogWithBlockId extends BytecodeLog {
   blockId: number;
   timestamp: string;
-  extrinsicId: number;
+  extrinsicId: string;
   signedData: SignedExtrinsicData;
 }
 
@@ -207,7 +207,7 @@ export interface EvmLogWithDecodedEvent extends EvmLog {
 }
 
 export interface EVMEventData {
-  id: number;
+  id: string;
   data: any;
   method: string;
   blockId: number;
@@ -219,7 +219,7 @@ export interface EVMEventData {
 
 export interface EvmEvent {
   id: number;
-  eventid: number;
+  eventid: string;
   blockid: number;
   eventindex: number;
   extrinsicindex: number;
@@ -236,7 +236,7 @@ export interface EvmEvent {
 }
 
 export interface BacktrackingEvmEvent extends EvmEvent {
-  extrinsicid: number;
+  extrinsicid: string;
   timestamp: string;
   signeddata: SignedExtrinsicData;
 }

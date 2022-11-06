@@ -21,7 +21,7 @@ const evmLogToTransfer = async ({
     blockId,
     timestamp,
     extrinsicId,
-    eventId: 0,
+    eventId: '0',
     toEvmAddress,
     success: true,
     fromEvmAddress,

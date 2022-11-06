@@ -56,7 +56,7 @@ export default class NodeProvider {
     await this.initializeNodeProviders();
     logger.info('... connected');
     logger.info('Syncing node...');
-    await this.syncNode();
+    //TODO uncomment - await this.syncNode();
     logger.info('Syncing complete');
   }
 

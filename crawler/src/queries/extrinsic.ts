@@ -16,7 +16,7 @@ export interface InsertExtrinsic {
 }
 
 export interface InsertExtrinsicBody extends InsertExtrinsic {
-  id: number;
+  id: string;
   signedData?: SignedExtrinsicData;
 }
 
@@ -35,7 +35,7 @@ const extrinsicToValue = ({
   signedData,
   timestamp,
 }: InsertExtrinsicBody): string => `(
-  ${id}, ${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(
+  '${id}', ${blockId}, ${index}, '${hash}', '${args}', '${docs.replace(
   /'/g,
   "''",
 )}', '${method}', 
@@ -109,7 +109,7 @@ const nextFreeTableId = async (table: string): Promise<number> => {
 export const freeEventId = async () => nextFreeTableId('event');
 export const freeExtrinsicId = async () => nextFreeTableId('extrinsic');
 
-type EventId = number;
-type ExtrinsicId = number;
+type EventId = string;
+type ExtrinsicId = string;
 
 export const nextFreeIds = async (): Promise<[EventId, ExtrinsicId]> => Promise.all([freeEventId(), freeExtrinsicId()]);

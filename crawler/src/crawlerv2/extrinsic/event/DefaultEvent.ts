@@ -5,7 +5,14 @@ import AccountManager from '../../managers/AccountManager';
 import { EventData, ExtrinsicData } from '../../types';
 
 class DefaultEvent {
-  id: number|undefined;
+
+  get id(): string|undefined {
+    let extrinsicIndex = this.getExtrinsicIndex();
+    if (extrinsicIndex==null) {
+      return undefined;
+    }
+    return this.head.blockId.toString() + '-' + extrinsicIndex + '-' + this.head.index.toString();
+  }
 
   head: EventData;
 
@@ -15,7 +22,13 @@ class DefaultEvent {
     this.head = head;
   }
 
-  private static async nextId(): Promise<number> {
+  private getExtrinsicIndex():number | undefined{
+    if (this.head.event.phase.isApplyExtrinsic) {
+      return this.head.event.phase.asApplyExtrinsic.toNumber();
+    }
+  }
+
+  /*private static async nextId(): Promise<number> {
     const result = await queryv2<{nextval: string}>('SELECT nextval(\'event_sequence\');');
     return parseInt(result[0].nextval, 10);
   }
@@ -31,10 +44,10 @@ class DefaultEvent {
       id = await DefaultEvent.nextId();
     }
     return id;
-  }
+  }*/
 
   async process(accountsManager: AccountManager): Promise<void> {
-    this.id = await DefaultEvent.getId();
+    //this.id = await DefaultEvent.getId();
   }
 
   async save(extrinsicData: ExtrinsicData): Promise<void> {

@@ -39,7 +39,7 @@ const extrinsicStatus = (extrinsicEvents: DefaultEvent[]): ExtrinsicStatus => ex
 );
 
 class Extrinsic {
-  id?: number;
+  id: string;
 
   index: number;
 
@@ -59,6 +59,7 @@ class Extrinsic {
     this.events = events;
     this.blockId = blockId;
     this.index = index;
+    this.id = this.blockId.toString()+'-'+this.index.toString();
     this.timestamp = timestamp;
     this.extrinsic = extrinsic;
   }
@@ -75,7 +76,7 @@ class Extrinsic {
     };
   }
 
-  private static async nextId(): Promise<number> {
+  /*private static async nextId(): Promise<number> {
     const result = await queryv2<{nextval: string}>('SELECT nextval(\'extrinsic_sequence\');');
     return parseInt(result[0].nextval, 10);
   }
@@ -91,11 +92,10 @@ class Extrinsic {
       id = await Extrinsic.nextId();
     }
     return id;
-  }
+  }*/
 
   async process(accountsManager: AccountManager): Promise<void> {
-    this.id = await Extrinsic.getId();
-
+logger.info('EXT ID='+this.id)
     // Extracting signed data
     this.signedData = this.extrinsic.isSigned
       ? await Extrinsic.getSignedData(this.extrinsic.toHex())

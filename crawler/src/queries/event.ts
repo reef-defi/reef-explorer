@@ -11,10 +11,11 @@ const toEventValue = async ({
     phase,
   },
   timestamp,
-}: EventBody): Promise<string> => `(${id}, ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
+}: EventBody): Promise<string> => `('${id}', ${blockId}, ${extrinsicId}, ${index}, '${section}', '${method}', '${data}', '${JSON.stringify(phase)}', '${timestamp}')`;
 
 export const insertEvents = async (events: EventBody[]): Promise<void> => {
   if (events.length > 0) {
+    // TODO why not insertV2
     await insert(`
 INSERT INTO event
   (id, block_id, extrinsic_id, index, section, method, data, phase, timestamp)

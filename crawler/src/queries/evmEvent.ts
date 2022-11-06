@@ -126,7 +126,7 @@ const evmEventDataToInsertValue = async ({
   const topics = parsedEvmData.raw.topics || [];
   const parsedEvmString = parsedEvmData.parsed ? JSON.stringify(parsedEvmData.parsed) : undefined;
 
-  return `(${id}, '${parsedEvmData.raw.address}', '${JSON.stringify(parsedEvmData.raw)}', '${parsedEvmString}', '${method}', '${topics[0]}', '${topics[1]}', '${topics[2]}', '${topics[3]}', ${blockId}, ${extrinsicIndex}, ${eventIndex}, '${parsedEvmData.status}', '${parsedEvmData.type}')`;
+  return `('${id}', '${parsedEvmData.raw.address}', '${JSON.stringify(parsedEvmData.raw)}', '${parsedEvmString}', '${method}', '${topics[0]}', '${topics[1]}', '${topics[2]}', '${topics[3]}', ${blockId}, ${extrinsicIndex}, ${eventIndex}, '${parsedEvmData.status}', '${parsedEvmData.type}')`;
 };
 
 // TODO deprecating
@@ -151,7 +151,7 @@ export const insertEvmEvents = async (evmEvents: EventBody[]): Promise<void> => 
 };
 
 interface EvmBase {
-  eventId: number;
+  eventId: string;
   blockId: number;
   eventIndex: number;
   extrinsicIndex: number;
