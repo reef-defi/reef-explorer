@@ -1,6 +1,7 @@
 # Reef explorer
+(deprecated)
 
-Open source block explorer for [Reef chain](https://reef.io) hosted at [https://reefscan.com](https://reefscan.com)
+This first open source block explorer. Now using https://github.com/reef-chain/subsquid-processor for [Reef chain](https://reef.io) hosted at [https://reefscan.com](https://reefscan.com)
 
 The `reef-explorer` stack is containerised using docker and is run using a 
 container orchestration tool.  We have provided a docker-compose manifest to run
